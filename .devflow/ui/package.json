@@ -1,0 +1,5 @@
+{
+  "name": "teams-transcription-disposable-verification",
+  "private": true,
+  "devDependencies": { "@playwright/test": "1.62.0" }
+}
