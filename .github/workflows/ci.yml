@@ -29,6 +29,13 @@ jobs:
       - run: python -m pip install PyYAML==6.0.3
       - run: bash .devflow/check.sh
   test:
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3]
+    env:
+      TEST_SHARD: ${{ matrix.shard }}
+      TEST_SHARDS: '4'
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
@@ -48,7 +55,7 @@ jobs:
       - if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: devflow-tests-${{ env.SOURCE_SHA }}-${{ github.run_attempt }}
+          name: devflow-tests-${{ env.SOURCE_SHA }}-${{ github.run_attempt }}-${{ matrix.shard }}
           path: .devflow/evidence-test/
           retention-days: 7
           if-no-files-found: error

@@ -26,10 +26,18 @@ def main():
                             '--find-links','/workspace/.devflow/fixture-wheels','websockets>=16,<17'],check=True)
             sys.path.insert(0,'/tmp/testlibs')
         suite = AvailableLoader().discover(str(ROOT/'tests'))
+        shard = int(os.environ.get('TEST_SHARD','0'))
+        shards = int(os.environ.get('TEST_SHARDS','1'))
+        assert 0 <= shard < shards <= 4
+        suite = unittest.TestSuite(list(suite)[shard::shards])
+        class ProgressResult(unittest.TextTestResult):
+            def startTest(self, test):
+                super().startTest(test)
+                (output/'progress.json').write_text(json.dumps({'test':test.id(),'started':self.testsRun}))
         with (output/'regression.log').open('w') as log:
-            result = unittest.TextTestRunner(stream=log, verbosity=2).run(suite)
+            result = unittest.TextTestRunner(stream=log, verbosity=2, resultclass=ProgressResult).run(suite)
     receipt = dict(scope='available-regression-not-original-full-discovery',
-                   python=sys.version, tests=result.testsRun, failures=len(result.failures),
+                   python=sys.version, shard=shard, shards=shards, tests=result.testsRun, failures=len(result.failures),
                    errors=len(result.errors), skipped=len(result.skipped),
                    excluded_missing_source=sorted(EXCLUDED),
                    success=result.wasSuccessful() and not result.skipped,

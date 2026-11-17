@@ -24,12 +24,26 @@ def main():
                '--mount',f'type=bind,src={ROOT},dst=/workspace,readonly',
                '--env','PYTHONPATH=/workspace/tests:/workspace','--env','ASSISTANT_CHROMIUM=/usr/bin/chromium',
                '--env','RUNNER_ENVIRONMENT=github-hosted',
+               '--env','TEST_SHARD='+os.environ.get('TEST_SHARD','0'),
+               '--env','TEST_SHARDS='+os.environ.get('TEST_SHARDS','1'),
                '--entrypoint','python',image,'/workspace/.devflow/regression.py','/tmp/regression',check=True)
+        import time
+        docker('start',name,check=True)
+        deadline=time.monotonic()+1200
+        while True:
+            state=json.loads(docker('inspect',name,capture_output=True,check=True).stdout)[0]['State']
+            if not state['Running']: break
+            if time.monotonic()>deadline: raise RuntimeError('regression_deadline_exceeded')
+            progress=docker('exec',name,'cat','/tmp/regression/progress.json',capture_output=True)
+            if progress.returncode==0:
+                p=json.loads(progress.stdout)
+                print('regression progress:',p['started'],p['test'],flush=True)
+            time.sleep(20)
         with (output/'execution.log').open('w') as log:
-            result=docker('start','-a',name,stdout=log,stderr=log)
+            docker('logs',name,stdout=log,stderr=log)
         docker('cp',name+':/tmp/regression/.',str(output),check=True)
         receipt=json.loads((output/'regression.json').read_text())
-        return 0 if result.returncode==0 and receipt['success'] else 1
+        return 0 if state['ExitCode']==0 and receipt['success'] else 1
     finally:
         docker('rm','-f',name,check=True)
 

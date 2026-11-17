@@ -26,8 +26,13 @@ from check_compose import example_values, render, write_env
 def run(args, *, input=None, timeout=120, check=True):
     result = subprocess.run(args, input=input, text=True, capture_output=True, timeout=timeout)
     if check and result.returncode:
-        # Fixed code only. Raw stderr can include configuration/secrets.
-        raise RuntimeError('hosted_command_failed_' + Path(args[0]).name)
+        # Project-owned disposable fixtures only. Persist fixed error classes,
+        # never raw commands, stderr, configuration or credential material.
+        reason = next((code for needle, code in [
+            ('read-only', 'readonly_copy_refused'), ('permission denied','permission_denied'),
+            ('no space left','scratch_space_exhausted'), ('no such file','fixture_missing')
+        ] if needle in result.stderr.lower()), 'command_rejected')
+        raise RuntimeError('hosted_' + reason)
     return result
 
 
@@ -177,6 +182,7 @@ initialize_admin_credentials(load_assistant_settings(f),sys.stdin.read().strip()
         run(['git','merge-base','--is-ancestor',SOURCE_SHA,'HEAD'])
         self.receipt = admit_candidate(REPOSITORY,'main',self.sha,self.sha,SOURCE_SHA,self.image)
         self.receipt.update(scope='disposable-hosted', vm_acceptance=False,
+                            source_branch='main', execution_ref=os.environ.get('GITHUB_HEAD_REF') or os.environ.get('GITHUB_REF'),
                             actions_run=f'https://github.com/{REPOSITORY}/actions/runs/{os.environ["GITHUB_RUN_ID"]}')
 
     def wrong_sha(self):
@@ -215,7 +221,18 @@ initialize_admin_credentials(load_assistant_settings(f),sys.stdin.read().strip()
         for p in ui.rglob('*'):
             p.chmod(0o755 if p.is_dir() or p.name == 'node' else 0o644)
         ui.chmod(0o755)
-        self.mutate('write','container',self.app,lambda: self.docker('cp',str(ui),self.app+':/tmp/devflow-ui'))
+        import io
+        import tarfile
+        archive = io.BytesIO()
+        with tarfile.open(fileobj=archive, mode='w') as bundle:
+            bundle.add(ui, arcname='devflow-ui')
+        def stream_ui():
+            result = subprocess.run(['docker','--host=unix:///var/run/docker.sock','exec','-i',
+                                     self.app,'tar','-xf','-','-C','/tmp'],
+                                    input=archive.getvalue(),capture_output=True,timeout=60)
+            if result.returncode:
+                raise RuntimeError('fixture_tmpfs_stream_failed')
+        self.mutate('write','container',self.app,stream_ui)
         self.mutate('write','container',self.app,lambda: self.docker('exec','-i',self.app,'python','-c',
                     "import sys;from pathlib import Path;p=Path('/tmp/devflow-fixture-password');p.write_text(sys.stdin.read());p.chmod(0o600)",input=self.password))
         # Fixture files must be world-readable, never the private password.
@@ -267,6 +284,7 @@ def main():
     image = Path(os.environ['RUNNER_TEMP'],'teams-image-id').read_text().strip()
     os.environ.setdefault('DEVFLOW_HEAD_SHA', sha)
     os.environ['DEVFLOW_EVIDENCE'] = str(evidence)
+    os.environ['DEVFLOW_IMAGE'] = image
     with tempfile.TemporaryDirectory(prefix='teams-transcription-ci-') as directory:
         h = Harness(image,sha,evidence,Path(directory))
         try:
@@ -306,8 +324,19 @@ def finish(h, *, kind, gate=True):
     build = ['python',str(ROOT/'.devflow/acceptance.py'),'build','--kind',kind,'--health', 'failed' if h.problems else 'passed']
     for problem in h.problems: build.extend(['--problem',problem])
     run(build,check=False)
+    report = json.loads((evidence/'acceptance.json').read_text())
+    expected = {sid for sid in h.specs if kind != 'base' or '/AC-3.' in sid}
+    present = {s['id'] for s in report['scenarios']}
+    if present != expected:
+        raise RuntimeError('scenario_set_incomplete')
+    for s in report['scenarios']:
+        for step in s['steps']:
+            if step['title'] != h.specs[s['id']][step['phase']]:
+                raise RuntimeError('scenario_text_mismatch')
+        if '/AC-3.' in s['id'] and not (evidence/'shots'/(s['id'].replace('/','__')+'.png')).is_file():
+            raise RuntimeError('browser_screenshot_missing')
     if not gate:
-        return 1 if h.problems else 0
+        return 1 if h.problems or any(s['status']!='passed' for s in report['scenarios']) else 0
     return run(['python',str(ROOT/'.devflow/acceptance.py'),'gate'],check=False).returncode
 
 
