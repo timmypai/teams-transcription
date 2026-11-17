@@ -1,0 +1,51 @@
+{
+  "tests_run": 941,
+  "failures": 0,
+  "errors": 0,
+  "skips": 0,
+  "seconds": 228.146,
+  "excluded_historical_missing_suites": [
+    "test_bridge_integration.py",
+    "test_media_bridge.py"
+  ],
+  "failed_cases": [],
+  "error_cases": [],
+  "passed": true,
+  "initial_integration": {
+    "tests_run": 940,
+    "failures": 12,
+    "errors": 0,
+    "skips": 0,
+    "seconds": 226.693,
+    "excluded_historical_missing_suites": [
+      "test_bridge_integration.py",
+      "test_media_bridge.py"
+    ],
+    "failed_cases": [
+      "test_b_native.NativeLiveTests.test_expiry_during_continuation_startup_closes_opened_lease",
+      "test_muted_probe_greeting.MutedProbeGreetingTests.test_cancelled_complete_delta_cannot_publish_listening",
+      "test_muted_probe_greeting.MutedProbeGreetingTests.test_default_gate_off_needs_provider_and_media_completion",
+      "test_muted_probe_greeting.MutedProbeGreetingTests.test_error_after_exact_delta_before_transition_cannot_publish_listening",
+      "test_muted_probe_greeting.MutedProbeGreetingTests.test_foreign_delta_and_cancel_cannot_complete_or_revoke_own_gate",
+      "test_muted_probe_greeting.MutedProbeGreetingTests.test_late_greeting_final_cannot_finish_next_answer",
+      "test_muted_probe_greeting.MutedProbeGreetingTests.test_mismatched_or_extra_delta_fails_exact_gate",
+      "test_muted_probe_greeting.MutedProbeGreetingTests.test_ninth_four_deltas_only_close_local_muted_lease",
+      "test_muted_probe_greeting.MutedProbeGreetingTests.test_partial_and_canonical_done_alone_do_not_complete_delta_gate",
+      "test_muted_probe_greeting.MutedProbeGreetingTests.test_probe_gate_refuses_tx_and_non_synthetic_scope",
+      "test_muted_probe_greeting.MutedProbeGreetingTests.test_trailing_text_after_local_gate_fails_without_provider_done_claim",
+      "test_native_incremental_context.NativeIncrementalContextTests.test_marker_cancellation_revokes_previously_enabled_mock_tx"
+    ],
+    "error_cases": [],
+    "passed": false
+  },
+  "invocation": "source .tools/activate && PYTHONPATH=tests:. python <temporary available-suite runner> <receipt>",
+  "runner_source": "import json\nfrom pathlib import Path\nimport sys\nimport time\nimport unittest\n\nEXCLUDED = {'test_bridge_integration.py', 'test_media_bridge.py'}\nclass AvailableTests(unittest.TestLoader):\n    def _match_path(self, path, full_path, pattern):\n        return path not in EXCLUDED and super()._match_path(path, full_path, pattern)\n\nstarted = time.monotonic()\nsuite = AvailableTests().discover('tests')\nresult = unittest.TextTestRunner(verbosity=2).run(suite)\nreceipt = {'tests_run':result.testsRun, 'failures':len(result.failures),\n    'errors':len(result.errors), 'skips':len(result.skipped),\n    'seconds':round(time.monotonic()-started,3), 'excluded_historical_missing_suites':sorted(EXCLUDED),\n    'failed_cases':[case.id() for case,_ in result.failures],\n    'error_cases':[case.id() for case,_ in result.errors],\n    'passed':result.wasSuccessful()}\nPath(sys.argv[1]).write_text(json.dumps(receipt,indent=2)+'\\n')\nprint(json.dumps(receipt),flush=True)\nraise SystemExit(0 if result.wasSuccessful() else 1)\n",
+  "source_sha256": {
+    "teams_transcription/b_native.py": "9718f013154bde95283ee39564a47fee15f1857e4ae35986a9033f4a98bd19ae",
+    "teams_transcription/b_question.py": "9fba7f5b6e844666ecb52ec13dae3d8975bf25d19ddd55f3967adb5c5348b364",
+    "teams_transcription/b_context.py": "0cea94c40640681f58367973e4fef071c795a8e5361ccc0de29558f17aa81876",
+    "teams_transcription/diagnostics.py": "4a5da469b6ff15250870bc9bbd9ce0282ffd6b73bf452e253d7b26442cfc4e2d",
+    "teams_transcription/qa_probe.py": "be077d50421f7fd1b5f054ef78dcf67b8e165e8b2736f2f62c0b3b52d24dec11",
+    "teams_transcription/response_runtime.py": "a3599446b3e194ba556cff205fc8cd2bf1798acb8b757df8d09ec3d5046945c1"
+  }
+}

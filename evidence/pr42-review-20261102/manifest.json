@@ -1,0 +1,27 @@
+{
+  "original_head": "38e79429b505440a208bd78b1bbaa4fd0ab9225c",
+  "review_thread": "https://github.com/paulpai0412/teams-transcription/pull/42#discussion_r4448987085",
+  "scope": "offline scorer repair only; no model/browser/Oracle operation",
+  "files": {
+    "contracts-622.json": {
+      "sha256": "033fd47eb6db45d8e1738925da927cde8d6df7ac3ccc38155d1b5a283151291e",
+      "bytes": 2737
+    },
+    "contracts-622.log.gz": {
+      "sha256": "63f292a1383583be1e20e508fa12be119f0f30a96a9e7dbf2d8d7453378eb4a0",
+      "bytes": 19162
+    },
+    "ordinary-alignment-focused.log.gz": {
+      "sha256": "cd97e082a3f1ff12cab4cd833487a109b590fc9240232189cc1f63e6ed2f5799",
+      "bytes": 1432
+    },
+    "ordinary-alignment-red.log": {
+      "sha256": "c369a5becf8164db0e83a70ef58846d6ee5c59ccffb354844a16134fa0a552a0",
+      "bytes": 1182
+    },
+    "standards-review.log.gz": {
+      "sha256": "1512667adae0bd78bc5ba1fbc3dd4a98ac6cc2c34780397b59a437a75e19a48c",
+      "bytes": 757
+    }
+  }
+}

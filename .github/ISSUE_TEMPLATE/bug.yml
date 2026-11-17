@@ -1,0 +1,22 @@
+name: Bug report
+description: Record reproducible symptoms without private meeting or account data
+body:
+  - type: textarea
+    id: symptom
+    attributes:
+      label: Observed and expected behavior
+      description: Do not paste meeting URLs, transcript, audio, credentials or raw provider logs.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction and environment
+      description: Source commit/image digest, staging or production, sanitized steps and fixed error code.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence and validation limits
+      description: Link a GitHub Actions run/artifact; state whether this is synthetic, health-only or actual audio E2E.

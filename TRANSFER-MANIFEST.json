@@ -1,0 +1,2258 @@
+{
+  "schema_version": 1,
+  "package": "teams-transcription WSL2 portable source",
+  "repository": "paulpai0412/teams-transcription",
+  "target_local_root": "~/apps/teams-transcription",
+  "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+  "source_tree": "9b2fa9ae42eedf2dbd7dab19d1904cd5ef0d9a75",
+  "source_branch": "codex/frame-snapshot-recovery",
+  "fixed_application_commit": "52e0c560e32566c23d5377697b7bc47c8315b5af",
+  "fixed_application_tree": "043e725b82c551c42c877ef51411f5acead80f37",
+  "local_equivalent_base_commit": "81007ee23ef3fae5dcc9c2d31703935e4fc6b719",
+  "base_tree_equality_verified": true,
+  "local_history_is_remote_history": false,
+  "remote_ci_only_head_not_used_as_application": "58820bc1075dfd0c123af14ae9fb4aefb404f79a",
+  "correction_chain": [
+    {
+      "commit": "e45665716c6f1be0df1ab9d232c43efc7314b3ed",
+      "parent": "81007ee23ef3fae5dcc9c2d31703935e4fc6b719",
+      "subject": "diagnostics: preserve bounded B startup phase and first failure",
+      "changed_paths": [
+        "teams_transcription/b_native.py",
+        "teams_transcription/diagnostics.py",
+        "teams_transcription/response_runtime.py",
+        "tests/test_response_start_diagnostics.py"
+      ],
+      "review_status": "prior delivered correction preserved"
+    },
+    {
+      "commit": "b318d85301f27710fd511220d851d8e7897992e9",
+      "parent": "e45665716c6f1be0df1ab9d232c43efc7314b3ed",
+      "subject": "rx: allow 300-second owner coordination for formal sessions",
+      "changed_paths": [
+        "teams_transcription/rx_contract.py",
+        "tests/test_rx_ready_ttl.py"
+      ],
+      "review_status": "prior delivered correction preserved"
+    },
+    {
+      "commit": "c2ad2b79f5c708843fa3571d75a5beb69c12986e",
+      "parent": "b318d85301f27710fd511220d851d8e7897992e9",
+      "subject": "diagnostics: record bounded existing sender selection counts",
+      "changed_paths": [
+        "teams_transcription/browser.py",
+        "teams_transcription/diagnostics.py",
+        "teams_transcription/response_runtime.py",
+        "tests/test_response_sender_diagnostics.py",
+        "tests/test_response_start_diagnostics.py"
+      ],
+      "review_status": "prior delivered correction preserved"
+    },
+    {
+      "commit": "7c05cea37a81e33c1cccbfccd36ccd520cb0999b",
+      "parent": "c2ad2b79f5c708843fa3571d75a5beb69c12986e",
+      "subject": "tx: conditionally bind unique negotiated null-track audio sender",
+      "changed_paths": [
+        "teams_transcription/b_browser_tx.py",
+        "teams_transcription/b_dual_policy.py",
+        "teams_transcription/browser.py",
+        "teams_transcription/diagnostics.py",
+        "teams_transcription/response_runtime.py",
+        "tests/fixtures/null_sender_runtime.js",
+        "tests/test_null_track_local_browser.py",
+        "tests/test_null_track_sender.py",
+        "tests/test_response_sender_diagnostics.py"
+      ],
+      "review_status": "prior delivered correction preserved"
+    },
+    {
+      "commit": "672411474b91d4bcccde39bd971ecabcacf7a1c6",
+      "parent": "7c05cea37a81e33c1cccbfccd36ccd520cb0999b",
+      "subject": "test: configure the answer transceiver associated with offered audio",
+      "changed_paths": [
+        "tests/test_null_track_local_browser.py"
+      ],
+      "review_status": "prior delivered correction preserved"
+    },
+    {
+      "commit": "4ad6833262f9004cd1cd372c82d47012c3bb2ef9",
+      "parent": "672411474b91d4bcccde39bd971ecabcacf7a1c6",
+      "subject": "diagnostics: distinguish audio transceiver direction and sender membership",
+      "changed_paths": [
+        "teams_transcription/browser.py",
+        "teams_transcription/diagnostics.py",
+        "tests/fixtures/null_sender_runtime.js",
+        "tests/test_audio_sender_diagnostics.py"
+      ],
+      "review_status": "prior delivered correction preserved"
+    },
+    {
+      "commit": "114ad14bddfea190372df8b91bb61c9cbf3f73fe",
+      "parent": "4ad6833262f9004cd1cd372c82d47012c3bb2ef9",
+      "subject": "ui: verify computer audio before formal response admission",
+      "changed_paths": [
+        "teams_transcription/browser.py",
+        "teams_transcription/worker.py",
+        "tests/test_response_computer_audio_ui.py"
+      ],
+      "review_status": "prior delivered correction preserved"
+    },
+    {
+      "commit": "29346716b1f2e1b3d20e9003ed9baf80c1e3de6a",
+      "parent": "114ad14bddfea190372df8b91bb61c9cbf3f73fe",
+      "subject": "ui: wait for missing computer audio within the current join deadline",
+      "changed_paths": [
+        "teams_transcription/browser.py",
+        "teams_transcription/diagnostics.py",
+        "tests/test_computer_audio_wait.py",
+        "tests/test_response_computer_audio_ui.py"
+      ],
+      "review_status": "prior delivered correction preserved"
+    },
+    {
+      "commit": "03ac9ac1e5996c552d88c3d92e0098f636a71320",
+      "parent": "29346716b1f2e1b3d20e9003ed9baf80c1e3de6a",
+      "subject": "ui: recheck stop and deadline at final dispatch boundaries",
+      "changed_paths": [
+        "teams_transcription/browser.py",
+        "tests/test_computer_audio_dispatch_guard.py"
+      ],
+      "review_status": "prior delivered correction preserved"
+    },
+    {
+      "commit": "73694739935148efa40653acc310c165ae0f412e",
+      "parent": "03ac9ac1e5996c552d88c3d92e0098f636a71320",
+      "subject": "ui: isolate optional observation errors without weakening action guards",
+      "changed_paths": [
+        "teams_transcription/browser.py",
+        "teams_transcription/diagnostics.py",
+        "tests/test_computer_audio_observation_errors.py"
+      ],
+      "review_status": "prior delivered correction preserved"
+    },
+    {
+      "commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "parent": "73694739935148efa40653acc310c165ae0f412e",
+      "subject": "Recover invalid read-only frame snapshots within original Teams join deadline",
+      "changed_paths": [
+        "teams_transcription/browser.py",
+        "teams_transcription/diagnostics.py",
+        "tests/test_computer_audio_frame_lifecycle.py",
+        "tests/test_computer_audio_observation_errors.py"
+      ],
+      "review_status": "prior delivered source correction; latest frame candidate awaiting independent package review"
+    }
+  ],
+  "files": {
+    ".dockerignore": {
+      "sha256": "ee0f6ff61439634ee471fe06124f6ef6e63c6911cdaf842688b906edfd66d2db",
+      "bytes": 111,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "9da9d300a6d0f4eebb1d4df5a41a36154469a5c3",
+      "source_byte_identical": true
+    },
+    ".env.example": {
+      "sha256": "0c507acc0c0e84ed06a4737c5f255a87f09388f70ce591a497f8191fd6feb29d",
+      "bytes": 1222,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "9da9d300a6d0f4eebb1d4df5a41a36154469a5c3",
+      "source_byte_identical": true
+    },
+    ".github/workflows/meeting-functional-validation.yml": {
+      "sha256": "bfb7c024e7645723bb723c0e2abe76e013dc495091a15005401fd60aa1b39155",
+      "bytes": 5762,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "a21157672ae8caacad3988741aff8f867280ca42",
+      "source_byte_identical": true
+    },
+    ".gitignore": {
+      "sha256": "3fde088a7247737ec6d09b62bdfae08f69091ae0578fb0747241171536408fbe",
+      "bytes": 75,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "fb47f950b242d009497eafa8d4add24ba923ed7d",
+      "source_byte_identical": true
+    },
+    "AGENTS.md": {
+      "sha256": "d0cb0ff33c2d078f65af405c8e1d8bcdbfb7dbbfbd0990eb1578e72dfd6e8937",
+      "bytes": 1065,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "e8b22d19da2c8d8b8caa50868e70a1dfa79fd52b",
+      "source_byte_identical": true
+    },
+    "Dockerfile": {
+      "sha256": "12af189fa10bf948f73dd8f425cf717d4989f328c65f731b22ccac615d06a796",
+      "bytes": 1707,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "9da9d300a6d0f4eebb1d4df5a41a36154469a5c3",
+      "source_byte_identical": true
+    },
+    "bin/teams-transcription": {
+      "sha256": "0ae99254cbfe9c011dcf630f714a9b85959e2d39559b13ed3b660c8eb219b915",
+      "bytes": 189,
+      "mode": "0o755",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "fb47f950b242d009497eafa8d4add24ba923ed7d",
+      "source_byte_identical": true
+    },
+    "compose.auth.yml": {
+      "sha256": "5e8683f1e3d3b8bc3583a7944b5bada8ca9e451b02da1319a66d63a171a68d6a",
+      "bytes": 263,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "9da9d300a6d0f4eebb1d4df5a41a36154469a5c3",
+      "source_byte_identical": true
+    },
+    "compose.local.yml": {
+      "sha256": "b5030cd9e3a5b1a8a0a5bbf27e82b530fedde72ea0f8d235c6d83e8183d6d8a5",
+      "bytes": 141,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "9da9d300a6d0f4eebb1d4df5a41a36154469a5c3",
+      "source_byte_identical": true
+    },
+    "docker-compose.yml": {
+      "sha256": "1ef78718d423124cd41c7bf82b7c8fb97e4d750f4b3113727df8274089b44b90",
+      "bytes": 1120,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "9da9d300a6d0f4eebb1d4df5a41a36154469a5c3",
+      "source_byte_identical": true
+    },
+    "docker/entrypoint.py": {
+      "sha256": "172a6fb961f902ad296143c76c537552d68c66cf534022a895f7c758fe08b8b1",
+      "bytes": 514,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "9da9d300a6d0f4eebb1d4df5a41a36154469a5c3",
+      "source_byte_identical": true
+    },
+    "docs/A-C-INTEGRATION.md": {
+      "sha256": "44961722b9b3829621ccb78eb2ae51df0d325e3f30acc96a57e25b269fc012af",
+      "bytes": 2763,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "9e95a2fa64a36cbe35d1b257c7ca709b4fea0163",
+      "source_byte_identical": true
+    },
+    "docs/ABC-RUNTIME.md": {
+      "sha256": "d7a59fa873ab1ff8f603430021fc588758dfc209f4c54ec307587bf2b9cb4958",
+      "bytes": 8526,
+      "mode": "0o644",
+      "origin": "source_document_with_generic_link_removed",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": null,
+      "source_byte_identical": false,
+      "original_source_sha256": "41becdfce12e490020c3b0f0e325705d8592b43729b15b12c1c8ed2fd5f1d738"
+    },
+    "docs/B-LIVE-NATIVE.md": {
+      "sha256": "c4540d23c6d744ce8035abeb156791803f538c8be57873de591374833c12d42c",
+      "bytes": 7857,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "9e95a2fa64a36cbe35d1b257c7ca709b4fea0163",
+      "source_byte_identical": true
+    },
+    "docs/B-LIVE-RESPONSE.md": {
+      "sha256": "e41f2c3e9ac1b33e2264e4776fcc9a7b83a8d7f84bbddcad74ce63982b1fee0c",
+      "bytes": 8933,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "9e95a2fa64a36cbe35d1b257c7ca709b4fea0163",
+      "source_byte_identical": true
+    },
+    "docs/B-REVIEW2-FIXES.md": {
+      "sha256": "b6699fcdffb0e331924a54dcec3dc180b8fa8ab852aa033d919a3373f239c48f",
+      "bytes": 2542,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "9e95a2fa64a36cbe35d1b257c7ca709b4fea0163",
+      "source_byte_identical": true
+    },
+    "docs/BOUNDED-RX.md": {
+      "sha256": "dc648968c0cf7f705c67cfdef6ae268ff8f3bbe0453d894137f0524a9ebb2f43",
+      "bytes": 7535,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "d11842d69b071ee0bf123428a5a436b74c048bfa",
+      "source_byte_identical": true
+    },
+    "docs/DURABLE-DELTA-TRANSCRIPT.md": {
+      "sha256": "163a0b8a4aa301281c714f16dd789d0c09592343b7e5c26edf4167b915995481",
+      "bytes": 11093,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "831624295c8b3247f6b7defc36c0858ab6bfffdd",
+      "source_byte_identical": true
+    },
+    "docs/INCREMENTAL-QA-CONTEXT.md": {
+      "sha256": "e66a5c9b966bc5322fae11f22f3594236f0419dddb81565b753f3c2e324682c2",
+      "bytes": 14575,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "243ca9fac9598a654f5942ed94bdc6242875d20a",
+      "source_byte_identical": true
+    },
+    "docs/INCREMENTAL-QA-MCP-HANDOFF.md": {
+      "sha256": "019df754d8390306bf5ad83e191f97a1c4a2314e48b4aa9b1026807660754fb7",
+      "bytes": 7206,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "243ca9fac9598a654f5942ed94bdc6242875d20a",
+      "source_byte_identical": true
+    },
+    "docs/MCP-MEETING-TOOLS.schema.json": {
+      "sha256": "196a07c0d00c03923fe2679ebcf3a25d357f69d83e1d4521d3ee961c4b00eb41",
+      "bytes": 83505,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "2a1d6e1870655b856b5a596fab0b053897ac64a0",
+      "source_byte_identical": true
+    },
+    "docs/MCP-OUTPUT-TOOLS.schema.json": {
+      "sha256": "baf6ef6d53c2575eff561167192105f5abb48c0522a0ca627621d03affa08b12",
+      "bytes": 6146,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "9e95a2fa64a36cbe35d1b257c7ca709b4fea0163",
+      "source_byte_identical": true
+    },
+    "docs/MEDIA-NETWORK.md": {
+      "sha256": "0002394db7817e672403a75af5b348c959eccaf804f859aa7a77ac1a82e30811",
+      "bytes": 7616,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "9b4542d18b4243f182e4dc6be65cd507caca5f52",
+      "source_byte_identical": true
+    },
+    "docs/MEETING-STORE.md": {
+      "sha256": "7e89a0aaca0bb76697e46563fa706838f58ad21e68bad4e1da8238d034cdd76f",
+      "bytes": 9759,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "831624295c8b3247f6b7defc36c0858ab6bfffdd",
+      "source_byte_identical": true
+    },
+    "docs/NATIVE-RUNTIME-INTEGRATION.md": {
+      "sha256": "cfba376e83690eea0e844f5a108344bcdeea8109807b2a3ff42fb0fb554955f8",
+      "bytes": 6624,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "9e95a2fa64a36cbe35d1b257c7ca709b4fea0163",
+      "source_byte_identical": true
+    },
+    "docs/PROVIDER-ADMISSION.md": {
+      "sha256": "4fc12ce8a60e2222eebb812155e62defb0153a1f1ca0ac40cf1df11217ec5443",
+      "bytes": 6515,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "db1ebc12d0f49405fcd67880c626967633aaa6f3",
+      "source_byte_identical": true
+    },
+    "docs/TEAMS-JOIN-DIAGNOSTICS.md": {
+      "sha256": "e6f8603cd25847f23800d29a0ff41bdf128543c6574044b2502d4b25c12dafd4",
+      "bytes": 2734,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "02860372387a71abbb5594e71b57700ea5bb747e",
+      "source_byte_identical": true
+    },
+    "pyproject.toml": {
+      "sha256": "b2df3ce4f0bc13b9314fddd57c889918b2f0e6a65948753c22671c8a4dd75c5c",
+      "bytes": 589,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "9da9d300a6d0f4eebb1d4df5a41a36154469a5c3",
+      "source_byte_identical": true
+    },
+    "runtime.example.yml": {
+      "sha256": "1264f1cb4aac9b5802fb52f0b29902effeec32e5594450994b10388c9e0dab3a",
+      "bytes": 1013,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "9da9d300a6d0f4eebb1d4df5a41a36154469a5c3",
+      "source_byte_identical": true
+    },
+    "teams_transcription/__init__.py": {
+      "sha256": "8f145e8449356774f5a03db9dd27f38dffee657eb6809bb88079fbe7610618be",
+      "bytes": 64,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "fb47f950b242d009497eafa8d4add24ba923ed7d",
+      "source_byte_identical": true
+    },
+    "teams_transcription/__main__.py": {
+      "sha256": "79ee6f134c5c5193377cf9b189cbdcc3e2095e49ba9cec310114441c15a917c4",
+      "bytes": 47,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "fb47f950b242d009497eafa8d4add24ba923ed7d",
+      "source_byte_identical": true
+    },
+    "teams_transcription/audio_buffer.py": {
+      "sha256": "913269e2113664d14f127ad1d0a9a08ab363ade4bda30ff314f129f0ec03ebbf",
+      "bytes": 1749,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "9da9d300a6d0f4eebb1d4df5a41a36154469a5c3",
+      "source_byte_identical": true
+    },
+    "teams_transcription/b_audio.py": {
+      "sha256": "fb70b4dfbd1e3ac34d615c9b7eaae576138d6fd121b9d7720cb262f7546bd514",
+      "bytes": 19437,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "243ca9fac9598a654f5942ed94bdc6242875d20a",
+      "source_byte_identical": true
+    },
+    "teams_transcription/b_browser_tx.py": {
+      "sha256": "72e5ce4cf98736a5eb8bd1653cb52b81d656d317157cc348ed04706622bb2235",
+      "bytes": 17033,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "7c05cea37a81e33c1cccbfccd36ccd520cb0999b",
+      "source_byte_identical": true
+    },
+    "teams_transcription/b_context.py": {
+      "sha256": "b49bd2d669521bd5cd4ac82a6985fc7c3f34605722c6eb6d603096b626a79733",
+      "bytes": 17044,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "243ca9fac9598a654f5942ed94bdc6242875d20a",
+      "source_byte_identical": true
+    },
+    "teams_transcription/b_dual_policy.py": {
+      "sha256": "9a9d20cf9745f59b15c365d446c2e39ffec282cd1e54023c47da4731c1cdf4dd",
+      "bytes": 7482,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "7c05cea37a81e33c1cccbfccd36ccd520cb0999b",
+      "source_byte_identical": true
+    },
+    "teams_transcription/b_echo.py": {
+      "sha256": "f90fec5a6f5d8bfad64e2cb581046529043da2d379fdc0b241ee145dbe212dae",
+      "bytes": 1024,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "9e95a2fa64a36cbe35d1b257c7ca709b4fea0163",
+      "source_byte_identical": true
+    },
+    "teams_transcription/b_guard.py": {
+      "sha256": "e907f70541d832c12e74b6f57595e1cd3981e9e75b62235e44688aab4cda5c3b",
+      "bytes": 4663,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "9e95a2fa64a36cbe35d1b257c7ca709b4fea0163",
+      "source_byte_identical": true
+    },
+    "teams_transcription/b_live.py": {
+      "sha256": "ebd11ac9b314b6793521a437557fe2933c9aa8c5a7f469c5c7ba28bd3093016e",
+      "bytes": 23127,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "243ca9fac9598a654f5942ed94bdc6242875d20a",
+      "source_byte_identical": true
+    },
+    "teams_transcription/b_media_profile.py": {
+      "sha256": "49cc010a39cc3b76da5dfcc4d8887ecbe6b8e618e9a5de87b57c541f8d6f2085",
+      "bytes": 8340,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "243ca9fac9598a654f5942ed94bdc6242875d20a",
+      "source_byte_identical": true
+    },
+    "teams_transcription/b_native.py": {
+      "sha256": "91dc3d9d7e2c0e3803d5234b3e10bb5e5057a6bc0b4e71c243cd2d103b5d3eb4",
+      "bytes": 29549,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "e45665716c6f1be0df1ab9d232c43efc7314b3ed",
+      "source_byte_identical": true
+    },
+    "teams_transcription/b_response.py": {
+      "sha256": "5553b874c34b10fde73574dd3c46b681767d41f334b7b8073db56eb4a2437a9c",
+      "bytes": 31316,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "831624295c8b3247f6b7defc36c0858ab6bfffdd",
+      "source_byte_identical": true
+    },
+    "teams_transcription/browser.py": {
+      "sha256": "9832892b6dd30309ea8b3e86f935fb18ce4f9fb19c0459030527739bfd3b21f5",
+      "bytes": 69207,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "source_byte_identical": true
+    },
+    "teams_transcription/cli.py": {
+      "sha256": "dd2ffd7a2c58ae8c5c9740126977f681a5c19475826d3624930c7cbb58825d2b",
+      "bytes": 14302,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "243ca9fac9598a654f5942ed94bdc6242875d20a",
+      "source_byte_identical": true
+    },
+    "teams_transcription/config.py": {
+      "sha256": "ca24b38ea2cee492bd8b88a0d5d2afa30728f929e9b26bd276f645c43cb5b56e",
+      "bytes": 7767,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "9da9d300a6d0f4eebb1d4df5a41a36154469a5c3",
+      "source_byte_identical": true
+    },
+    "teams_transcription/db.py": {
+      "sha256": "ab32b797f47cd96207b886ca3318fc0d71c60867703aeb9418211c7796595a66",
+      "bytes": 4539,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "9da9d300a6d0f4eebb1d4df5a41a36154469a5c3",
+      "source_byte_identical": true
+    },
+    "teams_transcription/diagnostics.py": {
+      "sha256": "a2eee5eeb4110e5a4f1174f6c206b399cf70ef36130d8c1d8a2870483a3a9221",
+      "bytes": 12743,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "source_byte_identical": true
+    },
+    "teams_transcription/incremental.py": {
+      "sha256": "60d250d8b815059d687b860555d98d1a029d1533d307497c4f599f7ea07e1796",
+      "bytes": 11340,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "831624295c8b3247f6b7defc36c0858ab6bfffdd",
+      "source_byte_identical": true
+    },
+    "teams_transcription/jobs.py": {
+      "sha256": "f8d973abdf6fb85c70eb56d0a650a5dd9cd133c4fc3a7bd7364188bf05f9dc33",
+      "bytes": 28107,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "831624295c8b3247f6b7defc36c0858ab6bfffdd",
+      "source_byte_identical": true
+    },
+    "teams_transcription/live.py": {
+      "sha256": "c838dfe4f2142594e65420a1fdf2eacac72703d28a1b3c7527d0ad7b439fac96",
+      "bytes": 33234,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "831624295c8b3247f6b7defc36c0858ab6bfffdd",
+      "source_byte_identical": true
+    },
+    "teams_transcription/live_summary.py": {
+      "sha256": "6b656d54ab280f58ac11655511fdaba0765bf1f9e71d388a9b2dd7db7816bf50",
+      "bytes": 1803,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "2a1d6e1870655b856b5a596fab0b053897ac64a0",
+      "source_byte_identical": true
+    },
+    "teams_transcription/live_summary_diagnostics.py": {
+      "sha256": "96ff93a935eb561ab0321ff45c60cc163924f3e5911636f67a39f59afe3a6c92",
+      "bytes": 7497,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "76f3fda017a3d2879e363ec54db0ab99452433b7",
+      "source_byte_identical": true
+    },
+    "teams_transcription/live_summary_output_evidence.py": {
+      "sha256": "30127678376347a4d8111d0f8caf3ec9e294dbc6908b2eb2fec3bee1fea3ed31",
+      "bytes": 3495,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "8f8ce90ee95490678a0460c6281347285168102f",
+      "source_byte_identical": true
+    },
+    "teams_transcription/live_summary_probe.py": {
+      "sha256": "5f82849f1acc0d753aca55e48d07592a69cef8b3d483ec31054e6d606b8bb951",
+      "bytes": 22440,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "8f8ce90ee95490678a0460c6281347285168102f",
+      "source_byte_identical": true
+    },
+    "teams_transcription/live_summary_stream.py": {
+      "sha256": "d36c345e82b0cda98f5f1209b8c7148f7c2cee119996b3eba30a3dfc3fe22ae0",
+      "bytes": 13144,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "8f8ce90ee95490678a0460c6281347285168102f",
+      "source_byte_identical": true
+    },
+    "teams_transcription/live_summary_voice_fixture.py": {
+      "sha256": "905486a089ee017e0005f062a17537bd6097f3cefe6bae0abb55e5c934ec9e9e",
+      "bytes": 7223,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "76f3fda017a3d2879e363ec54db0ab99452433b7",
+      "source_byte_identical": true
+    },
+    "teams_transcription/mcp_server.py": {
+      "sha256": "07b8e8782df4a5d4e0c7e16852ccd035d08e27ab8cac6af87b5495ca6e0d43fd",
+      "bytes": 16096,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "3d06c1933ea7b7b3a690860984b23c659fa0c12c",
+      "source_byte_identical": true
+    },
+    "teams_transcription/media.py": {
+      "sha256": "736bd27b97f1cf2909b5efe4da153d317ee8105b9e12667104cebcf86de74222",
+      "bytes": 9918,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "8121d950aa67c22377456aec86b1967ba6b3456a",
+      "source_byte_identical": true
+    },
+    "teams_transcription/meeting_contract.py": {
+      "sha256": "f1b525d9aff881d1bd72678e1fdef1433856b8292295a4f53f99c163cfdd7c59",
+      "bytes": 8307,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "2a1d6e1870655b856b5a596fab0b053897ac64a0",
+      "source_byte_identical": true
+    },
+    "teams_transcription/meeting_gateway.py": {
+      "sha256": "f520c11165275be675b22b079420594c779f9d5a9123230f34e27317a4f4de7a",
+      "bytes": 13728,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "2a1d6e1870655b856b5a596fab0b053897ac64a0",
+      "source_byte_identical": true
+    },
+    "teams_transcription/meeting_paths.py": {
+      "sha256": "995b98fe9a8187b6165bd7d77d36d4128ecdef3e0b6a6d89a0027a54fc140a32",
+      "bytes": 399,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "9e95a2fa64a36cbe35d1b257c7ca709b4fea0163",
+      "source_byte_identical": true
+    },
+    "teams_transcription/meeting_store.py": {
+      "sha256": "3b19f0e17fe970170de0990aa80fc873e0a17d2e435dc657c466555947f84574",
+      "bytes": 39938,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "2a1d6e1870655b856b5a596fab0b053897ac64a0",
+      "source_byte_identical": true
+    },
+    "teams_transcription/meeting_store_adapter.py": {
+      "sha256": "915cfc647901799e86475bf6c30a404ad24ecaff2cdb954add06bdefda722cfb",
+      "bytes": 3732,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "2a1d6e1870655b856b5a596fab0b053897ac64a0",
+      "source_byte_identical": true
+    },
+    "teams_transcription/owned_processes.py": {
+      "sha256": "6a7b2b27d6f8df121293fbbc3647491b63727089dab4f7a7a8ceec32f09f56d9",
+      "bytes": 2312,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "19092b64bd97376efb67ab7d9126560613cdca85",
+      "source_byte_identical": true
+    },
+    "teams_transcription/probe.py": {
+      "sha256": "890394e4574f9323d2806dc362dc33fdd30a0c60a251f8fd198f97566e1d2955",
+      "bytes": 2887,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "8121d950aa67c22377456aec86b1967ba6b3456a",
+      "source_byte_identical": true
+    },
+    "teams_transcription/provider_state.py": {
+      "sha256": "8126cabef14cb149983ea66961312ff7da4554ea5e89ca61874f7d7160c0c6c0",
+      "bytes": 9873,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "db1ebc12d0f49405fcd67880c626967633aaa6f3",
+      "source_byte_identical": true
+    },
+    "teams_transcription/provisional.py": {
+      "sha256": "a0d594ea81a5be6aa225bf1402a2cd1eaad4fccb85e9c4b186a2b10c4b621fb4",
+      "bytes": 1423,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "1c0dc43e9985f6b1b845549cb691d69104037a24",
+      "source_byte_identical": true
+    },
+    "teams_transcription/qa_probe.py": {
+      "sha256": "a5a991a0a095e61dba8bdd39d7bc20a95d37f4cb87e2ccab4b8a17aa25e7f9f9",
+      "bytes": 32184,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "243ca9fac9598a654f5942ed94bdc6242875d20a",
+      "source_byte_identical": true
+    },
+    "teams_transcription/response_runtime.py": {
+      "sha256": "b12244c365b74fa9c168a3fa23ffb81358a211d81349b684ac9a202985e3c9e1",
+      "bytes": 10247,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "7c05cea37a81e33c1cccbfccd36ccd520cb0999b",
+      "source_byte_identical": true
+    },
+    "teams_transcription/rpc.py": {
+      "sha256": "b2dd3eae1b745327874bf7f0191ccb1883160cdc554c41f2b5f4e53bf48b32ec",
+      "bytes": 8856,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "526cb9924ca5762ea53470cdc02cdc32d49bd37a",
+      "source_byte_identical": true
+    },
+    "teams_transcription/runtime_guard.py": {
+      "sha256": "beb20a116592d1b14581d3d048c8a5fcf3f9b2cc2146e4bce86cfd7afbbb8f2f",
+      "bytes": 7584,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "9e95a2fa64a36cbe35d1b257c7ca709b4fea0163",
+      "source_byte_identical": true
+    },
+    "teams_transcription/rx_audio_stats.py": {
+      "sha256": "97506b3e90f0c34cce2771a20132ef752430ffd9fec18677fa18c4453d5d71ad",
+      "bytes": 9819,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "9d84700d4e20d7f49053a7e757f3d8290e5213c1",
+      "source_byte_identical": true
+    },
+    "teams_transcription/rx_contract.py": {
+      "sha256": "ed688b5259c2485786f9d4a32d614a6043fa8f4acba7617875b97257392f7c6b",
+      "bytes": 20863,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "b318d85301f27710fd511220d851d8e7897992e9",
+      "source_byte_identical": true
+    },
+    "teams_transcription/security.py": {
+      "sha256": "60bf784cb9bf6cd9008376f16efa0f4c65c9e20ed8c41dea6e7a8e894c28bebf",
+      "bytes": 6116,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "9da9d300a6d0f4eebb1d4df5a41a36154469a5c3",
+      "source_byte_identical": true
+    },
+    "teams_transcription/service_worker.py": {
+      "sha256": "22d8623d838a7105f58282c255926e5212c8d7e057357193c6ae52156655e1fb",
+      "bytes": 10501,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "243ca9fac9598a654f5942ed94bdc6242875d20a",
+      "source_byte_identical": true
+    },
+    "teams_transcription/storage.py": {
+      "sha256": "2948b7a72831a0104848783dee98cb8375c8495817efcadf89d2ad63d84660d2",
+      "bytes": 13821,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "2a1d6e1870655b856b5a596fab0b053897ac64a0",
+      "source_byte_identical": true
+    },
+    "teams_transcription/summary.py": {
+      "sha256": "12fbda484d35f65ab10dbf7f1f41fb32bee39a642efc8bfb21ca0125ae0f3873",
+      "bytes": 10229,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "2a1d6e1870655b856b5a596fab0b053897ac64a0",
+      "source_byte_identical": true
+    },
+    "teams_transcription/worker.py": {
+      "sha256": "1a02c73f3f6a9fc4eb96aa7dae77a236cbeb8df92516e1058c07f689b88468e9",
+      "bytes": 32071,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "114ad14bddfea190372df8b91bb61c9cbf3f73fe",
+      "source_byte_identical": true
+    },
+    "tests/fixtures/final-event-base-42.json": {
+      "sha256": "033a897955072043ed42d47984cd700dbb4d2f605d8eafdd8d0dfa5594b08320",
+      "bytes": 4034,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "9d84700d4e20d7f49053a7e757f3d8290e5213c1",
+      "source_byte_identical": true
+    },
+    "tests/fixtures/null_sender_runtime.js": {
+      "sha256": "e71f66e686caf29600afd6c1bbb55619f3f71809da517eb42f42014512a41e36",
+      "bytes": 2267,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "4ad6833262f9004cd1cd372c82d47012c3bb2ef9",
+      "source_byte_identical": true
+    },
+    "tests/fixtures/qa_ninth_greeting.json": {
+      "sha256": "32990ef615eea711258b3d116f142c854e5fbbbfb3a6c9395cc84225467ac137",
+      "bytes": 616,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "243ca9fac9598a654f5942ed94bdc6242875d20a",
+      "source_byte_identical": true
+    },
+    "tests/fixtures/transcript.json": {
+      "sha256": "9f20567462aa2f19ea881e1983460fa7aac4e31a63f7aac5f344aa0d74a4682f",
+      "bytes": 123,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "fb47f950b242d009497eafa8d4add24ba923ed7d",
+      "source_byte_identical": true
+    },
+    "tests/fixtures/verify_response_media_profile.js": {
+      "sha256": "f8ef0fb532ad6c1e13db64aa3ddd87e4c60914ec570a8a5b42da5a2756f8c85f",
+      "bytes": 7546,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "243ca9fac9598a654f5942ed94bdc6242875d20a",
+      "source_byte_identical": true
+    },
+    "tests/lifecycle_probe.py": {
+      "sha256": "d6eb088599ee288d2e7a2719fa6e6d21c91cb185e13fcc325d01bdaa1e18826c",
+      "bytes": 4058,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "02860372387a71abbb5594e71b57700ea5bb747e",
+      "source_byte_identical": true
+    },
+    "tests/test_audio_sender_diagnostics.py": {
+      "sha256": "45446022ef38f4bc754630e116ecaabcfa936beda0e53adb9a1b17b4463ca9ba",
+      "bytes": 4031,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "4ad6833262f9004cd1cd372c82d47012c3bb2ef9",
+      "source_byte_identical": true
+    },
+    "tests/test_b_audio.py": {
+      "sha256": "eb80d68da52c0a89a1f7cf29f64499485c89231c4ac6c46666ced17152f1a316",
+      "bytes": 25024,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "9e95a2fa64a36cbe35d1b257c7ca709b4fea0163",
+      "source_byte_identical": true
+    },
+    "tests/test_b_browser_identity.py": {
+      "sha256": "971e0976b6b8d7b36ce095325b4e94ba0f24037c1096c24289f91cc5c228a6b5",
+      "bytes": 12360,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "9e95a2fa64a36cbe35d1b257c7ca709b4fea0163",
+      "source_byte_identical": true
+    },
+    "tests/test_b_browser_tx.py": {
+      "sha256": "470caae9076eb8f53eda8a041da26d6dbedd9dc700f4ee504b15dce93d795795",
+      "bytes": 4581,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "9e95a2fa64a36cbe35d1b257c7ca709b4fea0163",
+      "source_byte_identical": true
+    },
+    "tests/test_b_close.py": {
+      "sha256": "bbafbab346c4f0d33cc5618353a1979a697f8289d414545a59fd750593867543",
+      "bytes": 5709,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "9e95a2fa64a36cbe35d1b257c7ca709b4fea0163",
+      "source_byte_identical": true
+    },
+    "tests/test_b_dual_policy.py": {
+      "sha256": "c38663f72b8c4aca5415a1be0711207ad098e287c0a07ddb0297cc9717af28c2",
+      "bytes": 10717,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "9e95a2fa64a36cbe35d1b257c7ca709b4fea0163",
+      "source_byte_identical": true
+    },
+    "tests/test_b_echo.py": {
+      "sha256": "3f2e6033f672187908e2cf95fd18628e8b4be3550100b449a71a7f51593d4373",
+      "bytes": 1544,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "9e95a2fa64a36cbe35d1b257c7ca709b4fea0163",
+      "source_byte_identical": true
+    },
+    "tests/test_b_guard.py": {
+      "sha256": "18b4e5815e042b59a148df4394f5162e0d7fbb8e947c2c80a4ee34900dcb8859",
+      "bytes": 6800,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "9e95a2fa64a36cbe35d1b257c7ca709b4fea0163",
+      "source_byte_identical": true
+    },
+    "tests/test_b_integration.py": {
+      "sha256": "dc2ed1c00d56e93a616361f38100290a3d10159a8bb43e98a9d1170dc07301c5",
+      "bytes": 6888,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "af15268791fade6e13cbeee49f19b76823ea620f",
+      "source_byte_identical": true
+    },
+    "tests/test_b_live.py": {
+      "sha256": "2862c8884095c23bb2f626247d6129f474b531c440905df2fdb1b25a9b298d85",
+      "bytes": 12097,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "243ca9fac9598a654f5942ed94bdc6242875d20a",
+      "source_byte_identical": true
+    },
+    "tests/test_b_native.py": {
+      "sha256": "e7ff467d664d7f6b2cea682bd98f41b88aa6c9620e0b838e6593b33c797a8558",
+      "bytes": 8847,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "243ca9fac9598a654f5942ed94bdc6242875d20a",
+      "source_byte_identical": true
+    },
+    "tests/test_b_output_leases.py": {
+      "sha256": "72fa76144f8a1874a261ec1ae550fe223e794b56ec7015b4760d904613e68369",
+      "bytes": 2308,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "9e95a2fa64a36cbe35d1b257c7ca709b4fea0163",
+      "source_byte_identical": true
+    },
+    "tests/test_b_response.py": {
+      "sha256": "c33ecd332a1b81c2d55995aed545178f2cd18332dc1a5c1f3876e050d15b66db",
+      "bytes": 13549,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "9e95a2fa64a36cbe35d1b257c7ca709b4fea0163",
+      "source_byte_identical": true
+    },
+    "tests/test_bridge_integration.py": {
+      "sha256": "594ab8969010a081c8921070248bf15d2d1fde4b74b6a0ae78cc3150737c670e",
+      "bytes": 1477,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "553953ad7b28f7a3cee3053b0dca1e9852b1ef96",
+      "source_byte_identical": true
+    },
+    "tests/test_browser.py": {
+      "sha256": "9eba6efc237108d429c849cfb37f6dd119b30b5d58780e66cf24adc1f4f3c52d",
+      "bytes": 13326,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "9e95a2fa64a36cbe35d1b257c7ca709b4fea0163",
+      "source_byte_identical": true
+    },
+    "tests/test_browser_sandbox.py": {
+      "sha256": "792946874eff025363b2ebd8abe840b93986e86222076307031da6af8b81f794",
+      "bytes": 5996,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "aa230755f0863b0d5a30073efa476165f225f0fb",
+      "source_byte_identical": true
+    },
+    "tests/test_chrome_ci_once.py": {
+      "sha256": "c8866a4d4a4226119251ca4f6de892a403f6b3475744d9ec76b9c0ed1b4f25bc",
+      "bytes": 9969,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "a21157672ae8caacad3988741aff8f867280ca42",
+      "source_byte_identical": true
+    },
+    "tests/test_computer_audio_dispatch_guard.py": {
+      "sha256": "11a46172765433dfb8472d934b57df12302dc6988d9c099e11c92876eddec8a7",
+      "bytes": 2981,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "03ac9ac1e5996c552d88c3d92e0098f636a71320",
+      "source_byte_identical": true
+    },
+    "tests/test_computer_audio_frame_lifecycle.py": {
+      "sha256": "02882e272db68ff3a7221b7a409e7099f72f30491ddbc9f82199622b452cda0c",
+      "bytes": 10789,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "source_byte_identical": true
+    },
+    "tests/test_computer_audio_observation_errors.py": {
+      "sha256": "46c6dca95220e4a23992a815a14b34345b90f1e54406d16065176005d221f533",
+      "bytes": 9407,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "source_byte_identical": true
+    },
+    "tests/test_computer_audio_wait.py": {
+      "sha256": "1061b7655b93f5814a0f0a79a72d7a309b9c96b9eaddf40af9c727f76c5d9941",
+      "bytes": 7048,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "29346716b1f2e1b3d20e9003ed9baf80c1e3de6a",
+      "source_byte_identical": true
+    },
+    "tests/test_core.py": {
+      "sha256": "1ab04bc25d604f7a75f890b598827c7ba61546d3c3036ed4d96c02ff8a4aef85",
+      "bytes": 9005,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "af15268791fade6e13cbeee49f19b76823ea620f",
+      "source_byte_identical": true
+    },
+    "tests/test_delta_boundary_search.py": {
+      "sha256": "62a03f7b4c706d8ffa451b8ef2c6438b3090b60934bcff597f4b024a646e1c08",
+      "bytes": 11411,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "831624295c8b3247f6b7defc36c0858ab6bfffdd",
+      "source_byte_identical": true
+    },
+    "tests/test_delta_clock_quality.py": {
+      "sha256": "aed7f15d92a8613c1853a097ced1b441762181bea97deb25307270222f157048",
+      "bytes": 6299,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "831624295c8b3247f6b7defc36c0858ab6bfffdd",
+      "source_byte_identical": true
+    },
+    "tests/test_delta_downstream.py": {
+      "sha256": "9ec2391b16237069e5317e682813e1681b561c51fdc6b1bf691a806a93aa5aa5",
+      "bytes": 8220,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "2a1d6e1870655b856b5a596fab0b053897ac64a0",
+      "source_byte_identical": true
+    },
+    "tests/test_delta_final_identity.py": {
+      "sha256": "ba3e55c0659248bc2f559a7fa4768b42f06a459be74e6adb90013cd3cc82c1b1",
+      "bytes": 2283,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "831624295c8b3247f6b7defc36c0858ab6bfffdd",
+      "source_byte_identical": true
+    },
+    "tests/test_delta_lease.py": {
+      "sha256": "4d3fe61dfc76ecaf7903d77caae994692d4751369cc08ec91de9fdebf0fced9a",
+      "bytes": 1740,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "831624295c8b3247f6b7defc36c0858ab6bfffdd",
+      "source_byte_identical": true
+    },
+    "tests/test_delta_long_context.py": {
+      "sha256": "276ed81eaf21e51ff8163b4655d1017a7541e472daea74d5ab42ab883b53e56d",
+      "bytes": 8606,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "831624295c8b3247f6b7defc36c0858ab6bfffdd",
+      "source_byte_identical": true
+    },
+    "tests/test_delta_mcp_contract.py": {
+      "sha256": "2f3bd4ef1a71dedf0c2cd3476292326bd8bbaeb01e347d0dd38cab6f6b94547e",
+      "bytes": 20557,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "2a1d6e1870655b856b5a596fab0b053897ac64a0",
+      "source_byte_identical": true
+    },
+    "tests/test_delta_summary_context.py": {
+      "sha256": "9fa897ad017f9a44536b5916a3bde4c7d81fc08406e77b89b195fe1e0479edb6",
+      "bytes": 5115,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "2a1d6e1870655b856b5a596fab0b053897ac64a0",
+      "source_byte_identical": true
+    },
+    "tests/test_delta_summary_finalization.py": {
+      "sha256": "54a117f430a0403391b3850b37abccc1b536140287dafdd77326e585a115544d",
+      "bytes": 12929,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "af15268791fade6e13cbeee49f19b76823ea620f",
+      "source_byte_identical": true
+    },
+    "tests/test_diagnostics.py": {
+      "sha256": "38e721b0d5f140fa460d5a31efd9565cbc8d8935f211e5246c26031737b2e868",
+      "bytes": 1613,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "aa230755f0863b0d5a30073efa476165f225f0fb",
+      "source_byte_identical": true
+    },
+    "tests/test_durable_delta.py": {
+      "sha256": "3ea24eca85365dd67fff0a52603ee63bd28416f28441d95b88ffaa4070e40636",
+      "bytes": 40655,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "831624295c8b3247f6b7defc36c0858ab6bfffdd",
+      "source_byte_identical": true
+    },
+    "tests/test_existing_chrome_preflight.py": {
+      "sha256": "b8e535ece81f6b0cb6a8b6d8c4f06f4336714401db1ac4a0d255c524655e1c2c",
+      "bytes": 5530,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "e65da761cb8e6e4e790fecfbb1c5d56062d334fa",
+      "source_byte_identical": true
+    },
+    "tests/test_final_event_diagnostics.py": {
+      "sha256": "61f360171b674c7ce3f3e6328272563cfb5e38fde948f36d512962e991515d12",
+      "bytes": 16487,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "831624295c8b3247f6b7defc36c0858ab6bfffdd",
+      "source_byte_identical": true
+    },
+    "tests/test_frameless_transcript.py": {
+      "sha256": "44d6d5baf7f2cda6bd941c4464b56f91a2ff93b4dcdfdaf06d6bba17934df300",
+      "bytes": 18229,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "db418b2ea06a7e3ee2070622850eb6f525075cab",
+      "source_byte_identical": true
+    },
+    "tests/test_handoff_receipts.py": {
+      "sha256": "749e9861ad159928affd5cb3ea84311b170d883d3caf9c3853a6558c49045a0e",
+      "bytes": 9430,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "243ca9fac9598a654f5942ed94bdc6242875d20a",
+      "source_byte_identical": true
+    },
+    "tests/test_incremental_minutes_context.py": {
+      "sha256": "3e50a434a8077bf889aaa01fc07faff52a2e31d14dfdb10211dbfa269927df29",
+      "bytes": 19677,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "243ca9fac9598a654f5942ed94bdc6242875d20a",
+      "source_byte_identical": true
+    },
+    "tests/test_incremental_qa_cleanup.py": {
+      "sha256": "16a84719ccce2ce45602d22d6c60479d812c7187820a55e2a55a871f80d6ae68",
+      "bytes": 9877,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "243ca9fac9598a654f5942ed94bdc6242875d20a",
+      "source_byte_identical": true
+    },
+    "tests/test_incremental_qa_worker.py": {
+      "sha256": "805f42d42c3fdebc8b07d2a3f820333e92021e05ee0f9db1c1ca155ba28b5bc7",
+      "bytes": 5398,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "243ca9fac9598a654f5942ed94bdc6242875d20a",
+      "source_byte_identical": true
+    },
+    "tests/test_live.py": {
+      "sha256": "986827f5cca9ba564e45e165905d4850407687e599a01ee9c1ea91498a5d2963",
+      "bytes": 10587,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "9e95a2fa64a36cbe35d1b257c7ca709b4fea0163",
+      "source_byte_identical": true
+    },
+    "tests/test_live_failures.py": {
+      "sha256": "d64e94c166fed30fd96470ca570d93e4fd5b1f2c886b005e493a26059c724955",
+      "bytes": 7532,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "d11842d69b071ee0bf123428a5a436b74c048bfa",
+      "source_byte_identical": true
+    },
+    "tests/test_live_peer_stats.py": {
+      "sha256": "11e7b395bf801e803748b5df9cba23e87e5256ebd898de60f745b5ed88f959e7",
+      "bytes": 4452,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "ad0147360b75c33ade570d3ad04e755ab639be14",
+      "source_byte_identical": true
+    },
+    "tests/test_live_summary.py": {
+      "sha256": "2386bec6355b0700aa5f58b564d82d80c5c3bea67c58fdb961764098acb2171a",
+      "bytes": 17388,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "af15268791fade6e13cbeee49f19b76823ea620f",
+      "source_byte_identical": true
+    },
+    "tests/test_live_summary_diagnostics.py": {
+      "sha256": "9e0acd2387f52aef5542124aafe8ad562b2a5d9a10672149d604545960295018",
+      "bytes": 22455,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "3316c5b34018ee05c32dcec761c8b1ed7149f484",
+      "source_byte_identical": true
+    },
+    "tests/test_live_summary_output_evidence.py": {
+      "sha256": "210f7f1bdde32e97b5f748e05899604c049e2dcbfbf9ab862baddab50c0f3b71",
+      "bytes": 19996,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "8f8ce90ee95490678a0460c6281347285168102f",
+      "source_byte_identical": true
+    },
+    "tests/test_live_summary_probe.py": {
+      "sha256": "1838fb7b5aa280104acfbf86575a1aeaeed21478d22061091219b5337d5d9391",
+      "bytes": 11514,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "2a1d6e1870655b856b5a596fab0b053897ac64a0",
+      "source_byte_identical": true
+    },
+    "tests/test_live_summary_stream.py": {
+      "sha256": "23f121fcdad1a42d6dc1638ae6ff120290ed5e07648534669b62882a8ae4250a",
+      "bytes": 9421,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "2a1d6e1870655b856b5a596fab0b053897ac64a0",
+      "source_byte_identical": true
+    },
+    "tests/test_live_summary_terminal.py": {
+      "sha256": "847b3b0e06342547cc05ad97553d121f996e737802b6361e44d69252963094b7",
+      "bytes": 16368,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "526cb9924ca5762ea53470cdc02cdc32d49bd37a",
+      "source_byte_identical": true
+    },
+    "tests/test_live_summary_voice.py": {
+      "sha256": "5cff001fc0c66b5fa14ca03963acbb5d7661f0ff74a0b9385c226cd11dacbb33",
+      "bytes": 22947,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "76f3fda017a3d2879e363ec54db0ab99452433b7",
+      "source_byte_identical": true
+    },
+    "tests/test_live_summary_voice_fixture.py": {
+      "sha256": "8dc33cc95b5efc0bdc0a11db38e34621669ff504393fd54c89210547e73550a7",
+      "bytes": 14366,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "76f3fda017a3d2879e363ec54db0ab99452433b7",
+      "source_byte_identical": true
+    },
+    "tests/test_media.py": {
+      "sha256": "14947cf158a0fcfcc879ee43aadbe08ecf181754bc1daf6d61ca2570c21a0b8c",
+      "bytes": 2690,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "8121d950aa67c22377456aec86b1967ba6b3456a",
+      "source_byte_identical": true
+    },
+    "tests/test_media_bridge.py": {
+      "sha256": "8c6f11dc0e1862d965547868374449b1888bec8af948581d00749c14cfafefb2",
+      "bytes": 3833,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "553953ad7b28f7a3cee3053b0dca1e9852b1ef96",
+      "source_byte_identical": true
+    },
+    "tests/test_meeting_integration.py": {
+      "sha256": "8e9061cba16c350869f79357681888251bc6b817d56346b0553c7f18d5960a6b",
+      "bytes": 6336,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "9e95a2fa64a36cbe35d1b257c7ca709b4fea0163",
+      "source_byte_identical": true
+    },
+    "tests/test_meeting_mcp.py": {
+      "sha256": "87433b60c5c5da964a60382ab14101e59cf1a4bd924f7b7defc12d36faa259e6",
+      "bytes": 18604,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "9e95a2fa64a36cbe35d1b257c7ca709b4fea0163",
+      "source_byte_identical": true
+    },
+    "tests/test_meeting_paths.py": {
+      "sha256": "d2a85668df5125b840c7af0a859055076739c3bf09ab35d9853c263975e6f090",
+      "bytes": 1162,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "9e95a2fa64a36cbe35d1b257c7ca709b4fea0163",
+      "source_byte_identical": true
+    },
+    "tests/test_meeting_store.py": {
+      "sha256": "79d0f5941b0ec66e5ce5442aebc3436d7e4fde3ffb60bca92512fc90c5e64651",
+      "bytes": 12094,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "831624295c8b3247f6b7defc36c0858ab6bfffdd",
+      "source_byte_identical": true
+    },
+    "tests/test_muted_probe_greeting.py": {
+      "sha256": "6c1a242f2adb666d26a4404d6a3570497e6c93d950ece6f07f8d53e3f8c719cd",
+      "bytes": 7801,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "243ca9fac9598a654f5942ed94bdc6242875d20a",
+      "source_byte_identical": true
+    },
+    "tests/test_native_incremental_context.py": {
+      "sha256": "29445ba016b160a672267d2048667cee3249e823b91c038531f6d466ee5d6abe",
+      "bytes": 22141,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "243ca9fac9598a654f5942ed94bdc6242875d20a",
+      "source_byte_identical": true
+    },
+    "tests/test_native_initial_rule.py": {
+      "sha256": "b1e1cd5f8bd5ca9eb0de78c42b48b50f104b9d67238e0d1d70abe5db5ec6297c",
+      "bytes": 6760,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "243ca9fac9598a654f5942ed94bdc6242875d20a",
+      "source_byte_identical": true
+    },
+    "tests/test_null_track_local_browser.py": {
+      "sha256": "e1b04d480c183ac009e02391107a0b1c8c7b5c0e7dcd63eb1b28182836264cf8",
+      "bytes": 4809,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "672411474b91d4bcccde39bd971ecabcacf7a1c6",
+      "source_byte_identical": true
+    },
+    "tests/test_null_track_sender.py": {
+      "sha256": "66d9be8c9ec779723912291ac3528373d7918ddd925b7a453795d6b4231de497",
+      "bytes": 7801,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "7c05cea37a81e33c1cccbfccd36ccd520cb0999b",
+      "source_byte_identical": true
+    },
+    "tests/test_pcm_activity_floor.py": {
+      "sha256": "472d62d8064268821bb9118fbb8ad716ca5a4b027bc8fc9bcf5f4faab44c2995",
+      "bytes": 11792,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "243ca9fac9598a654f5942ed94bdc6242875d20a",
+      "source_byte_identical": true
+    },
+    "tests/test_post_stop_summary.py": {
+      "sha256": "080ebee5065d2ff7a74cab50927ece09eb31e6762e4d14f597f17239b9eb78f4",
+      "bytes": 23611,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "2a1d6e1870655b856b5a596fab0b053897ac64a0",
+      "source_byte_identical": true
+    },
+    "tests/test_prefetch_codex_npm.py": {
+      "sha256": "096b0b5764f3e3fb329a18ea86f9d149c6c7e61ff0a0798170a182bb517594e7",
+      "bytes": 7912,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "9e95a2fa64a36cbe35d1b257c7ca709b4fea0163",
+      "source_byte_identical": true
+    },
+    "tests/test_provider_probe.py": {
+      "sha256": "faccd70d55dd28e209faa1035e81b8d9a54acdab91c2515dbef59529aab488a6",
+      "bytes": 20833,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "db1ebc12d0f49405fcd67880c626967633aaa6f3",
+      "source_byte_identical": true
+    },
+    "tests/test_provider_state.py": {
+      "sha256": "281b466c84fa242aa1b7e42949b71ec423e17e86aac5d706d2b5c69e0e8101ae",
+      "bytes": 9148,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "9e95a2fa64a36cbe35d1b257c7ca709b4fea0163",
+      "source_byte_identical": true
+    },
+    "tests/test_provisional_transcript.py": {
+      "sha256": "eac7d4b0c3da0fee0ea1ff7956dca299db957666ff350925f6e06c0ba715cb69",
+      "bytes": 33659,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "831624295c8b3247f6b7defc36c0858ab6bfffdd",
+      "source_byte_identical": true
+    },
+    "tests/test_qa_probe.py": {
+      "sha256": "2d118725d947fafcee31a44b0a68d4e88993e95a0bc00810f3150b3c3b88b749",
+      "bytes": 29138,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "243ca9fac9598a654f5942ed94bdc6242875d20a",
+      "source_byte_identical": true
+    },
+    "tests/test_qa_prompt_isolation.py": {
+      "sha256": "bf657ae2119309c0fd117af04ac90dd3b0debf0577bd1f5c1f37f5e9ff543b7b",
+      "bytes": 3252,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "243ca9fac9598a654f5942ed94bdc6242875d20a",
+      "source_byte_identical": true
+    },
+    "tests/test_qa_question_stage.py": {
+      "sha256": "30461d85eab74a5683f43f8bdf19c736dafb522d6862d8e0f58605b0c52cb7a6",
+      "bytes": 7177,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "243ca9fac9598a654f5942ed94bdc6242875d20a",
+      "source_byte_identical": true
+    },
+    "tests/test_response_computer_audio_ui.py": {
+      "sha256": "8d8227b4fb3706de5fe6825140e83d2d4730edb327b8081a6b131e5384801b7d",
+      "bytes": 8382,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "29346716b1f2e1b3d20e9003ed9baf80c1e3de6a",
+      "source_byte_identical": true
+    },
+    "tests/test_response_fixture_wait.py": {
+      "sha256": "431d6502f1f986887d6bc190046e2c0d0a1c1487e28460482e63b133438fcabd",
+      "bytes": 2764,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "aa230755f0863b0d5a30073efa476165f225f0fb",
+      "source_byte_identical": true
+    },
+    "tests/test_response_media_profile.py": {
+      "sha256": "df8298e466c7521b82cba3e1b3bc1c23b5d136e7f5a0cf429d6316c7d7602b90",
+      "bytes": 8368,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "243ca9fac9598a654f5942ed94bdc6242875d20a",
+      "source_byte_identical": true
+    },
+    "tests/test_response_runtime.py": {
+      "sha256": "8819a9de262de29fb3cd9fd5326ec4c84d75b9b6384aa92f4a6a595ace1abca5",
+      "bytes": 14202,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "aa230755f0863b0d5a30073efa476165f225f0fb",
+      "source_byte_identical": true
+    },
+    "tests/test_response_sender_diagnostics.py": {
+      "sha256": "ac5bdf6b1a4afce12da76ea4056ad3c98ed873ab3b247412e4d44fe33bea28cd",
+      "bytes": 7713,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "7c05cea37a81e33c1cccbfccd36ccd520cb0999b",
+      "source_byte_identical": true
+    },
+    "tests/test_response_start_diagnostics.py": {
+      "sha256": "e286f602fcf27d4752e120056cf0bb08b106531fdefc78b21ed2b5b209808e3b",
+      "bytes": 8341,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "c2ad2b79f5c708843fa3571d75a5beb69c12986e",
+      "source_byte_identical": true
+    },
+    "tests/test_rpc.py": {
+      "sha256": "780a49867c3d17e22a6b089af66683769c3154c5d1b7832045ea46034862ce76",
+      "bytes": 3423,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "8447dd32c4c33ba7c760e16c42f04bcdcbe1f64f",
+      "source_byte_identical": true
+    },
+    "tests/test_runtime_guard.py": {
+      "sha256": "09e1fa6f65ae0704d0fe3e55ff3d4a7686cbf4c18fb861c24c12e561ef16ba63",
+      "bytes": 8252,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "9e95a2fa64a36cbe35d1b257c7ca709b4fea0163",
+      "source_byte_identical": true
+    },
+    "tests/test_rx_audio_stats.py": {
+      "sha256": "cd1d8784f262792cb852c2ad67b17dcaf7e4e2f810bb17f78a1eae4d8682111e",
+      "bytes": 19806,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "d11842d69b071ee0bf123428a5a436b74c048bfa",
+      "source_byte_identical": true
+    },
+    "tests/test_rx_contract.py": {
+      "sha256": "e886d3e9cca1630e5e1352713ba63e62c9073ec776368f0bc282f49e63d13326",
+      "bytes": 36846,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "243ca9fac9598a654f5942ed94bdc6242875d20a",
+      "source_byte_identical": true
+    },
+    "tests/test_rx_ready_ttl.py": {
+      "sha256": "75f1cf5f87fcc9d03087f357d36e4ae7287c24d293e3b8ed933576563384e7a7",
+      "bytes": 9339,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "b318d85301f27710fd511220d851d8e7897992e9",
+      "source_byte_identical": true
+    },
+    "tests/test_service.py": {
+      "sha256": "a68b44cf346b1ff3f2138b26d6a88c5fc1ced4023eda7e0db40fc7472dad06e5",
+      "bytes": 8298,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "9da9d300a6d0f4eebb1d4df5a41a36154469a5c3",
+      "source_byte_identical": true
+    },
+    "tests/test_service_security.py": {
+      "sha256": "afdab1b8a640ca686fc5033dd524323425a2e35e4f123788f3d54aa8d66b6126",
+      "bytes": 6843,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "9e95a2fa64a36cbe35d1b257c7ca709b4fea0163",
+      "source_byte_identical": true
+    },
+    "tests/test_service_worker.py": {
+      "sha256": "bb2e7352a35eb9a601ed42a749e91455e2340b87463495762553a7a2798eaffd",
+      "bytes": 19082,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "9e95a2fa64a36cbe35d1b257c7ca709b4fea0163",
+      "source_byte_identical": true
+    },
+    "tests/test_speech_completion_snapshot.py": {
+      "sha256": "eb9f6b4317287a4f246f689afcf2fb7003c48789449631c5112c68b55c8eee29",
+      "bytes": 7064,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "243ca9fac9598a654f5942ed94bdc6242875d20a",
+      "source_byte_identical": true
+    },
+    "tests/test_store_streaming.py": {
+      "sha256": "da28f90a7fbee09757f94194373ee5dc5258577c8eba1f79676de3492a926663",
+      "bytes": 7228,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "831624295c8b3247f6b7defc36c0858ab6bfffdd",
+      "source_byte_identical": true
+    },
+    "tests/test_summary.py": {
+      "sha256": "139b4f1dd1563d321b449377b06ec86557dce4d590ab463ba51d050039455446",
+      "bytes": 2688,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "2a1d6e1870655b856b5a596fab0b053897ac64a0",
+      "source_byte_identical": true
+    },
+    "tests/test_teams_join_diagnostics.py": {
+      "sha256": "9bc419497dd9bea14afc179221d3ca7b47739f307e544959fbdd622ad7e5d401",
+      "bytes": 23086,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "02860372387a71abbb5594e71b57700ea5bb747e",
+      "source_byte_identical": true
+    },
+    "tests/test_worker_minutes.py": {
+      "sha256": "af0fb1e3641a8448fadc52d99531c910067b8a4a5fd18a4c37e7166d85dd4f1f",
+      "bytes": 11505,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "81007ee23ef3fae5dcc9c2d31703935e4fc6b719",
+      "source_byte_identical": true
+    },
+    "tools/check_compose.py": {
+      "sha256": "12beeb1a9286c1397268d952585323d2d7dee9db4c19ca80c0fbcebf0c4ce6f7",
+      "bytes": 4879,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "9da9d300a6d0f4eebb1d4df5a41a36154469a5c3",
+      "source_byte_identical": true
+    },
+    "tools/check_existing_chrome.py": {
+      "sha256": "32b3940f8d36f48d515ac8625c58f1df48b677ba5ad892efb8000f10eaa89357",
+      "bytes": 7803,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "e65da761cb8e6e4e790fecfbb1c5d56062d334fa",
+      "source_byte_identical": true
+    },
+    "tools/compose_smoke.py": {
+      "sha256": "50671da5868a92085fa5228b747e257123566a72e5336bb6fc8542baa168dddc",
+      "bytes": 10643,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "9e95a2fa64a36cbe35d1b257c7ca709b4fea0163",
+      "source_byte_identical": true
+    },
+    "tools/offline_docker_context.py": {
+      "sha256": "dc0419b80b51d65c9ed1bfc7de4f7c35bee2b7e932efc6194c42e0deefb3f5b0",
+      "bytes": 9732,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "9e95a2fa64a36cbe35d1b257c7ca709b4fea0163",
+      "source_byte_identical": true
+    },
+    "tools/offline_docker_smoke.py": {
+      "sha256": "ca942ae56b99f474831e9462a298c1054fe85a6e2155de88db3211edd3e442b7",
+      "bytes": 4409,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "9e95a2fa64a36cbe35d1b257c7ca709b4fea0163",
+      "source_byte_identical": true
+    },
+    "tools/prefetch_codex_npm.py": {
+      "sha256": "46d46666fe83ffbefe3da850ca7d1b4ed7103b7cc3e43b428c41904354007cfd",
+      "bytes": 11787,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "9e95a2fa64a36cbe35d1b257c7ca709b4fea0163",
+      "source_byte_identical": true
+    },
+    "tools/repair_chrome_ci_once.py": {
+      "sha256": "e7e0e10f649f050bfa4b94ebe8811cb3a541e2da0276918ae3b7db7fd262b487",
+      "bytes": 5425,
+      "mode": "0o644",
+      "origin": "source_commit",
+      "source_commit": "26fb0ac719ff622ed27de34d77c75d8afb3d0875",
+      "last_change_commit": "a21157672ae8caacad3988741aff8f867280ca42",
+      "source_byte_identical": true
+    },
+    "README.md": {
+      "sha256": "26d2f4ae72b87b668d1771629ad49263bfa63347dc7a9089c7c61ff47cca6222",
+      "bytes": 815,
+      "mode": "0o644",
+      "origin": "generated_transfer_document",
+      "source_commit": null,
+      "last_change_commit": null,
+      "source_byte_identical": false
+    },
+    "docs/HANDOFF.md": {
+      "sha256": "7f25e5e669b16783ac9849375f16b744a951a2db060cf41a5143e5e256963b0d",
+      "bytes": 1089,
+      "mode": "0o644",
+      "origin": "generated_transfer_document",
+      "source_commit": null,
+      "last_change_commit": null,
+      "source_byte_identical": false
+    },
+    "evidence/RESULTS.md": {
+      "sha256": "a44f404e9060c0d01dcefcedd3ec1abefa3ba53619ff4b1cd074a91a4f602316",
+      "bytes": 887,
+      "mode": "0o644",
+      "origin": "generated_transfer_document",
+      "source_commit": null,
+      "last_change_commit": null,
+      "source_byte_identical": false
+    },
+    "TRANSFER.md": {
+      "sha256": "760c8895dfd3a011d66e175fe8cbc763f0aab639bd7459550eb290036c4b7a77",
+      "bytes": 2804,
+      "mode": "0o644",
+      "origin": "generated_transfer_document",
+      "source_commit": null,
+      "last_change_commit": null,
+      "source_byte_identical": false
+    },
+    "transfer/requirements-cloud.txt": {
+      "sha256": "726579f076e9cc77b5f2eaa892a2fd2cfca44b2499c36a4f8f1358edaf162d5f",
+      "bytes": 712,
+      "mode": "0o644",
+      "origin": "generated_transfer_document",
+      "source_commit": null,
+      "last_change_commit": null,
+      "source_byte_identical": false
+    },
+    "transfer/verify.py": {
+      "sha256": "728c839e4319ff88660d01e05e1436b30b13963c90125295d15750cfb4007c6f",
+      "bytes": 1316,
+      "mode": "0o644",
+      "origin": "generated_transfer_document",
+      "source_commit": null,
+      "last_change_commit": null,
+      "source_byte_identical": false
+    }
+  },
+  "excluded_tracked_paths": [
+    {
+      "path": "README.md",
+      "reason": "Replaced with transfer-specific instructions; historical runtime evidence omitted"
+    },
+    {
+      "path": "docs/CLOUD-DELIVERY.md",
+      "reason": "Historical environment/probe or Unraid-specific narrative not required for WSL2 transfer"
+    },
+    {
+      "path": "docs/FINAL-EVENT-DIAGNOSTICS-42.md",
+      "reason": "Historical environment/probe or Unraid-specific narrative not required for WSL2 transfer"
+    },
+    {
+      "path": "docs/FRAMELESS-TRANSCRIPT-39.md",
+      "reason": "Historical environment/probe or Unraid-specific narrative not required for WSL2 transfer"
+    },
+    {
+      "path": "docs/GPT-LIVE-SUMMARY.md",
+      "reason": "Historical environment/probe or Unraid-specific narrative not required for WSL2 transfer"
+    },
+    {
+      "path": "docs/HANDOFF.md",
+      "reason": "Replaced with transfer-specific instructions; historical runtime evidence omitted"
+    },
+    {
+      "path": "docs/LIVE-LIFECYCLE-36.md",
+      "reason": "Historical environment/probe or Unraid-specific narrative not required for WSL2 transfer"
+    },
+    {
+      "path": "docs/LIVE-SUMMARY-OUTPUT-EVIDENCE.md",
+      "reason": "Historical environment/probe or Unraid-specific narrative not required for WSL2 transfer"
+    },
+    {
+      "path": "docs/LIVE-SUMMARY-VOICE-PROBE.md",
+      "reason": "Historical environment/probe or Unraid-specific narrative not required for WSL2 transfer"
+    },
+    {
+      "path": "docs/POST-STOP-SUMMARY.md",
+      "reason": "Historical environment/probe or Unraid-specific narrative not required for WSL2 transfer"
+    },
+    {
+      "path": "docs/PROVISIONAL-TRANSCRIPT-40.md",
+      "reason": "Historical environment/probe or Unraid-specific narrative not required for WSL2 transfer"
+    },
+    {
+      "path": "docs/RX-AUDIO-37.md",
+      "reason": "Historical environment/probe or Unraid-specific narrative not required for WSL2 transfer"
+    },
+    {
+      "path": "docs/SAME-HOST-REQUIREMENTS.md",
+      "reason": "Historical environment/probe or Unraid-specific narrative not required for WSL2 transfer"
+    },
+    {
+      "path": "docs/UNRAID-DESIGN-STATUS.md",
+      "reason": "Historical environment/probe or Unraid-specific narrative not required for WSL2 transfer"
+    },
+    {
+      "path": "docs/UNRAID.md",
+      "reason": "Historical environment/probe or Unraid-specific narrative not required for WSL2 transfer"
+    },
+    {
+      "path": "evidence/RESULTS.md",
+      "reason": "Replaced with transfer-specific instructions; historical runtime evidence omitted"
+    },
+    {
+      "path": "evidence/compose-config.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/compose-phase.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/compose-smoke.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/durable-delta-transcript-validation.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/environment-revision6.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/final-event-contract-42.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/functional-publication.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/gpt-live-summary-browser-environment.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/gpt-live-summary-contract.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/gpt-live-summary-validation.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/ice-isolation-probe.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/live-probe-diagnostics.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/live-probe-fresh-oauth.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/live-probe-revision6.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/live-probe-revision7.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/live-probe.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/live-sideband-audio-probe.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/live-summary-phase-validation.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/live-v1-controls-revision12.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/live-websocket-audio-probe.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/live-websocket-probe.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/media-policy-current.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/media-probe-revision12.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/media-probe-revision7.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/media-runtime-revision12.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/media-runtime-revision7.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/meeting-live-protocol-contract.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/oauth-retry.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/post-stop-summary-validation.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/relay-protocol-probe.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/same-host-bridge-revision12.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/summary-probe-fresh-oauth.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/summary-probe.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/teams-bounded-join-probe.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/teams-browser-probe-current.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/teams-browser-probe-trusted-ca.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/teams-browser-probe.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/teams-call-media-diagnostics.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/teams-compatible-join-attempt.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/teams-connector-metadata-probe.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/teams-content-length-probe.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/teams-empty-post-fetch-probe.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/teams-empty-post-json-probe.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/teams-http1-probe.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/teams-http411-diagnostics.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/teams-meeting-attempt.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/teams-meeting-page-probe.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/teams-no-audio-signaling-probe.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/teams-probe-current.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/teams-probe.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/teams-turn-failure-probe.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/teams-webjoin-variants.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/tests-compose-phase.log",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/tests-current.log",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/tests.log",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/turn-alpn-revision8.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/ws-bridge-recorder-before-playout.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/ws-bridge-recorder-proof.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/ws-bridge-webrtc-proof.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/wss-binary-echo-probe.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/wss-echo-control-matrix.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "evidence/wss-format-control-matrix.json",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "experiments/README.md",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "experiments/__init__.py",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "experiments/probe_live_v1.py",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "experiments/probe_same_host_bridge.py",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "experiments/probe_ws_turn_bridge.py",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "experiments/ws_turn_bridge.py",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    },
+    {
+      "path": "unraid/teams-transcription.xml",
+      "reason": "Historical execution/meeting evidence, probes or unrelated deployment template omitted"
+    }
+  ],
+  "privacy_scope": "Tracked source allowlist only; no homes, .git, caches, runtime data, credentials, meeting evidence or launcher input. Synthetic test vectors preserved byte-identically.",
+  "dependencies": {
+    "project_constraints": {
+      "name": "teams-transcription",
+      "version": "0.3.0",
+      "description": "Teams and Zoom meeting recording with Codex GPT Live transcription",
+      "requires-python": ">=3.11",
+      "dependencies": [
+        "playwright>=1.50,<2"
+      ],
+      "optional-dependencies": {
+        "bridge-test": [
+          "websockets>=16,<17"
+        ],
+        "service": [
+          "mcp==1.29.0",
+          "PyYAML==6.0.3",
+          "PyJWT[crypto]==2.13.0",
+          "uvicorn==0.52.1"
+        ]
+      },
+      "scripts": {
+        "teams-transcription": "teams_transcription.cli:main"
+      }
+    },
+    "installed_cloud_closure": {
+      "websockets": "16.0",
+      "uvicorn": "0.52.1",
+      "h11": "0.16.0",
+      "click": "8.4.2",
+      "pyjwt": "2.13.0",
+      "cryptography": "50.0.0",
+      "cffi": "2.1.1",
+      "pycparser": "3.0",
+      "pyyaml": "6.0.3",
+      "mcp": "1.29.0",
+      "typing-inspection": "0.4.3",
+      "typing-extensions": "4.16.0",
+      "starlette": "1.6.0",
+      "anyio": "4.14.2",
+      "idna": "3.18",
+      "sse-starlette": "3.4.8",
+      "python-multipart": "0.0.32",
+      "pydantic": "2.13.4",
+      "pydantic-core": "2.46.4",
+      "annotated-types": "0.8.0",
+      "pydantic-settings": "2.15.0",
+      "python-dotenv": "1.2.2",
+      "jsonschema": "4.26.0",
+      "rpds-py": "2026.6.3",
+      "referencing": "0.37.0",
+      "attrs": "26.1.0",
+      "jsonschema-specifications": "2025.9.1",
+      "httpx": "0.28.1",
+      "httpcore": "1.0.9",
+      "certifi": "2026.7.22",
+      "httpx-sse": "0.4.3",
+      "playwright": "1.62.0",
+      "greenlet": "3.5.5",
+      "pyee": "13.0.1"
+    },
+    "python_reference": "3.12.14",
+    "node_reference": "24.19.0",
+    "codex_required_version": "0.159.0-alpha.3",
+    "docker_python_base": "python@sha256:7753c33391fc9f01d1984375bf375eb6686d52ba10db6043a86634a5ccf90dcf",
+    "system_apt_lock": null,
+    "wheels_browsers_runtime_executables_included": false
+  },
+  "validation": {
+    "source_focused_tests": {
+      "tests": 35,
+      "seconds": 1.323,
+      "result": "PASS",
+      "synthetic_only": true
+    },
+    "source_git_status": "clean",
+    "real_wsl_validation": "pending",
+    "real_teams_or_model": "not_run",
+    "reviewer_integrity_review": "pending"
+  },
+  "deployment": false,
+  "push": false,
+  "ci_trigger": false,
+  "new_credentials": false
+}

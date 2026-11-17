@@ -1,0 +1,4 @@
+services:
+  teams-transcription:
+    ports:
+      - "127.0.0.1:${HOST_PORT:-8080}:${ASSISTANT_PORT:-8080}"

@@ -1,0 +1,15 @@
+.state/
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+.env*
+!.env.example
+*.tar.gz
+.venv312/
+.tools/
+.runtime/
+.validation/
+.pi/
+build/
+dist/

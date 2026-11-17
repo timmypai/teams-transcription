@@ -1,0 +1,17 @@
+# Exactly executed local offline pair. Candidate mount contains public source/tools only.
+# No pull/build/login, no model/network/Oracle; Chromium retains the existing sandbox.
+# Before execution copied tools/decoder_continuity_check.py and decoder_audio_check.js
+# from the beta worktree to the existing read-only candidate stage (0644).
+env -u DOCKER_HOST -u DOCKER_CONTEXT -u DOCKER_TLS -u DOCKER_TLS_VERIFY -u DOCKER_CERT_PATH \
+ docker --host=unix:///var/run/docker.sock run --rm --name teams-beta-flow-cause \
+ --pull never --network none --read-only --user 10001:10001 --cap-drop ALL \
+ --security-opt no-new-privileges:true \
+ --security-opt seccomp=/workspace/beta-audio-validation/docker/chromium-seccomp.json \
+ --pids-limit 512 --memory 2g --cpus 2 --shm-size 256m \
+ --tmpfs /tmp:rw,nosuid,nodev,size=536870912 \
+ --mount type=bind,src=/workspace/audio-quality-assets/candidate,dst=/candidate,readonly \
+ -e PYTHONPATH=/candidate:/candidate/tools --entrypoint python \
+ sha256:08020a8a9da4dde8e2495cd57868e575dd2ad722de29de910c32c2a3be000076 \
+ -c 'import asyncio,json,runpy,teams_transcription;teams_transcription.__path__=["/candidate/teams_transcription"];m=runpy.run_path("/candidate/tools/decoder_continuity_check.py",run_name="beta_flow_cause");print(json.dumps(asyncio.run(m["check"](("full_paced","full_slow"),"production"))))'
+# Exit 0, browser contexts closed. Subsequent filtered docker ps -a for the exact
+# name returned no rows; container --rm completed. Per-case five cleanup flags true.

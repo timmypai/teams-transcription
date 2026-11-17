@@ -1,0 +1,194 @@
+{
+  "version": "teams-target-preparation-source-v1",
+  "date_utc": "2026-11-01",
+  "base_sha": "1b8ffa64fb69da40e5f92b13969bbcb7cc77b568",
+  "branch": "fix/teams-owned-target-prepare",
+  "python": "3.12.14",
+  "problem": "PR33 control does not create a valid pending occurrence; old failed target/revision/window and old120-second authority cannot be reused as fresh admission.",
+  "implemented": [
+    "Source-bound prepare using existing same-UID Unix socket and daemon/store transaction; no URL/consent input.",
+    "Immutable old history; exact source revision, actual approved time window, source consent, maintenance/paused/lease/interlock and idempotent authority hash.",
+    "Private prepared receipt; changed authority refuses before any new target creation; used target cannot be recreated.",
+    "Prepare/offline require no participant timestamp and do not mutate ledger or maintenance; run requires actual timezone-aware confirmation input, not execution time.",
+    "Actual max_lateness_seconds preflight before create/reserve and transactional store check; policy and timestamps never rewritten.",
+    "Prepared targets require acceptance at claim boundary, preventing accidental ordinary UI/scheduler start before lease/models.",
+    "Canonical2/50 reservation, unknown-outcome interlock, exact owned Stop, no fixed whole-meeting timeout preserved."
+  ],
+  "validation": {
+    "focused": {
+      "tests": 46,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 1.669
+    },
+    "aggregate": {
+      "scope": "controlled offline subset",
+      "suites": [
+        "test_assistant_store",
+        "test_assistant_daemon",
+        "test_calendar_client",
+        "test_glossary_context",
+        "test_admin_web",
+        "test_sqlite_voice_context",
+        "test_sqlite_only_store",
+        "test_b_no_plc_startup",
+        "test_rx_contract",
+        "test_prefetch_codex_npm",
+        "test_staging_control",
+        "test_capture_cleanup_review",
+        "test_teams_recovery_reader",
+        "test_release_gate",
+        "test_diagnostic_projection",
+        "test_codex_auth",
+        "test_provider_state",
+        "test_workflow_triggers",
+        "test_pr_policy",
+        "test_pr_policy_github",
+        "test_pr_policy_workflow",
+        "test_staging_docker_diagnostics",
+        "test_staging_compose",
+        "test_first_deploy_recovery",
+        "test_qa_probe.ProbeTests",
+        "test_qa_receiver_projection",
+        "test_qa_audio_observer",
+        "test_qa_content",
+        "test_qa_candidate_versions",
+        "test_cloud_qa_semantic.SemanticRuntimeTests",
+        "test_cloud_qa_startup.StartupRuntimeTests",
+        "test_teams_acceptance",
+        "test_teams_acceptance_host",
+        "test_teams_local_control.LocalControlTests",
+        "test_teams_target_prepare.TargetPrepareTests",
+        "test_teams_preparation_host.HostPreparationTests",
+        "test_native_output_attach_diagnostics",
+        "test_cloud_qa_contract",
+        "test_cloud_qa_bridge.CloudQABridgeTests",
+        "test_cloud_qa_isolated.CloudQAIsolatedTests",
+        "test_turn_lifecycle_evidence.TurnLifecycleEvidenceTests",
+        "test_speech_completion_snapshot.SpeechCompletionSnapshotTests",
+        "test_incremental_minutes_context.ContextTests.test_wire_instruction_distinguishes_verbatim_quote_and_normal_answers",
+        "test_native_incremental_context.NativeSnapshotContextTests.test_delivery_receipt_hashes_identify_actual_current_payload_without_content",
+        "test_b_native.NativeLiveTests.test_live_prompt_distinguishes_verbatim_format_from_normal_current_fact_answers",
+        "test_b_native.NativeLiveTests.test_three_physical_questions_in_one_provider_turn_query_current_sqlite_each_time"
+      ],
+      "tests": 449,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "success": true,
+      "teams_or_model_called": false,
+      "audio_e2e_tested": false
+    },
+    "aggregate_seconds": 43.745,
+    "actionlint": {
+      "version": "1.7.7",
+      "success": true,
+      "archive_sha256": "023070a287cd8cccd71515fedc843f1985bf96c436b7effaecce67290e7e0757"
+    },
+    "diff_check_passed": true,
+    "credential_private_data_scan": {
+      "files": 12,
+      "issues": []
+    },
+    "preserved_failures": [
+      {
+        "case": "late join known only after reservation/creation",
+        "red_tests": 2,
+        "red_failures": 2,
+        "green_tests": 2,
+        "green_failures": 0
+      },
+      {
+        "case": "prepared target could use ordinary no-acceptance claim",
+        "red_tests": 1,
+        "red_failures": 1,
+        "green_tests": 1,
+        "green_failures": 0
+      },
+      {
+        "case": "fixture raw-float start rounded to just before stored ISO start",
+        "aggregate_tests": 449,
+        "failures": 0,
+        "errors": 1,
+        "resolution": "Set fixture clock from exact stored timezone-aware ISO timestamp; no runtime policy/assertion threshold changed."
+      }
+    ],
+    "log_sha256": {
+      "focused": "ce4db60713270b9160365a8f0d001be07b773eb532f57cfcd5aa0fa0ed25b5be",
+      "aggregate": "4aaf0e63915f7bd34af6d13b5c5d3cf4877860cdf44c455cf571ec85a7aa4736",
+      "late_red": "e9e1d228c7c3ace16b76cbaa7ad0a1e6348cd2f47a65953efc7b72bbb51a1b62",
+      "late_green": "d3cc7fbcf672e46d43b684f8a644de06522474c00b845e540b769c7b1d8e06f3",
+      "claim_red": "37dfd7355ad5548fef171f1767df42574ec47b3619d45f85e9397310aaa73322",
+      "claim_green": "06ff8e542fc2139a58a8b9ff29c9a4255a9096b51e08c76ef591976008df120d",
+      "fixture_failure": "3bfb1acbae3861a20781113d0aef645a5f41bd5b7f460677d8c67dbf61449166"
+    }
+  },
+  "independent_local_review": {
+    "spec": "one confirmed P2 late-join preflight mismatch fixed/re-reviewed; no new confirmed defects",
+    "standards": "no confirmed P1/P2; final guards re-reviewed",
+    "official_native_pr_review_completed": false
+  },
+  "activation_not_applied": {
+    "new_machine_capability": "prepare one new pending manual occurrence from exact root-authorized source only",
+    "workflow_operation_delta": [
+      "prepare"
+    ],
+    "workflow_input_delta": [
+      "participant_confirmed_at"
+    ],
+    "workflow_sha256": "77dec77944128a7f2b52f8794ead74c1003da5f3d51ad654eec9e63b4108cfe2",
+    "root_authority_existing_path": "/opt/teams-staging/qa-candidate/teams-acceptance-authority.json",
+    "new_authority_version": "teams-source-v1",
+    "authority_fields": [
+      "version",
+      "source_occurrence_id",
+      "source_revision",
+      "start_at",
+      "end_at",
+      "maximum_seconds",
+      "egress_policy_sha256"
+    ],
+    "maximum_seconds": null,
+    "prepared_receipt": "/srv/teams-staging/state/teams-prepared.json",
+    "prepared_receipt_mode": "runnerUID0600",
+    "source_helper_sha256": "bde976daa1fd3460bbfcaf594d89fdbfc647812ac4a57dafad85936422649c7d",
+    "release_pins_unset": true,
+    "network_credentials_accounts_sudo_ports_added": false,
+    "new_serve_flag_required": false
+  },
+  "missing_deployment_data": [
+    "Fresh actual source ID/revision and current approved egress-policy hash (private host readback).",
+    "Actual approved meeting start/end; no invented default duration or copied expired window.",
+    "One actual participant confirmation timestamp AFTER installation/technical preflight, before realrun."
+  ],
+  "not_performed": [
+    "merge",
+    "ARM build",
+    "publish",
+    "Actions dispatch",
+    "Oracle modification",
+    "authority/permission activation",
+    "Teams Join",
+    "model call"
+  ],
+  "canonical_ledger_not_accessed": true,
+  "last_parent_reported_usage": {
+    "used": 16,
+    "limit": 50
+  },
+  "file_sha256": {
+    ".github/workflows/oracle-teams.yml": "77dec77944128a7f2b52f8794ead74c1003da5f3d51ad654eec9e63b4108cfe2",
+    "deploy/teams_acceptance.py": "bde976daa1fd3460bbfcaf594d89fdbfc647812ac4a57dafad85936422649c7d",
+    "docs/TEAMS-SINGLE-ACCEPTANCE.md": "fe89b27bd7b6e378a3c8caf71e7ec4133e4b8d511cc5b155c19a23ffb7555dbd",
+    "teams_transcription/assistant_store.py": "00a3b17ffbe3c0c2bb20c573f374c33ba66a344e685769ac0925089fc3dfcbc2",
+    "teams_transcription/teams_acceptance.py": "117070228f8fa4c2cf6dabe6e6d47acd1fe73dd34080d5e2bb33ad968bf88fcc",
+    "teams_transcription/teams_local_control.py": "276fc528b0c5ddc0569d80e0f47cbf3c38defe250c15060b31ca2e931954a068",
+    "tests/test_teams_acceptance_host.py": "26f60398df20c9910a345ff3924544ae98ee2b7a4d1a7decddadd0a24f8464f2",
+    "tests/test_workflow_triggers.py": "c5e83c6b917f4d4b5b4054bfed481f6d89d254df7bf5150c25dd1b0e4562d818",
+    "tools/ci_contracts.py": "86d57942378eba1dd85895cb4af72562a57932fecffb0524cbda4d9f4ccd4113",
+    "docs/TEAMS-TARGET-PREPARATION.md": "ebca770965cb82b7a0da380333d4634dbbc9846a1081f12b1cf85942094aa4fc",
+    "tests/test_teams_preparation_host.py": "0c6779a2caa69e5c535c74200f2d7280c1cf41be97d902585cba2816e3844f70",
+    "tests/test_teams_target_prepare.py": "be597ce11a188d72b0366f888ecb479c402f36292e709489c30a1644c349fd40"
+  }
+}

@@ -1,0 +1,273 @@
+{
+  "kind": "idle_output_capture_final_verification",
+  "recorded_at": "2026-10-18T04:15:45.253274+00:00",
+  "base_published_commit": "8c9074ed307fc8d7ba7bd6a8098eee6d6151e0c3",
+  "repair_is_uncommitted_source": true,
+  "prior_red_green_and_first_model_control": "native-idle-output-capture-repair-20261018.json",
+  "real_round18_failure": "teams-native-hostquestions-round18-failure-20261018.json",
+  "owned_probe_artifacts_removed": true,
+  "owned_admin_browser_logged_out_and_closed": true,
+  "post_admin_browser_close_healthcheck": {
+    "command": "python -m teams_transcription healthcheck --port 18081",
+    "exit_code": 0
+  },
+  "final_regression": {
+    "tests_run": 943,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0,
+    "seconds": 220.49,
+    "excluded_historical_missing_suites": [
+      "test_bridge_integration.py",
+      "test_media_bridge.py"
+    ],
+    "failed_cases": [],
+    "error_cases": [],
+    "passed": true
+  },
+  "continuation_head_regression": {
+    "name": "test_b_live.IncomingTrackTests.test_continuation_keeps_audio_head_while_owned_sink_starts",
+    "failed_before_opening_capture_ahead_of_owned_sink_start": true,
+    "passed_after": true,
+    "stimulus": "Real browser .125-amplitude head while sender start is blocked, then .25 tail. The .125 head must reach the sink after start releases.",
+    "fix": "Open capture for the already-admitted continuation scope before awaiting owned sender startup; retain its existing bounded FIFO and recheck scope after await. Repeated capture-enable does not change generation."
+  },
+  "focused_final_native_cases": {
+    "tests_run": 49,
+    "failures": 0,
+    "errors": 0,
+    "seconds": 9.047
+  },
+  "final_real_native_smoke": {
+    "kind": "real_native_idle_callback_recovery",
+    "teams_joined": false,
+    "physical_audio": false,
+    "questions": [
+      {
+        "number": 1,
+        "reader_calls": 1,
+        "tool_calls": 1,
+        "facts": {
+          "codeword": true,
+          "budget": true,
+          "day": true
+        },
+        "synthetic_assistant_text": "嗯,測試代號是海棠,預算二萬七千元,預計週四交付。以上來自本場已提供的紀錄片段。",
+        "runtime_failure": null,
+        "speech": {
+          "phase": "closed",
+          "native_state": "sleeping",
+          "done_is_set": true,
+          "speech_task_done": true,
+          "speech_task_cancelled": false,
+          "error_code": null,
+          "output_active": false,
+          "nonzero_frames": 403641,
+          "activity_frames": 380928,
+          "packet_frames": 2048,
+          "packet_nonzero_frames": 12,
+          "packet_peak_abs": 1,
+          "packet_rms": 0.07654655446197431,
+          "activity_rms_threshold": 8,
+          "last_active_age_seconds": 0.9719344770001044,
+          "last_nonzero_age_seconds": 0.07668066599990198,
+          "drain_result": {
+            "present": true,
+            "truncated": false,
+            "drained": false,
+            "muted": true
+          }
+        },
+        "same_thread": true,
+        "capture": {
+          "enabled": false,
+          "pending": 0,
+          "dropped": 0
+        },
+        "passed": true
+      },
+      {
+        "number": 2,
+        "reader_calls": 1,
+        "tool_calls": 1,
+        "facts": {
+          "revised_budget": true
+        },
+        "synthetic_assistant_text": ",更正後的預算是三萬四千元,本場紀錄有更正內容。",
+        "runtime_failure": null,
+        "speech": {
+          "phase": "closed",
+          "native_state": "sleeping",
+          "done_is_set": true,
+          "speech_task_done": true,
+          "speech_task_cancelled": false,
+          "error_code": null,
+          "output_active": false,
+          "nonzero_frames": 258133,
+          "activity_frames": 249856,
+          "packet_frames": 2048,
+          "packet_nonzero_frames": 15,
+          "packet_peak_abs": 1,
+          "packet_rms": 0.0855816496101822,
+          "activity_rms_threshold": 8,
+          "last_active_age_seconds": 1.0039077179999367,
+          "last_nonzero_age_seconds": 0.06282859500015547,
+          "drain_result": {
+            "present": true,
+            "truncated": false,
+            "drained": false,
+            "muted": true
+          }
+        },
+        "same_thread": true,
+        "capture": {
+          "enabled": false,
+          "pending": 0,
+          "dropped": 0
+        },
+        "passed": true
+      },
+      {
+        "number": 3,
+        "reader_calls": 1,
+        "tool_calls": 1,
+        "facts": {
+          "revised_budget": true
+        },
+        "synthetic_assistant_text": "更正後的預算是三萬四千元,依本場提供的更正紀錄內容。",
+        "runtime_failure": null,
+        "speech": {
+          "phase": "closed",
+          "native_state": "sleeping",
+          "done_is_set": true,
+          "speech_task_done": true,
+          "speech_task_cancelled": false,
+          "error_code": null,
+          "output_active": false,
+          "nonzero_frames": 286004,
+          "activity_frames": 270336,
+          "packet_frames": 2048,
+          "packet_nonzero_frames": 12,
+          "packet_peak_abs": 1,
+          "packet_rms": 0.07654655446197431,
+          "activity_rms_threshold": 8,
+          "last_active_age_seconds": 1.0048219080003946,
+          "last_nonzero_age_seconds": 0.06332383100016159,
+          "drain_result": {
+            "present": true,
+            "truncated": false,
+            "drained": false,
+            "muted": true
+          }
+        },
+        "same_thread": true,
+        "capture": {
+          "enabled": false,
+          "pending": 0,
+          "dropped": 0
+        },
+        "passed": true
+      }
+    ],
+    "passed": true,
+    "idle_control": {
+      "wall_seconds": 50.654,
+      "injected_page_stall_ms": 650,
+      "state": "sleeping",
+      "runtime_failure": null,
+      "tool_calls": 0,
+      "output_active": false,
+      "capture": {
+        "enabled": false,
+        "pending": 0,
+        "dropped": 0,
+        "frames": 0
+      }
+    },
+    "status_before_stop": {
+      "state": "sleeping",
+      "context": {
+        "sent_bytes": 6927,
+        "total_limit_bytes": null,
+        "known_paragraphs": 1,
+        "source_version": 3,
+        "pending": false,
+        "model_consumption_verified": false,
+        "preparing": false,
+        "delivery_scope": "successful_host_send_returns_this_live_thread"
+      },
+      "question_receipts": {
+        "counts": {
+          "received": 3,
+          "admitted": 3,
+          "rejected": 0
+        },
+        "events": [
+          {
+            "outcome": "admitted",
+            "reason": null,
+            "received_seconds": 61.80972298200004,
+            "decision_seconds": 61.811213139999836
+          },
+          {
+            "outcome": "admitted",
+            "reason": null,
+            "received_seconds": 78.94305664500007,
+            "decision_seconds": 78.94447384799969
+          },
+          {
+            "outcome": "admitted",
+            "reason": null,
+            "received_seconds": 93.17636625499972,
+            "decision_seconds": 93.17758554800002
+          }
+        ],
+        "event_limit": 64,
+        "count_limit": 2147483647,
+        "timing_basis": "host monotonic seconds relative to responder construction"
+      },
+      "runtime_failure": null
+    },
+    "stop_result": "stopped",
+    "stop_ack_received": true,
+    "stop_closed_received": true,
+    "process_reaped": true
+  },
+  "verified_source_sha256": {
+    "teams_transcription/b_live.py": "e64699d0e5961ea52800dbbeff3a978e43d6bf6fc9fb1960cb30ea791838624a",
+    "teams_transcription/b_media_profile.py": "e8d22aded05fe64bd174e34019a8b53f44344ff6f3570747306074644fab9c47",
+    "teams_transcription/b_native.py": "641b4ee5b92d3f45379203094d65420012d43e95b5059b48b662b576ffc1d97d"
+  },
+  "local_standby": {
+    "old_service": "calendar-native-hostquestions25",
+    "old_pid": 108748,
+    "old_identity_config_listener_and_idle_verified": true,
+    "old_pidfd_SIGINT": true,
+    "old_exit_code": 0,
+    "service": "calendar-native-capture26",
+    "pid": 278938,
+    "ready": true,
+    "fresh_admin_login": true,
+    "active_session_id": null,
+    "capture_interlock": false,
+    "last_error": null,
+    "scheduler_paused": true,
+    "media_policy_inputs": 4,
+    "media_checked": 0,
+    "private_config_changed": false,
+    "new_join_attempts_after_failure": 0
+  },
+  "stored_counts": {
+    "local_occurrences": 19,
+    "real_attempts": 18
+  },
+  "GitHub_push_for_repair": false,
+  "Docker_image_rebuilt": false,
+  "remote_audibility_after_repair": "not_retested",
+  "limits": [
+    "Live first failure is observed; the exact live scheduling stall trigger/duration was not recorded.",
+    "Local 650ms is an explicit control, not an invented live measurement.",
+    "Existing active-speech backpressure, output authorization, persistent player, SQLite freshness and A source provenance remain intact.",
+    "Real Native smoke has no Teams or physical output. Fresh in-meeting acknowledgment is required before another Join."
+  ]
+}

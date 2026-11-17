@@ -1,0 +1,34 @@
+{
+  "kind": "public_registry_metadata_network_comparison",
+  "host": [
+    {
+      "name": "version",
+      "ms": 344,
+      "bytes": 0,
+      "status": 406
+    },
+    {
+      "name": "packument",
+      "ms": 660,
+      "bytes": 5144835,
+      "status": 200
+    }
+  ],
+  "hardened_container_bridge": [
+    {
+      "name": "version",
+      "ms": 412,
+      "bytes": 0,
+      "status": 406
+    },
+    {
+      "name": "packument",
+      "ms": 843,
+      "bytes": 5144835,
+      "status": 200
+    }
+  ],
+  "credentials_mounted": false,
+  "TLS_verification_disabled": false,
+  "network_settings_changed": false
+}

@@ -1,0 +1,552 @@
+{
+  "recorded_at_utc": "2026-11-02T05:01:02.049821+00:00",
+  "base_commit": "eec4f71c5f69accaa22f6a6ef87359ee58f8be86",
+  "deployed_base_source": "edf853257445ef6b1e9d16e5e332fd34b0918460",
+  "parent_relay_observation": {
+    "observed_at_utc": "2026-11-02T03:30:59Z",
+    "run_id": 41383084557,
+    "decoder_stage": "worklet_module",
+    "exception": "AbortError",
+    "reason": "unknown",
+    "script_src_self": true,
+    "script_src_nonce_present": true,
+    "script_src_blob": false,
+    "trusted_types_script_required": true,
+    "source": "parent-relayed host observation; not independently retrieved by this Cloud task"
+  },
+  "local_execution": {
+    "image_id": "sha256:08020a8a9da4dde8e2495cd57868e575dd2ad722de29de910c32c2a3be000076",
+    "architecture": "x86_64",
+    "chromium": "156.0.8078.47",
+    "network": "none",
+    "sandbox": true,
+    "user": "10001:10001",
+    "read_only": true,
+    "cap_drop": "ALL",
+    "no_new_privileges": true,
+    "cpus": 2,
+    "memory": "4g",
+    "pids_limit": 512,
+    "private_mounts": false,
+    "credentials_loaded": false,
+    "microphone_permissions": [],
+    "source_overlay_for_local_test": true,
+    "installed_patched_image_tested": false,
+    "arm_tested": false
+  },
+  "source_file_sha256": {
+    "teams_transcription/b_browser_tx.py": "bb7bbc2e40b641c925ca2314d5a9b99d56bdf3bec39daecb3869143a560978db",
+    "teams_transcription/b_native.py": "bd790db6e143b8a3fd5725eede812619f1363355f8823a8f75096b1f2a6c31a9",
+    "teams_transcription/b_native_output.py": "147714d682a98dc75aa6794f6ef573a2f351e6be0aa09744178f648d4b1a7ae6",
+    "teams_transcription/diagnostics.py": "8ecd5851a9c07397c01134cd1b164554c8685583f8003729cfb04ddfd6a34990",
+    "teams_transcription/b_no_plc_history.py": "553fc3b845552e781c38e80652ec565ac3e056163b22f505e6675dc64f562f4b",
+    "teams_transcription/b_render_history.py": "f6abaead544f34d36ba35479591f1b34c9fdcbc5f3179841a43c9daa135146f7",
+    "tools/decoder_audio_check.js": "bf3146f09806faaee43f14a270cb53da641955284fd44de0c0637d0cf0aae67a",
+    "tools/decoder_history_check.py": "fcc897dd48ef568ea3c95a5141e4033bd45a1c18db7c39f88d60b88c617779a2",
+    "tools/compose_smoke.py": "b54c2a8c5031a4c316e55ed03b47ede9395f0459520accd906a33d4f00590f28",
+    "tools/ci_contracts.py": "4f8b6483b667ca1750c544c61d49fc35b9b2d886ee4d36826f42440f26b65f6f"
+  },
+  "runtime_receiver_sha256": "210c13f98566756b30607c6f474aa405fb2826b2638e632ac5115b09195831fe",
+  "instrumented_receiver_sha256": "1e5ae8c3144e976d540d4546b9f1b604e63d8da4a84c35f8aec20f4f83ee7fa0",
+  "qualification_checks": {
+    "matrix_complete": true,
+    "policy_failure_reproduced": true,
+    "blob_control_constructed": true,
+    "one_synthetic_document_only": true,
+    "mono_source_and_checkpoint": true,
+    "mono_no_extra_signal": true,
+    "stereo_source_and_checkpoint": true,
+    "stereo_no_extra_signal": true,
+    "starvation_source_and_checkpoint": true,
+    "starvation_no_extra_signal": true,
+    "voiced_then_quiet_source_and_checkpoint": true,
+    "production_consumer_completed": true,
+    "short_stall_not_false_quiet": true,
+    "antiphase_not_false_quiet": true,
+    "long_gap_unknown": true,
+    "first_error_preserved": true,
+    "early_stop_cleaned": true,
+    "contexts_cleaned": true
+  },
+  "synthetic_qualification_passed": true,
+  "cases": [
+    {
+      "mode": "legacy_blocked",
+      "constructed": false,
+      "failure": {
+        "stage": "worklet_module",
+        "exception_type": "AbortError",
+        "reason": "unknown",
+        "environment": {
+          "secure_context": true,
+          "cross_origin_isolated": false,
+          "meta_csp_present": false,
+          "receiver_encoded_streams": true,
+          "audio_decoder": true,
+          "encoded_audio_chunk": true,
+          "track_generator": true,
+          "audio_worklet_node": true,
+          "audio_context": true,
+          "context_audio_worklet": true,
+          "context_state": "running",
+          "sample_rate": 48000
+        }
+      },
+      "intercepted_requests": 1
+    },
+    {
+      "mode": "legacy_allowed",
+      "constructed": true,
+      "intercepted_requests": 1
+    },
+    {
+      "mode": "mono",
+      "full_packet_verified_count": 16,
+      "analysis_packet_count": 16,
+      "outside_verified_payload_max_abs": 0,
+      "startup": {
+        "version": "native-history-gated-v2",
+        "status": "native_generator_checkpoint_observed",
+        "primer_consumption_verified": false,
+        "remote_drain_verified": false,
+        "checkpoint_stage": "complete",
+        "write_accepted": true,
+        "probe_attempts": 2,
+        "marker_observed": true,
+        "context_clock_frame": 7808,
+        "generator_marker_observed": true,
+        "probe_tail_quiet": true,
+        "probe_output_muted": true
+      },
+      "native_writes": 0,
+      "errors": [],
+      "passive_tail_identity_observed": true,
+      "cleanup": {
+        "input_track_ended": true,
+        "context_closed": true,
+        "decoder_invalid": true,
+        "repeat_close_same_promise": true,
+        "stream_cancelled": true
+      },
+      "intercepted_requests": 1,
+      "discontinuous_anchor_pairs": 1
+    },
+    {
+      "mode": "stereo",
+      "full_packet_verified_count": 16,
+      "analysis_packet_count": 16,
+      "outside_verified_payload_max_abs": 0,
+      "startup": {
+        "version": "native-history-gated-v2",
+        "status": "native_generator_checkpoint_observed",
+        "primer_consumption_verified": false,
+        "remote_drain_verified": false,
+        "checkpoint_stage": "complete",
+        "write_accepted": true,
+        "probe_attempts": 2,
+        "marker_observed": true,
+        "context_clock_frame": 7808,
+        "generator_marker_observed": true,
+        "probe_tail_quiet": true,
+        "probe_output_muted": true
+      },
+      "native_writes": 0,
+      "errors": [],
+      "passive_tail_identity_observed": true,
+      "cleanup": {
+        "input_track_ended": true,
+        "context_closed": true,
+        "decoder_invalid": true,
+        "repeat_close_same_promise": true,
+        "stream_cancelled": true
+      },
+      "intercepted_requests": 1,
+      "discontinuous_anchor_pairs": 1
+    },
+    {
+      "mode": "voiced_then_quiet",
+      "full_packet_verified_count": 16,
+      "analysis_packet_count": 16,
+      "outside_verified_payload_max_abs": null,
+      "startup": {
+        "version": "native-history-gated-v2",
+        "status": "native_generator_checkpoint_observed",
+        "primer_consumption_verified": false,
+        "remote_drain_verified": false,
+        "checkpoint_stage": "complete",
+        "write_accepted": true,
+        "probe_attempts": 2,
+        "marker_observed": true,
+        "context_clock_frame": 7296,
+        "generator_marker_observed": true,
+        "probe_tail_quiet": true,
+        "probe_output_muted": true
+      },
+      "native_writes": 0,
+      "errors": [],
+      "passive_tail_identity_observed": true,
+      "production_consumer_replay": {
+        "scope": "production NativeTrackOutput with actual browser render/target counters and independent decoded reference source trace; synthetic sink, no RTC",
+        "completed_at_trace_index": 85,
+        "render_activity_observed": true,
+        "quiet_seconds": 0.8106666666666666,
+        "counter_domain": "target_decoded_input_v2",
+        "render_activity_frames": null
+      },
+      "cleanup": {
+        "input_track_ended": true,
+        "context_closed": true,
+        "decoder_invalid": true,
+        "repeat_close_same_promise": true,
+        "stream_cancelled": true
+      },
+      "intercepted_requests": 1,
+      "discontinuous_anchor_pairs": 0
+    },
+    {
+      "mode": "starvation",
+      "full_packet_verified_count": 16,
+      "analysis_packet_count": 16,
+      "outside_verified_payload_max_abs": 0,
+      "startup": {
+        "version": "native-history-gated-v2",
+        "status": "native_generator_checkpoint_observed",
+        "primer_consumption_verified": false,
+        "remote_drain_verified": false,
+        "checkpoint_stage": "complete",
+        "write_accepted": true,
+        "probe_attempts": 2,
+        "marker_observed": true,
+        "context_clock_frame": 7296,
+        "generator_marker_observed": true,
+        "probe_tail_quiet": true,
+        "probe_output_muted": true
+      },
+      "native_writes": 0,
+      "errors": [],
+      "passive_tail_identity_observed": true,
+      "cleanup": {
+        "input_track_ended": true,
+        "context_closed": true,
+        "decoder_invalid": true,
+        "repeat_close_same_promise": true,
+        "stream_cancelled": true
+      },
+      "intercepted_requests": 1,
+      "discontinuous_anchor_pairs": 1
+    },
+    {
+      "mode": "bad_timestamp",
+      "full_packet_verified_count": 0,
+      "analysis_packet_count": 4,
+      "outside_verified_payload_max_abs": null,
+      "startup": {
+        "version": "native-history-gated-v2",
+        "status": "native_generator_checkpoint_observed",
+        "primer_consumption_verified": false,
+        "remote_drain_verified": false,
+        "checkpoint_stage": "complete",
+        "write_accepted": true,
+        "probe_attempts": 2,
+        "marker_observed": true,
+        "context_clock_frame": 8192,
+        "generator_marker_observed": true,
+        "probe_tail_quiet": true,
+        "probe_output_muted": true
+      },
+      "native_writes": 0,
+      "errors": [
+        "b_no_plc_rtp_timestamp"
+      ],
+      "passive_tail_identity_observed": false,
+      "cleanup": {
+        "input_track_ended": true,
+        "context_closed": true,
+        "decoder_invalid": true,
+        "repeat_close_same_promise": true,
+        "stream_cancelled": true
+      },
+      "intercepted_requests": 1,
+      "discontinuous_anchor_pairs": 0
+    },
+    {
+      "mode": "stop_early",
+      "full_packet_verified_count": 0,
+      "analysis_packet_count": 5,
+      "outside_verified_payload_max_abs": null,
+      "startup": {
+        "version": "native-history-gated-v2",
+        "status": "native_generator_checkpoint_observed",
+        "primer_consumption_verified": false,
+        "remote_drain_verified": false,
+        "checkpoint_stage": "complete",
+        "write_accepted": true,
+        "probe_attempts": 1,
+        "marker_observed": true,
+        "context_clock_frame": 3968,
+        "generator_marker_observed": true,
+        "probe_tail_quiet": true,
+        "probe_output_muted": true
+      },
+      "native_writes": 0,
+      "errors": [],
+      "passive_tail_identity_observed": false,
+      "cleanup": {
+        "input_track_ended": true,
+        "context_closed": true,
+        "decoder_invalid": true,
+        "repeat_close_same_promise": true,
+        "stream_cancelled": true
+      },
+      "intercepted_requests": 1,
+      "discontinuous_anchor_pairs": 0
+    },
+    {
+      "mode": "short_stall",
+      "after_stall": {
+        "kind": "native-history-v1",
+        "clock_frame": 13056,
+        "coverage_epoch": 3,
+        "fresh": true,
+        "coverage_valid": false,
+        "window_frames": 32768,
+        "peak_rms": 0.1450097536717956,
+        "active": true,
+        "latest_active_block_min_frame": 7040,
+        "quiet_from_frame": null,
+        "quiet_through_frame": 12544,
+        "quiet_seconds": 0,
+        "graph_checkpoint_observed": false
+      },
+      "recovered_quiet": true,
+      "cleanup": {
+        "context_closed": true
+      },
+      "intercepted_requests": 1
+    },
+    {
+      "mode": "long_stall",
+      "after_stall": {
+        "kind": "native-history-v1",
+        "clock_frame": 48640,
+        "coverage_epoch": 3,
+        "fresh": true,
+        "coverage_valid": false,
+        "window_frames": 32768,
+        "peak_rms": 0,
+        "active": false,
+        "latest_active_block_min_frame": -1,
+        "quiet_from_frame": null,
+        "quiet_through_frame": 48128,
+        "quiet_seconds": 0,
+        "graph_checkpoint_observed": false
+      },
+      "recovered_quiet": true,
+      "cleanup": {
+        "context_closed": true
+      },
+      "intercepted_requests": 1
+    },
+    {
+      "mode": "antiphase",
+      "after_stall": {
+        "kind": "native-history-v1",
+        "clock_frame": 12544,
+        "coverage_epoch": 3,
+        "fresh": true,
+        "coverage_valid": false,
+        "window_frames": 32768,
+        "peak_rms": 0.1450097536717956,
+        "active": true,
+        "latest_active_block_min_frame": 8064,
+        "quiet_from_frame": null,
+        "quiet_through_frame": 12032,
+        "quiet_seconds": 0,
+        "graph_checkpoint_observed": false
+      },
+      "recovered_quiet": true,
+      "cleanup": {
+        "context_closed": true
+      },
+      "intercepted_requests": 1
+    }
+  ],
+  "tests": {
+    "controlled_offline_subset": {
+      "scope": "controlled offline subset",
+      "suites": [
+        "test_assistant_store",
+        "test_assistant_daemon",
+        "test_calendar_client",
+        "test_glossary_context",
+        "test_admin_web",
+        "test_sqlite_voice_context",
+        "test_sqlite_only_store",
+        "test_b_no_plc_startup",
+        "test_rx_contract",
+        "test_prefetch_codex_npm",
+        "test_no_plc_setup_failure",
+        "test_render_history",
+        "test_history_output_consumers",
+        "test_b_document_policy",
+        "test_staging_control",
+        "test_capture_cleanup_review",
+        "test_teams_recovery_reader",
+        "test_release_gate",
+        "test_diagnostic_projection",
+        "test_codex_auth",
+        "test_provider_state",
+        "test_workflow_triggers",
+        "test_pr_policy",
+        "test_pr_policy_github",
+        "test_pr_policy_workflow",
+        "test_staging_docker_diagnostics",
+        "test_staging_compose",
+        "test_first_deploy_recovery",
+        "test_qa_probe.ProbeTests",
+        "test_qa_receiver_projection",
+        "test_qa_audio_observer",
+        "test_qa_content",
+        "test_qa_candidate_versions",
+        "test_cloud_qa_semantic.SemanticRuntimeTests",
+        "test_cloud_qa_startup.StartupRuntimeTests",
+        "test_teams_acceptance",
+        "test_teams_acceptance_host",
+        "test_teams_local_control.LocalControlTests",
+        "test_teams_target_prepare.TargetPrepareTests",
+        "test_teams_preparation_host.HostPreparationTests",
+        "test_teams_immediate_recovery.ImmediateRecoveryTests",
+        "test_teams_immediate_chain.ImmediateChainTests",
+        "test_native_output_attach_diagnostics",
+        "test_cloud_qa_contract",
+        "test_cloud_qa_bridge.CloudQABridgeTests",
+        "test_cloud_qa_isolated.CloudQAIsolatedTests",
+        "test_turn_lifecycle_evidence.TurnLifecycleEvidenceTests",
+        "test_speech_completion_snapshot.SpeechCompletionSnapshotTests",
+        "test_incremental_minutes_context.ContextTests.test_wire_instruction_distinguishes_verbatim_quote_and_normal_answers",
+        "test_native_incremental_context.NativeSnapshotContextTests.test_delivery_receipt_hashes_identify_actual_current_payload_without_content",
+        "test_b_native.NativeLiveTests.test_live_prompt_distinguishes_verbatim_format_from_normal_current_fact_answers",
+        "test_b_native.NativeLiveTests.test_three_physical_questions_in_one_provider_turn_query_current_sqlite_each_time"
+      ],
+      "tests": 499,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "success": true,
+      "teams_or_model_called": false,
+      "audio_e2e_tested": false
+    },
+    "focused": {
+      "tests": 71,
+      "failures": 0,
+      "errors": 0
+    },
+    "native_regression": {
+      "tests": 41,
+      "failures": 0,
+      "errors": 0
+    }
+  },
+  "installed_image_negative_control": {
+    "scope": "expected negative: unpatched installed package must be rejected without host source override",
+    "image": "sha256:08020a8a9da4dde8e2495cd57868e575dd2ad722de29de910c32c2a3be000076",
+    "result": {
+      "success": false,
+      "failure_code": "synthetic_history_probe_failed",
+      "cases": []
+    },
+    "checks": {
+      "matrix_complete": false,
+      "policy_failure_reproduced": false,
+      "blob_control_constructed": false,
+      "one_synthetic_document_only": true,
+      "mono_source_and_checkpoint": false,
+      "mono_no_extra_signal": false,
+      "stereo_source_and_checkpoint": false,
+      "stereo_no_extra_signal": false,
+      "starvation_source_and_checkpoint": false,
+      "starvation_no_extra_signal": false,
+      "voiced_then_quiet_source_and_checkpoint": false,
+      "production_consumer_completed": false,
+      "short_stall_not_false_quiet": false,
+      "antiphase_not_false_quiet": false,
+      "long_gap_unknown": false,
+      "first_error_preserved": false,
+      "early_stop_cleaned": false,
+      "contexts_cleaned": false
+    },
+    "correctly_rejected": true
+  },
+  "raw_archive": {
+    "path": "decoder-history-raw-20261102.json.gz",
+    "sha256": "a34f8e365b91ea055f9286149eadc6713c7f46a1f0e957b4ccfbcb3618b518d1",
+    "bytes": 101051,
+    "logs": [
+      {
+        "name": "history-first.log",
+        "sha256": "d61ef2aade22a22de1716d341172610cb750b529ee26b3a3a205a061bcffb2c2"
+      },
+      {
+        "name": "history-integration.log",
+        "sha256": "b737e2e1676c0336e801336e0a7d9493739fb1db1277a7bdacd14d924f0cf643"
+      },
+      {
+        "name": "history-gated-mono.log",
+        "sha256": "61c5ed4cef16a49fe1bca9348a8a83a87cf2092c9bf28a1e15837f7a2be131de"
+      },
+      {
+        "name": "history-gated-probe.log",
+        "sha256": "1e5c0e051cfe684f24975b4772dc082ee477bcfba5fc2c2bb8f6fdeb53fd45eb"
+      },
+      {
+        "name": "history-gated-marker-retry.log",
+        "sha256": "be4799593a57f9a6bc1ccb7705b8c7781b3c1e4ae9d451fe1bc0ea6bd97a7be4"
+      },
+      {
+        "name": "history-gated-matrix.log",
+        "sha256": "bf11480d699cea5d7f80ce6bdbf199952bc84e024a5ed23e39801ae6d0c93bed"
+      },
+      {
+        "name": "history-passive-tail.log",
+        "sha256": "bdf9328bd2f00af9b2d76a2c2b756e0ed62c4c6b677e726451bcf5fe4981ae57"
+      },
+      {
+        "name": "history-unit-red.log",
+        "sha256": "2dbee56173cbc1239db30796dd2f504998978f46f5de0691980136e44c66a848"
+      },
+      {
+        "name": "history-stats-red.log",
+        "sha256": "a8a034e80e77138007417f5cbfc3e6a42c1634c70e728d3d237cc6bf59b2c6c5"
+      },
+      {
+        "name": "history-final-focused.log",
+        "sha256": "ad2e0df2f0b47b4000d6839f4ee202a0815b53786f37e9ecfd09ff8257e524da"
+      },
+      {
+        "name": "history-native-regression.log",
+        "sha256": "ffbaa0ce8c022bb97d08f72a17f4d1bdb9584ff72f0870cf6bf3afef1046dbb5"
+      },
+      {
+        "name": "history-aggregate-delivery/contracts.log",
+        "sha256": "3f2b32bbe38bb495a84da2a93311b0bf3fdf8d61457eef679dfa7fa2ade5b9e4"
+      },
+      {
+        "name": "history-aggregate-delivery/contracts.json",
+        "sha256": "7b0a545d9e8db0901911a8a1c26c24a27ed5520a46d4b0b34c33b98e6ed15ff7"
+      },
+      {
+        "name": "installed-negative.json",
+        "sha256": "115483dbcbe2dd94445ce1098678e7a09d01084b053c2a3c295de26db320f6d4"
+      }
+    ]
+  },
+  "limitations": [
+    "raw intermediate prototypes preserve failures; not all intermediate source versions were committed",
+    "first sideband prototype sometimes lost first packet; rejected in favor of gated generator ACK",
+    "fixed-delay test capture missed a final packet; final capture waits for real tail identity without altering playback",
+    "source code on this branch is not installed on Oracle",
+    "no real WebRTC/Teams or ARM validation of this fix",
+    "no merge, build, publish, deployment, Join, Stop, new model, host or security changes in repair phase",
+    "existing issue20 playback gaps remain unaccepted; no continuity/heard-audio claim"
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "test_id": "standalone-real-codex-synthetic-source",
+  "success": true,
+  "input_kind": "controlled application segment",
+  "existing_chatgpt_oauth_used": true,
+  "new_credentials_or_api_key": false,
+  "real_meeting_or_live_asr": false,
+  "elapsed_seconds": 14.408,
+  "summary_state": {
+    "schema_version": 1,
+    "artifact_kind": "derived_summary",
+    "revision": 1,
+    "published_at": "2026-10-14T17:57:36.684142+00:00",
+    "source_version": 3,
+    "source_sha256": "8eae0183a02cb15c6fff88f6fe63a1f6dc289faa8118c10909fd4f563f06723a",
+    "sha256": "3439a515c6a5de37edd72f33a38b3759fd94e7353d9522f0eef704fcae73d775",
+    "source_count": 1,
+    "generation_mode": "codex",
+    "model": "gpt-6.1-sol",
+    "provider_requirement_met": true,
+    "format": "json-v1"
+  },
+  "source_quality": {
+    "version": 2,
+    "artifact_kind": "derived_summary",
+    "saved_source_count": 1,
+    "provider_final_count": 0,
+    "unfinalized_source_count": 1,
+    "all_sources_provider_final": false,
+    "source_state_counts": {
+      "provider_final": 0,
+      "application_segment": 1,
+      "legacy_provisional": 0,
+      "unknown": 0
+    },
+    "quality_counts": {
+      "provider_final": 0,
+      "unfinalized": 1,
+      "legacy_truncated": 0,
+      "unspecified": 0
+    },
+    "ordering_counts": {
+      "receipt_order": 1,
+      "provider_sequence_then_receipt": 0,
+      "grouped_source_streams": 0,
+      "unknown": 0
+    },
+    "received_clock_known_count": 1,
+    "source_clock_known_count": 0,
+    "verified_source_identity_count": 0,
+    "provenance": {
+      "source_store": "sqlite",
+      "citation_key": "source_id",
+      "original_source_ids": true,
+      "source_clock_or_identity_may_be_unknown": true
+    }
+  },
+  "no_meeting_markdown": true
+}

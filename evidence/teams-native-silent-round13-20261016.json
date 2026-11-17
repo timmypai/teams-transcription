@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "kind": "real_teams_native_silence_and_local_repair",
+  "activity_count": 14,
+  "real_attempt_count": 13,
+  "operator_observation": "entered_meeting_then_exact_wake_question_had_no_response",
+  "observed_failure_at_utc": "2026-10-16T05:48:31.200688+00:00",
+  "native_failure": {
+    "state": "failed",
+    "error_code": "response_failed",
+    "speech_phase": "not_started",
+    "speech_error_code": "native_error",
+    "handoff_received": 10,
+    "handoff_admitted": 0,
+    "handoff_rejected": 10,
+    "last_rejection": "state_not_listening",
+    "tool_calls": 0,
+    "context_sent_bytes": 0,
+    "output_activity_frames": 0
+  },
+  "aggregate_count_limit": "Counts are cumulative; not all ten rejected handoffs are attributed to this single question.",
+  "original_first_fatal_error_recovered": false,
+  "original_trace_limit": "Owned rolling RAM traces did not retain the exact error/transcript/handoff exchange; debugger transport could not attach, left no active debug session.",
+  "normal_stop_at_utc": "2026-10-16T06:01:13.958129+00:00",
+  "stop": {
+    "run_state": "stopped",
+    "end_reason": "operator_stop",
+    "capture_cleanup": "cleaned",
+    "response_cleanup": "cleaned",
+    "source_finalized": true,
+    "source_completeness": "partial",
+    "source_version": 51,
+    "summary_model": "gpt-6.1-sol",
+    "summary_provider_requirement_met": true,
+    "summary_revision": 1,
+    "summary_source_version": 50
+  },
+  "local_reproductions": {
+    "early_handoff_before_completed_wake": {
+      "before": {
+        "state": "listening",
+        "reader_calls": 0,
+        "tool_calls": 0,
+        "handoff_rejected": 1
+      },
+      "after": {
+        "state": "answering",
+        "reader_calls": 1,
+        "tool_calls": 1,
+        "handoff_admitted": 1
+      },
+      "actual_temporary_sqlite_smoke": true
+    },
+    "buffered_20_packets_to_real_browser_tx": {
+      "before": "TX PCM queue exceeded bound",
+      "after": "20 * 2048 frames delivered; native error absent; same .5s browser queue bound"
+    },
+    "expiry_while_starting_with_pending_relay": {
+      "before": "failed/response_speech_completion_failed after original deadline",
+      "after": "closed lease and sleeping; no stale relay PCM"
+    },
+    "replacement_turn_during_pacing": {
+      "before": "pop from an empty deque",
+      "after": "first queued packet then replacement packet delivered; stale packet excluded"
+    },
+    "empty_timeout_message": {
+      "before": "overall failure code absent despite structured speech failure; late cancellation could reset failed state",
+      "after": "fixed nonempty failure flag; late cancellation remains failed"
+    }
+  },
+  "source_sha256": {
+    "b_native.py": "daaea6806353dd4bb5a85521139bf5180f30da0842d3973b744979aeeb003077",
+    "b_live.py": "8a380866f08a0081d3a10bef29170305870230a8f952f64ea0899910c6b8e8de",
+    "diagnostics.py": "291d40c13a3c9f329c70ee8de753e36ade85bd19b4d7b28398c18ff006034ddd",
+    "response_runtime.py": "158c86174a3797bb0ca602ea54cfed090c426f78081b510876580a853c4cb52c"
+  },
+  "formal_muted_control_receipt": "native-wake-order-control-20261016.json",
+  "formal_control_limits": {
+    "real_teams_join": false,
+    "physical_output": false,
+    "exact_saved_task_quote": false,
+    "real_remote_content_acceptance": false
+  },
+  "unique_run13_root_cause_claimed": false,
+  "automatic_rejoin": false,
+  "current_service": "calendar-live-native-wake17",
+  "current_service_idle": true,
+  "formal_control_source_limit": "Formal control exercised unchanged Native normal path before the final empty-error-message normalization; final normalization is covered by direct failure/cancellation regression.",
+  "final_available_suite": {
+    "tests": 856,
+    "passed": true,
+    "seconds": 144.16,
+    "skips": 0,
+    "excluded_transfer_missing_modules": [
+      "test_bridge_integration",
+      "test_media_bridge"
+    ],
+    "is_complete_original_discovery": false
+  },
+  "current_candidate": {
+    "tag": "teams-assistant:local-native-wake-order-20261016",
+    "image_id": "sha256:e4c628d2e98f2b36af9a15dccd3492c404755e2969718533c8491474381bbde8",
+    "compose_checks": 15,
+    "source_hashes_match_installed_and_workdir": true,
+    "cold_build_claimed": false,
+    "remote_acceptance": false
+  }
+}

@@ -1,0 +1,90 @@
+{
+  "recorded_at": "2026-10-29T14:34:07.434023+00:00",
+  "repository": "paulpai0412/teams-transcription",
+  "branch": "fix/staging-tmpfs-first-recovery",
+  "base_main": "899b799bd8e91232cc2dbf7090bc497d75ba9449",
+  "related_issues": [
+    3,
+    4
+  ],
+  "scope": "Urgent staging tmpfs fix and explicit one-shot first-deploy recovery; full CI integration deferred to separate task",
+  "observed_host_evidence": "Parent independently confirmed both installed Compose templates render two tmpfs entries; original diagnose-create exit1/unclassified, failed state bytes unchanged, previous null, maintenance/noDB/noapp, original0600 audit retained. Not executed by this Cloud task.",
+  "defect": "Unquoted flow-list comma splits /tmp:size=512m,mode=1777 into two mounts; mode=1777 is a nonabsolute mount destination. The discarded original stderr cannot be retrospectively reconstructed.",
+  "files_sha256": {
+    "deploy/stagingctl.py": "b43166c1b5526752f5526a2cce8bbbbb0b51fc3fc637ebdc109c7a809aa89384",
+    "deploy/compose.staging.yml": "c9c7fda103df0eb9945abeb472ce7e5e02204b1e72159a62c8546f01dfa19b31",
+    "deploy/compose.onboarding.yml": "acf8e42e79cb33dee3a4671bc6d16c7e79094920709a8ee568e36c0214ee8d9d"
+  },
+  "red_green_evidence": [
+    "Both real Compose render subtests failed with two mounts before quoting, then passed with exactly one bounded absolute /tmp entry",
+    "Public pipe classifier returned unclassified for Moby nonabsolute-mount error before fixed mount_path_not_absolute classification",
+    "Public recovery operation initially refused unsupported_operation, then exercised synthetic success/refusal/failure paths",
+    "Independent Spec review stop OSError regression reproduced lost first failure, then preserved original code plus recovery_stop_uncertain",
+    "Independent Standards review commit directory-sync regression failed before sync, then verified uncertain commit never blindly stops"
+  ],
+  "focused_tests": 42,
+  "aggregate": {
+    "scope": "controlled offline subset",
+    "suites": [
+      "test_assistant_store",
+      "test_assistant_daemon",
+      "test_calendar_client",
+      "test_glossary_context",
+      "test_admin_web",
+      "test_sqlite_voice_context",
+      "test_sqlite_only_store",
+      "test_rx_contract",
+      "test_prefetch_codex_npm",
+      "test_staging_control",
+      "test_capture_cleanup_review",
+      "test_release_gate",
+      "test_diagnostic_projection",
+      "test_codex_auth",
+      "test_provider_state",
+      "test_workflow_triggers",
+      "test_staging_docker_diagnostics",
+      "test_staging_compose",
+      "test_first_deploy_recovery"
+    ],
+    "tests": 213,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "success": true,
+    "teams_or_model_called": false,
+    "audio_e2e_tested": false
+  },
+  "checks": {
+    "actionlint": "v1.7.7 passed",
+    "py_compile": "passed",
+    "git_diff_check": "passed",
+    "secret_pattern_scan": "passed"
+  },
+  "reviews": {
+    "spec": "One P2 cleanup-error preservation finding fixed and independently verified; no remaining actionable finding",
+    "standards": "Two P2 findings stop-error preservation and final STATE directory fsync fixed; final regression independently verified;0 remaining actionable findings"
+  },
+  "execution_scope": "Local source/tests/review and authorized branch push only; no PR/merge, host install, create/start, dispatch, build, registry, OAuth or network/security changes",
+  "recovery_contract": {
+    "command": "sudo -u teams-staging -- /opt/teams-staging/bin/stagingctl recover-first-deploy",
+    "preconditions": "Reviewed exact two Compose hashes and root-owned installation; first failed/previousnull/imagepin/revision/source/originalaudit/maintenance/noDB/noapp/quiescent/existing bridge",
+    "history": "0600 O_EXCL first-recovery-<original-run>.json with original state text and hash, original diagnostic hash and fixed configuration hashes; file+directory fsync before lifecycle, oldaudit unchanged",
+    "lifecycle": "Fixed create no-build/pullnever then start wait; healthy image+SQLite DB/paused/quiescent/maintenance check; healthy state directory sync before success",
+    "fail_closed": "Handled lifecycle failure best-effort stop; preserve first error plus cleanup uncertainty; SIGKILL/crash/unknown commit only inspect and never auto retry; no marker release",
+    "rollback": "No previous healthy image; real rollback remains untested"
+  },
+  "candidate": {
+    "source_sha": "c70250a09b5dbe64e5118bf86dae4f9f52000b10",
+    "build_run_id": 40866819722,
+    "deployment_run_id": 40880287493,
+    "image": "ghcr.io/paulpai0412/teams-transcription@sha256:9a8ef70cb0c1c39a8edc544d1fbd337c967d909d6a8563901a64e16a2c644b4f",
+    "passed_new_staging_lifecycle_gate": false
+  },
+  "pending": [
+    "Specific reviewed branch Draft PR/merge approval",
+    "Host installation of exact three files and one explicitly approved recovery execution by original VM task",
+    "Actual Oracle health/maintenance/paused/history readback; no claim of OAuth/Live/Teams/audio acceptance"
+  ],
+  "workflow_or_release_gate_changes": false,
+  "real_host_lifecycle_executed": false
+}

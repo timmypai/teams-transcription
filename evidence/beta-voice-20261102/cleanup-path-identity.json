@@ -1,0 +1,26 @@
+[
+  {
+    "path": "teams_transcription/qa_probe.py",
+    "candidate_sha256": "e40e2de9dc436573e93d04ea2c970ed519244c17c2ea055728deb136b8dbb862",
+    "pr40_sha256": "e40e2de9dc436573e93d04ea2c970ed519244c17c2ea055728deb136b8dbb862",
+    "identical": true
+  },
+  {
+    "path": "teams_transcription/b_native.py",
+    "candidate_sha256": "d15f0e383e6899ee3f28671c868cf1f5d06658a1fa550f60153e50a23498c131",
+    "pr40_sha256": "d15f0e383e6899ee3f28671c868cf1f5d06658a1fa550f60153e50a23498c131",
+    "identical": true
+  },
+  {
+    "path": "teams_transcription/rpc.py",
+    "candidate_sha256": "b6831ff9532af150bb0d451191b64c4968f07a16d9ac30dcca191a333f02df63",
+    "pr40_sha256": "b6831ff9532af150bb0d451191b64c4968f07a16d9ac30dcca191a333f02df63",
+    "identical": true
+  },
+  {
+    "path": "tests/test_qa_probe.py",
+    "candidate_sha256": "de905c1907d62b2d700d9f17c2ca4951b6d3bb7dffbce51525dbd2cd44e08bd1",
+    "pr40_sha256": "de905c1907d62b2d700d9f17c2ca4951b6d3bb7dffbce51525dbd2cd44e08bd1",
+    "identical": true
+  }
+]

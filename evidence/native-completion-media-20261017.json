@@ -1,0 +1,60 @@
+{
+  "kind": "native_input_continuity_local_RTC_differential",
+  "models_called": 0,
+  "teams_joined": false,
+  "calendar_writes": 0,
+  "physical_audio": false,
+  "finite_only": {
+    "quiet_observation_seconds": 2.0071782229933888,
+    "source_samples_seconds_before": 0.36000000000000015,
+    "source_samples_seconds_after": 0.36000000000000015,
+    "packets_received_before": 18,
+    "packets_received_after": 18,
+    "concealed_samples_before": 9488,
+    "concealed_samples_after": 105520,
+    "quiet_rms": 0,
+    "second_tone_rms": 0.05068037406150263,
+    "same_track": true
+  },
+  "continuous_zero": {
+    "quiet_observation_seconds": 2.008288487995742,
+    "source_samples_seconds_before": 0.8600000000000005,
+    "source_samples_seconds_after": 2.849999999999983,
+    "packets_received_before": 31,
+    "packets_received_after": 130,
+    "concealed_samples_before": 1964,
+    "concealed_samples_after": 1964,
+    "quiet_rms": 0,
+    "second_tone_rms": 0.04090574276484609,
+    "same_track": true
+  },
+  "regression": {
+    "test": "test_b_live.IncomingTrackTests.test_input_keeps_real_silent_samples_between_utterances_on_same_track",
+    "before_control": "Temporarily supply the original browser.PEER_JS graph to ResponseLivePeer; no production fake-provider flag",
+    "before_tests": 1,
+    "before_failures": 1,
+    "before_errors": 0,
+    "before_observed_source_seconds": 0.0,
+    "before_required_source_seconds": 1.6,
+    "after_available_tests": 916,
+    "after_failures": 0,
+    "after_errors": 0,
+    "after_skips": 0,
+    "after_seconds": 224.342,
+    "excluded_unavailable_modules": ["test_bridge_integration", "test_media_bridge"],
+    "incidental_legacy_graph_copy_test_removed": true
+  },
+  "implementation": {
+    "entry": "teams_transcription/b_live.py:ResponseLivePeer.offer",
+    "input_graph": "Both profiles reuse existing SILENT_PEER_JS",
+    "b_live_sha256": "5e2a1bcc53cb5d494488e1315251ae38557c1bbaeb167750af803b28fe48f6da",
+    "b_media_profile_sha256": "6e4eb1837d2ee08624260e8864b56814d302874c46abe49fcfeedf86d61f82f3",
+    "test_b_live_sha256": "6ce71264accfaafbf504ca68d210ed19254e0bfde49b224122354634d43acf51",
+    "test_response_media_profile_sha256": "9e93cd1854417ffd7b891bf94675ab7329fb11e7086f3c18be3ff1f648f2a2f4",
+    "output_renderer_changed": false,
+    "Teams_player_changed": false,
+    "authorization_changed": false,
+    "forced_native_completion_added": false
+  },
+  "scope": "Actual quiet input samples and second-utterance continuity, not provider user-final, long-session, or remote Teams audibility proof"
+}

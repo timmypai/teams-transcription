@@ -1,0 +1,29 @@
+{
+  "test_id": "standalone-production-compose",
+  "tested_at": "2026-10-16T08:13:37.120473+00:00",
+  "image_id": "sha256:337206e3b1d184cc069f965a4fabda844ad87c6d57e079334370f25f3c12fff8",
+  "input_kind": "controlled private SQLite",
+  "network": "none",
+  "credentials_mounted": false,
+  "model_or_meeting_called": false,
+  "checks": {
+    "actual_default_daemon_healthy": true,
+    "authenticated_admin_http": true,
+    "foreign_origin_rejected": true,
+    "mcp_route_absent": true,
+    "empty_saved_history_distinct_from_missing": true,
+    "bound_context_over_old_32k_limit": true,
+    "nonroot_readonly_dropcaps": true,
+    "network_none_no_published_ports": true,
+    "no_auth_or_docker_socket_mount": true,
+    "container_chroot_still_kernel_denied": true,
+    "actual_sandboxed_chromium_local_page": true,
+    "pinned_codex_installed": true,
+    "graceful_sigterm": true,
+    "sqlite_survives_restart": true,
+    "no_meeting_markdown_or_raw_audio": true
+  },
+  "codex_version": "codex-cli 0.159.0-alpha.3",
+  "stop_seconds": 1.08,
+  "success": true
+}

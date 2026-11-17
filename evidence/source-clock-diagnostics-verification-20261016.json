@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "scope": "Bounded source-clock code propagation and frozen first-consumer-fault receipt only; not a proven fix for the original real round16 failure.",
+  "real_failure_receipt": "teams-round16-early-capture-failure-20261016.json",
+  "real_no_Teams_controls": "round16-dual-live-controls-20261016.json",
+  "original_round16_unique_cause_proven": false,
+  "original_round16_failure_reproduced": false,
+  "clock_sampler_timing_changed": false,
+  "B_context_wake_player_changed": false,
+  "queue_or_timeouts_increased": false,
+  "fix": {
+    "explicit_JS_error_code_not_exception_body_parsing": true,
+    "allowed_codes": [
+      "source_audio_context_not_running",
+      "source_audio_clock_stalled",
+      "source_audio_clock_unstable"
+    ],
+    "public_RuntimeError_subclass": "SourceClockError",
+    "first_consumer_receipt_frozen_before_repeated_task_awaits": true,
+    "unknown_codes_and_hostile_bodies_remain_generic": true,
+    "known_failed_consumer_with_released_resources_can_be_failed_cleaned": true,
+    "pending_unreturned_push_remains_fail_closed": true
+  },
+  "red_before": {
+    "public_push": "Generic RuntimeError instead of bounded code.",
+    "actual_worker_all_three_known_codes": "Session.error rx_capture_failed instead of the fixed source clock code.",
+    "unknown_code_regression_was_already_green": true
+  },
+  "real_browser_negative_smoke": {
+    "sandboxed_browser": true,
+    "model_or_Teams_called": false,
+    "physical_input_output": false,
+    "fixed_code": "source_audio_context_not_running",
+    "failing_pcm_frames_scheduled": 0,
+    "owned_close_returned": true
+  },
+  "verification": {
+    "focused_tests": 39,
+    "focused_seconds": 16.999,
+    "final_available_tests": 890,
+    "final_available_seconds": 182.183,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0,
+    "excluded_transfer_missing_modules": [
+      "test_bridge_integration",
+      "test_media_bridge"
+    ],
+    "full_original_discovery_claimed": false
+  },
+  "candidate": {
+    "image_id": "sha256:e2f2b1ee2716b53dedf09e4e1826693351fbeb70c21c0060230421b6dac323a9",
+    "build_receipt": "source-clock-diagnostics-candidate-build-20261016.json",
+    "compose_receipt": "standalone-compose-source-clock-diagnostics-20261016.json",
+    "all_48_python_modules_host_installed_workdir_match": true,
+    "compose_checks_passed": 15,
+    "compose_SIGTERM_seconds": 0.561,
+    "network": "none",
+    "credentials_mounted": false,
+    "stock_cold_build_claimed": false,
+    "published_or_deployed": false
+  },
+  "service_cutover": {
+    "observed_at_utc": "2026-10-16T14:39:26.764626+00:00",
+    "old_service": "calendar-live-context20",
+    "old_pid": 2235670,
+    "old_verified_idle_before_signal": true,
+    "old_requested_signal": "SIGINT",
+    "old_exit_code": 0,
+    "service": "calendar-live-source-diag21",
+    "pid": 2652871,
+    "started": true,
+    "active_session_present": false,
+    "capture_interlock": false,
+    "last_error_present": false,
+    "scheduler_paused": true,
+    "recording_policy_checked": 0,
+    "speaking_policy_checked": 0,
+    "new_join_after_round16": false
+  },
+  "next_real_join_requires_notification_and_fresh_in_meeting_ack": true,
+  "temporary_harness_cleanup": {
+    "removed_scripts": 4,
+    "removed_replay_artifacts": 2
+  }
+}

@@ -1,0 +1,89 @@
+{
+  "kind": "uncapped_context_and_continuous_input_recheck",
+  "Teams_joined": false,
+  "calendar_writes": 0,
+  "passed": true,
+  "context": {
+    "scope": "actual SQLite reader/context/chunk accounting and commit; no provider model delivery claimed",
+    "same_session": true,
+    "rounds": 21,
+    "crossed_32768": true,
+    "new_commits_after_32768": 12,
+    "last": {
+      "number": 21,
+      "total_bytes": 148508,
+      "current_fact_in_wire": true,
+      "bytes": 11536
+    },
+    "status": {
+      "sent_bytes": 148508,
+      "total_limit_bytes": null,
+      "known_paragraphs": 21,
+      "source_version": 22,
+      "pending": false,
+      "model_consumption_verified": false,
+      "preparing": false,
+      "delivery_scope": "successful_host_send_returns_this_live_thread"
+    },
+    "per_delta_bytes": 12000
+  },
+  "input": {
+    "scope": "actual production ResponseLivePeer with controlled local RTC receiver; not a model or Teams test",
+    "models_called": 0,
+    "physical_audio": false,
+    "cycles": [
+      {
+        "number": 1,
+        "tone_rms": 0.08585019048040078,
+        "quiet_seconds": 10.012,
+        "real_source_seconds": 10.02,
+        "sent_packets": 507,
+        "received_packets": 507,
+        "concealed_samples": 0,
+        "quiet_rms": 0,
+        "same_track_and_peer": true
+      },
+      {
+        "number": 2,
+        "tone_rms": 0.07911055612434412,
+        "quiet_seconds": 10.011,
+        "real_source_seconds": 10.02,
+        "sent_packets": 507,
+        "received_packets": 507,
+        "concealed_samples": 0,
+        "quiet_rms": 0,
+        "same_track_and_peer": true
+      },
+      {
+        "number": 3,
+        "tone_rms": 0.07767734744345514,
+        "quiet_seconds": 10.014,
+        "real_source_seconds": 10.02,
+        "sent_packets": 507,
+        "received_packets": 507,
+        "concealed_samples": 0,
+        "quiet_rms": 0,
+        "same_track_and_peer": true
+      }
+    ],
+    "passed": true,
+    "owned_contexts_closed": true,
+    "elapsed_seconds": 34.003
+  },
+  "run_id": "20261017T101211Z",
+  "focused_regression": {
+    "tests": 44,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0,
+    "elapsed_seconds": 5.729,
+    "modules": [
+      "test_incremental_minutes_context",
+      "test_native_incremental_context",
+      "test_b_live.IncomingTrackTests"
+    ]
+  },
+  "production_code_changed": false,
+  "scope_limit": "Application cumulative-byte accounting and actual local RTC input passed. No provider model/Teams/audibility/long-session answer completion claim; the earlier Native missing-final blocker is unchanged.",
+  "owned_temporary_harness_and_SQLite_removed": true
+}

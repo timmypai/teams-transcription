@@ -1,0 +1,178 @@
+{
+  "schema_version": 1,
+  "kind": "native_meeting_media_cutover_verification",
+  "implementation": {
+    "meeting_A_python_PCM_send_queue_removed": true,
+    "custom_clock_sampler_removed": true,
+    "native_owned_local_RTC_to_isolated_model_sender": true,
+    "B_each_question_tool_contract_preserved": true,
+    "B_continuous_player_preserved": true,
+    "file_tone_and_explicit_WAV_remain_separate_real_adapters": true
+  },
+  "verification": {
+    "available_suite": {
+      "kind": "all_available_local_regressions",
+      "tests": 915,
+      "seconds": 227.005,
+      "failures": 0,
+      "errors": 0,
+      "skips": 0,
+      "success": true,
+      "excluded_transfer_missing_modules": [
+        "test_bridge_integration",
+        "test_media_bridge"
+      ],
+      "full_original_discovery_claimed": false,
+      "disposable_home": true,
+      "real_meetings_or_models_authorized_by_runner": false
+    },
+    "native_review_redgreen_receipt": "native-meeting-media-review-redgreen-20261016.json",
+    "native_observer_block_seconds": 22.5,
+    "hardened_container": {
+      "schema_version": 1,
+      "image_id": "sha256:eca77e558d075e3a581e108a88e90de8166a112ce8d227eb50374c9d92f10c05",
+      "kind": "actual_native_media_hardened_container",
+      "network": "disposable_routed_bridge",
+      "external_route_available": true,
+      "published_ports": false,
+      "browser_HTTP_requests_blocked": true,
+      "external_ICE": false,
+      "credentials_mounted": false,
+      "models_or_meetings_called": false,
+      "physical_devices": false,
+      "nonroot_readonly_dropcaps_no_new_privileges_seccomp": true,
+      "seconds": 77.494,
+      "returncode": 0,
+      "tests": 17,
+      "failures": 0,
+      "errors": 0,
+      "skips": 0,
+      "success": true
+    },
+    "compose": {
+      "test_id": "standalone-production-compose",
+      "tested_at": "2026-10-16T17:21:13.476808+00:00",
+      "image_id": "sha256:eca77e558d075e3a581e108a88e90de8166a112ce8d227eb50374c9d92f10c05",
+      "input_kind": "controlled private SQLite",
+      "network": "none",
+      "credentials_mounted": false,
+      "model_or_meeting_called": false,
+      "checks": {
+        "actual_default_daemon_healthy": true,
+        "authenticated_admin_http": true,
+        "foreign_origin_rejected": true,
+        "mcp_route_absent": true,
+        "empty_saved_history_distinct_from_missing": true,
+        "bound_context_over_old_32k_limit": true,
+        "nonroot_readonly_dropcaps": true,
+        "network_none_no_published_ports": true,
+        "no_auth_or_docker_socket_mount": true,
+        "container_chroot_still_kernel_denied": true,
+        "actual_sandboxed_chromium_local_page": true,
+        "pinned_codex_installed": true,
+        "graceful_sigterm": true,
+        "sqlite_survives_restart": true,
+        "no_meeting_markdown_or_raw_audio": true
+      },
+      "codex_version": "codex-cli 0.159.0-alpha.3",
+      "stop_seconds": 0.505,
+      "success": true
+    }
+  },
+  "real_provider_control": {
+    "receipt": "native-meeting-media-real-live-final-control-20261016.json",
+    "native_transport_and_normal_cleanup_verified": true,
+    "capture_seconds": 60.097,
+    "full_two_fact_control_passed": false,
+    "fact_match": {
+      "codeword": false,
+      "amount": true
+    },
+    "source_entries": 21,
+    "source_quality_counts": {
+      "provider_final": 2,
+      "application_segment": 19
+    },
+    "A_failure": null,
+    "closed": {
+      "source": true,
+      "A": true,
+      "B": true,
+      "browser": true
+    },
+    "owned_processes": 3,
+    "live_processes": 0,
+    "B_unwoken_tool_calls": 0,
+    "B_stop_ack": true,
+    "B_stop_closed": true,
+    "exact_codeword_ASR_remaining_unverified": true,
+    "remote_teams_audibility_verified": false
+  },
+  "normal_shutdown_fix": {
+    "observed_native_reason": "client_request",
+    "only_own_closing_datachannel_request_acknowledged": true,
+    "unknown_expired_transport_and_real_errors_still_fail": true,
+    "red_before_tests": 4,
+    "red_before_failures": 2,
+    "red_before_errors": 1,
+    "targeted_after_tests": 46,
+    "targeted_after_seconds": 6.584
+  },
+  "negative_controls_preserved": [
+    "native-meeting-media-real-live-control-20261016.json",
+    "native-meeting-media-real-live-diagnostic-control-20261016.json",
+    "native-meeting-media-close-shape-control-20261016.json",
+    "native-meeting-media-close-reason-control-20261016.json",
+    "native-meeting-media-container-smoke-20261016.json"
+  ],
+  "container_network_diagnosis": {
+    "receipt": "native-meeting-media-container-ice-comparison-20261016.json",
+    "internal_without_default_route_candidates": 0,
+    "routed_default_candidates": 1,
+    "browser_HTTP_blocked": true,
+    "external_ICE_used": false,
+    "security_relaxed": false
+  },
+  "candidate": {
+    "image_id": "sha256:eca77e558d075e3a581e108a88e90de8166a112ce8d227eb50374c9d92f10c05",
+    "tag": "teams-assistant:local-native-meeting-media-20261016",
+    "module_count": 49,
+    "tree_sha256": "d337c1bc8c3b7e91b75032e83fe7bce604980c344e0ad6d8d92f89697c36038d",
+    "build_receipt": "native-meeting-media-candidate-build-20261016.json",
+    "stock_cold_build_claimed": false,
+    "published_or_deployed": false
+  },
+  "service_cutover": {
+    "old_service": "calendar-live-source-diag21",
+    "old_pid": 2652871,
+    "old_verified_idle": true,
+    "old_requested_signal": "SIGINT",
+    "used_pidfd": true,
+    "no_active_or_interlock": true,
+    "scheduler_paused": true,
+    "media_checked": 0,
+    "signal_at_utc": "2026-10-16T17:26:14.035726+00:00",
+    "new_join": false,
+    "old_exit_code": 0,
+    "new_service": "calendar-native-media22",
+    "new_pid": 3437177,
+    "observed_at_utc": "2026-10-16T17:29:35.405753+00:00",
+    "started": true,
+    "active_session_present": false,
+    "capture_interlock": false,
+    "last_error_present": false,
+    "recording_policy_checked": 0,
+    "speaking_policy_checked": 0,
+    "no_new_Join": true
+  },
+  "calendar_activity_count_unchanged": 18,
+  "actual_teams_attempt_count_unchanged": 17,
+  "next_real_join_requires_notification_and_fresh_in_meeting_ack": true,
+  "complete_E2E_claimed": false,
+  "original_round16_unique_cause_claimed": false,
+  "temporary_cleanup": {
+    "owned_scripts_removed": 6,
+    "owned_review_patch_removed": true,
+    "original_transfer_manifest_rewritten": false
+  }
+}

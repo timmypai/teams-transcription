@@ -1,0 +1,85 @@
+{
+  "scope": "bounded native output target-answer failure diagnostics only; no media success guard or decoder behavior change",
+  "recorded_at": "2026-11-01T11:41:39.973953+00:00",
+  "base_sha": "3c11022e50539df9bb8262a89b29779618712799",
+  "files_sha256": {
+    "teams_transcription/b_browser_tx.py": "f61e8dcc59d8ad3a59e9894be35a4ccbb4e83b3dd4a5ae7bd1d314d01fbc5ae3",
+    "teams_transcription/diagnostics.py": "8c262dde9c10f8be316df23f46536ca0f6d3aec94b538bfba38fcecfaeaa9304",
+    "tests/test_native_output_attach_diagnostics.py": "c994afbc0a1196556c787280be0fbb113023d612771fbbca404eea67ebf349d5"
+  },
+  "host_observation_supplied_by_parent": {
+    "actions_run_id": 41302068731,
+    "joined": true,
+    "B_phase": "native_output_attach",
+    "B_output_step": "target_answer",
+    "B_exception_type": "Error",
+    "B_root_cause": "unknown; original exception message and stack not retained",
+    "A_transcript_observed": true,
+    "A_final_segments": 2,
+    "A_final_characters": 12,
+    "raw_meeting_content_included": false
+  },
+  "change": {
+    "fixed_target_stages": [
+      "remote_description",
+      "receiver_check",
+      "decoder_setup",
+      "decoder_binding",
+      "codec_preferences",
+      "local_description",
+      "local_binding",
+      "ice_gather",
+      "gathered_binding"
+    ],
+    "exception_name_allowlisted": true,
+    "raw_exception_or_sdp_persisted": false,
+    "first_failure_retained": true,
+    "unknown_message_not_exported": true
+  },
+  "tests": {
+    "red": "2 new tests failed with19 subcase assertions before diagnostic implementation",
+    "focused": {
+      "tests": 15,
+      "failures": 0,
+      "errors": 0,
+      "skips": 0
+    },
+    "controlled_offline": {
+      "tests": 458,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "success": true
+    },
+    "initial_browser_inclusive_attempt": {
+      "tests": 21,
+      "failures": 7,
+      "errors": 1,
+      "reason": "test_response_runtime browser_open/TargetClosedError before response controller; cleanup assertion cannot run after browser failure"
+    },
+    "unchanged_base_browser_control": {
+      "test": "test_response_runtime.ResponseRuntimeTests.test_actual_worker_fans_capture_clock_to_scoped_native_default_muted",
+      "base_sha": "3c11022e50539df9bb8262a89b29779618712799",
+      "failures": 1,
+      "reason": "same browser_open/TargetClosedError"
+    },
+    "node_actual_production_JS": "synthetic external WebRTC/WebAudio failures, disposal and original muted sender; includes throwing error.name getter; not Chromium/media test"
+  },
+  "review": {
+    "independent_cloud_agent": "/root/local_control_spec",
+    "finding": "P2 throwing name getter could skip revoke; fixed guarded single snapshot and regression",
+    "after_fix": "no further confirmed defect; independent7 focused tests passed"
+  },
+  "not_performed": [
+    "PR creation",
+    "merge",
+    "ARM image build",
+    "deploy",
+    "VM changes",
+    "new model request",
+    "Join",
+    "owned Stop",
+    "Chromium media verification"
+  ],
+  "remaining_blocker": "Cannot identify this live target-answer root cause from discarded exception; diagnostic changes require a reviewed new image and coordinated interruption before activation. Do not overwrite the active meeting container."
+}

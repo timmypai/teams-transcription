@@ -1,0 +1,21 @@
+test_capture_generation_discards_waiting_waveform_without_decoder_reset (test_b_live.IncomingTrackTests.test_capture_generation_discards_waiting_waveform_without_decoder_reset) ... ok
+test_generic_pcm_probe_preserves_waveform_during_renderer_stall (test_b_live.IncomingTrackTests.test_generic_pcm_probe_preserves_waveform_during_renderer_stall) ... ok
+test_idle_decoder_stall_does_not_fail_next_scoped_speech_capture (test_b_live.IncomingTrackTests.test_idle_decoder_stall_does_not_fail_next_scoped_speech_capture) ... ok
+test_input_keeps_real_silent_samples_between_utterances_on_same_track (test_b_live.IncomingTrackTests.test_input_keeps_real_silent_samples_between_utterances_on_same_track) ... ok
+test_native_peer_installs_no_pcm_tap_or_callback (test_b_live.IncomingTrackTests.test_native_peer_installs_no_pcm_tap_or_callback) ... ok
+test_slow_binding_overflow_is_audio_bounded_and_explicit (test_b_live.IncomingTrackTests.test_slow_binding_overflow_is_audio_bounded_and_explicit) ... ok
+test_synthetic_track_to_48k_pcm_default_mute_then_opt_in_fake_sink (test_b_live.IncomingTrackTests.test_synthetic_track_to_48k_pcm_default_mute_then_opt_in_fake_sink) ... ok
+test_actual_worker_fans_capture_clock_to_scoped_native_default_muted (test_response_runtime.ResponseRuntimeTests.test_actual_worker_fans_capture_clock_to_scoped_native_default_muted) ... Executing <Task pending name='Task-376' coro=<ResponseRuntimeTests.test_actual_worker_fans_capture_clock_to_scoped_native_default_muted() running at /tmp/current-source/tests/test_response_runtime.py:126> wait_for=<Future pending cb=[Task.task_wakeup()] created at /usr/local/lib/python3.12/asyncio/base_events.py:448> cb=[_run_until_complete_cb() at /usr/local/lib/python3.12/asyncio/base_events.py:181] created at /usr/local/lib/python3.12/asyncio/runners.py:100> took 0.138 seconds
+ok
+test_explicit_deny_all_starts_B_muted_and_blocks_browser_requests (test_response_runtime.ResponseRuntimeTests.test_explicit_deny_all_starts_B_muted_and_blocks_browser_requests) ... ok
+test_explicit_owned_TX_and_restore_keep_actual_worker_RX_alive (test_response_runtime.ResponseRuntimeTests.test_explicit_owned_TX_and_restore_keep_actual_worker_RX_alive) ... ok
+test_missing_allowlist_never_starts_B_rpc_and_A_keeps_transcribing (test_response_runtime.ResponseRuntimeTests.test_missing_allowlist_never_starts_B_rpc_and_A_keeps_transcribing) ... ok
+test_partial_native_start_restores_owned_sender_and_A_continues (test_response_runtime.ResponseRuntimeTests.test_partial_native_start_restores_owned_sender_and_A_continues) ... ok
+test_source_timestamp_required_for_B_but_not_A (test_response_runtime.ResponseRuntimeTests.test_source_timestamp_required_for_B_but_not_A) ... ok
+test_stop_after_admission_with_no_PCM_is_stopped_not_failed (test_response_runtime.ResponseRuntimeTests.test_stop_after_admission_with_no_PCM_is_stopped_not_failed) ... ok
+test_unknown_native_cleanup_preserves_actual_unmuted_flags_and_rejects_enable (test_response_runtime.ResponseRuntimeTests.test_unknown_native_cleanup_preserves_actual_unmuted_flags_and_rejects_enable) ... ok
+
+----------------------------------------------------------------------
+Ran 15 tests in 44.902s
+
+OK

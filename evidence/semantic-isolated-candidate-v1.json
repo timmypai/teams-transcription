@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "candidate_id": "semantic-isolated-v1",
+  "base_source_sha": "c4090edb0e8e5db50d8950515522dba733618c51",
+  "criterion_version": "synthetic_current_fact_semantic_v1",
+  "qa_receipt_schema_version": 3,
+  "module_order": [
+    "qa_content",
+    "qa_probe",
+    "qa_session_isolation"
+  ],
+  "files": {
+    "qa_content.py": "55afeac6ec7cf9315f00fafc772261b4e680be835c465e26239467a4cd1734cc",
+    "qa_probe.py": "817fa0b7a196831d97c82a0897bd52115017c90953a7c244e661ffab95e7cd56",
+    "qa_session_isolation.py": "b6a7152b443abf0ac04809c97766b23193bcb15f6b1ac2d474d49da74f38edb4"
+  },
+  "runtime_authorized": false
+}

@@ -1,0 +1,3719 @@
+{
+  "kind": "formal_native_B_repeated_spoken_questions",
+  "teams_joined": false,
+  "calendar_writes": 0,
+  "physical_input_output": false,
+  "uses_formal_production_prompt": true,
+  "synthetic_text_gate": false,
+  "context_input": "disposable SQLite synthetic sources",
+  "questions": [
+    {
+      "number": 1,
+      "question": "小白小白，這次代號和預算各是多少？",
+      "fact_matches": {
+        "codeword": true,
+        "amount": true
+      },
+      "tool_calls": 1,
+      "reader_calls": 1,
+      "tool_deliveries": [
+        {
+          "question_number": 1,
+          "phase": "delivered",
+          "started_elapsed_ms": 24604,
+          "source_version": 2,
+          "available": true,
+          "selected_ref_count": 4,
+          "selected_record_indexes": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "selected_indexes_truncated": false,
+          "omitted_for_budget": false,
+          "payload_bytes": 4477,
+          "sent_bytes": 4492,
+          "marker_returned": true,
+          "model_consumption_verified": false
+        }
+      ],
+      "marker_sent": true,
+      "bytes_sent": 4492,
+      "state": "sleeping",
+      "runtime_failure": null,
+      "error": false,
+      "output_enabled": false,
+      "speech": {
+        "phase": "closed",
+        "native_state": "sleeping",
+        "done_is_set": true,
+        "speech_task_done": true,
+        "speech_task_cancelled": false,
+        "error_code": null,
+        "output_active": false,
+        "nonzero_frames": 552083,
+        "activity_frames": 542720,
+        "packet_frames": 2048,
+        "packet_nonzero_frames": 12,
+        "packet_peak_abs": 1,
+        "packet_rms": 0.07654655446197431,
+        "activity_rms_threshold": 8,
+        "last_active_age_seconds": 39.66856140700111,
+        "last_nonzero_age_seconds": 38.563942328997655,
+        "drain_result": {
+          "present": true,
+          "truncated": false,
+          "drained": false,
+          "muted": true
+        }
+      },
+      "elapsed_seconds": 60.293,
+      "sender_before": {
+        "point": "question_before",
+        "received_seconds": 13.665489849008736,
+        "read_status": "returned",
+        "connection": "connected",
+        "data_channel": "open",
+        "audio_context_state": "running",
+        "sent_frames": 327680,
+        "buffer_gap_count": 7,
+        "buffer_gap_frames": 1280,
+        "scheduled_queue_ms": 119,
+        "outbound_audio": [
+          {
+            "bytesSent": 27631,
+            "packetsSent": 688
+          }
+        ]
+      },
+      "sender_after": {
+        "point": "question_after",
+        "received_seconds": 73.95821003400488,
+        "read_status": "returned",
+        "connection": "connected",
+        "data_channel": "open",
+        "audio_context_state": "running",
+        "sent_frames": 1771520,
+        "buffer_gap_count": 23,
+        "buffer_gap_frames": 3712,
+        "scheduled_queue_ms": 81,
+        "outbound_audio": [
+          {
+            "bytesSent": 133695,
+            "packetsSent": 3735
+          }
+        ]
+      },
+      "transcripts_before": {
+        "user_delta": 6,
+        "user_done": 0,
+        "assistant_delta": 0,
+        "assistant_done": 0
+      },
+      "transcripts_after": {
+        "user_delta": 16,
+        "user_done": 1,
+        "assistant_delta": 43,
+        "assistant_done": 1
+      },
+      "input_events": [
+        {
+          "time": 80557.724281944,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 2.178
+        },
+        {
+          "time": 80558.214537801,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 2.668
+        },
+        {
+          "time": 80558.318635219,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 2.773
+        },
+        {
+          "time": 80558.78079297,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 3.235
+        },
+        {
+          "time": 80559.001752466,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 3.456
+        },
+        {
+          "time": 80559.188639782,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 3.643
+        },
+        {
+          "time": 80559.320873202,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 3.775
+        },
+        {
+          "time": 80559.917934037,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 4.372
+        },
+        {
+          "time": 80560.325874002,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 4.78
+        },
+        {
+          "time": 80560.957658692,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 5.412
+        },
+        {
+          "time": 80564.641822102,
+          "final": true,
+          "characters": 25,
+          "elapsed_seconds": 9.096
+        }
+      ],
+      "capture_counts": {
+        "offered": 865,
+        "accepted": 865,
+        "rejected": 0,
+        "invalid_clock": 0
+      },
+      "input_pending": {
+        "characters": 0,
+        "has_wake": false,
+        "has_question": false
+      },
+      "stimulus": {
+        "source_completed": true,
+        "frames": 109286,
+        "audio_seconds": 4.553583333333333,
+        "context_elapsed": 4.762666666666666,
+        "wall_seconds": 5.287
+      },
+      "raw_events": [
+        {
+          "time": 80557.701668021,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 3,
+          "client_delegation": false,
+          "elapsed_seconds": 2.156
+        },
+        {
+          "time": 80558.192907674,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 1,
+          "client_delegation": false,
+          "elapsed_seconds": 2.647
+        },
+        {
+          "time": 80558.29667267,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 2,
+          "client_delegation": false,
+          "elapsed_seconds": 2.751
+        },
+        {
+          "time": 80558.757658562,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 1,
+          "client_delegation": false,
+          "elapsed_seconds": 3.212
+        },
+        {
+          "time": 80558.98466682,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 1,
+          "client_delegation": false,
+          "elapsed_seconds": 3.439
+        },
+        {
+          "time": 80559.164623742,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 1,
+          "client_delegation": false,
+          "elapsed_seconds": 3.619
+        },
+        {
+          "time": 80559.300783535,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 1,
+          "client_delegation": false,
+          "elapsed_seconds": 3.755
+        },
+        {
+          "time": 80559.901550865,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 2,
+          "client_delegation": false,
+          "elapsed_seconds": 4.355
+        },
+        {
+          "time": 80560.315322863,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 1,
+          "client_delegation": false,
+          "elapsed_seconds": 4.769
+        },
+        {
+          "time": 80560.935695762,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 3,
+          "client_delegation": false,
+          "elapsed_seconds": 5.39
+        },
+        {
+          "time": 80561.094123038,
+          "type": "delegation.created",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": null,
+          "client_delegation": true,
+          "elapsed_seconds": 5.548
+        },
+        {
+          "time": 80564.618519018,
+          "type": "turn.done",
+          "role": "user",
+          "turn_hash": "ade1273a89f60629",
+          "has_transcript": true,
+          "transcript_characters": 25,
+          "delta_characters": null,
+          "client_delegation": false,
+          "elapsed_seconds": 9.072
+        },
+        {
+          "time": 80564.6188832,
+          "type": "turn.created",
+          "role": "assistant",
+          "turn_hash": "d79f5aab4e21d785",
+          "has_transcript": true,
+          "transcript_characters": 2,
+          "delta_characters": null,
+          "client_delegation": false,
+          "elapsed_seconds": 9.073
+        },
+        {
+          "time": 80577.300170115,
+          "type": "turn.done",
+          "role": "assistant",
+          "turn_hash": "d79f5aab4e21d785",
+          "has_transcript": true,
+          "transcript_characters": 62,
+          "delta_characters": null,
+          "client_delegation": false,
+          "elapsed_seconds": 21.754
+        }
+      ],
+      "capture_stats": [
+        {
+          "tracks": 1,
+          "packets": 866,
+          "dropped": 0,
+          "frames": 1773568,
+          "nonzero_samples": 146985,
+          "playout_errors": 0,
+          "capture_readiness": {
+            "hook_present": true,
+            "capture_enabled": true,
+            "context_state": "running",
+            "live_attached_tracks": 1,
+            "muted_live_tracks": 0,
+            "pending_live_tracks": 0,
+            "attach_errors": [],
+            "ready": true
+          },
+          "connections": []
+        }
+      ],
+      "fixture_source": {
+        "context": "running",
+        "time": 74.912,
+        "track": "live"
+      },
+      "A_native_media": {
+        "ready": true,
+        "available": true,
+        "failed": false,
+        "failure_code": "none",
+        "stopped": false,
+        "capture_enabled": true,
+        "frame_count": 1,
+        "connected_frames": 1,
+        "live_tracks": 1,
+        "cleanup_status": "pending",
+        "packets_received": 3747,
+        "bytes_received": 133948
+      },
+      "passed": true
+    },
+    {
+      "number": 2,
+      "question": "小白小白，上次會議決定何時交付？",
+      "fact_matches": {
+        "delivery_day": true
+      },
+      "tool_calls": 1,
+      "reader_calls": 1,
+      "tool_deliveries": [
+        {
+          "question_number": 2,
+          "phase": "delivered",
+          "started_elapsed_ms": 84784,
+          "source_version": 2,
+          "available": true,
+          "selected_ref_count": 4,
+          "selected_record_indexes": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "selected_indexes_truncated": false,
+          "omitted_for_budget": false,
+          "payload_bytes": 3251,
+          "sent_bytes": 3266,
+          "marker_returned": true,
+          "model_consumption_verified": false
+        }
+      ],
+      "marker_sent": true,
+      "bytes_sent": 3266,
+      "state": "sleeping",
+      "runtime_failure": null,
+      "error": false,
+      "output_enabled": false,
+      "speech": {
+        "phase": "closed",
+        "native_state": "sleeping",
+        "done_is_set": true,
+        "speech_task_done": true,
+        "speech_task_cancelled": false,
+        "error_code": null,
+        "output_active": false,
+        "nonzero_frames": 385321,
+        "activity_frames": 372736,
+        "packet_frames": 2048,
+        "packet_nonzero_frames": 15,
+        "packet_peak_abs": 1,
+        "packet_rms": 0.0855816496101822,
+        "activity_rms_threshold": 8,
+        "last_active_age_seconds": 43.751867790007964,
+        "last_nonzero_age_seconds": 42.300102203997085,
+        "drain_result": {
+          "present": true,
+          "truncated": false,
+          "drained": false,
+          "muted": true
+        }
+      },
+      "elapsed_seconds": 60.109,
+      "sender_before": {
+        "point": "question_before",
+        "received_seconds": 73.96678523000446,
+        "read_status": "returned",
+        "connection": "connected",
+        "data_channel": "open",
+        "audio_context_state": "running",
+        "sent_frames": 1773568,
+        "buffer_gap_count": 23,
+        "buffer_gap_frames": 3712,
+        "scheduled_queue_ms": 156,
+        "outbound_audio": [
+          {
+            "bytesSent": 133695,
+            "packetsSent": 3735
+          }
+        ]
+      },
+      "sender_after": {
+        "point": "question_after",
+        "received_seconds": 134.07547524500114,
+        "read_status": "returned",
+        "connection": "connected",
+        "data_channel": "open",
+        "audio_context_state": "running",
+        "sent_frames": 3213312,
+        "buffer_gap_count": 42,
+        "buffer_gap_frames": 6272,
+        "scheduled_queue_ms": 140,
+        "outbound_audio": [
+          {
+            "bytesSent": 247446,
+            "packetsSent": 6772
+          }
+        ]
+      },
+      "transcripts_before": {
+        "user_delta": 16,
+        "user_done": 1,
+        "assistant_delta": 43,
+        "assistant_done": 1
+      },
+      "transcripts_after": {
+        "user_delta": 27,
+        "user_done": 2,
+        "assistant_delta": 70,
+        "assistant_done": 2
+      },
+      "input_events": [
+        {
+          "time": 80617.696317154,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 1.849
+        },
+        {
+          "time": 80618.096318054,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 2.249
+        },
+        {
+          "time": 80618.488981959,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 2.641
+        },
+        {
+          "time": 80619.128828405,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 3.281
+        },
+        {
+          "time": 80619.529873833,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 3.682
+        },
+        {
+          "time": 80619.767854125,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 3.92
+        },
+        {
+          "time": 80620.011577714,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 4.164
+        },
+        {
+          "time": 80620.086200586,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 4.238
+        },
+        {
+          "time": 80620.547327633,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 4.7
+        },
+        {
+          "time": 80620.733909581,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 4.886
+        },
+        {
+          "time": 80620.899725666,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 5.052
+        },
+        {
+          "time": 80624.059033849,
+          "final": true,
+          "characters": 15,
+          "elapsed_seconds": 8.211
+        }
+      ],
+      "capture_counts": {
+        "offered": 1569,
+        "accepted": 1569,
+        "rejected": 0,
+        "invalid_clock": 0
+      },
+      "input_pending": {
+        "characters": 0,
+        "has_wake": false,
+        "has_question": false
+      },
+      "stimulus": {
+        "source_completed": true,
+        "frames": 105000,
+        "audio_seconds": 4.375,
+        "context_elapsed": 4.576000000000008,
+        "wall_seconds": 5.088
+      },
+      "raw_events": [
+        {
+          "time": 80617.674663032,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 2,
+          "client_delegation": false,
+          "elapsed_seconds": 1.827
+        },
+        {
+          "time": 80617.674949789,
+          "type": "turn.created",
+          "role": "user",
+          "turn_hash": "d01944146818811c",
+          "has_transcript": true,
+          "transcript_characters": 2,
+          "delta_characters": null,
+          "client_delegation": false,
+          "elapsed_seconds": 1.827
+        },
+        {
+          "time": 80618.071890894,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 1,
+          "client_delegation": false,
+          "elapsed_seconds": 2.224
+        },
+        {
+          "time": 80618.466021226,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 1,
+          "client_delegation": false,
+          "elapsed_seconds": 2.618
+        },
+        {
+          "time": 80619.089542885,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 3,
+          "client_delegation": false,
+          "elapsed_seconds": 3.242
+        },
+        {
+          "time": 80619.512794933,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 1,
+          "client_delegation": false,
+          "elapsed_seconds": 3.665
+        },
+        {
+          "time": 80619.74372954,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 1,
+          "client_delegation": false,
+          "elapsed_seconds": 3.896
+        },
+        {
+          "time": 80619.982695504,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 2,
+          "client_delegation": false,
+          "elapsed_seconds": 4.135
+        },
+        {
+          "time": 80620.065196368,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 1,
+          "client_delegation": false,
+          "elapsed_seconds": 4.217
+        },
+        {
+          "time": 80620.527577866,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 1,
+          "client_delegation": false,
+          "elapsed_seconds": 4.68
+        },
+        {
+          "time": 80620.710931421,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 1,
+          "client_delegation": false,
+          "elapsed_seconds": 4.863
+        },
+        {
+          "time": 80620.869440785,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 1,
+          "client_delegation": false,
+          "elapsed_seconds": 5.022
+        },
+        {
+          "time": 80621.277233837,
+          "type": "delegation.created",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": null,
+          "client_delegation": true,
+          "elapsed_seconds": 5.43
+        },
+        {
+          "time": 80624.036475543,
+          "type": "turn.done",
+          "role": "user",
+          "turn_hash": "d01944146818811c",
+          "has_transcript": true,
+          "transcript_characters": 15,
+          "delta_characters": null,
+          "client_delegation": false,
+          "elapsed_seconds": 8.189
+        },
+        {
+          "time": 80624.036819792,
+          "type": "turn.created",
+          "role": "assistant",
+          "turn_hash": "2cce1155a5f3a9c1",
+          "has_transcript": true,
+          "transcript_characters": 2,
+          "delta_characters": null,
+          "client_delegation": false,
+          "elapsed_seconds": 8.189
+        },
+        {
+          "time": 80633.688119639,
+          "type": "turn.done",
+          "role": "assistant",
+          "turn_hash": "2cce1155a5f3a9c1",
+          "has_transcript": true,
+          "transcript_characters": 41,
+          "delta_characters": null,
+          "client_delegation": false,
+          "elapsed_seconds": 17.84
+        }
+      ],
+      "capture_stats": [
+        {
+          "tracks": 1,
+          "packets": 1569,
+          "dropped": 0,
+          "frames": 3213312,
+          "nonzero_samples": 234093,
+          "playout_errors": 0,
+          "capture_readiness": {
+            "hook_present": true,
+            "capture_enabled": true,
+            "context_state": "running",
+            "live_attached_tracks": 1,
+            "muted_live_tracks": 0,
+            "pending_live_tracks": 0,
+            "attach_errors": [],
+            "ready": true
+          },
+          "connections": []
+        }
+      ],
+      "fixture_source": {
+        "context": "running",
+        "time": 135.04,
+        "track": "live"
+      },
+      "A_native_media": {
+        "ready": true,
+        "available": true,
+        "failed": false,
+        "failure_code": "none",
+        "stopped": false,
+        "capture_enabled": true,
+        "frame_count": 1,
+        "connected_frames": 1,
+        "live_tracks": 1,
+        "cleanup_status": "pending",
+        "packets_received": 6788,
+        "bytes_received": 239252
+      },
+      "passed": true
+    },
+    {
+      "number": 3,
+      "question": "小白小白，請念出全部系列未完成待辦的原文，並說明負責人與日期。",
+      "fact_matches": {
+        "task_one": true,
+        "task_two": true,
+        "owner_one": true,
+        "owner_two": true,
+        "date_one": true,
+        "date_two": true
+      },
+      "tool_calls": 1,
+      "reader_calls": 1,
+      "tool_deliveries": [
+        {
+          "question_number": 3,
+          "phase": "delivered",
+          "started_elapsed_ms": 148359,
+          "source_version": 2,
+          "available": true,
+          "selected_ref_count": 4,
+          "selected_record_indexes": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "selected_indexes_truncated": false,
+          "omitted_for_budget": false,
+          "payload_bytes": 3251,
+          "sent_bytes": 3266,
+          "marker_returned": true,
+          "model_consumption_verified": false
+        }
+      ],
+      "marker_sent": true,
+      "bytes_sent": 3266,
+      "state": "sleeping",
+      "runtime_failure": null,
+      "error": false,
+      "output_enabled": false,
+      "speech": {
+        "phase": "closed",
+        "native_state": "sleeping",
+        "done_is_set": true,
+        "speech_task_done": true,
+        "speech_task_cancelled": false,
+        "error_code": null,
+        "output_active": false,
+        "nonzero_frames": 1113913,
+        "activity_frames": 1093632,
+        "packet_frames": 2048,
+        "packet_nonzero_frames": 12,
+        "packet_peak_abs": 1,
+        "packet_rms": 0.07654655446197431,
+        "activity_rms_threshold": 8,
+        "last_active_age_seconds": 28.352157518005697,
+        "last_nonzero_age_seconds": 27.20103403100802,
+        "drain_result": {
+          "present": true,
+          "truncated": false,
+          "drained": false,
+          "muted": true
+        }
+      },
+      "elapsed_seconds": 63.453,
+      "sender_before": {
+        "point": "question_before",
+        "received_seconds": 134.08471052300592,
+        "read_status": "returned",
+        "connection": "connected",
+        "data_channel": "open",
+        "audio_context_state": "running",
+        "sent_frames": 3213312,
+        "buffer_gap_count": 42,
+        "buffer_gap_frames": 6272,
+        "scheduled_queue_ms": 129,
+        "outbound_audio": [
+          {
+            "bytesSent": 247446,
+            "packetsSent": 6772
+          }
+        ]
+      },
+      "sender_after": {
+        "point": "question_after",
+        "received_seconds": 197.53816404900863,
+        "read_status": "returned",
+        "connection": "connected",
+        "data_channel": "open",
+        "audio_context_state": "running",
+        "sent_frames": 4734976,
+        "buffer_gap_count": 62,
+        "buffer_gap_frames": 8832,
+        "scheduled_queue_ms": 177,
+        "outbound_audio": [
+          {
+            "bytesSent": 366180,
+            "packetsSent": 9980
+          }
+        ]
+      },
+      "transcripts_before": {
+        "user_delta": 27,
+        "user_done": 2,
+        "assistant_delta": 70,
+        "assistant_done": 2
+      },
+      "transcripts_after": {
+        "user_delta": 44,
+        "user_done": 3,
+        "assistant_delta": 153,
+        "assistant_done": 3
+      },
+      "input_events": [
+        {
+          "time": 80677.882333645,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 1.917
+        },
+        {
+          "time": 80678.331696298,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 2.366
+        },
+        {
+          "time": 80678.49454149,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 2.529
+        },
+        {
+          "time": 80678.930144653,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 2.965
+        },
+        {
+          "time": 80679.121047021,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 3.155
+        },
+        {
+          "time": 80679.28399295,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 3.318
+        },
+        {
+          "time": 80680.133984132,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 4.168
+        },
+        {
+          "time": 80680.288752667,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 4.323
+        },
+        {
+          "time": 80680.699777588,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 4.734
+        },
+        {
+          "time": 80681.077287613,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 5.112
+        },
+        {
+          "time": 80681.460412717,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 5.495
+        },
+        {
+          "time": 80682.096333055,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 6.131
+        },
+        {
+          "time": 80682.501249678,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 6.536
+        },
+        {
+          "time": 80682.875001984,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 6.909
+        },
+        {
+          "time": 80683.953059321,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 7.987
+        },
+        {
+          "time": 80684.093739284,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 8.128
+        },
+        {
+          "time": 80684.494455693,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 8.529
+        },
+        {
+          "time": 80687.681130516,
+          "final": true,
+          "characters": 30,
+          "elapsed_seconds": 11.715
+        }
+      ],
+      "capture_counts": {
+        "offered": 2312,
+        "accepted": 2312,
+        "rejected": 0,
+        "invalid_clock": 0
+      },
+      "input_pending": {
+        "characters": 0,
+        "has_wake": false,
+        "has_question": false
+      },
+      "stimulus": {
+        "source_completed": true,
+        "frames": 185263,
+        "audio_seconds": 7.719291666666667,
+        "context_elapsed": 7.920000000000016,
+        "wall_seconds": 8.449
+      },
+      "raw_events": [
+        {
+          "time": 80677.866641765,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 2,
+          "client_delegation": false,
+          "elapsed_seconds": 1.901
+        },
+        {
+          "time": 80677.866908968,
+          "type": "turn.created",
+          "role": "user",
+          "turn_hash": "63dd0505a02ed1af",
+          "has_transcript": true,
+          "transcript_characters": 2,
+          "delta_characters": null,
+          "client_delegation": false,
+          "elapsed_seconds": 1.901
+        },
+        {
+          "time": 80678.308461926,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 1,
+          "client_delegation": false,
+          "elapsed_seconds": 2.343
+        },
+        {
+          "time": 80678.471372456,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 1,
+          "client_delegation": false,
+          "elapsed_seconds": 2.506
+        },
+        {
+          "time": 80678.907355121,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 2,
+          "client_delegation": false,
+          "elapsed_seconds": 2.942
+        },
+        {
+          "time": 80679.101221688,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 1,
+          "client_delegation": false,
+          "elapsed_seconds": 3.136
+        },
+        {
+          "time": 80679.263401187,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 1,
+          "client_delegation": false,
+          "elapsed_seconds": 3.298
+        },
+        {
+          "time": 80680.110402678,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 2,
+          "client_delegation": false,
+          "elapsed_seconds": 4.145
+        },
+        {
+          "time": 80680.264583409,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 2,
+          "client_delegation": false,
+          "elapsed_seconds": 4.299
+        },
+        {
+          "time": 80680.677230818,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 1,
+          "client_delegation": false,
+          "elapsed_seconds": 4.712
+        },
+        {
+          "time": 80681.055676621,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 2,
+          "client_delegation": false,
+          "elapsed_seconds": 5.09
+        },
+        {
+          "time": 80681.436341822,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 3,
+          "client_delegation": false,
+          "elapsed_seconds": 5.471
+        },
+        {
+          "time": 80682.072585668,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 2,
+          "client_delegation": false,
+          "elapsed_seconds": 6.107
+        },
+        {
+          "time": 80682.481217462,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 2,
+          "client_delegation": false,
+          "elapsed_seconds": 6.516
+        },
+        {
+          "time": 80682.848970625,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 2,
+          "client_delegation": false,
+          "elapsed_seconds": 6.883
+        },
+        {
+          "time": 80683.932171398,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 3,
+          "client_delegation": false,
+          "elapsed_seconds": 7.967
+        },
+        {
+          "time": 80684.070787728,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 1,
+          "client_delegation": false,
+          "elapsed_seconds": 8.105
+        },
+        {
+          "time": 80684.469626846,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 2,
+          "client_delegation": false,
+          "elapsed_seconds": 8.504
+        },
+        {
+          "time": 80684.850886519,
+          "type": "delegation.created",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": null,
+          "client_delegation": true,
+          "elapsed_seconds": 8.885
+        },
+        {
+          "time": 80687.651693192,
+          "type": "turn.done",
+          "role": "user",
+          "turn_hash": "63dd0505a02ed1af",
+          "has_transcript": true,
+          "transcript_characters": 30,
+          "delta_characters": null,
+          "client_delegation": false,
+          "elapsed_seconds": 11.686
+        },
+        {
+          "time": 80687.651858434,
+          "type": "turn.created",
+          "role": "assistant",
+          "turn_hash": "5709307be4806368",
+          "has_transcript": true,
+          "transcript_characters": 2,
+          "delta_characters": null,
+          "client_delegation": false,
+          "elapsed_seconds": 11.686
+        },
+        {
+          "time": 80712.247343692,
+          "type": "turn.done",
+          "role": "assistant",
+          "turn_hash": "5709307be4806368",
+          "has_transcript": true,
+          "transcript_characters": 120,
+          "delta_characters": null,
+          "client_delegation": false,
+          "elapsed_seconds": 36.282
+        }
+      ],
+      "capture_stats": [
+        {
+          "tracks": 1,
+          "packets": 2312,
+          "dropped": 0,
+          "frames": 4734976,
+          "nonzero_samples": 397512,
+          "playout_errors": 0,
+          "capture_readiness": {
+            "hook_present": true,
+            "capture_enabled": true,
+            "context_state": "running",
+            "live_attached_tracks": 1,
+            "muted_live_tracks": 0,
+            "pending_live_tracks": 0,
+            "attach_errors": [],
+            "ready": true
+          },
+          "connections": []
+        }
+      ],
+      "fixture_source": {
+        "context": "running",
+        "time": 198.512,
+        "track": "live"
+      },
+      "A_native_media": {
+        "ready": true,
+        "available": true,
+        "failed": false,
+        "failure_code": "none",
+        "stopped": false,
+        "capture_enabled": true,
+        "frame_count": 1,
+        "connected_frames": 1,
+        "live_tracks": 1,
+        "cleanup_status": "pending",
+        "packets_received": 9999,
+        "bytes_received": 357876
+      },
+      "passed": true
+    },
+    {
+      "number": 4,
+      "question": "小白小白，本場更正後的預算是多少？",
+      "fact_matches": {
+        "corrected_amount": true
+      },
+      "tool_calls": 1,
+      "reader_calls": 1,
+      "tool_deliveries": [
+        {
+          "question_number": 4,
+          "phase": "delivered",
+          "started_elapsed_ms": 209141,
+          "source_version": 3,
+          "available": true,
+          "selected_ref_count": 4,
+          "selected_record_indexes": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "selected_indexes_truncated": false,
+          "omitted_for_budget": false,
+          "payload_bytes": 3559,
+          "sent_bytes": 3574,
+          "marker_returned": true,
+          "model_consumption_verified": false
+        }
+      ],
+      "marker_sent": true,
+      "bytes_sent": 3574,
+      "state": "sleeping",
+      "runtime_failure": null,
+      "error": false,
+      "output_enabled": false,
+      "speech": {
+        "phase": "closed",
+        "native_state": "sleeping",
+        "done_is_set": true,
+        "speech_task_done": true,
+        "speech_task_cancelled": false,
+        "error_code": null,
+        "output_active": false,
+        "nonzero_frames": 497620,
+        "activity_frames": 493568,
+        "packet_frames": 2048,
+        "packet_nonzero_frames": 12,
+        "packet_peak_abs": 1,
+        "packet_rms": 0.07654655446197431,
+        "activity_rms_threshold": 8,
+        "last_active_age_seconds": 40.24528077599825,
+        "last_nonzero_age_seconds": 39.09474659799889,
+        "drain_result": {
+          "present": true,
+          "truncated": false,
+          "drained": false,
+          "muted": true
+        }
+      },
+      "elapsed_seconds": 60.268,
+      "sender_before": {
+        "point": "question_before",
+        "received_seconds": 197.5467902090022,
+        "read_status": "returned",
+        "connection": "connected",
+        "data_channel": "open",
+        "audio_context_state": "running",
+        "sent_frames": 4734976,
+        "buffer_gap_count": 62,
+        "buffer_gap_frames": 8832,
+        "scheduled_queue_ms": 167,
+        "outbound_audio": [
+          {
+            "bytesSent": 366180,
+            "packetsSent": 9980
+          }
+        ]
+      },
+      "sender_after": {
+        "point": "question_after",
+        "received_seconds": 257.81512638001004,
+        "read_status": "returned",
+        "connection": "connected",
+        "data_channel": "open",
+        "audio_context_state": "running",
+        "sent_frames": 6176768,
+        "buffer_gap_count": 90,
+        "buffer_gap_frames": 12928,
+        "scheduled_queue_ms": 124,
+        "outbound_audio": [
+          {
+            "bytesSent": 472049,
+            "packetsSent": 13026
+          }
+        ]
+      },
+      "transcripts_before": {
+        "user_delta": 44,
+        "user_done": 3,
+        "assistant_delta": 153,
+        "assistant_done": 3
+      },
+      "transcripts_after": {
+        "user_delta": 54,
+        "user_done": 4,
+        "assistant_delta": 196,
+        "assistant_done": 4
+      },
+      "input_events": [
+        {
+          "time": 80741.254756716,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 1.827
+        },
+        {
+          "time": 80741.663765605,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 2.236
+        },
+        {
+          "time": 80742.129958392,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 2.702
+        },
+        {
+          "time": 80742.260815493,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 2.833
+        },
+        {
+          "time": 80742.708051524,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 3.28
+        },
+        {
+          "time": 80742.926333079,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 3.499
+        },
+        {
+          "time": 80743.033467831,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 3.606
+        },
+        {
+          "time": 80743.487390119,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 4.06
+        },
+        {
+          "time": 80743.860562827,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 4.433
+        },
+        {
+          "time": 80744.663116808,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 5.235
+        },
+        {
+          "time": 80749.033235175,
+          "final": true,
+          "characters": 16,
+          "elapsed_seconds": 9.605
+        }
+      ],
+      "capture_counts": {
+        "offered": 3016,
+        "accepted": 3016,
+        "rejected": 0,
+        "invalid_clock": 0
+      },
+      "input_pending": {
+        "characters": 0,
+        "has_wake": false,
+        "has_question": false
+      },
+      "stimulus": {
+        "source_completed": true,
+        "frames": 108495,
+        "audio_seconds": 4.520625,
+        "context_elapsed": 4.730666666666679,
+        "wall_seconds": 5.244
+      },
+      "raw_events": [
+        {
+          "time": 80741.228179749,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 2,
+          "client_delegation": false,
+          "elapsed_seconds": 1.8
+        },
+        {
+          "time": 80741.228989696,
+          "type": "turn.created",
+          "role": "user",
+          "turn_hash": "2c79b59f940a9e52",
+          "has_transcript": true,
+          "transcript_characters": 2,
+          "delta_characters": null,
+          "client_delegation": false,
+          "elapsed_seconds": 1.801
+        },
+        {
+          "time": 80741.637587685,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 1,
+          "client_delegation": false,
+          "elapsed_seconds": 2.21
+        },
+        {
+          "time": 80742.106527776,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 1,
+          "client_delegation": false,
+          "elapsed_seconds": 2.679
+        },
+        {
+          "time": 80742.238112248,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 2,
+          "client_delegation": false,
+          "elapsed_seconds": 2.81
+        },
+        {
+          "time": 80742.687278741,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 1,
+          "client_delegation": false,
+          "elapsed_seconds": 3.26
+        },
+        {
+          "time": 80742.907095428,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 1,
+          "client_delegation": false,
+          "elapsed_seconds": 3.479
+        },
+        {
+          "time": 80743.010803647,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 1,
+          "client_delegation": false,
+          "elapsed_seconds": 3.583
+        },
+        {
+          "time": 80743.469939193,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 2,
+          "client_delegation": false,
+          "elapsed_seconds": 4.042
+        },
+        {
+          "time": 80743.845913412,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 2,
+          "client_delegation": false,
+          "elapsed_seconds": 4.418
+        },
+        {
+          "time": 80744.640712594,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 3,
+          "client_delegation": false,
+          "elapsed_seconds": 5.213
+        },
+        {
+          "time": 80745.628522591,
+          "type": "delegation.created",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": null,
+          "client_delegation": true,
+          "elapsed_seconds": 6.201
+        },
+        {
+          "time": 80749.007360096,
+          "type": "turn.done",
+          "role": "user",
+          "turn_hash": "2c79b59f940a9e52",
+          "has_transcript": true,
+          "transcript_characters": 16,
+          "delta_characters": null,
+          "client_delegation": false,
+          "elapsed_seconds": 9.58
+        },
+        {
+          "time": 80749.007589167,
+          "type": "turn.created",
+          "role": "assistant",
+          "turn_hash": "8c3e34f5e8da20bd",
+          "has_transcript": true,
+          "transcript_characters": 2,
+          "delta_characters": null,
+          "client_delegation": false,
+          "elapsed_seconds": 9.58
+        },
+        {
+          "time": 80760.627527037,
+          "type": "turn.done",
+          "role": "assistant",
+          "turn_hash": "8c3e34f5e8da20bd",
+          "has_transcript": true,
+          "transcript_characters": 53,
+          "delta_characters": null,
+          "client_delegation": false,
+          "elapsed_seconds": 21.2
+        }
+      ],
+      "capture_stats": [
+        {
+          "tracks": 1,
+          "packets": 3016,
+          "dropped": 0,
+          "frames": 6176768,
+          "nonzero_samples": 487420,
+          "playout_errors": 0,
+          "capture_readiness": {
+            "hook_present": true,
+            "capture_enabled": true,
+            "context_state": "running",
+            "live_attached_tracks": 1,
+            "muted_live_tracks": 0,
+            "pending_live_tracks": 0,
+            "attach_errors": [],
+            "ready": true
+          },
+          "connections": []
+        }
+      ],
+      "fixture_source": {
+        "context": "running",
+        "time": 258.8,
+        "track": "live"
+      },
+      "A_native_media": {
+        "ready": true,
+        "available": true,
+        "failed": false,
+        "failure_code": "none",
+        "stopped": false,
+        "capture_enabled": true,
+        "frame_count": 1,
+        "connected_frames": 1,
+        "live_tracks": 1,
+        "cleanup_status": "pending",
+        "packets_received": 13050,
+        "bytes_received": 463755
+      },
+      "passed": true
+    },
+    {
+      "number": 5,
+      "question": "小白小白，請再念出全部系列未完成待辦的原文，並說明負責人與日期。",
+      "fact_matches": {
+        "task_one": true,
+        "task_two": true,
+        "owner_one": true,
+        "owner_two": true,
+        "date_one": true,
+        "date_two": true
+      },
+      "tool_calls": 1,
+      "reader_calls": 1,
+      "tool_deliveries": [
+        {
+          "question_number": 5,
+          "phase": "delivered",
+          "started_elapsed_ms": 273128,
+          "source_version": 3,
+          "available": true,
+          "selected_ref_count": 4,
+          "selected_record_indexes": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "selected_indexes_truncated": false,
+          "omitted_for_budget": false,
+          "payload_bytes": 3251,
+          "sent_bytes": 3266,
+          "marker_returned": true,
+          "model_consumption_verified": false
+        }
+      ],
+      "marker_sent": true,
+      "bytes_sent": 3266,
+      "state": "sleeping",
+      "runtime_failure": null,
+      "error": false,
+      "output_enabled": false,
+      "speech": {
+        "phase": "closed",
+        "native_state": "sleeping",
+        "done_is_set": true,
+        "speech_task_done": true,
+        "speech_task_cancelled": false,
+        "error_code": null,
+        "output_active": false,
+        "nonzero_frames": 1118641,
+        "activity_frames": 1101824,
+        "packet_frames": 2048,
+        "packet_nonzero_frames": 12,
+        "packet_peak_abs": 1,
+        "packet_rms": 0.07654655446197431,
+        "activity_rms_threshold": 8,
+        "last_active_age_seconds": 27.668528644993785,
+        "last_nonzero_age_seconds": 26.42419531599444,
+        "drain_result": {
+          "present": true,
+          "truncated": false,
+          "drained": false,
+          "muted": true
+        }
+      },
+      "elapsed_seconds": 63.709,
+      "sender_before": {
+        "point": "question_before",
+        "received_seconds": 257.82296122300613,
+        "read_status": "returned",
+        "connection": "connected",
+        "data_channel": "open",
+        "audio_context_state": "running",
+        "sent_frames": 6176768,
+        "buffer_gap_count": 90,
+        "buffer_gap_frames": 12928,
+        "scheduled_queue_ms": 113,
+        "outbound_audio": [
+          {
+            "bytesSent": 472049,
+            "packetsSent": 13026
+          }
+        ]
+      },
+      "sender_after": {
+        "point": "question_after",
+        "received_seconds": 321.532276775004,
+        "read_status": "returned",
+        "connection": "connected",
+        "data_channel": "open",
+        "audio_context_state": "running",
+        "sent_frames": 7702528,
+        "buffer_gap_count": 111,
+        "buffer_gap_frames": 16256,
+        "scheduled_queue_ms": 119,
+        "outbound_audio": [
+          {
+            "bytesSent": 591756,
+            "packetsSent": 16247
+          }
+        ]
+      },
+      "transcripts_before": {
+        "user_delta": 54,
+        "user_done": 4,
+        "assistant_delta": 196,
+        "assistant_done": 4
+      },
+      "transcripts_after": {
+        "user_delta": 73,
+        "user_done": 5,
+        "assistant_delta": 278,
+        "assistant_done": 5
+      },
+      "input_events": [
+        {
+          "time": 80801.505768966,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 1.802
+        },
+        {
+          "time": 80801.670474158,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 1.967
+        },
+        {
+          "time": 80802.261550593,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 2.558
+        },
+        {
+          "time": 80802.702175953,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 2.998
+        },
+        {
+          "time": 80802.913568339,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 3.21
+        },
+        {
+          "time": 80803.047341715,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 3.343
+        },
+        {
+          "time": 80803.912261422,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 4.208
+        },
+        {
+          "time": 80804.273586673,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 4.57
+        },
+        {
+          "time": 80804.649416017,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 4.946
+        },
+        {
+          "time": 80805.107467671,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 5.404
+        },
+        {
+          "time": 80805.304742274,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 5.601
+        },
+        {
+          "time": 80805.50626273,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 5.802
+        },
+        {
+          "time": 80805.636575572,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 5.933
+        },
+        {
+          "time": 80806.038202893,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 6.334
+        },
+        {
+          "time": 80806.44260637,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 6.739
+        },
+        {
+          "time": 80806.868156259,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 7.164
+        },
+        {
+          "time": 80807.694799174,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 7.991
+        },
+        {
+          "time": 80807.828254162,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 8.124
+        },
+        {
+          "time": 80808.452788606,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 8.749
+        },
+        {
+          "time": 80812.398583314,
+          "final": true,
+          "characters": 31,
+          "elapsed_seconds": 12.695
+        }
+      ],
+      "capture_counts": {
+        "offered": 3761,
+        "accepted": 3761,
+        "rejected": 0,
+        "invalid_clock": 0
+      },
+      "input_pending": {
+        "characters": 0,
+        "has_wake": false,
+        "has_question": false
+      },
+      "stimulus": {
+        "source_completed": true,
+        "frames": 191418,
+        "audio_seconds": 7.97575,
+        "context_elapsed": 8.175999999999988,
+        "wall_seconds": 8.693
+      },
+      "raw_events": [
+        {
+          "time": 80801.48295152,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 1,
+          "client_delegation": false,
+          "elapsed_seconds": 1.779
+        },
+        {
+          "time": 80801.485716676,
+          "type": "turn.created",
+          "role": "user",
+          "turn_hash": "921b834a10d390c2",
+          "has_transcript": true,
+          "transcript_characters": 1,
+          "delta_characters": null,
+          "client_delegation": false,
+          "elapsed_seconds": 1.782
+        },
+        {
+          "time": 80801.646844578,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 1,
+          "client_delegation": false,
+          "elapsed_seconds": 1.943
+        },
+        {
+          "time": 80802.238158116,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 2,
+          "client_delegation": false,
+          "elapsed_seconds": 2.534
+        },
+        {
+          "time": 80802.67285234,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 2,
+          "client_delegation": false,
+          "elapsed_seconds": 2.969
+        },
+        {
+          "time": 80802.895812705,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 1,
+          "client_delegation": false,
+          "elapsed_seconds": 3.192
+        },
+        {
+          "time": 80803.025453476,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 1,
+          "client_delegation": false,
+          "elapsed_seconds": 3.322
+        },
+        {
+          "time": 80803.913024061,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 1,
+          "client_delegation": false,
+          "elapsed_seconds": 4.209
+        },
+        {
+          "time": 80804.250449867,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 4,
+          "client_delegation": false,
+          "elapsed_seconds": 4.547
+        },
+        {
+          "time": 80804.626071338,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 1,
+          "client_delegation": false,
+          "elapsed_seconds": 4.922
+        },
+        {
+          "time": 80805.084930369,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 2,
+          "client_delegation": false,
+          "elapsed_seconds": 5.381
+        },
+        {
+          "time": 80805.28180851,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 1,
+          "client_delegation": false,
+          "elapsed_seconds": 5.578
+        },
+        {
+          "time": 80805.48459798,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 1,
+          "client_delegation": false,
+          "elapsed_seconds": 5.781
+        },
+        {
+          "time": 80805.622723733,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 1,
+          "client_delegation": false,
+          "elapsed_seconds": 5.919
+        },
+        {
+          "time": 80806.014223858,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 2,
+          "client_delegation": false,
+          "elapsed_seconds": 6.31
+        },
+        {
+          "time": 80806.418292889,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 2,
+          "client_delegation": false,
+          "elapsed_seconds": 6.714
+        },
+        {
+          "time": 80806.839390286,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 2,
+          "client_delegation": false,
+          "elapsed_seconds": 7.135
+        },
+        {
+          "time": 80807.675030268,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 3,
+          "client_delegation": false,
+          "elapsed_seconds": 7.971
+        },
+        {
+          "time": 80807.810825956,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 1,
+          "client_delegation": false,
+          "elapsed_seconds": 8.107
+        },
+        {
+          "time": 80808.43592114,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 2,
+          "client_delegation": false,
+          "elapsed_seconds": 8.732
+        },
+        {
+          "time": 80809.621630229,
+          "type": "delegation.created",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": null,
+          "client_delegation": true,
+          "elapsed_seconds": 9.918
+        },
+        {
+          "time": 80812.375964451,
+          "type": "turn.done",
+          "role": "user",
+          "turn_hash": "921b834a10d390c2",
+          "has_transcript": true,
+          "transcript_characters": 31,
+          "delta_characters": null,
+          "client_delegation": false,
+          "elapsed_seconds": 12.672
+        },
+        {
+          "time": 80812.376219806,
+          "type": "turn.created",
+          "role": "assistant",
+          "turn_hash": "3fa2890746111d0e",
+          "has_transcript": true,
+          "transcript_characters": 2,
+          "delta_characters": null,
+          "client_delegation": false,
+          "elapsed_seconds": 12.672
+        },
+        {
+          "time": 80837.005320326,
+          "type": "turn.done",
+          "role": "assistant",
+          "turn_hash": "3fa2890746111d0e",
+          "has_transcript": true,
+          "transcript_characters": 120,
+          "delta_characters": null,
+          "client_delegation": false,
+          "elapsed_seconds": 37.301
+        }
+      ],
+      "capture_stats": [
+        {
+          "tracks": 1,
+          "packets": 3761,
+          "dropped": 0,
+          "frames": 7702528,
+          "nonzero_samples": 656896,
+          "playout_errors": 0,
+          "capture_readiness": {
+            "hook_present": true,
+            "capture_enabled": true,
+            "context_state": "running",
+            "live_attached_tracks": 1,
+            "muted_live_tracks": 0,
+            "pending_live_tracks": 0,
+            "attach_errors": [],
+            "ready": true
+          },
+          "connections": []
+        }
+      ],
+      "fixture_source": {
+        "context": "running",
+        "time": 322.53866666666664,
+        "track": "live"
+      },
+      "A_native_media": {
+        "ready": true,
+        "available": true,
+        "failed": false,
+        "failure_code": "none",
+        "stopped": false,
+        "capture_enabled": true,
+        "frame_count": 1,
+        "connected_frames": 1,
+        "live_tracks": 1,
+        "cleanup_status": "pending",
+        "packets_received": 16276,
+        "bytes_received": 583465
+      },
+      "passed": true
+    },
+    {
+      "number": 6,
+      "question": "小白小白，請再念出全部系列未完成待辦的原文，並說明負責人與日期。",
+      "fact_matches": {
+        "task_one": true,
+        "task_two": true,
+        "owner_one": true,
+        "owner_two": true,
+        "date_one": true,
+        "date_two": true
+      },
+      "tool_calls": 1,
+      "reader_calls": 1,
+      "tool_deliveries": [
+        {
+          "question_number": 6,
+          "phase": "delivered",
+          "started_elapsed_ms": 338071,
+          "source_version": 3,
+          "available": true,
+          "selected_ref_count": 4,
+          "selected_record_indexes": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "selected_indexes_truncated": false,
+          "omitted_for_budget": false,
+          "payload_bytes": 3251,
+          "sent_bytes": 3266,
+          "marker_returned": true,
+          "model_consumption_verified": false
+        }
+      ],
+      "marker_sent": true,
+      "bytes_sent": 3266,
+      "state": "sleeping",
+      "runtime_failure": null,
+      "error": false,
+      "output_enabled": false,
+      "speech": {
+        "phase": "closed",
+        "native_state": "sleeping",
+        "done_is_set": true,
+        "speech_task_done": true,
+        "speech_task_cancelled": false,
+        "error_code": null,
+        "output_active": false,
+        "nonzero_frames": 1130995,
+        "activity_frames": 1103872,
+        "packet_frames": 2048,
+        "packet_nonzero_frames": 12,
+        "packet_peak_abs": 1,
+        "packet_rms": 0.07654655446197431,
+        "activity_rms_threshold": 8,
+        "last_active_age_seconds": 26.04672877799021,
+        "last_nonzero_age_seconds": 24.849852309998823,
+        "drain_result": {
+          "present": true,
+          "truncated": false,
+          "drained": false,
+          "muted": true
+        }
+      },
+      "elapsed_seconds": 63.736,
+      "sender_before": {
+        "point": "question_before",
+        "received_seconds": 321.5434499660041,
+        "read_status": "returned",
+        "connection": "connected",
+        "data_channel": "open",
+        "audio_context_state": "running",
+        "sent_frames": 7702528,
+        "buffer_gap_count": 111,
+        "buffer_gap_frames": 16256,
+        "scheduled_queue_ms": 108,
+        "outbound_audio": [
+          {
+            "bytesSent": 591756,
+            "packetsSent": 16247
+          }
+        ]
+      },
+      "sender_after": {
+        "point": "question_after",
+        "received_seconds": 385.27892461500596,
+        "read_status": "returned",
+        "connection": "connected",
+        "data_channel": "open",
+        "audio_context_state": "running",
+        "sent_frames": 9230336,
+        "buffer_gap_count": 134,
+        "buffer_gap_frames": 19584,
+        "scheduled_queue_ms": 156,
+        "outbound_audio": [
+          {
+            "bytesSent": 711481,
+            "packetsSent": 19469
+          }
+        ]
+      },
+      "transcripts_before": {
+        "user_delta": 73,
+        "user_done": 5,
+        "assistant_delta": 278,
+        "assistant_done": 5
+      },
+      "transcripts_after": {
+        "user_delta": 91,
+        "user_done": 6,
+        "assistant_delta": 358,
+        "assistant_done": 6
+      },
+      "input_events": [
+        {
+          "time": 80865.37134136,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 1.947
+        },
+        {
+          "time": 80866.001629627,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 2.577
+        },
+        {
+          "time": 80866.491299969,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 3.067
+        },
+        {
+          "time": 80866.67695097,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 3.253
+        },
+        {
+          "time": 80866.756623902,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 3.332
+        },
+        {
+          "time": 80867.171323123,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 3.747
+        },
+        {
+          "time": 80867.54583054,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 4.121
+        },
+        {
+          "time": 80868.04081884,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 4.616
+        },
+        {
+          "time": 80868.17365919,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 4.749
+        },
+        {
+          "time": 80868.752128884,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 5.328
+        },
+        {
+          "time": 80869.210692737,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 5.786
+        },
+        {
+          "time": 80869.344439496,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 5.92
+        },
+        {
+          "time": 80869.751504492,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 6.327
+        },
+        {
+          "time": 80870.173579092,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 6.749
+        },
+        {
+          "time": 80870.574215686,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 7.15
+        },
+        {
+          "time": 80871.330530829,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 7.906
+        },
+        {
+          "time": 80871.741775571,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 8.317
+        },
+        {
+          "time": 80872.129104571,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 8.705
+        },
+        {
+          "time": 80877.316311088,
+          "final": true,
+          "characters": 31,
+          "elapsed_seconds": 13.892
+        }
+      ],
+      "capture_counts": {
+        "offered": 4507,
+        "accepted": 4507,
+        "rejected": 0,
+        "invalid_clock": 0
+      },
+      "input_pending": {
+        "characters": 0,
+        "has_wake": false,
+        "has_question": false
+      },
+      "stimulus": {
+        "source_completed": true,
+        "frames": 191418,
+        "audio_seconds": 7.97575,
+        "context_elapsed": 8.175999999999988,
+        "wall_seconds": 8.708
+      },
+      "raw_events": [
+        {
+          "time": 80865.347855081,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 2,
+          "client_delegation": false,
+          "elapsed_seconds": 1.923
+        },
+        {
+          "time": 80865.348123165,
+          "type": "turn.created",
+          "role": "user",
+          "turn_hash": "1dfc3c42f62dae97",
+          "has_transcript": true,
+          "transcript_characters": 2,
+          "delta_characters": null,
+          "client_delegation": false,
+          "elapsed_seconds": 1.924
+        },
+        {
+          "time": 80865.969170467,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 2,
+          "client_delegation": false,
+          "elapsed_seconds": 2.545
+        },
+        {
+          "time": 80866.463406547,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 2,
+          "client_delegation": false,
+          "elapsed_seconds": 3.039
+        },
+        {
+          "time": 80866.653474803,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 1,
+          "client_delegation": false,
+          "elapsed_seconds": 3.229
+        },
+        {
+          "time": 80866.733042322,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 1,
+          "client_delegation": false,
+          "elapsed_seconds": 3.309
+        },
+        {
+          "time": 80867.148051523,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 1,
+          "client_delegation": false,
+          "elapsed_seconds": 3.724
+        },
+        {
+          "time": 80867.524806544,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 2,
+          "client_delegation": false,
+          "elapsed_seconds": 4.1
+        },
+        {
+          "time": 80868.014540315,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 2,
+          "client_delegation": false,
+          "elapsed_seconds": 4.59
+        },
+        {
+          "time": 80868.150688247,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 1,
+          "client_delegation": false,
+          "elapsed_seconds": 4.726
+        },
+        {
+          "time": 80868.727289411,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 2,
+          "client_delegation": false,
+          "elapsed_seconds": 5.303
+        },
+        {
+          "time": 80869.187354955,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 2,
+          "client_delegation": false,
+          "elapsed_seconds": 5.763
+        },
+        {
+          "time": 80869.320411274,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 1,
+          "client_delegation": false,
+          "elapsed_seconds": 5.896
+        },
+        {
+          "time": 80869.731025884,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 2,
+          "client_delegation": false,
+          "elapsed_seconds": 6.307
+        },
+        {
+          "time": 80870.140554188,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 2,
+          "client_delegation": false,
+          "elapsed_seconds": 6.716
+        },
+        {
+          "time": 80870.549251691,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 2,
+          "client_delegation": false,
+          "elapsed_seconds": 7.125
+        },
+        {
+          "time": 80871.309184337,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 3,
+          "client_delegation": false,
+          "elapsed_seconds": 7.885
+        },
+        {
+          "time": 80871.718819679,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 1,
+          "client_delegation": false,
+          "elapsed_seconds": 8.294
+        },
+        {
+          "time": 80872.104104365,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 2,
+          "client_delegation": false,
+          "elapsed_seconds": 8.68
+        },
+        {
+          "time": 80874.561249065,
+          "type": "delegation.created",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": null,
+          "client_delegation": true,
+          "elapsed_seconds": 11.137
+        },
+        {
+          "time": 80877.290977263,
+          "type": "turn.done",
+          "role": "user",
+          "turn_hash": "1dfc3c42f62dae97",
+          "has_transcript": true,
+          "transcript_characters": 31,
+          "delta_characters": null,
+          "client_delegation": false,
+          "elapsed_seconds": 13.867
+        },
+        {
+          "time": 80877.291162605,
+          "type": "turn.created",
+          "role": "assistant",
+          "turn_hash": "24029ec8cc5d6ec2",
+          "has_transcript": true,
+          "transcript_characters": 2,
+          "delta_characters": null,
+          "client_delegation": false,
+          "elapsed_seconds": 13.867
+        },
+        {
+          "time": 80902.332097029,
+          "type": "turn.done",
+          "role": "assistant",
+          "turn_hash": "24029ec8cc5d6ec2",
+          "has_transcript": true,
+          "transcript_characters": 119,
+          "delta_characters": null,
+          "client_delegation": false,
+          "elapsed_seconds": 38.908
+        }
+      ],
+      "capture_stats": [
+        {
+          "tracks": 1,
+          "packets": 4507,
+          "dropped": 0,
+          "frames": 9230336,
+          "nonzero_samples": 826628,
+          "playout_errors": 0,
+          "capture_readiness": {
+            "hook_present": true,
+            "capture_enabled": true,
+            "context_state": "running",
+            "live_attached_tracks": 1,
+            "muted_live_tracks": 0,
+            "pending_live_tracks": 0,
+            "attach_errors": [],
+            "ready": true
+          },
+          "connections": []
+        }
+      ],
+      "fixture_source": {
+        "context": "running",
+        "time": 386.27733333333333,
+        "track": "live"
+      },
+      "A_native_media": {
+        "ready": true,
+        "available": true,
+        "failed": false,
+        "failure_code": "none",
+        "stopped": false,
+        "capture_enabled": true,
+        "frame_count": 1,
+        "connected_frames": 1,
+        "live_tracks": 1,
+        "cleanup_status": "pending",
+        "packets_received": 19496,
+        "bytes_received": 703178
+      },
+      "passed": true
+    },
+    {
+      "number": 7,
+      "question": "小白小白，本場更正後的預算是多少？",
+      "fact_matches": {
+        "corrected_amount": false
+      },
+      "tool_calls": 0,
+      "reader_calls": 0,
+      "tool_deliveries": [],
+      "marker_sent": false,
+      "bytes_sent": 0,
+      "state": "sleeping",
+      "runtime_failure": null,
+      "error": false,
+      "output_enabled": false,
+      "speech": {
+        "phase": "closed",
+        "native_state": "sleeping",
+        "done_is_set": true,
+        "speech_task_done": true,
+        "speech_task_cancelled": false,
+        "error_code": null,
+        "output_active": false,
+        "nonzero_frames": 1130995,
+        "activity_frames": 1103872,
+        "packet_frames": 2048,
+        "packet_nonzero_frames": 12,
+        "packet_peak_abs": 1,
+        "packet_rms": 0.07654655446197431,
+        "activity_rms_threshold": 8,
+        "last_active_age_seconds": 86.3323513189971,
+        "last_nonzero_age_seconds": 85.13547485100571,
+        "drain_result": {
+          "present": true,
+          "truncated": false,
+          "drained": false,
+          "muted": true
+        }
+      },
+      "elapsed_seconds": 60.276,
+      "sender_before": {
+        "point": "question_before",
+        "received_seconds": 385.28892391400586,
+        "read_status": "returned",
+        "connection": "connected",
+        "data_channel": "open",
+        "audio_context_state": "running",
+        "sent_frames": 9230336,
+        "buffer_gap_count": 134,
+        "buffer_gap_frames": 19584,
+        "scheduled_queue_ms": 140,
+        "outbound_audio": [
+          {
+            "bytesSent": 711481,
+            "packetsSent": 19469
+          }
+        ]
+      },
+      "sender_after": {
+        "point": "question_after",
+        "received_seconds": 445.5645461050008,
+        "read_status": "returned",
+        "connection": "connected",
+        "data_channel": "open",
+        "audio_context_state": "running",
+        "sent_frames": 10674176,
+        "buffer_gap_count": 151,
+        "buffer_gap_frames": 22016,
+        "scheduled_queue_ms": 113,
+        "outbound_audio": [
+          {
+            "bytesSent": 817360,
+            "packetsSent": 22514
+          }
+        ]
+      },
+      "transcripts_before": {
+        "user_delta": 91,
+        "user_done": 6,
+        "assistant_delta": 358,
+        "assistant_done": 6
+      },
+      "transcripts_after": {
+        "user_delta": 100,
+        "user_done": 6,
+        "assistant_delta": 358,
+        "assistant_done": 6
+      },
+      "input_events": [
+        {
+          "time": 80929.136667559,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 1.967
+        },
+        {
+          "time": 80929.73713975,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 2.567
+        },
+        {
+          "time": 80930.203443159,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 3.034
+        },
+        {
+          "time": 80930.341946656,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 3.172
+        },
+        {
+          "time": 80930.753514049,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 3.584
+        },
+        {
+          "time": 80931.137748548,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 3.968
+        },
+        {
+          "time": 80931.558942473,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 4.389
+        },
+        {
+          "time": 80931.940076451,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 4.77
+        },
+        {
+          "time": 80932.540823231,
+          "final": false,
+          "characters": 0,
+          "elapsed_seconds": 5.371
+        }
+      ],
+      "capture_counts": {
+        "offered": 5212,
+        "accepted": 5212,
+        "rejected": 0,
+        "invalid_clock": 0
+      },
+      "input_pending": {
+        "characters": 16,
+        "has_wake": true,
+        "has_question": true
+      },
+      "stimulus": {
+        "source_completed": true,
+        "frames": 108495,
+        "audio_seconds": 4.520625,
+        "context_elapsed": 4.730666666666707,
+        "wall_seconds": 5.249
+      },
+      "raw_events": [
+        {
+          "time": 80929.113775157,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 2,
+          "client_delegation": false,
+          "elapsed_seconds": 1.944
+        },
+        {
+          "time": 80929.114159299,
+          "type": "turn.created",
+          "role": "user",
+          "turn_hash": "0a18feb612ac17f4",
+          "has_transcript": true,
+          "transcript_characters": 2,
+          "delta_characters": null,
+          "client_delegation": false,
+          "elapsed_seconds": 1.944
+        },
+        {
+          "time": 80929.71336376,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 2,
+          "client_delegation": false,
+          "elapsed_seconds": 2.543
+        },
+        {
+          "time": 80930.1811772,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 2,
+          "client_delegation": false,
+          "elapsed_seconds": 3.011
+        },
+        {
+          "time": 80930.320262995,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 1,
+          "client_delegation": false,
+          "elapsed_seconds": 3.15
+        },
+        {
+          "time": 80930.730985354,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 2,
+          "client_delegation": false,
+          "elapsed_seconds": 3.561
+        },
+        {
+          "time": 80931.115505984,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 2,
+          "client_delegation": false,
+          "elapsed_seconds": 3.946
+        },
+        {
+          "time": 80931.53520961,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 2,
+          "client_delegation": false,
+          "elapsed_seconds": 4.365
+        },
+        {
+          "time": 80931.920234669,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 1,
+          "client_delegation": false,
+          "elapsed_seconds": 4.75
+        },
+        {
+          "time": 80932.517856154,
+          "type": "input_transcript.added",
+          "role": null,
+          "turn_hash": null,
+          "has_transcript": false,
+          "transcript_characters": null,
+          "delta_characters": 2,
+          "client_delegation": false,
+          "elapsed_seconds": 5.348
+        }
+      ],
+      "capture_stats": [
+        {
+          "tracks": 1,
+          "packets": 5212,
+          "dropped": 0,
+          "frames": 10674176,
+          "nonzero_samples": 916665,
+          "playout_errors": 0,
+          "capture_readiness": {
+            "hook_present": true,
+            "capture_enabled": true,
+            "context_state": "running",
+            "live_attached_tracks": 1,
+            "muted_live_tracks": 0,
+            "pending_live_tracks": 0,
+            "attach_errors": [],
+            "ready": true
+          },
+          "connections": []
+        }
+      ],
+      "fixture_source": {
+        "context": "running",
+        "time": 446.576,
+        "track": "live"
+      },
+      "A_native_media": {
+        "ready": true,
+        "available": true,
+        "failed": false,
+        "failure_code": "none",
+        "stopped": false,
+        "capture_enabled": true,
+        "frame_count": 1,
+        "connected_frames": 1,
+        "live_tracks": 1,
+        "cleanup_status": "pending",
+        "packets_received": 22548,
+        "bytes_received": 809051
+      },
+      "passed": false
+    }
+  ],
+  "passed": false,
+  "input_path": "capture_fanout",
+  "A_media_consumer": "real local native RTC receiver; not an A model or injected transcript",
+  "same_thread_all_questions": true,
+  "no_wake": {
+    "tool_calls": 0,
+    "accepted_output_frames": 0,
+    "runtime_error": false
+  },
+  "final_status": {
+    "meeting_id": "6da30cfe893c446db3bb44b3b059a2bd",
+    "state": "sleeping",
+    "output_enabled": false,
+    "output_muted": true,
+    "rx_dropped": 0,
+    "tool_calls": 6,
+    "rx_accepted_packets": 5212,
+    "rx_peer_push_packets": 5212,
+    "transcript_notifications": {
+      "user_delta": 100,
+      "user_done": 6,
+      "assistant_delta": 358,
+      "assistant_done": 6
+    },
+    "input_pending": {
+      "characters": 16,
+      "has_wake": true,
+      "has_question": true
+    },
+    "speech_completion": {
+      "phase": "closed",
+      "native_state": "sleeping",
+      "done_is_set": true,
+      "speech_task_done": true,
+      "speech_task_cancelled": false,
+      "error_code": null,
+      "output_active": false,
+      "nonzero_frames": 1130995,
+      "activity_frames": 1103872,
+      "packet_frames": 2048,
+      "packet_nonzero_frames": 12,
+      "packet_peak_abs": 1,
+      "packet_rms": 0.07654655446197431,
+      "activity_rms_threshold": 8,
+      "last_active_age_seconds": 86.34108825499425,
+      "last_nonzero_age_seconds": 85.14421178700286,
+      "drain_result": {
+        "present": true,
+        "truncated": false,
+        "drained": false,
+        "muted": true
+      }
+    },
+    "stop_status": "not_started",
+    "drain": {
+      "status": "muted",
+      "truncated": false,
+      "reason": "output_disabled"
+    },
+    "output_delivery": {
+      "status": "muted",
+      "truncated": false,
+      "reason": "output_disabled"
+    },
+    "error": null,
+    "runtime_failure": null,
+    "cleanup_status": "idle",
+    "cleanup_errors": [],
+    "stop_error": null,
+    "stop_ack_received": false,
+    "stop_closed_received": false,
+    "context": {
+      "sent_bytes": 21130,
+      "total_limit_bytes": null,
+      "known_paragraphs": 4,
+      "source_version": 3,
+      "pending": false,
+      "model_consumption_verified": false,
+      "preparing": false,
+      "delivery_scope": "successful_host_send_returns_this_live_thread"
+    },
+    "context_failure_code": null,
+    "handoff_receipts": {
+      "counts": {
+        "received": 6,
+        "admitted": 6,
+        "rejected": 0
+      },
+      "events": [
+        {
+          "outcome": "admitted",
+          "reason": null,
+          "received_seconds": 24.60426954300783,
+          "decision_seconds": 24.6043329880049
+        },
+        {
+          "outcome": "admitted",
+          "reason": null,
+          "received_seconds": 84.78435377099959,
+          "decision_seconds": 84.78441682600533
+        },
+        {
+          "outcome": "admitted",
+          "reason": null,
+          "received_seconds": 148.3595676010009,
+          "decision_seconds": 148.35962283500703
+        },
+        {
+          "outcome": "admitted",
+          "reason": null,
+          "received_seconds": 209.1413078100013,
+          "decision_seconds": 209.14137955600745
+        },
+        {
+          "outcome": "admitted",
+          "reason": null,
+          "received_seconds": 273.1284029870003,
+          "decision_seconds": 273.1284947210079
+        },
+        {
+          "outcome": "admitted",
+          "reason": null,
+          "received_seconds": 338.07157123700017,
+          "decision_seconds": 338.0716597529972
+        }
+      ],
+      "event_limit": 64,
+      "count_limit": 2147483647,
+      "timing_basis": "host monotonic seconds relative to responder construction"
+    },
+    "tool_deliveries": [
+      {
+        "question_number": 1,
+        "phase": "delivered",
+        "started_elapsed_ms": 24604,
+        "source_version": 2,
+        "available": true,
+        "selected_ref_count": 4,
+        "selected_record_indexes": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "selected_indexes_truncated": false,
+        "omitted_for_budget": false,
+        "payload_bytes": 4477,
+        "sent_bytes": 4492,
+        "marker_returned": true,
+        "model_consumption_verified": false
+      },
+      {
+        "question_number": 2,
+        "phase": "delivered",
+        "started_elapsed_ms": 84784,
+        "source_version": 2,
+        "available": true,
+        "selected_ref_count": 4,
+        "selected_record_indexes": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "selected_indexes_truncated": false,
+        "omitted_for_budget": false,
+        "payload_bytes": 3251,
+        "sent_bytes": 3266,
+        "marker_returned": true,
+        "model_consumption_verified": false
+      },
+      {
+        "question_number": 3,
+        "phase": "delivered",
+        "started_elapsed_ms": 148359,
+        "source_version": 2,
+        "available": true,
+        "selected_ref_count": 4,
+        "selected_record_indexes": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "selected_indexes_truncated": false,
+        "omitted_for_budget": false,
+        "payload_bytes": 3251,
+        "sent_bytes": 3266,
+        "marker_returned": true,
+        "model_consumption_verified": false
+      },
+      {
+        "question_number": 4,
+        "phase": "delivered",
+        "started_elapsed_ms": 209141,
+        "source_version": 3,
+        "available": true,
+        "selected_ref_count": 4,
+        "selected_record_indexes": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "selected_indexes_truncated": false,
+        "omitted_for_budget": false,
+        "payload_bytes": 3559,
+        "sent_bytes": 3574,
+        "marker_returned": true,
+        "model_consumption_verified": false
+      },
+      {
+        "question_number": 5,
+        "phase": "delivered",
+        "started_elapsed_ms": 273128,
+        "source_version": 3,
+        "available": true,
+        "selected_ref_count": 4,
+        "selected_record_indexes": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "selected_indexes_truncated": false,
+        "omitted_for_budget": false,
+        "payload_bytes": 3251,
+        "sent_bytes": 3266,
+        "marker_returned": true,
+        "model_consumption_verified": false
+      },
+      {
+        "question_number": 6,
+        "phase": "delivered",
+        "started_elapsed_ms": 338071,
+        "source_version": 3,
+        "available": true,
+        "selected_ref_count": 4,
+        "selected_record_indexes": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "selected_indexes_truncated": false,
+        "omitted_for_budget": false,
+        "payload_bytes": 3251,
+        "sent_bytes": 3266,
+        "marker_returned": true,
+        "model_consumption_verified": false
+      }
+    ],
+    "native_contract": "v3-client-delegation",
+    "greeting_completion": null
+  },
+  "connected_seconds": 445.573,
+  "exceeded_old_32K": false,
+  "failure": {
+    "type": "AssertionError",
+    "code": null,
+    "stage": "ready"
+  },
+  "cleanup": {
+    "local_A_media": true,
+    "local_receiver": true,
+    "capture": true,
+    "B": true,
+    "browser": true
+  },
+  "capture_counts": {
+    "offered": 5213,
+    "accepted": 5213,
+    "rejected": 0,
+    "invalid_clock": 0
+  },
+  "capture_events": [
+    "rx_ready"
+  ],
+  "raw_event_counts": {
+    "session.started": 1,
+    "input_transcript.added": 100,
+    "turn.created": 13,
+    "turn.delta": 445,
+    "session.usage.updated": 29,
+    "delegation.created": 6,
+    "delegation.context.appended": 51,
+    "output_transcript.added": 358,
+    "turn.done": 12
+  },
+  "stop_result": "stopped",
+  "stopped_status": {
+    "meeting_id": "6da30cfe893c446db3bb44b3b059a2bd",
+    "state": "stopped",
+    "output_enabled": false,
+    "output_muted": true,
+    "rx_dropped": 0,
+    "tool_calls": 6,
+    "rx_accepted_packets": 5213,
+    "rx_peer_push_packets": 5213,
+    "transcript_notifications": {
+      "user_delta": 100,
+      "user_done": 6,
+      "assistant_delta": 358,
+      "assistant_done": 6
+    },
+    "input_pending": {
+      "characters": 16,
+      "has_wake": true,
+      "has_question": true
+    },
+    "speech_completion": {
+      "phase": "closed",
+      "native_state": "stopped",
+      "done_is_set": true,
+      "speech_task_done": true,
+      "speech_task_cancelled": false,
+      "error_code": null,
+      "output_active": false,
+      "nonzero_frames": 1130995,
+      "activity_frames": 1103872,
+      "packet_frames": 2048,
+      "packet_nonzero_frames": 12,
+      "packet_peak_abs": 1,
+      "packet_rms": 0.07654655446197431,
+      "activity_rms_threshold": 8,
+      "last_active_age_seconds": 86.48656033098814,
+      "last_nonzero_age_seconds": 85.28968386299675,
+      "drain_result": {
+        "present": true,
+        "truncated": false,
+        "drained": false,
+        "muted": true
+      }
+    },
+    "stop_status": "stopped",
+    "drain": {
+      "status": "muted",
+      "truncated": false,
+      "reason": "output_disabled"
+    },
+    "output_delivery": {
+      "status": "muted",
+      "truncated": false,
+      "reason": "output_disabled"
+    },
+    "error": null,
+    "runtime_failure": null,
+    "cleanup_status": "cleaned",
+    "cleanup_errors": [],
+    "stop_error": null,
+    "stop_ack_received": true,
+    "stop_closed_received": true,
+    "context": {
+      "sent_bytes": 21130,
+      "total_limit_bytes": null,
+      "known_paragraphs": 0,
+      "source_version": 3,
+      "pending": false,
+      "model_consumption_verified": false,
+      "preparing": false,
+      "delivery_scope": "successful_host_send_returns_this_live_thread"
+    },
+    "context_failure_code": null,
+    "handoff_receipts": {
+      "counts": {
+        "received": 6,
+        "admitted": 6,
+        "rejected": 0
+      },
+      "events": [
+        {
+          "outcome": "admitted",
+          "reason": null,
+          "received_seconds": 24.60426954300783,
+          "decision_seconds": 24.6043329880049
+        },
+        {
+          "outcome": "admitted",
+          "reason": null,
+          "received_seconds": 84.78435377099959,
+          "decision_seconds": 84.78441682600533
+        },
+        {
+          "outcome": "admitted",
+          "reason": null,
+          "received_seconds": 148.3595676010009,
+          "decision_seconds": 148.35962283500703
+        },
+        {
+          "outcome": "admitted",
+          "reason": null,
+          "received_seconds": 209.1413078100013,
+          "decision_seconds": 209.14137955600745
+        },
+        {
+          "outcome": "admitted",
+          "reason": null,
+          "received_seconds": 273.1284029870003,
+          "decision_seconds": 273.1284947210079
+        },
+        {
+          "outcome": "admitted",
+          "reason": null,
+          "received_seconds": 338.07157123700017,
+          "decision_seconds": 338.0716597529972
+        }
+      ],
+      "event_limit": 64,
+      "count_limit": 2147483647,
+      "timing_basis": "host monotonic seconds relative to responder construction"
+    },
+    "tool_deliveries": [
+      {
+        "question_number": 1,
+        "phase": "delivered",
+        "started_elapsed_ms": 24604,
+        "source_version": 2,
+        "available": true,
+        "selected_ref_count": 4,
+        "selected_record_indexes": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "selected_indexes_truncated": false,
+        "omitted_for_budget": false,
+        "payload_bytes": 4477,
+        "sent_bytes": 4492,
+        "marker_returned": true,
+        "model_consumption_verified": false
+      },
+      {
+        "question_number": 2,
+        "phase": "delivered",
+        "started_elapsed_ms": 84784,
+        "source_version": 2,
+        "available": true,
+        "selected_ref_count": 4,
+        "selected_record_indexes": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "selected_indexes_truncated": false,
+        "omitted_for_budget": false,
+        "payload_bytes": 3251,
+        "sent_bytes": 3266,
+        "marker_returned": true,
+        "model_consumption_verified": false
+      },
+      {
+        "question_number": 3,
+        "phase": "delivered",
+        "started_elapsed_ms": 148359,
+        "source_version": 2,
+        "available": true,
+        "selected_ref_count": 4,
+        "selected_record_indexes": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "selected_indexes_truncated": false,
+        "omitted_for_budget": false,
+        "payload_bytes": 3251,
+        "sent_bytes": 3266,
+        "marker_returned": true,
+        "model_consumption_verified": false
+      },
+      {
+        "question_number": 4,
+        "phase": "delivered",
+        "started_elapsed_ms": 209141,
+        "source_version": 3,
+        "available": true,
+        "selected_ref_count": 4,
+        "selected_record_indexes": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "selected_indexes_truncated": false,
+        "omitted_for_budget": false,
+        "payload_bytes": 3559,
+        "sent_bytes": 3574,
+        "marker_returned": true,
+        "model_consumption_verified": false
+      },
+      {
+        "question_number": 5,
+        "phase": "delivered",
+        "started_elapsed_ms": 273128,
+        "source_version": 3,
+        "available": true,
+        "selected_ref_count": 4,
+        "selected_record_indexes": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "selected_indexes_truncated": false,
+        "omitted_for_budget": false,
+        "payload_bytes": 3251,
+        "sent_bytes": 3266,
+        "marker_returned": true,
+        "model_consumption_verified": false
+      },
+      {
+        "question_number": 6,
+        "phase": "delivered",
+        "started_elapsed_ms": 338071,
+        "source_version": 3,
+        "available": true,
+        "selected_ref_count": 4,
+        "selected_record_indexes": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "selected_indexes_truncated": false,
+        "omitted_for_budget": false,
+        "payload_bytes": 3251,
+        "sent_bytes": 3266,
+        "marker_returned": true,
+        "model_consumption_verified": false
+      }
+    ],
+    "native_contract": "v3-client-delegation",
+    "greeting_completion": null
+  },
+  "model_process_reaped": true,
+  "interpretation": "Qualified Q7 stimulus completed (108495 frames, 4.520625 audio seconds, 5.249 wall seconds); A native media, capture and B RTP stayed live. Raw wire had new user turn.created and nine input_transcript.added events but no user turn.done, no delegation.created, and no assistant answer during the observation window. Canonical notifications therefore had no completion to forward. Required v3 lifecycle signal is missing at native service/protocol boundary; internal service cause remains unknown. Do not invent completion, reuse delegation IDs, restart per question or claim a local byte cap."
+}

@@ -1,0 +1,12 @@
+services:
+  teams-transcription:
+    environment:
+      ASSISTANT_CODEX_HOME: /auth/codex
+    volumes:
+      - type: bind
+        source: ${CODEX_AUTH_HOME_HOST:?set_authorized_same_deployment_auth_directory}
+        target: /auth/codex
+        # Normal OAuth refresh writes back to this same private directory.
+        read_only: false
+        bind:
+          create_host_path: false

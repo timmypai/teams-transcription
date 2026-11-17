@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "candidate_id": "semantic-startup-v1",
+  "source_application_sha": "e82bb30900e90c9559b9c3dcb71e532cad86b72e",
+  "runtime_contract_id": "no-plc-startup-runtime-v1",
+  "runtime_base_manifest_sha256": "9b13c14a0b4334bb84ef8300a73a68bf80a71660fe7037e3f949361525afd15b",
+  "criterion_version": "synthetic_current_fact_semantic_v1",
+  "qa_receipt_schema_version": 3,
+  "module_order": [
+    "qa_content",
+    "qa_probe",
+    "qa_session_isolation"
+  ],
+  "physical_runtime_files": {
+    "qa_probe.py": "e40e2de9dc436573e93d04ea2c970ed519244c17c2ea055728deb136b8dbb862",
+    "b_no_plc.py": "5fb5e4322c27d36f74a31fe8cbc740fd232088d58db5e74ba417fff224525384",
+    "b_live.py": "1415852671c4377860511f93df284c12750f88165cbcef8021349c4090304547",
+    "b_media_profile.py": "94f4124b446c2a543f6eaa6b57ff276eb0983cab124826d09e1170f9b56ead01",
+    "b_browser_tx.py": "f523aad40474ea5499ba8cafa3611d457abdb4408260aac63e4b74618c2dc87f",
+    "b_no_plc_startup.py": "9d2067fb66a7450cb4aac265d67f59f4d6894ee5848f8cdf564b19cef00becbe"
+  },
+  "files": {
+    "qa_content.py": "55afeac6ec7cf9315f00fafc772261b4e680be835c465e26239467a4cd1734cc",
+    "qa_probe.py": "817fa0b7a196831d97c82a0897bd52115017c90953a7c244e661ffab95e7cd56",
+    "qa_session_isolation.py": "b6a7152b443abf0ac04809c97766b23193bcb15f6b1ac2d474d49da74f38edb4"
+  },
+  "release": {
+    "source_sha": null,
+    "image_digest": null,
+    "build_run_id": null,
+    "build_run_attempt": null
+  },
+  "runtime_authorized": false
+}

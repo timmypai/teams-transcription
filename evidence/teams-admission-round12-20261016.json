@@ -1,0 +1,181 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-10-16T05:33:31.328294+00:00",
+  "activity_count": 13,
+  "real_attempt_count": 12,
+  "join_submissions_this_attempt": 1,
+  "operator_observation": "allowed_assistant_but_did_not_enter",
+  "outcome": "failed_before_live_start",
+  "run_state": "failed",
+  "end_reason": "preparation_error",
+  "error": "meeting_join_failed",
+  "diagnostic_error_code": "timeout",
+  "failure_phase": "meeting_join",
+  "join_outcome": "timeout",
+  "join_dispatch_completed": true,
+  "post_join_ui": {
+    "available": true,
+    "freshness_limit_ms": 1500,
+    "last_sample_age_ms": 316,
+    "observation_attempts": 191,
+    "observation_scope": "post_join_only",
+    "schema_version": 1,
+    "snapshot": {
+      "category": "multiple_known_categories",
+      "category_candidates": [
+        "login_prompt",
+        "prejoin"
+      ],
+      "latest_attempt_error": "none",
+      "observation_duration_ms": 64,
+      "observed_elapsed_ms": 119685,
+      "origin_kind": "teams",
+      "role_counts": {
+        "button": 8,
+        "dialog": 0,
+        "heading": 1,
+        "link": 1,
+        "radio": 3,
+        "textbox": 0
+      },
+      "safe_name_counts": {
+        "app_open_button": 0,
+        "audio_fallback_button": 0,
+        "auth_error_message": 0,
+        "browser_continue_button": 0,
+        "browser_continue_link": 0,
+        "computer_audio_radio": 1,
+        "continue_without_av_button": 0,
+        "cookies_blocked_message": 0,
+        "device_preview_dialog_message": 0,
+        "dismiss_button": 1,
+        "dont_use_audio_button": 0,
+        "ended_message": 0,
+        "error_message": 0,
+        "guest_entry_button": 0,
+        "guest_entry_link": 0,
+        "join_button": 1,
+        "join_without_audio_button": 0,
+        "leave_button": 0,
+        "lobby_message": 0,
+        "media_blocked_message": 0,
+        "meeting_missing_message": 0,
+        "mute_button": 0,
+        "sign_in_button": 1,
+        "sign_in_link": 0,
+        "unsupported_message": 0
+      },
+      "sample_age_ms": 316,
+      "sample_scope": "post_join_observation",
+      "sample_sequence": 1,
+      "sample_time_basis": "complete_scan_end",
+      "schema_version": 1,
+      "text_lookup_supported": true,
+      "unknown_name_counts": {
+        "button": 5,
+        "link": 1,
+        "radio": 2
+      }
+    },
+    "unavailable_reason": "none"
+  },
+  "cleanup_status": "cleaned",
+  "source_quality": {
+    "terminal": true,
+    "status": "failed",
+    "finalized": true,
+    "completeness": "unavailable",
+    "error_code": "meeting_join_failed"
+  },
+  "live_started": false,
+  "audio_seconds": 0.0,
+  "native_voice_or_content_acceptance": false,
+  "runtime_idle": {
+    "active_session": false,
+    "capture_interlock": false,
+    "last_error": null,
+    "recording_authorized": false,
+    "speaking_authorized": false
+  },
+  "no_join_checks": [
+    {
+      "real_join_attempted": false,
+      "capture_audio": false,
+      "model_started": false,
+      "audio_preview_prepared": true,
+      "frame_count": 1,
+      "microphone_permission": "denied",
+      "ui_state": "unrecognized",
+      "safe_controls": {
+        "join": {
+          "visible": 1,
+          "enabled": 0
+        },
+        "leave": {
+          "visible": 0,
+          "enabled": 0
+        },
+        "computer_audio": {
+          "visible": 1,
+          "enabled": 1
+        },
+        "sign_in": {
+          "visible": 1,
+          "enabled": 1
+        }
+      },
+      "peer_count": 0,
+      "track_count": 0,
+      "network_counters": {
+        "net::ERR_CONNECTION_REFUSED": 2,
+        "net::ERR_ABORTED": 3
+      },
+      "join_method_called": false
+    },
+    {
+      "real_join_attempted": false,
+      "capture_audio": false,
+      "model_started": false,
+      "audio_preview_prepared": false,
+      "preview_exception_type": "TimeoutError",
+      "frame_count": 1,
+      "microphone_permission": "denied",
+      "ui_state": "unrecognized",
+      "safe_controls": {
+        "join": {
+          "visible": 0,
+          "enabled": 0
+        },
+        "leave": {
+          "visible": 0,
+          "enabled": 0
+        },
+        "computer_audio": {
+          "visible": 0,
+          "enabled": 0
+        },
+        "sign_in": {
+          "visible": 0,
+          "enabled": 0
+        }
+      },
+      "peer_count": 0,
+      "track_count": 0,
+      "network_counters": {
+        "other:net::ERR_CONNECTION_REFUSED": 2,
+        "other:net::ERR_ABORTED": 2,
+        "teams:net::ERR_ABORTED": 1
+      },
+      "join_method_called": false
+    }
+  ],
+  "no_join_check_limits": [
+    "No additional Join, capture, speech or model invocation.",
+    "Standalone prejoin checks do not establish the original failure cause or reproduce the original admission transition.",
+    "Request failure category other is insufficient to identify an endpoint or root cause."
+  ],
+  "root_cause_proven": false,
+  "production_code_changed": false,
+  "remaining_discriminating_evidence": "Time-aligned client transition/connection observation when the operator allows admission; Run12 original browser was already cleaned.",
+  "automatic_rejoin": false
+}

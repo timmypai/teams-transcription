@@ -1,0 +1,60 @@
+name: PR policy shadow report (always blocks merge)
+
+# No automatic events. Do not dispatch until the owner approves the bounded cost.
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: PR number to inspect; reads only GitHub metadata
+        type: number
+        required: true
+
+permissions:
+  contents: read
+  pull-requests: read
+  checks: read
+
+concurrency:
+  group: pr-policy-shadow-${{ inputs.pr_number }}
+  cancel-in-progress: true
+
+jobs:
+  shadow:
+    if: >-
+      github.repository == 'paulpai0412/teams-transcription' &&
+      github.ref == 'refs/heads/main' &&
+      vars.ENABLE_PR_POLICY_SHADOW == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - name: Checkout trusted workflow commit only
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          ref: ${{ github.workflow_sha }}
+          persist-credentials: false
+      - name: Inspect bounded GitHub evidence without executing PR code
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+        run: >-
+          python3 tools/pr_policy_github.py
+          --pr "$PR_NUMBER" --output "$RUNNER_TEMP/pr-policy.json"
+      - name: Summarize blocking result
+        if: always()
+        run: |
+          printf '%s\n' '### PR policy shadow report' '' \
+            'This diagnostic always blocks merge. A successful test job or an absent Codex comment is not review approval.' \
+            >> "$GITHUB_STEP_SUMMARY"
+          if test -f "$RUNNER_TEMP/pr-policy.json"; then
+            printf '\n```json\n' >> "$GITHUB_STEP_SUMMARY"
+            cat "$RUNNER_TEMP/pr-policy.json" >> "$GITHUB_STEP_SUMMARY"
+            printf '\n```\n' >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Retain sanitized report only
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: pr-policy-shadow-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/pr-policy.json
+          retention-days: 7
+          if-no-files-found: warn

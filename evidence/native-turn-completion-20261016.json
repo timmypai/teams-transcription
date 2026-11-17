@@ -1,0 +1,156 @@
+{
+  "schema_version": 1,
+  "kind": "native_turn_completion_fix",
+  "tested_at": "2026-10-16T04:12:37.550473+00:00",
+  "production_meeting": {
+    "attempt": 11,
+    "calendar_activities_created": 12,
+    "remote_hearing_reported": true,
+    "task_content_accepted": false,
+    "state": "stopped",
+    "end_reason": "operator_stop",
+    "cleanup": "cleaned",
+    "summary_model": "gpt-6.1-sol",
+    "summary_published": true
+  },
+  "scope": "Same authorized OAuth; frozen bound SQLite and synthetic zh-TW audio; probes use formal Native and no physical output; no Teams joins in probes",
+  "root_evidence": "First assistant completion closed the gate and cleared handoff; later same-question speech was rejected. Reproduced defect, not a full reconstruction of the original live transcript.",
+  "primary_regression": {
+    "failed_before_sink_writes": 1,
+    "expected_sink_writes": 2,
+    "passed_after": true
+  },
+  "additional_regression_boundaries": [
+    "new user raw/canonical",
+    "stale turn done",
+    "plain transcript not media completion",
+    "original deadline",
+    "stop",
+    "drain lock",
+    "done during drain",
+    "cancel during startup",
+    "expiry during startup",
+    "quiet until complete marker returned",
+    "delayed original user final"
+  ],
+  "offline_regression": {
+    "tests": 824,
+    "seconds": 131.682,
+    "passed": true,
+    "skips": 0,
+    "excluded_transfer_missing": [
+      "test_bridge_integration",
+      "test_media_bridge"
+    ]
+  },
+  "core_review": {
+    "fresh_read_only_reviewers": 2,
+    "concrete_race_findings_remediated": true,
+    "focused_remediation_confirmed": true
+  },
+  "probe_receipts": [
+    {
+      "stage": "before_correlated_completion",
+      "exact_task_quote": false,
+      "assistant_done": 1,
+      "answer_characters": 9,
+      "tool_calls": 1,
+      "closed_gate_loud_callbacks": 32,
+      "native_error": null,
+      "stop_status": "stopped",
+      "cleanup_status": "cleaned",
+      "followups": []
+    },
+    {
+      "stage": "completion_fix_before_marker_and_delayed_user_refinements",
+      "exact_task_quote": true,
+      "assistant_done": 1,
+      "answer_characters": 79,
+      "tool_calls": 1,
+      "closed_gate_loud_callbacks": 0,
+      "native_error": null,
+      "stop_status": "stopped",
+      "cleanup_status": "cleaned",
+      "followups": []
+    },
+    {
+      "stage": "earlier_same_thread_control",
+      "exact_task_quote": false,
+      "assistant_done": 2,
+      "answer_characters": 81,
+      "tool_calls": 3,
+      "closed_gate_loud_callbacks": 0,
+      "native_error": null,
+      "stop_status": "stopped",
+      "cleanup_status": "cleaned",
+      "followups": [
+        {
+          "round": 2,
+          "exact_task_quote": true,
+          "answer_characters": 47,
+          "selected_task_refs": [
+            1
+          ],
+          "native_error": null
+        },
+        {
+          "round": 3,
+          "exact_task_quote": true,
+          "answer_characters": 49,
+          "selected_task_refs": [
+            1
+          ],
+          "native_error": null
+        }
+      ]
+    },
+    {
+      "stage": "final_source_same_thread_control",
+      "exact_task_quote": false,
+      "assistant_done": 1,
+      "answer_characters": 97,
+      "tool_calls": 3,
+      "closed_gate_loud_callbacks": 0,
+      "native_error": null,
+      "stop_status": "stopped",
+      "cleanup_status": "cleaned",
+      "followups": [
+        {
+          "round": 2,
+          "exact_task_quote": false,
+          "answer_characters": 61,
+          "selected_task_refs": [
+            1
+          ],
+          "native_error": null
+        },
+        {
+          "round": 3,
+          "exact_task_quote": false,
+          "answer_characters": 90,
+          "selected_task_refs": [
+            1
+          ],
+          "native_error": null
+        }
+      ]
+    }
+  ],
+  "limitations": {
+    "latest_exact_quote_acceptance": false,
+    "latest_remote_content_acceptance": false,
+    "original_live_query_answer_not_retained": true,
+    "saved_task_has_uncertainty": true,
+    "glossary_effect_compared": false,
+    "autonomous_scheduling_acceptance": false
+  },
+  "runtime": {
+    "service": "calendar-live-native-turns14",
+    "started": true,
+    "active_session_id": null,
+    "capture_interlock": false,
+    "last_error": null,
+    "scheduler_paused": true,
+    "media_authorizations": false
+  }
+}

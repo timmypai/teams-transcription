@@ -1,0 +1,10 @@
+{
+  "kind": "actual_docker_context_export",
+  "network": "none",
+  "admitted_tools_files": [
+    "prefetch_codex_npm.py"
+  ],
+  "helper_sha256_matches": true,
+  "private_config_auth_or_model_data_admitted": false,
+  "passed": true
+}

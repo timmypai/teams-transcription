@@ -1,0 +1,122 @@
+{
+  "recorded_at": "2026-10-30T11:04:26.495324+00:00",
+  "work_branch": "test/qa-passive-audio-observer",
+  "previous_pushed_sha": "91a5bb59737c1f73a3162ec3c7b15ee47b477118",
+  "base_app_source_sha": "c4090edb0e8e5db50d8950515522dba733618c51",
+  "passive_candidate_sha": "d5f729f6db228cc60b67674a031e99bc0545629b",
+  "passive_candidate_bytes_unchanged": true,
+  "actual_actions_or_host_execution_performed": false,
+  "model_starts": 0,
+  "ledger_checkpoint": {
+    "source": "parent/host handoff; not re-read on host",
+    "used": 7,
+    "limit": 50,
+    "remaining": 43
+  },
+  "prepared": [
+    "manual main-only offline/observe workflow with exact installed command and projected artifact",
+    "fixed installed rootless Docker/controller bridge and container offline checker/observed QA entry",
+    "nonblocking real controller/global QA locks, existing-only authority, durable quota/history/interlock",
+    "controller mutation guard for unresolved QA cleanup",
+    "long-term parallel work dependency/single-writer policy in AGENTS and delivery table"
+  ],
+  "tests": {
+    "focused_related": {
+      "tests": 33,
+      "success": true
+    },
+    "aggregate": {
+      "scope": "controlled offline subset",
+      "suites": [
+        "test_assistant_store",
+        "test_assistant_daemon",
+        "test_calendar_client",
+        "test_glossary_context",
+        "test_admin_web",
+        "test_sqlite_voice_context",
+        "test_sqlite_only_store",
+        "test_rx_contract",
+        "test_prefetch_codex_npm",
+        "test_staging_control",
+        "test_capture_cleanup_review",
+        "test_release_gate",
+        "test_diagnostic_projection",
+        "test_codex_auth",
+        "test_provider_state",
+        "test_workflow_triggers",
+        "test_staging_docker_diagnostics",
+        "test_staging_compose",
+        "test_first_deploy_recovery",
+        "test_qa_probe.ProbeTests",
+        "test_qa_receiver_projection",
+        "test_qa_audio_observer",
+        "test_cloud_qa_contract",
+        "test_cloud_qa_bridge.CloudQABridgeTests",
+        "test_turn_lifecycle_evidence.TurnLifecycleEvidenceTests",
+        "test_speech_completion_snapshot.SpeechCompletionSnapshotTests",
+        "test_incremental_minutes_context.ContextTests.test_wire_instruction_distinguishes_verbatim_quote_and_normal_answers",
+        "test_native_incremental_context.NativeSnapshotContextTests.test_delivery_receipt_hashes_identify_actual_current_payload_without_content",
+        "test_b_native.NativeLiveTests.test_live_prompt_distinguishes_verbatim_format_from_normal_current_fact_answers",
+        "test_b_native.NativeLiveTests.test_three_physical_questions_in_one_provider_turn_query_current_sqlite_each_time"
+      ],
+      "tests": 306,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "success": true,
+      "teams_or_model_called": false,
+      "audio_e2e_tested": false
+    },
+    "actionlint_all_five_workflows": true,
+    "real_candidate_offline_source_load_in_child_process": true,
+    "actual_docker_or_chromium_or_arm64_or_live": false
+  },
+  "reviews": {
+    "spec": {
+      "actionable_findings": 0,
+      "unique_cases_passed": 16
+    },
+    "standards": {
+      "actionable_findings": 0,
+      "cases_passed": 16
+    },
+    "post_review_test_only_addition": "one CLI malformed/oversized-input stdout/stderr privacy case; final focused33/aggregate306 passed"
+  },
+  "parallel_delivery": {
+    "A_passive": {
+      "writer": "this work branch owner",
+      "source_and_offline_tests": "complete",
+      "host_execution": "pending"
+    },
+    "B_isolated": {
+      "candidate_sha": "836ecbe88d69b14a66326474d08a4c26d15c1e90",
+      "owner": "separate parent-assigned reviewer",
+      "bridge_execution_included": false,
+      "global_slots_reserved_upfront": 2
+    },
+    "independent_review_and_offline_aggregate": "ran in parallel",
+    "shared_vm_branch_model_ledger": "single writer or common locks; model runs serialized"
+  },
+  "blockers": [
+    "new source not merged and installed host hook still rejects oracle-qa workflow",
+    "root-owned bridge/bundle/controller guard installation not performed",
+    "authoritative existing global ledger/lock paths and real case0007 receipt hash remain unknown",
+    "fresh runner liveness unavailable: list-runners API previously403; no retry/token change",
+    "no actual deployed-container offline job, model or continuity result"
+  ],
+  "no_pr_merge_dispatch_vm_security_credential_or_production_changes": true,
+  "files": {
+    ".github/workflows/oracle-qa.yml": "f34c46e55d58e190649178f1eaabcea10a8f2e1ab0f7f0147e22be3bb42a7781",
+    "AGENTS.md": "a9711adb44b9a1c3d998ee46fdbab945e7a4888107d863a0711575118646ba9f",
+    "deploy/qa_cloud_bridge.py": "427319f0e6485e91e156f385c067fc0d4d3f9d131199911432106b5fdc47d1f8",
+    "deploy/qa_cloud_contract.py": "344021b5f9398a97c03f38cbbfebb7567213bebbcc10550d45e6aa54672d0e56",
+    "deploy/qa_container_entry.py": "51ea4dffda7c1733d24c2a579a6f9afcc10dc51ab23516ff8e2f0a3d0caadcfd",
+    "deploy/stagingctl.py": "23cdc1ab91cd6dc424dabd1811b6aff15a460083c26de10a2189bc48c4deed16",
+    "docs/QA-PASSIVE-AUDIO.md": "c7cc7e269d7d750bc9be58360ee8cf92d455df393ce54763bce6addf1d5af4b7",
+    "tests/test_cloud_qa_bridge.py": "92460805eab49bdd45a2c43f73180d5858b25b43d2befac4fe35c48b05527d3a",
+    "tests/test_cloud_qa_contract.py": "552b4ca767d2b56f4a17971822d5d291fe3cd5c70a8811a52837b2d08c63027e",
+    "tests/test_workflow_triggers.py": "d15878c9441feed1a01512c397d0fb10b32fb4d17f485d4aa9b19fe147a77ca3",
+    "tools/ci_contracts.py": "5f4284aeaee4af00556209eaf1b4182b2d3c446bf82272140180e06dc15b5949",
+    "evidence/cloud-qa-bridge-installation-manifest-20261030.json": "8e91714f07ec4d4eb751e80c494bf4f9e795e59f6d2c4342ac63e1c7ad88514b"
+  }
+}

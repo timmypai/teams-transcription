@@ -1,0 +1,347 @@
+{
+  "test_id": "github-delivery-and-codex-onboarding-completion",
+  "tested_at": "2026-10-29T08:27:04.449822+00:00",
+  "repository": "paulpai0412/teams-transcription",
+  "branch": "ci/oracle-staging-actions-20261029",
+  "source_commit": "8fc15cf2c35cb6ddc7de686daedf1007be34cfbf",
+  "related_issues": [
+    1,
+    2,
+    3,
+    4,
+    7
+  ],
+  "separate_acceptance": [
+    5,
+    6
+  ],
+  "scope": "local implementation and controlled verification; no remote mutations or actual OAuth/provider/VM operations",
+  "offline_aggregate": {
+    "scope": "controlled offline subset",
+    "suites": [
+      "test_assistant_store",
+      "test_assistant_daemon",
+      "test_calendar_client",
+      "test_glossary_context",
+      "test_admin_web",
+      "test_sqlite_voice_context",
+      "test_sqlite_only_store",
+      "test_rx_contract",
+      "test_prefetch_codex_npm",
+      "test_staging_control",
+      "test_capture_cleanup_review",
+      "test_release_gate",
+      "test_diagnostic_projection",
+      "test_codex_auth",
+      "test_provider_state"
+    ],
+    "tests": 185,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "success": true,
+    "teams_or_model_called": false,
+    "audio_e2e_tested": false
+  },
+  "x64_image": {
+    "image_id": "sha256:08020a8a9da4dde8e2495cd57868e575dd2ad722de29de910c32c2a3be000076",
+    "source_commit": "8fc15cf2c35cb6ddc7de686daedf1007be34cfbf",
+    "build_success": true,
+    "architecture": "amd64",
+    "immutable_source_contexts": true,
+    "image_content_scan": {
+      "scope": "candidate application paths and image environment; no runtime data",
+      "architecture": "amd64",
+      "checks": {
+        "private_paths_absent": true,
+        "data_root_empty": true,
+        "application_files_bounded": true,
+        "known_sensitive_patterns_absent": true,
+        "root_auth_files_absent": true,
+        "credential_environment_absent": true,
+        "known_sensitive_metadata_absent": true
+      },
+      "success": true
+    },
+    "compose_smoke": {
+      "test_id": "standalone-production-compose",
+      "tested_at": "2026-10-29T08:22:12.874274+00:00",
+      "image_id": "sha256:08020a8a9da4dde8e2495cd57868e575dd2ad722de29de910c32c2a3be000076",
+      "input_kind": "controlled private SQLite",
+      "network": "none",
+      "credentials_mounted": false,
+      "model_or_meeting_called": false,
+      "checks": {
+        "actual_software_and_synthetic_auth_metadata_preflight": true,
+        "actual_default_daemon_healthy": true,
+        "authenticated_admin_http": true,
+        "foreign_origin_rejected": true,
+        "mcp_route_absent": true,
+        "empty_saved_history_distinct_from_missing": true,
+        "bound_context_over_old_32k_limit": true,
+        "nonroot_readonly_dropcaps": true,
+        "network_none_no_published_ports": true,
+        "no_auth_or_docker_socket_mount": true,
+        "effective_cgroup_cpu_memory_pids_limits": true,
+        "container_chroot_still_kernel_denied": true,
+        "actual_sandboxed_chromium_local_page": true,
+        "authenticated_calendar_ui": true,
+        "pinned_codex_installed": true,
+        "graceful_sigterm": true,
+        "synthetic_auth_home_survives_restart": true,
+        "sqlite_survives_restart": true,
+        "synthetic_auth_home_survives_container_recreation": true,
+        "sqlite_survives_container_recreation": true,
+        "no_meeting_markdown_or_raw_audio": true
+      },
+      "codex_version": "codex-cli 0.159.0-alpha.3",
+      "stop_seconds": 0.31,
+      "success": true
+    }
+  },
+  "release_gate": {
+    "machine_verifies": [
+      "fixed repository and workflow identity",
+      "trusted main manual completed successful run",
+      "exact source SHA and run attempt",
+      "artifact SHA256 and bounded ZIP proof",
+      "exact published GHCR digest",
+      "all four validation flags",
+      "pulled image label SHA matches verified proof"
+    ],
+    "rejections_tested": [
+      "failed/running run",
+      "fork or wrong repo",
+      "wrong branch/event/workflow/source",
+      "expired/missing/ambiguous artifact",
+      "tampered archive",
+      "wrong digest or failed validation",
+      "untrusted artifact redirect host",
+      "Authorization never forwarded to artifact storage"
+    ],
+    "cached_healthy_rollback": "revalidates original successful run attempt and prior admitted receipt; no requirement for expired artifact to remain downloadable",
+    "real_GitHub_run_gate_executed": false
+  },
+  "diagnostics": {
+    "window_seconds": 900,
+    "max_lines": 100,
+    "max_read_bytes": 65536,
+    "raw_log_text_exported": false,
+    "allowed_output": "fixed lifecycle/loopback-health event codes and normalized timestamps; unknown/malformed/truncated lines omitted and counted",
+    "synthetic_privacy_tested": [
+      "access/refresh tokens",
+      "API/GitHub token forms",
+      "private keys",
+      "email and Chinese names",
+      "meeting locator",
+      "transcript",
+      "SDP",
+      "encoded audio",
+      "malformed UTF8/date",
+      "trailing injected content",
+      "unknown metadata fields",
+      "private persisted run string",
+      "oversized lines"
+    ],
+    "numeric_resource_summary": true,
+    "source_build_deploy_diagnostic_run_links": true,
+    "Oracle_readback_executed": false
+  },
+  "onboarding": {
+    "commands": [
+      "auth-preflight",
+      "auth-login",
+      "auth-check"
+    ],
+    "actual_grant_executed": false,
+    "actual_account_RPC_executed": false,
+    "pinned_CLI_device_auth_help_verified_offline": true,
+    "login_requires": [
+      "explicit account authorization",
+      "private unrecorded TTY confirmation",
+      "not CI",
+      "explicit persistent private home",
+      "UID/GID and private permissions",
+      "daemon stopped and onboarding locks",
+      "explicit reauthorize for existing auth"
+    ],
+    "onboarding_compose": {
+      "logging_driver": "none",
+      "published_ports": false,
+      "default_command": "auth-preflight",
+      "rendered_and_checked": true
+    },
+    "states_mock_tested": [
+      "missing auth",
+      "version/dependency errors",
+      "unwritable/ephemeral/readonly mount",
+      "UID/GID/private mode",
+      "cancel/timeout/denial",
+      "concurrent authorization recheck",
+      "readonly account not admitted vs media untested",
+      "normal home restoration"
+    ],
+    "synthetic_persistence_real_container_tested": [
+      "restart",
+      "force-recreate",
+      "same private fake auth contents/mode",
+      "SQLite source preserved"
+    ],
+    "grant_refresh_revocation_expiry_and_real_Live_RX_TX": "not executed; require operator fresh secure authorization and authorized provider test"
+  },
+  "software_versions_observed_x64": {
+    "python": "3.12.15",
+    "playwright": "1.62.0",
+    "starlette": "1.6.0",
+    "httpx": "0.28.1",
+    "uvicorn": "0.52.1",
+    "pydantic": "2.13.4",
+    "PyYAML": "6.0.3",
+    "codex": "codex-cli 0.159.0-alpha.3",
+    "node": "18.20.4",
+    "chromium": "156.0.8078.47",
+    "ffmpeg": "5.1.9"
+  },
+  "system_package_versions_observed_x64": {
+    "ca-certificates": "20250419~deb12u2",
+    "chromium": "156.0.8078.47-1~deb12u1",
+    "chromium-sandbox": "156.0.8078.47-1~deb12u1",
+    "ffmpeg": "7:5.1.9-0+deb12u1",
+    "libasound2:amd64": "1.2.8-1+b1",
+    "libnss3:amd64": "2:3.87.1-1+deb12u4",
+    "libopus0:amd64": "1.3.1-3",
+    "nodejs": "18.20.4+dfsg-1~deb12u3",
+    "npm": "9.2.0~ds1-1",
+    "tzdata": "2026e-0+deb12u1"
+  },
+  "software_inventory_sample_image": "sha256:e36dcc7596cd08b5fd0001da87736a47a5f5b0f33c190bf55e2260077a73d163",
+  "software_inventory_limit": "same Dockerfile/dependency layers; final image software preflight passed; ARM64 resolver/runtime not executed",
+  "skills": {
+    "success": true,
+    "upstream": "https://github.com/mattpocock/skills",
+    "commit": "59db609eb1e18aaf59b63284d0e52255aff0c63c",
+    "skills": {
+      "engineering": [
+        "ask-matt",
+        "code-review",
+        "codebase-design",
+        "diagnosing-bugs",
+        "domain-modeling",
+        "grill-with-docs",
+        "implement",
+        "implement-spec",
+        "improve-codebase-architecture",
+        "pr",
+        "prototype",
+        "research",
+        "retro",
+        "setup-matt-pocock-skills",
+        "tdd",
+        "to-spec",
+        "to-tickets",
+        "triage",
+        "wayfinder",
+        "wizard"
+      ],
+      "productivity": [
+        "grill-me",
+        "grilling",
+        "handoff",
+        "teach",
+        "to-questionnaire",
+        "wait-what",
+        "writing-for-agents"
+      ]
+    },
+    "skill_count": 27,
+    "file_count": 79,
+    "assets_files": [],
+    "other_reference_files": [
+      ".agents/skills/ask-matt/PHASE-BOUNDARIES.md",
+      ".agents/skills/codebase-design/DEEPENING.md",
+      ".agents/skills/codebase-design/DESIGN-IT-TWICE.md",
+      ".agents/skills/diagnosing-bugs/scripts/hitl-loop.template.sh",
+      ".agents/skills/domain-modeling/ADR-FORMAT.md",
+      ".agents/skills/domain-modeling/GLOSSARY-FORMAT.md",
+      ".agents/skills/improve-codebase-architecture/HTML-REPORT.md",
+      ".agents/skills/pr/CREDITS.md",
+      ".agents/skills/prototype/LOGIC.md",
+      ".agents/skills/prototype/UI.md",
+      ".agents/skills/setup-matt-pocock-skills/domain.md",
+      ".agents/skills/setup-matt-pocock-skills/issue-tracker-github.md",
+      ".agents/skills/setup-matt-pocock-skills/issue-tracker-gitlab.md",
+      ".agents/skills/setup-matt-pocock-skills/issue-tracker-local.md",
+      ".agents/skills/setup-matt-pocock-skills/triage-labels.md",
+      ".agents/skills/tdd/mocking.md",
+      ".agents/skills/tdd/tests.md",
+      ".agents/skills/triage/AGENT-BRIEF.md",
+      ".agents/skills/triage/OUT-OF-SCOPE.md",
+      ".agents/skills/wizard/template.sh",
+      ".agents/skills/teach/GLOSSARY-FORMAT.md",
+      ".agents/skills/teach/LEARNING-RECORD-FORMAT.md",
+      ".agents/skills/teach/MISSION-FORMAT.md",
+      ".agents/skills/teach/RESOURCES-FORMAT.md",
+      ".agents/skills/writing-for-agents/SKILL-MECHANICS.md"
+    ],
+    "scripts_inventoried_not_executed": [
+      ".agents/skills/diagnosing-bugs/scripts/hitl-loop.template.sh",
+      ".agents/skills/wizard/template.sh"
+    ],
+    "implicit_invocation_disabled": true,
+    "AGENTS_routes_verified": true,
+    "next_run_discovery_verified": false
+  },
+  "static_checks": {
+    "actionlint_1_7_7": true,
+    "staging_compose_render": true,
+    "onboarding_compose_no_logging_no_ports_default_offline": true,
+    "git_diff_check": true
+  },
+  "independent_review": {
+    "standards": "reported material findings fixed; four focused regressions independently passed; narrow named-volume exception reviewed",
+    "spec": "reported source/scope issues fixed; no remaining material findings in latest reviewed source; actual external acceptance not implied"
+  },
+  "environment_incident": {
+    "local_vfs_build_filesystem_full": true,
+    "resolved": true,
+    "cleanup": "only task-generated images, unused local builder cache and regenerable patch; no running container/volume/operator data removed",
+    "normal_execution_recovered": true,
+    "aggregate_and_final_build_smoke_completed_after_recovery": true
+  },
+  "source_sha256": {
+    "deploy/stagingctl.py": "5ee963e31ee203226cc98557b75a47531267348d5286be63b8453c34f03b4f3b",
+    "deploy/release_gate.py": "fc06bed247e81e0a1572f382150aa95d7b83a5e3cf9df6b2eae79bbcf9c9d2d8",
+    "deploy/diagnostic_projection.py": "5b23631021f3d63a89f2437c8e522b4864b9060312e2449c8222d4c6c621cfca",
+    "deploy/compose.onboarding.yml": "5caa4364250ea76647c9f4652b006301246717e2c23784834305ee7b743caee4",
+    "teams_transcription/codex_auth.py": "1931bff75afa9e853ba44add12d90889aa61e92ba79aded3a16f2d2a7c02d514",
+    "teams_transcription/cli.py": "f68f337070fc4b8901807fcd91886c7337feade11f1b14fd6be64c931dcba678",
+    "teams_transcription/admin_web.py": "629ebfcb175b1d97456defddbc7fc08bf47b661462d2d9be7cae9cb3c5bac829",
+    "tools/image_content_check.py": "028bd45281fbce44f6e9d14400eaf9a44e41ac93aa77a681099add58eba811d5",
+    "tools/release_receipt.py": "e9d7f8b7eb1419a87b3f324f64d0b7415e8e65852813a4600441515ba77a296d",
+    "tools/ci_contracts.py": "2a8a2764b94997e9d964a7ac367c1bc9572f29b6f64a8262ccd6304b591bb8ed",
+    "tools/compose_smoke.py": "fa1206d0b51738ed5664ff7f9f7f6967af124aa1a677acd88779cd1780f47511",
+    "tools/check_repo_skills.py": "df412a4a61d995e3bf9d64f4ad4689b59f5c370054f58b887a2c2985c60bfa38"
+  },
+  "not_executed": [
+    "push or PR/Issue/Project writes",
+    "workflow dispatch",
+    "GHCR publication",
+    "native ARM64 image execution",
+    "Oracle SSH/provision/deploy/rollback/diagnostics",
+    "Unraid changes",
+    "new actual ChatGPT grant",
+    "actual account/read",
+    "normal refresh/expiry/revocation test",
+    "Live TX to provider or RX from provider",
+    "real Teams remote audibility"
+  ],
+  "remaining_blockers": [
+    "parent review before push/dispatch",
+    "native ARM64 and GitHub evidence/API gate readback after authorized run",
+    "separate VM task provisioning and Oracle runtime acceptance",
+    "operator secure private terminal and fresh specific authorization for actual OAuth grant",
+    "authorized real provider RX/TX and separate Teams acceptance"
+  ],
+  "success_at_claimed_scope": true,
+  "full_original_discovery": false
+}

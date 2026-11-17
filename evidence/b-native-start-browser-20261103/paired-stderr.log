@@ -1,0 +1,102 @@
+test_missing_allowlist_never_starts_B_rpc_and_A_keeps_transcribing (test_response_runtime.ResponseRuntimeTests.test_missing_allowlist_never_starts_B_rpc_and_A_keeps_transcribing) ... Executing <Task pending name='Task-2' coro=<ResponseRuntimeTests.test_missing_allowlist_never_starts_B_rpc_and_A_keeps_transcribing() running at /tmp/comparison/baseline/tests/test_response_runtime.py:187> wait_for=<Future pending cb=[Task.task_wakeup()] created at /usr/local/lib/python3.12/asyncio/base_events.py:448> cb=[_run_until_complete_cb() at /usr/local/lib/python3.12/asyncio/base_events.py:181] created at /usr/local/lib/python3.12/asyncio/runners.py:100> took 0.144 seconds
+FAIL
+test_input_keeps_real_silent_samples_between_utterances_on_same_track (test_b_live.IncomingTrackTests.test_input_keeps_real_silent_samples_between_utterances_on_same_track) ... ERROR
+
+======================================================================
+ERROR: test_input_keeps_real_silent_samples_between_utterances_on_same_track (test_b_live.IncomingTrackTests.test_input_keeps_real_silent_samples_between_utterances_on_same_track)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/tmp/comparison/baseline/tests/test_b_live.py", line 559, in test_input_keeps_real_silent_samples_between_utterances_on_same_track
+    await peer.wait_connected(timeout=5)
+  File "/tmp/comparison/baseline/teams_transcription/browser.py", line 610, in wait_connected
+    await self.page.wait_for_function(
+  File "/usr/local/lib/python3.12/site-packages/playwright/async_api/_generated.py", line 12687, in wait_for_function
+    await self._impl_obj.wait_for_function(
+  File "/usr/local/lib/python3.12/site-packages/playwright/_impl/_page.py", line 1151, in wait_for_function
+    return await self._main_frame.wait_for_function(**locals_to_params(locals()))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/playwright/_impl/_frame.py", line 940, in wait_for_function
+    await self._channel.send("waitForFunction", self._timeout, params)
+  File "/usr/local/lib/python3.12/site-packages/playwright/_impl/_connection.py", line 76, in send
+    return await self._connection.wrap_api_call(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/playwright/_impl/_connection.py", line 632, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+playwright._impl._errors.TimeoutError: Page.wait_for_function: Timeout 5000ms exceeded.
+
+======================================================================
+FAIL: test_missing_allowlist_never_starts_B_rpc_and_A_keeps_transcribing (test_response_runtime.ResponseRuntimeTests.test_missing_allowlist_never_starts_B_rpc_and_A_keeps_transcribing)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/tmp/comparison/baseline/tests/test_response_runtime.py", line 187, in test_missing_allowlist_never_starts_B_rpc_and_A_keeps_transcribing
+    self.assertEqual(await run_session(session, install_signals=False), 0)
+AssertionError: 1 != 0
+
+----------------------------------------------------------------------
+Ran 2 tests in 18.764s
+
+FAILED (failures=1, errors=1)
+
+test_missing_allowlist_never_starts_B_rpc_and_A_keeps_transcribing (test_response_runtime.ResponseRuntimeTests.test_missing_allowlist_never_starts_B_rpc_and_A_keeps_transcribing) ... Executing <Task pending name='Task-2' coro=<ResponseRuntimeTests.test_missing_allowlist_never_starts_B_rpc_and_A_keeps_transcribing() running at /tmp/comparison/current/tests/test_response_runtime.py:187> wait_for=<Future pending cb=[Task.task_wakeup()] created at /usr/local/lib/python3.12/asyncio/base_events.py:448> cb=[_run_until_complete_cb() at /usr/local/lib/python3.12/asyncio/base_events.py:181] created at /usr/local/lib/python3.12/asyncio/runners.py:100> took 0.138 seconds
+FAIL
+test_input_keeps_real_silent_samples_between_utterances_on_same_track (test_b_live.IncomingTrackTests.test_input_keeps_real_silent_samples_between_utterances_on_same_track) ... ERROR
+
+======================================================================
+ERROR: test_input_keeps_real_silent_samples_between_utterances_on_same_track (test_b_live.IncomingTrackTests.test_input_keeps_real_silent_samples_between_utterances_on_same_track)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/tmp/comparison/current/tests/test_b_live.py", line 559, in test_input_keeps_real_silent_samples_between_utterances_on_same_track
+    await peer.wait_connected(timeout=5)
+  File "/tmp/comparison/current/teams_transcription/browser.py", line 610, in wait_connected
+    await self.page.wait_for_function(
+  File "/usr/local/lib/python3.12/site-packages/playwright/async_api/_generated.py", line 12687, in wait_for_function
+    await self._impl_obj.wait_for_function(
+  File "/usr/local/lib/python3.12/site-packages/playwright/_impl/_page.py", line 1151, in wait_for_function
+    return await self._main_frame.wait_for_function(**locals_to_params(locals()))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/playwright/_impl/_frame.py", line 940, in wait_for_function
+    await self._channel.send("waitForFunction", self._timeout, params)
+  File "/usr/local/lib/python3.12/site-packages/playwright/_impl/_connection.py", line 76, in send
+    return await self._connection.wrap_api_call(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/playwright/_impl/_connection.py", line 632, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+playwright._impl._errors.TimeoutError: Page.wait_for_function: Timeout 5000ms exceeded.
+
+======================================================================
+FAIL: test_missing_allowlist_never_starts_B_rpc_and_A_keeps_transcribing (test_response_runtime.ResponseRuntimeTests.test_missing_allowlist_never_starts_B_rpc_and_A_keeps_transcribing)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/tmp/comparison/current/tests/test_response_runtime.py", line 187, in test_missing_allowlist_never_starts_B_rpc_and_A_keeps_transcribing
+    self.assertEqual(await run_session(session, install_signals=False), 0)
+AssertionError: 1 != 0
+
+----------------------------------------------------------------------
+Ran 2 tests in 18.861s
+
+FAILED (failures=1, errors=1)
+

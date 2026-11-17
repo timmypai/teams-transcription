@@ -1,0 +1,90 @@
+{
+  "recorded_at": "2026-10-31T17:02:33.008591+00:00",
+  "base_sha": "080ea4e8f8deaa6ec4a5ebbc4f1e29616dbdbe66",
+  "branch": "fix/teams-null-policy-recovery-reader",
+  "scope": "Strict stored null-duration policy reader only; admission validation unchanged",
+  "fixed_feature_heads_unchanged": {
+    "owner": "9e365ff2fae5219d35969e2691fc7437dafaaf12",
+    "diagnostics": "eca0db3438c602e9848626c20047229f72927dae"
+  },
+  "red": {
+    "tests": 4,
+    "errors": 1,
+    "reason": "Old policy_from_db rejected persisted null duration",
+    "log_sha256": "ea3e56ee7da434db76869710656d8c992e1728b96afc5ae5b21669155c097ac5"
+  },
+  "green": {
+    "pure_fixtures": 4,
+    "seconds": 0.002,
+    "related_focused_tests": 23,
+    "related_focused_seconds": 2.007,
+    "failures": 0,
+    "errors": 0,
+    "log_sha256": "56ef27d34e611b28f1d980227e59cd947ed4f0f518781e2fe7eb3ad8a2fded11"
+  },
+  "admission_validation": {
+    "source_function_identical_to_base": true,
+    "function_sha256": "7267a5d18166e524ddfaf5095993b5598f53a77b6eeeac3a48ec66ef937be3c0",
+    "null_admission_still_rejected_in_candidate": true
+  },
+  "integration_simulation": {
+    "base": "080ea4e8f8deaa6ec4a5ebbc4f1e29616dbdbe66",
+    "fixed_heads": {
+      "owner": "9e365ff2fae5219d35969e2691fc7437dafaaf12",
+      "diagnostics": "eca0db3438c602e9848626c20047229f72927dae"
+    },
+    "simulated_merges": {
+      "teams_transcription/teams_acceptance.py": {
+        "conflicts": 0,
+        "sha256": "3cc52f7c1045adb7727a383fe79b3c25ddaa1e441d6f8a2924290dc9458a2c53"
+      },
+      "tools/ci_contracts.py": {
+        "conflicts": 0,
+        "sha256": "f6ba4279655bd0311d9ddf4959eb58e619b1b8f51fae1aa67616808d691884d9"
+      }
+    },
+    "combined_null_read_and_owner_policy": true,
+    "fixture_unchanged": true,
+    "both_ci_suites_present": true,
+    "actual_merge_or_ref_change": false,
+    "full_combined_tests_run": false,
+    "earlier_simulation": "CI suite insertion initially conflicted with diagnostics; moved only new recovery suite insertion to independent tuple location, fixed heads unchanged"
+  },
+  "independent_cloud_reviews": {
+    "spec": {
+      "confirmed_findings": 0,
+      "pure_fixture_tests_passed": 4,
+      "seconds": 0.002
+    },
+    "standards": {
+      "confirmed_findings": 0,
+      "pure_fixture_tests_passed": 4,
+      "seconds": 0.003
+    }
+  },
+  "release_plan": "Separate normal main-only ARM recovery build/publish before feature release; digest/source/run/attempt not generated",
+  "recovery_plan": "After verified owned Stop/cleanup/settlement, normal fixed-digest recovery deploy using existing controller; maintain paused/maintenance and all data. Existing rollback previous target is not changed merely by publishing.",
+  "direct_rollback_option": "An additional approved maintenance deployment of the compatible recovery image before feature deployment makes it the verified previous target.",
+  "unverified": [
+    "Full combined tests",
+    "ARM image and immutable release artifact",
+    "Oracle recovery deployment",
+    "Real meeting or model",
+    "Native GitHub PR review"
+  ],
+  "not_executed": [
+    "Build",
+    "Registry publish",
+    "PR",
+    "Merge",
+    "Deploy",
+    "Oracle read",
+    "Model",
+    "Meeting Join",
+    "Sandbox or permission change"
+  ],
+  "data_rewritten": false,
+  "ledger_refunded_or_reset": false,
+  "model_usage_unchanged_by_this_task": "16/50",
+  "cost_boundary": "Preparing source has no new compute/publication run. Usable recovery artifact needs a separately authorized build/publication and applicable storage. Not an unlimited cost or indefinite meeting grant."
+}

@@ -1,0 +1,33 @@
+{
+  "kind": "standard_Dockerfile_cold_build_and_final_source_refresh",
+  "image_id": "sha256:2430a6234a113267022658bb6ce2e31a069b6d1fa992bf27a5dd79c0fb27c11f",
+  "cold_build": {
+    "no_cache": true,
+    "seconds": 346.58,
+    "image_id": "sha256:2a178196fbb974fc19d9ae832ed06a8ee8b91fa346ba99afe45dd5e1ae3be8e8",
+    "log": "artifact://1201",
+    "final_source_identity_claim": false
+  },
+  "final_source_refresh": {
+    "seconds": 12.8,
+    "log": "artifact://1203",
+    "image_id": "sha256:2430a6234a113267022658bb6ce2e31a069b6d1fa992bf27a5dd79c0fb27c11f",
+    "source_identity_evidence": "system-completion-image-identity-20261017.json"
+  },
+  "python_base": "python@sha256:7753c33391fc9f01d1984375bf375eb6686d52ba10db6043a86634a5ccf90dcf",
+  "codex_version": "0.159.0-alpha.3",
+  "amd64_only_verified": true,
+  "build_contexts": [
+    "codex_npm",
+    "python_wheels"
+  ],
+  "Python_install_network": "none",
+  "npm_install": "offline after fixed SHA512 verification",
+  "credentials_or_data_root_in_context": false,
+  "source_boundary": {
+    "workdir_source_python_only": true,
+    "source_python_files": 49
+  },
+  "network_failure_scope": "Online npm and large Playwright download resets/timeouts were observed in more than BuildKit; underlying infrastructure cause unproven. Artifact acquisition separated from offline installation, without TLS/timeout/version relaxation.",
+  "passed": true
+}

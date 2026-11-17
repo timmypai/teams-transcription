@@ -1,0 +1,6 @@
+playwright==1.62.0
+starlette==1.6.0
+httpx==0.28.1
+uvicorn==0.52.1
+pydantic==2.13.4
+PyYAML==6.0.3

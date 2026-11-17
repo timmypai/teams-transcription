@@ -1,0 +1,18 @@
+test_missing_allowlist_never_starts_B_rpc_and_A_keeps_transcribing (test_response_runtime.ResponseRuntimeTests.test_missing_allowlist_never_starts_B_rpc_and_A_keeps_transcribing) ... Executing <Task pending name='Task-2' coro=<ResponseRuntimeTests.test_missing_allowlist_never_starts_B_rpc_and_A_keeps_transcribing() running at /tmp/comparison/baseline/tests/test_response_runtime.py:187> wait_for=<Future pending cb=[Task.task_wakeup()] created at /usr/local/lib/python3.12/asyncio/base_events.py:448> cb=[_run_until_complete_cb() at /usr/local/lib/python3.12/asyncio/base_events.py:181] created at /usr/local/lib/python3.12/asyncio/runners.py:100> took 0.124 seconds
+ok
+test_input_keeps_real_silent_samples_between_utterances_on_same_track (test_b_live.IncomingTrackTests.test_input_keeps_real_silent_samples_between_utterances_on_same_track) ... ok
+
+----------------------------------------------------------------------
+Ran 2 tests in 7.597s
+
+OK
+
+test_missing_allowlist_never_starts_B_rpc_and_A_keeps_transcribing (test_response_runtime.ResponseRuntimeTests.test_missing_allowlist_never_starts_B_rpc_and_A_keeps_transcribing) ... Executing <Task pending name='Task-2' coro=<ResponseRuntimeTests.test_missing_allowlist_never_starts_B_rpc_and_A_keeps_transcribing() running at /tmp/comparison/current/tests/test_response_runtime.py:187> wait_for=<Future pending cb=[Task.task_wakeup()] created at /usr/local/lib/python3.12/asyncio/base_events.py:448> cb=[_run_until_complete_cb() at /usr/local/lib/python3.12/asyncio/base_events.py:181] created at /usr/local/lib/python3.12/asyncio/runners.py:100> took 0.129 seconds
+ok
+test_input_keeps_real_silent_samples_between_utterances_on_same_track (test_b_live.IncomingTrackTests.test_input_keeps_real_silent_samples_between_utterances_on_same_track) ... ok
+
+----------------------------------------------------------------------
+Ran 2 tests in 8.409s
+
+OK
+

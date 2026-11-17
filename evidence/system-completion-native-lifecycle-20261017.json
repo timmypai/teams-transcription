@@ -1,0 +1,297 @@
+{
+  "kind": "real_native_A_thirty_minute_two_occurrence_Codex_lifecycle",
+  "teams_joined": false,
+  "calendar_writes": 0,
+  "physical_input_output": false,
+  "synthetic_audio_only": true,
+  "source_text_injected": false,
+  "passed": true,
+  "first_native": {
+    "name": "first-native-soak",
+    "input_mode": "native_media",
+    "glossary": false,
+    "passed": true,
+    "session_id": "01aa96f4b38f4187aaadec0df47feeb9",
+    "occurrence_id": "ad8ac10089004796ad68b27424c1bb54",
+    "series_id": "bbfcace502c3429e9f6cc6d3e191a8df",
+    "data_root": "/dev/shm/assistant-completion-xlvi0ge8/native-lifecycle/sqlite",
+    "decoded_source": {
+      "sample_rate": 24000,
+      "frames": 460279,
+      "duration": 19.178291666666667
+    },
+    "ready_before_source": true,
+    "capture_observations": [
+      {
+        "at_seconds": 29.181,
+        "playback": {
+          "performance_ms": 4501.600000008941,
+          "context_time": 4.384,
+          "plays": 1,
+          "capture_enabled": true,
+          "native_enabled": true
+        },
+        "new_receipts": 36,
+        "facts": {
+          "codeword": true,
+          "amount": true,
+          "decision": true,
+          "task_report": true,
+          "task_checklist": true
+        },
+        "provider_failed": false
+      },
+      {
+        "at_seconds": 929.245,
+        "playback": {
+          "performance_ms": 904565.6000000089,
+          "context_time": 904.464,
+          "plays": 2,
+          "capture_enabled": true,
+          "native_enabled": true
+        },
+        "new_receipts": 38,
+        "facts": {
+          "codeword": true,
+          "amount": true,
+          "decision": true,
+          "task_report": true,
+          "task_checklist": true
+        },
+        "provider_failed": false
+      },
+      {
+        "at_seconds": 1829.194,
+        "playback": {
+          "performance_ms": 1804514,
+          "context_time": 1804.4106666666667,
+          "plays": 3,
+          "capture_enabled": true,
+          "native_enabled": true
+        },
+        "new_receipts": 37,
+        "facts": {
+          "codeword": true,
+          "amount": true,
+          "decision": true,
+          "task_report": true,
+          "task_checklist": true
+        },
+        "provider_failed": false
+      }
+    ],
+    "capture_wall_seconds": 1829.194,
+    "cleanup": {
+      "A": true,
+      "source": true
+    },
+    "provider_failure": null,
+    "provider_process_reaped": true,
+    "events": {
+      "rpc_events": 127,
+      "rpc_item_started": 0,
+      "rpc_item_completed": 0,
+      "rpc_transcript_done": 1,
+      "rpc_transcript_delta": 111,
+      "rpc_role_user": 112,
+      "rpc_role_assistant": 0,
+      "rpc_role_unknown": 0,
+      "rpc_error": 0,
+      "rpc_closed": 0,
+      "datachannel_events": 347,
+      "datachannel_transcript_completed": 0,
+      "datachannel_role_user": 1,
+      "datachannel_role_assistant": 0,
+      "datachannel_role_unknown": 346,
+      "datachannel_transcript_filtered": 0,
+      "normalizer_filtered_events": 0,
+      "datachannel_speech_started": 0,
+      "datachannel_speech_stopped": 0,
+      "datachannel_error": 0,
+      "datachannel_closed": 1,
+      "datachannel_input_transcript_delta": 111,
+      "datachannel_output_transcript_delta": 0,
+      "datachannel_turn_done": 1,
+      "datachannel_turn_role_user": 1,
+      "datachannel_turn_role_assistant": 0,
+      "datachannel_turn_role_unknown": 0,
+      "datachannel_session_started": 1,
+      "datachannel_session_updated": 0,
+      "datachannel_output_audio_delta": 0,
+      "datachannel_delegation_created": 0,
+      "datachannel_unrecognized_type": 233,
+      "rpc_notifications_seen": 127,
+      "rpc_done_seen_before_scope": 1,
+      "rpc_completed_seen_before_scope": 0,
+      "rpc_scope_rejected_missing": 0,
+      "rpc_scope_rejected_null": 0,
+      "rpc_scope_rejected_foreign": 0,
+      "rpc_scope_rejected_invalid": 0,
+      "rpc_final_scope_rejected": 0,
+      "rpc_item_added": 0,
+      "rpc_item_transcript_delta": 0,
+      "rpc_unknown_method": 13,
+      "normalizer_unconfirmed_canonical": 0
+    },
+    "facts": {
+      "codeword": true,
+      "amount": true,
+      "decision": true,
+      "task_report": true,
+      "task_checklist": true
+    },
+    "source_quality_counts": {
+      "provider_final": 2,
+      "application_segment": 111,
+      "legacy_provisional": 0
+    },
+    "all_received_increments_saved_exactly": true,
+    "all_received_finals_saved_exactly": true,
+    "source_audio_sha256": "ba14befc75e6a5838c7a7474e9fe44df72c9743aee8439fc3779cdc527afe4a8",
+    "callback_counts": {
+      "pcm_packets": 21406,
+      "pcm_bytes": 87678976
+    },
+    "sealed_source_and_outbox": true,
+    "elapsed_seconds": 1840.596
+  },
+  "second_native": {
+    "name": "second-native-occurrence",
+    "input_mode": "native_media",
+    "glossary": false,
+    "passed": false,
+    "session_id": "c9f8ad02cf4b4537867d3754d0424fb0",
+    "occurrence_id": "884ae19b8dc74b1ea911bde4626545c9",
+    "series_id": "bbfcace502c3429e9f6cc6d3e191a8df",
+    "data_root": "/dev/shm/assistant-completion-xlvi0ge8/native-lifecycle/sqlite",
+    "decoded_source": {
+      "sample_rate": 24000,
+      "frames": 300706,
+      "duration": 12.529416666666666
+    },
+    "ready_before_source": true,
+    "capture_observations": [
+      {
+        "at_seconds": 22.533,
+        "playback": {
+          "performance_ms": 4496.399999991059,
+          "context_time": 4.266666666666667,
+          "plays": 1,
+          "capture_enabled": true,
+          "native_enabled": true
+        },
+        "new_receipts": 26,
+        "facts": {
+          "codeword": false,
+          "amount": false,
+          "decision": false,
+          "task_report": false,
+          "task_checklist": false
+        },
+        "provider_failed": false
+      }
+    ],
+    "capture_wall_seconds": 22.533,
+    "cleanup": {
+      "A": true,
+      "source": true
+    },
+    "provider_failure": null,
+    "provider_process_reaped": true,
+    "events": {
+      "rpc_events": 42,
+      "rpc_item_started": 0,
+      "rpc_item_completed": 0,
+      "rpc_transcript_done": 1,
+      "rpc_transcript_delta": 26,
+      "rpc_role_user": 27,
+      "rpc_role_assistant": 0,
+      "rpc_role_unknown": 0,
+      "rpc_error": 0,
+      "rpc_closed": 0,
+      "datachannel_events": 56,
+      "datachannel_transcript_completed": 0,
+      "datachannel_role_user": 1,
+      "datachannel_role_assistant": 0,
+      "datachannel_role_unknown": 55,
+      "datachannel_transcript_filtered": 0,
+      "normalizer_filtered_events": 0,
+      "datachannel_speech_started": 0,
+      "datachannel_speech_stopped": 0,
+      "datachannel_error": 0,
+      "datachannel_closed": 1,
+      "datachannel_input_transcript_delta": 26,
+      "datachannel_output_transcript_delta": 0,
+      "datachannel_turn_done": 1,
+      "datachannel_turn_role_user": 1,
+      "datachannel_turn_role_assistant": 0,
+      "datachannel_turn_role_unknown": 0,
+      "datachannel_session_started": 1,
+      "datachannel_session_updated": 0,
+      "datachannel_output_audio_delta": 0,
+      "datachannel_delegation_created": 0,
+      "datachannel_unrecognized_type": 27,
+      "rpc_notifications_seen": 42,
+      "rpc_done_seen_before_scope": 1,
+      "rpc_completed_seen_before_scope": 0,
+      "rpc_scope_rejected_missing": 0,
+      "rpc_scope_rejected_null": 0,
+      "rpc_scope_rejected_foreign": 0,
+      "rpc_scope_rejected_invalid": 0,
+      "rpc_final_scope_rejected": 0,
+      "rpc_item_added": 0,
+      "rpc_item_transcript_delta": 0,
+      "rpc_unknown_method": 13,
+      "normalizer_unconfirmed_canonical": 0
+    },
+    "facts": {
+      "codeword": false,
+      "amount": false,
+      "decision": false,
+      "task_report": false,
+      "task_checklist": false
+    },
+    "source_quality_counts": {
+      "provider_final": 2,
+      "application_segment": 26,
+      "legacy_provisional": 0
+    },
+    "all_received_increments_saved_exactly": true,
+    "all_received_finals_saved_exactly": true,
+    "source_audio_sha256": "0cd55a5aa75c03af8aa7badb76ddcfa44487da59541bcb58d33119d60779e738",
+    "callback_counts": {
+      "pcm_packets": 276,
+      "pcm_bytes": 1130496
+    },
+    "sealed_source_and_outbox": true,
+    "elapsed_seconds": 32.715
+  },
+  "lifecycle": {
+    "same_actual_native_source_SQLite": true,
+    "no_source_text_copy": true,
+    "first_summary_model": "gpt-6.1-sol",
+    "second_summary_model": "gpt-6.1-sol",
+    "first_summary_revision": 1,
+    "second_summary_revision": 1,
+    "real_source_citations_validated": true,
+    "stale_summary_generation_rejected": true,
+    "published_restart_without_second_model_turn": true,
+    "operator_task_states_preserved": true,
+    "omission_not_completion": true,
+    "same_locator_cross_series_isolation": true,
+    "chronological_latest_selected": true,
+    "frozen_claim_prior_preserved": true
+  },
+  "browser_closed": true,
+  "elapsed_seconds": 1898.987,
+  "second_source_independent_criteria": {
+    "predeclared_audio_sha256": "0cd55a5aa75c03af8aa7badb76ddcfa44487da59541bcb58d33119d60779e738",
+    "facts": {
+      "amount": true,
+      "delivery_day": true,
+      "no_new_tasks": true
+    },
+    "passed": true
+  },
+  "harness_note": "The shared A helper applied first-occurrence fact predicates to the different next-occurrence audio; its second facts/passed fields are not applicable to that input. Original fields are preserved. The independently predeclared next-audio criteria above and exact source persistence validate the second capture; lifecycle assertions used the same actual native SQLite, not copied text."
+}

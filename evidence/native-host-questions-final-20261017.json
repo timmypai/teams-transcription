@@ -1,0 +1,469 @@
+{
+  "kind": "application_owned_native_questions_final",
+  "recorded_at": "2026-10-17T12:21:59.238241+00:00",
+  "diagnosis": "native-completion-contract-isolation-20261017.json",
+  "first_smoke": "native-host-questions-20261017.json",
+  "passed": true,
+  "completed_private_probe_artifacts_removed": true,
+  "final_regression": {
+    "receipt": "native-host-questions-regression-20261017.json",
+    "tests_run": 941,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0,
+    "runner_seconds": 228.146,
+    "excluded_historical_missing_suites": ["test_bridge_integration.py", "test_media_bridge.py"]
+  },
+  "requested_model": "gpt-live-1-codex",
+  "codex_version": "0.159.0-alpha.3",
+  "same_approved_oauth_only": true,
+  "teams_joined": false,
+  "calendar_writes": 0,
+  "physical_input_output": false,
+  "production_daemon_restarted": false,
+  "container_image_rebuilt": false,
+  "same_thread_all_questions": true,
+  "questions_completed": 13,
+  "input_path": "capture_fanout",
+  "A_media_consumer": "real local native RTC receiver; not an A model or injected transcript",
+  "connected_seconds": 309.584,
+  "no_wake": {
+    "tool_calls": 0,
+    "accepted_output_frames": 0,
+    "runtime_error": false
+  },
+  "bare_wake": {
+    "stimulus": {
+      "source_completed": true,
+      "frames": 41754,
+      "audio_seconds": 1.73975,
+      "context_elapsed": 1.9413333333333185,
+      "wall_seconds": 2.438
+    },
+    "tool_calls": 0,
+    "requests": 1,
+    "state": "listening",
+    "speech": {
+      "phase": "closed",
+      "native_state": "listening",
+      "done_is_set": true,
+      "speech_task_done": true,
+      "speech_task_cancelled": false,
+      "error_code": null,
+      "output_active": false,
+      "nonzero_frames": 56681,
+      "activity_frames": 49152,
+      "packet_frames": 2048,
+      "packet_nonzero_frames": 12,
+      "packet_peak_abs": 1,
+      "packet_rms": 0.07654655446197431,
+      "activity_rms_threshold": 8,
+      "last_active_age_seconds": 1.1264051379985176,
+      "last_nonzero_age_seconds": 0.05694091599434614,
+      "drain_result": {
+        "present": true,
+        "truncated": false,
+        "drained": false,
+        "muted": true
+      }
+    }
+  },
+  "short_pause": {
+    "inserted_quiet_seconds": 0.5,
+    "question_number": 13,
+    "application_requests_before": 13,
+    "application_requests_after": 14,
+    "greeting_before_question": false,
+    "input_voice": "existing offline Microsoft Hanhan Desktop zh-TW; memory WAV converted to 24 kHz mono PCM; no physical playback"
+  },
+  "context": {
+    "sent_bytes": 45843,
+    "total_limit_bytes": null,
+    "known_paragraphs": 4,
+    "source_version": 3,
+    "pending": false,
+    "model_consumption_verified": false,
+    "preparing": false,
+    "delivery_scope": "successful_host_send_returns_this_live_thread"
+  },
+  "question_receipts": {
+    "counts": {
+      "received": 14,
+      "admitted": 14,
+      "rejected": 0
+    },
+    "events": [
+      {
+        "outcome": "admitted",
+        "reason": null,
+        "received_seconds": 26.04389759899641,
+        "decision_seconds": 26.043943607000983
+      },
+      {
+        "outcome": "admitted",
+        "reason": null,
+        "received_seconds": 51.211239073003526,
+        "decision_seconds": 51.21129582700087
+      },
+      {
+        "outcome": "admitted",
+        "reason": null,
+        "received_seconds": 68.70655701999203,
+        "decision_seconds": 68.7066166279983
+      },
+      {
+        "outcome": "admitted",
+        "reason": null,
+        "received_seconds": 97.23022409999976,
+        "decision_seconds": 97.23025671599316
+      },
+      {
+        "outcome": "admitted",
+        "reason": null,
+        "received_seconds": 115.41040665899345,
+        "decision_seconds": 115.41044035599043
+      },
+      {
+        "outcome": "admitted",
+        "reason": null,
+        "received_seconds": 148.9302610529994,
+        "decision_seconds": 148.9303077079967
+      },
+      {
+        "outcome": "admitted",
+        "reason": null,
+        "received_seconds": 177.5168945309997,
+        "decision_seconds": 177.51693273599085
+      },
+      {
+        "outcome": "admitted",
+        "reason": null,
+        "received_seconds": 195.38992765000148,
+        "decision_seconds": 195.3899653260014
+      },
+      {
+        "outcome": "admitted",
+        "reason": null,
+        "received_seconds": 224.03095950400166,
+        "decision_seconds": 224.0309972459945
+      },
+      {
+        "outcome": "admitted",
+        "reason": null,
+        "received_seconds": 239.62351966700226,
+        "decision_seconds": 239.6235434859991
+      },
+      {
+        "outcome": "admitted",
+        "reason": null,
+        "received_seconds": 257.6392271509976,
+        "decision_seconds": 257.63926528400043
+      },
+      {
+        "outcome": "admitted",
+        "reason": null,
+        "received_seconds": 283.27006293799786,
+        "decision_seconds": 283.2700958130008
+      },
+      {
+        "outcome": "admitted",
+        "reason": null,
+        "received_seconds": 292.00761355800205,
+        "decision_seconds": 292.0076624630019
+      },
+      {
+        "outcome": "admitted",
+        "reason": null,
+        "received_seconds": 307.5887115749938,
+        "decision_seconds": 307.58873282099376
+      }
+    ],
+    "event_limit": 64,
+    "count_limit": 2147483647,
+    "timing_basis": "host monotonic seconds relative to responder construction"
+  },
+  "raw_event_counts": {
+    "session.started": 1,
+    "input_transcript.added": 197,
+    "turn.created": 28,
+    "turn.delta": 664,
+    "delegation.created": 6,
+    "session.usage.updated": 20,
+    "session.context.appended": 110,
+    "output_transcript.added": 495,
+    "turn.done": 28
+  },
+  "runtime_error": null,
+  "stop_result": "stopped",
+  "stop_ack_received": true,
+  "stop_closed_received": true,
+  "model_process_reaped": true,
+  "cleanup": {
+    "local_A_media": true,
+    "local_receiver": true,
+    "capture": true,
+    "B": true,
+    "browser": true
+  },
+  "questions": [
+    {
+      "number": 1,
+      "passed": true,
+      "keyword_fact_matches": {
+        "codeword": true,
+        "amount": true
+      },
+      "synthetic_assistant_text": " 等我看一下。 好，本場會議有記錄「本次代號藍天，預算一萬兩千元」。就代號和預算來說，這段就是來源；其他內容在本題資料裡沒有更多補充。",
+      "tool_calls": 1,
+      "reader_calls": 1,
+      "marker_sent": true,
+      "sent_bytes": 4618,
+      "source_completed": true,
+      "state": "sleeping",
+      "runtime_error": false,
+      "emitted_requests": 1
+    },
+    {
+      "number": 2,
+      "passed": true,
+      "keyword_fact_matches": {
+        "delivery_day": true
+      },
+      "synthetic_assistant_text": " 我再確認一下。 上次會議決定週五交付。",
+      "tool_calls": 1,
+      "reader_calls": 1,
+      "marker_sent": true,
+      "sent_bytes": 3389,
+      "source_completed": true,
+      "state": "sleeping",
+      "runtime_error": false,
+      "emitted_requests": 2
+    },
+    {
+      "number": 3,
+      "passed": true,
+      "keyword_fact_matches": {
+        "task_one": true,
+        "task_two": true,
+        "owner_one": true,
+        "owner_two": true,
+        "date_one": true,
+        "date_two": true
+      },
+      "synthetic_assistant_text": " 我確認一下。 系列未完成待辦共有兩項：一，2026-10-22，負責人測試負責人甲，原文「核對星橋方案，並回覆測試窗口。」二，2026-10-23，負責人測試負責人乙，原文「整理測試清單，交由測試窗口複核。」",
+      "tool_calls": 1,
+      "reader_calls": 1,
+      "marker_sent": true,
+      "sent_bytes": 3432,
+      "source_completed": true,
+      "state": "sleeping",
+      "runtime_error": false,
+      "emitted_requests": 3
+    },
+    {
+      "number": 4,
+      "passed": true,
+      "keyword_fact_matches": {
+        "corrected_amount": true
+      },
+      "synthetic_assistant_text": " 我確認一下。 本場更正後的預算是一萬五千元。",
+      "tool_calls": 1,
+      "reader_calls": 1,
+      "marker_sent": true,
+      "sent_bytes": 3700,
+      "source_completed": true,
+      "state": "sleeping",
+      "runtime_error": false,
+      "emitted_requests": 4
+    },
+    {
+      "number": 5,
+      "passed": true,
+      "keyword_fact_matches": {
+        "task_one": true,
+        "task_two": true,
+        "owner_one": true,
+        "owner_two": true,
+        "date_one": true,
+        "date_two": true
+      },
+      "synthetic_assistant_text": " 我看一下。 系列未完成待辦兩項：2026-10-22由測試負責人甲，原文「核對星橋方案，並回覆測試窗口。」2026-10-23由測試負責人乙，原文「整理測試清單，交由測試窗口複核。」這兩條在目前資料裡都仍為 open 狀態。",
+      "tool_calls": 1,
+      "reader_calls": 1,
+      "marker_sent": true,
+      "sent_bytes": 3435,
+      "source_completed": true,
+      "state": "sleeping",
+      "runtime_error": false,
+      "emitted_requests": 5
+    },
+    {
+      "number": 6,
+      "passed": true,
+      "keyword_fact_matches": {
+        "task_one": true,
+        "task_two": true,
+        "owner_one": true,
+        "owner_two": true,
+        "date_one": true,
+        "date_two": true
+      },
+      "synthetic_assistant_text": " 我看一下。 系列未完成待辦兩項：2026-10-22由測試負責人甲，原文「核對星橋方案，並回覆測試窗口。」2026-10-23由測試負責人乙，原文「整理測試清單，交由測試窗口複核。」兩條目前都仍是 open 狀態。",
+      "tool_calls": 1,
+      "reader_calls": 1,
+      "marker_sent": true,
+      "sent_bytes": 3435,
+      "source_completed": true,
+      "state": "sleeping",
+      "runtime_error": false,
+      "emitted_requests": 6
+    },
+    {
+      "number": 7,
+      "passed": true,
+      "keyword_fact_matches": {
+        "corrected_amount": true
+      },
+      "synthetic_assistant_text": " 我確認一下。 本場更正後的預算是一萬五千元。",
+      "tool_calls": 1,
+      "reader_calls": 1,
+      "marker_sent": true,
+      "sent_bytes": 3392,
+      "source_completed": true,
+      "state": "sleeping",
+      "runtime_error": false,
+      "emitted_requests": 7
+    },
+    {
+      "number": 8,
+      "passed": true,
+      "keyword_fact_matches": {
+        "task_one": true,
+        "task_two": true,
+        "owner_one": true,
+        "owner_two": true,
+        "date_one": true,
+        "date_two": true
+      },
+      "synthetic_assistant_text": " 我看一下。系列未完成待辦兩項：2026-10-22由測試負責人甲，原文「核對星橋方案，並回覆測試窗口。」2026-10-23由測試負責人乙，原文「整理測試清單，交由測試窗口複核。」兩條目前都仍是 open 狀態。",
+      "tool_calls": 1,
+      "reader_calls": 1,
+      "marker_sent": true,
+      "sent_bytes": 3435,
+      "source_completed": true,
+      "state": "sleeping",
+      "runtime_error": false,
+      "emitted_requests": 8
+    },
+    {
+      "number": 9,
+      "passed": true,
+      "keyword_fact_matches": {
+        "corrected_amount": true
+      },
+      "synthetic_assistant_text": " 我確認一下。 本場更正後的預算是一萬五千元。",
+      "tool_calls": 1,
+      "reader_calls": 1,
+      "marker_sent": true,
+      "sent_bytes": 3392,
+      "source_completed": true,
+      "state": "sleeping",
+      "runtime_error": false,
+      "emitted_requests": 9
+    },
+    {
+      "number": 10,
+      "passed": true,
+      "keyword_fact_matches": {
+        "corrected_amount": true
+      },
+      "synthetic_assistant_text": " 我確認一下。 本場更正後的預算是一萬五千元。",
+      "tool_calls": 1,
+      "reader_calls": 1,
+      "marker_sent": true,
+      "sent_bytes": 3393,
+      "source_completed": true,
+      "state": "sleeping",
+      "runtime_error": false,
+      "emitted_requests": 10
+    },
+    {
+      "number": 11,
+      "passed": true,
+      "keyword_fact_matches": {
+        "task_one": true,
+        "task_two": true,
+        "owner_one": true,
+        "owner_two": true,
+        "date_one": true,
+        "date_two": true
+      },
+      "synthetic_assistant_text": " 我看一下。系列未完成待辦兩項：2026-10-22由測試負責人甲，原文「核對星橋方案，並回覆測試窗口。」2026-10-23由測試負責人乙，原文「整理測試清單，交由測試窗口複核。」兩條目前都仍是 open 狀態。",
+      "tool_calls": 1,
+      "reader_calls": 1,
+      "marker_sent": true,
+      "sent_bytes": 3436,
+      "source_completed": true,
+      "state": "sleeping",
+      "runtime_error": false,
+      "emitted_requests": 11
+    },
+    {
+      "number": 12,
+      "passed": true,
+      "keyword_fact_matches": {
+        "corrected_amount": true
+      },
+      "synthetic_assistant_text": " 我確認一下。 本場更正後的預算是一萬五千元。",
+      "tool_calls": 1,
+      "reader_calls": 1,
+      "marker_sent": true,
+      "sent_bytes": 3393,
+      "source_completed": true,
+      "state": "sleeping",
+      "runtime_error": false,
+      "emitted_requests": 13
+    },
+    {
+      "number": 13,
+      "passed": true,
+      "keyword_fact_matches": {
+        "corrected_amount": true
+      },
+      "synthetic_assistant_text": " 我確認一下。 本場更正後的預算是一萬五千元。",
+      "tool_calls": 1,
+      "reader_calls": 1,
+      "marker_sent": true,
+      "sent_bytes": 3393,
+      "source_completed": true,
+      "state": "sleeping",
+      "runtime_error": false,
+      "emitted_requests": 14
+    }
+  ],
+  "source_sha256_at_launch": {
+    "teams_transcription/b_native.py": "a8ba21ac06aa22917a66511ffd4241b93a95d7bb48e7c3619757034fb9213bdb",
+    "teams_transcription/b_question.py": "9fba7f5b6e844666ecb52ec13dae3d8975bf25d19ddd55f3967adb5c5348b364",
+    "teams_transcription/b_context.py": "0cea94c40640681f58367973e4fef071c795a8e5361ccc0de29558f17aa81876",
+    "teams_transcription/diagnostics.py": "4a5da469b6ff15250870bc9bbd9ce0282ffd6b73bf452e253d7b26442cfc4e2d",
+    "teams_transcription/qa_probe.py": "be077d50421f7fd1b5f054ef78dcf67b8e165e8b2736f2f62c0b3b52d24dec11",
+    "teams_transcription/response_runtime.py": "a3599446b3e194ba556cff205fc8cd2bf1798acb8b757df8d09ec3d5046945c1"
+  },
+  "post_launch_source_change": "Removed only the unreferenced _session_events deque allocation from b_native.py. Question/wire/output behavior was unchanged; final regression runs the resulting source.",
+  "focused_regression": {
+    "tests_run": 133,
+    "failures": 0,
+    "errors": 0,
+    "seconds": 7.97
+  },
+  "input_cleanup_race": {
+    "failing_before": "test_new_capture_during_request_cleanup_rejects_superseded_question admitted the superseded question after new PCM arrived during awaited cleanup.",
+    "fix": "Capture input revision before cleanup; reject if new admitted activity advances it before cleanup returns.",
+    "passing_after": true
+  },
+  "limits": [
+    "Application framing is a PCM quiet/stable-ASR heuristic, not provider final, semantic certainty or speaker identity.",
+    "Context successful-send accounting is not a model-consumption ACK.",
+    "No Teams remote audibility, long-duration whole-system acceptance, standby restart or container refresh was performed."
+  ]
+}

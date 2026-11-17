@@ -1,0 +1,213 @@
+{
+  "schema_version": 1,
+  "kind": "round15_current_context_and_capture_repair",
+  "scope": "Every question retains read_meeting_context + RESULT_COMPLETE; no history-direct routing or player redesign.",
+  "historical_limits": {
+    "original_live_B_query_cache_payload_available": false,
+    "unique_historical_B_cause_proven": false,
+    "original_sender_clock_slope_measured": false,
+    "remote_complete_sentence_audio_previously_accepted_by_operator": true,
+    "new_revision_real_Teams_acceptance": false
+  },
+  "original_A_first_cause": {
+    "first_event_at_utc": "2026-10-16T08:42:17.755220Z",
+    "exception_type": "QueueFull",
+    "phase": "rx_capture",
+    "queue_overflows": 1,
+    "received_packets": 13573,
+    "queued_packets": 13572,
+    "consumed_packets": 13316,
+    "returned_push_packets": 13315,
+    "queued_capacity": 256,
+    "scheduled_queue_ms": 1948,
+    "inserted_gap_frames": 9344,
+    "later_masking_event_at_utc": "2026-10-16T08:42:22.055233Z",
+    "later_exception_type": "TimeoutError",
+    "saved_duration_seconds": 3600,
+    "saved_drain_seconds": 5,
+    "persistent_stop_requested": false
+  },
+  "context_replay": {
+    "read_only": true,
+    "source_version": 39,
+    "current_receipts": 38,
+    "frozen_history_records": 2,
+    "reconstruction": "Immutable changed_version<=39, with post-finalization global flags reset for offline query simulation; original live query/cache unavailable.",
+    "before_incremental_selected_indexes": [
+      39,
+      1,
+      40,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "before_codeword_present": false,
+    "before_amount_present": false,
+    "after_cases": [
+      {
+        "cache": "cold",
+        "query_variant": 1,
+        "payload_bytes_including_marker": 11706,
+        "selected_locator_count": 12,
+        "codeword_present": true,
+        "amount_present": true
+      },
+      {
+        "cache": "cold",
+        "query_variant": 2,
+        "payload_bytes_including_marker": 11712,
+        "selected_locator_count": 12,
+        "codeword_present": true,
+        "amount_present": true
+      },
+      {
+        "cache": "cold",
+        "query_variant": 3,
+        "payload_bytes_including_marker": 11706,
+        "selected_locator_count": 12,
+        "codeword_present": true,
+        "amount_present": true
+      },
+      {
+        "cache": "approximate_warm",
+        "query_variant": 1,
+        "payload_bytes_including_marker": 11784,
+        "selected_locator_count": 13,
+        "codeword_present": true,
+        "amount_present": true
+      },
+      {
+        "cache": "approximate_warm",
+        "query_variant": 2,
+        "payload_bytes_including_marker": 11787,
+        "selected_locator_count": 13,
+        "codeword_present": true,
+        "amount_present": true
+      },
+      {
+        "cache": "approximate_warm",
+        "query_variant": 3,
+        "payload_bytes_including_marker": 11784,
+        "selected_locator_count": 13,
+        "codeword_present": true,
+        "amount_present": true
+      }
+    ],
+    "max_delta_budget_including_marker": 12000,
+    "potential_null_overhead_across_all_38_current_locators_bytes": 2660,
+    "fix": "Preserve literal relevance, prefer recent equal-ranked application receipts, render selected refs in record order, remove duplicate context/constant identity fields and wire-only None locator values; full host locators unchanged."
+  },
+  "capture_repair": {
+    "first_source_failure_preserved": true,
+    "accepted_pcm_drained_under_existing_cleanup_deadline": true,
+    "repeat_stop_does_not_recancel_active_cleanup": true,
+    "unreturned_accepted_pcm_cannot_claim_cleaned": true,
+    "real_provider_errors_surface_after_owned_cleanup": true,
+    "A_only_measured_clock_reconciliation": true,
+    "B_default_clock_graph_unchanged": true,
+    "queue_or_timeout_limits_increased": false,
+    "synthetic_PCM_inserted": false,
+    "slow_clock_before": {
+      "slope": 0.98,
+      "arrivals": 13369,
+      "consumed": 13112,
+      "overflows": 1,
+      "max_queue": 256
+    },
+    "synthetic_slow_and_fast_after": {
+      "slopes": [
+        0.98,
+        1.02
+      ],
+      "packets_each": 16000,
+      "scheduled_input_frames_each": 32768000,
+      "overflows_each": 0,
+      "source_wall_duration_preserved": true
+    },
+    "actual_public_A_offer_local_RTC": {
+      "silent_output_tap": false,
+      "wall_seconds": 10.00039999999851,
+      "capture_seconds": 10,
+      "sender_seconds": 10,
+      "capture_rate": 0.9999600016000849,
+      "sender_rate": 0.9999600016000849,
+      "capture_frames": 239616,
+      "packets": 117,
+      "scheduled_frames": 239616,
+      "inserted_gap_frames": 150,
+      "scheduled_queue_ms": 86,
+      "playback_rate": 1.0002441310905845,
+      "measured_clock_slope": 0.9996583199105509,
+      "capture_state": "running",
+      "sender_state": "running"
+    },
+    "actual_clock_limitation": "Current short local RTC probes have near-1.0 clocks; they did not reproduce the historical inferred deficit."
+  },
+  "per_question_evidence": {
+    "max_receipts": 16,
+    "max_positive_record_indexes": 64,
+    "private_query_source_text_and_provider_ids_persisted": false,
+    "marker_send_return_is_not_model_consumption": true
+  },
+  "native_model_control_receipt": "native-context-wire-control-20261016.json",
+  "reviews": {
+    "fresh_read_only_reviewers": 2,
+    "B_context_receipts_actionable_findings": 0,
+    "A_actionable_findings": 1,
+    "A_finding": "Provider error during final awaited stats after drain was suppressed at close entry.",
+    "finding_before": "Actual worker returned0 instead of failure1.",
+    "finding_fixed": true,
+    "reviewer_confirmed_source_fix": true
+  },
+  "verification": {
+    "focused_context_native_receipts_tests": 60,
+    "saved_source_replay_cases_passed": 6,
+    "last_review_fix_tests": 4,
+    "last_review_fix_seconds": 0.273,
+    "final_available_tests": 887,
+    "final_available_seconds": 186.82,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0,
+    "excluded_transfer_missing_modules": [
+      "test_bridge_integration",
+      "test_media_bridge"
+    ],
+    "full_original_discovery_claimed": false
+  },
+  "candidate": {
+    "image_id": "sha256:c8232259378b51ca012a80a125ff35ea8652436d5fc59ea872c51fdebd1929d0",
+    "build_receipt": "context-capture-candidate-build-20261016.json",
+    "compose_receipt": "standalone-compose-context-capture-20261016.json",
+    "compose_checks_passed": 15,
+    "compose_SIGTERM_seconds": 0.576,
+    "all_48_python_modules_host_installed_workdir_match": true,
+    "network": "none",
+    "credentials_mounted": false,
+    "published_or_deployed": false,
+    "stock_cold_build_claimed": false
+  },
+  "service_cutover": {
+    "observed_at_utc": "2026-10-16T11:16:50.452781+00:00",
+    "old_service": "calendar-live-player19",
+    "old_pid": 1748798,
+    "old_verified_idle_before_signal": true,
+    "old_requested_signal": "SIGINT",
+    "old_exit_code": 0,
+    "service": "calendar-live-context20",
+    "pid": 2235670,
+    "started": true,
+    "active_session_present": false,
+    "capture_interlock": false,
+    "last_error_present": false,
+    "scheduler_paused": true,
+    "recording_policy_checked": 0,
+    "speaking_policy_checked": 0,
+    "new_calendar_activities": 0,
+    "new_join_submitted": false
+  },
+  "temporary_harness_cleanup": {"removed_scripts": 6, "removed_replay_locator_and_findings": 2, "disposable_build_context_removed": true},
+  "next_real_meeting_requirement": "Notify operator and obtain a fresh in-meeting acknowledgement before any new Join. No Join or Calendar activity was created by this repair."
+}

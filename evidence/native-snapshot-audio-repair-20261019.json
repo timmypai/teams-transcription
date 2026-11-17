@@ -1,0 +1,1239 @@
+{
+  "date": "2026-10-19",
+  "scope": "Source-only first-answer audio and per-question full SQLite context repair. No new Teams join, deployment, service restart, push or real-meeting acceptance.",
+  "native_runs": [
+    {
+      "variant": "baseline",
+      "model": "gpt-live-1-codex",
+      "cli_required": "codex-cli 0.159.0-alpha.3",
+      "source_sha256": {
+        "b_native.py": "c7ebe6e26c1597d4ed8f622218665862ddf990a6f979b5f032b8145074b72c29",
+        "b_live.py": "cfe78b2c4d1d8ce3897e07e5bbd64727808ae3d7033144ff85ae3422a8c66ea3",
+        "b_context.py": "a44ca30ceb752854f05822449b4bef71278443834ecc535b4c1153e471fe22f0",
+        "b_media_profile.py": "4044e515fedab8d07d93c609f9e25f32268475f0f8f0a318d80432ffe67db519"
+      },
+      "prompt_sha256": "0d9f41582c4cbc1b40b592fce2e11ae35261d74f4dd93ec98bd60c4321b8e025",
+      "same_thread": true,
+      "failure": null,
+      "input_mode": "synthetic_question_stage",
+      "source_mode": "finals",
+      "accepted": false,
+      "owned_cleanup": {
+        "status": "cleaned",
+        "stop_status": "stopped",
+        "stop_ack_received": true,
+        "stop_closed_received": true,
+        "native_cleanup_status": "cleaned",
+        "owned_processes": 2,
+        "live_processes": 0,
+        "reaped": true,
+        "pending_close_tasks": 0,
+        "pending_operation": false
+      },
+      "observation": "Original incremental graph wire: unrelated historical task and repeated/self-dialogue output; latest questions initially used stale facts despite complete fresh SQL and marker return before generation.",
+      "rounds": [
+        {
+          "question_number": 1,
+          "synthetic_question": "上次留下的待辦工作是什麼？",
+          "source_version_before_question": 98,
+          "payloads": [
+            {
+              "t": 10.004018,
+              "kind": "payload",
+              "bytes": 70246,
+              "source_version": 98,
+              "refs": 99,
+              "locators": 99,
+              "omitted": false,
+              "question_offset": 57,
+              "payload_hash": "6affe248737310cc"
+            }
+          ],
+          "first_canonical_fact_coverage": {
+            "回歸測試": false
+          },
+          "first_canonical_complete": false,
+          "first_canonical_stale_terms": {},
+          "canonical_answer_count": 5,
+          "rpc_done_count": 5,
+          "repeat_count": 0,
+          "first_generation_before_marker": false,
+          "generation_events_during_chunks": 0,
+          "chunk_send_count": 141,
+          "chunk_bytes_returned": 70246,
+          "marker_return": 10.189157,
+          "first_generation_t": 30.648876,
+          "pcm_packets": 1324,
+          "completed": true,
+          "fresh_read_pass": true,
+          "first_answer_pass": false,
+          "repetition_pass": true
+        },
+        {
+          "question_number": 2,
+          "synthetic_question": "本次測試的代碼與截止日期是什麼？",
+          "source_version_before_question": 99,
+          "payloads": [
+            {
+              "t": 81.169887,
+              "kind": "payload",
+              "bytes": 51343,
+              "source_version": 99,
+              "refs": 99,
+              "locators": 99,
+              "omitted": false,
+              "question_offset": 57,
+              "payload_hash": "d28fe9a350d547f6"
+            }
+          ],
+          "first_canonical_fact_coverage": {
+            "ORBIT51": false,
+            "週四": false
+          },
+          "first_canonical_complete": false,
+          "first_canonical_stale_terms": {},
+          "canonical_answer_count": 2,
+          "rpc_done_count": 2,
+          "repeat_count": 0,
+          "first_generation_before_marker": false,
+          "generation_events_during_chunks": 0,
+          "chunk_send_count": 103,
+          "chunk_bytes_returned": 51343,
+          "marker_return": 81.280404,
+          "first_generation_t": 95.805605,
+          "pcm_packets": 986,
+          "completed": true,
+          "fresh_read_pass": true,
+          "first_answer_pass": false,
+          "repetition_pass": true
+        },
+        {
+          "question_number": 3,
+          "synthetic_question": "最新測試結論、代碼與截止日期是什麼？",
+          "source_version_before_question": 100,
+          "payloads": [
+            {
+              "t": 135.498975,
+              "kind": "payload",
+              "bytes": 51347,
+              "source_version": 100,
+              "refs": 99,
+              "locators": 99,
+              "omitted": false,
+              "question_offset": 57,
+              "payload_hash": "0220f4b67b85f327"
+            }
+          ],
+          "first_canonical_fact_coverage": {
+            "通過": true,
+            "RIVER72": false,
+            "週五": false
+          },
+          "first_canonical_complete": false,
+          "first_canonical_stale_terms": {
+            "ORBIT51": true,
+            "週四": true,
+            "未通過": true
+          },
+          "canonical_answer_count": 1,
+          "rpc_done_count": 1,
+          "repeat_count": 0,
+          "first_generation_before_marker": false,
+          "generation_events_during_chunks": 0,
+          "chunk_send_count": 103,
+          "chunk_bytes_returned": 51347,
+          "marker_return": 135.627657,
+          "first_generation_t": 150.693869,
+          "pcm_packets": 376,
+          "completed": true,
+          "fresh_read_pass": true,
+          "first_answer_pass": false,
+          "repetition_pass": true
+        }
+      ]
+    },
+    {
+      "variant": "request-last",
+      "model": "gpt-live-1-codex",
+      "cli_required": "codex-cli 0.159.0-alpha.3",
+      "source_sha256": {
+        "b_native.py": "c7ebe6e26c1597d4ed8f622218665862ddf990a6f979b5f032b8145074b72c29",
+        "b_live.py": "cfe78b2c4d1d8ce3897e07e5bbd64727808ae3d7033144ff85ae3422a8c66ea3",
+        "b_context.py": "a44ca30ceb752854f05822449b4bef71278443834ecc535b4c1153e471fe22f0",
+        "b_media_profile.py": "4044e515fedab8d07d93c609f9e25f32268475f0f8f0a318d80432ffe67db519"
+      },
+      "prompt_sha256": "0d9f41582c4cbc1b40b592fce2e11ae35261d74f4dd93ec98bd60c4321b8e025",
+      "same_thread": true,
+      "failure": {
+        "exception_type": "PhaseWaitTimeout",
+        "code": "diagnostic_incomplete"
+      },
+      "input_mode": "synthetic_question_stage",
+      "source_mode": "finals",
+      "accepted": false,
+      "owned_cleanup": {
+        "status": "cleaned",
+        "stop_status": "stopped",
+        "stop_ack_received": true,
+        "stop_closed_received": true,
+        "native_cleanup_status": "cleaned",
+        "owned_processes": 2,
+        "live_processes": 0,
+        "reaped": true,
+        "pending_close_tasks": 0,
+        "pending_operation": false
+      },
+      "observation": "Reordering only did not fix fabricated/repeated historical output; next question was not admitted. Negative control retained.",
+      "rounds": [
+        {
+          "question_number": 1,
+          "synthetic_question": "上次留下的待辦工作是什麼？",
+          "source_version_before_question": 98,
+          "payloads": [
+            {
+              "t": 9.234763,
+              "kind": "payload",
+              "bytes": 70246,
+              "source_version": 98,
+              "refs": 99,
+              "locators": 99,
+              "omitted": false,
+              "question_offset": 68562,
+              "payload_hash": "4795655be5192ab2"
+            }
+          ],
+          "first_canonical_fact_coverage": {
+            "回歸測試": false
+          },
+          "first_canonical_complete": false,
+          "first_canonical_stale_terms": {},
+          "canonical_answer_count": 2,
+          "rpc_done_count": 2,
+          "repeat_count": 0,
+          "first_generation_before_marker": false,
+          "generation_events_during_chunks": 0,
+          "chunk_send_count": 141,
+          "chunk_bytes_returned": 70246,
+          "marker_return": 9.423788,
+          "first_generation_t": 22.931809,
+          "pcm_packets": 737,
+          "completed": true,
+          "fresh_read_pass": true,
+          "first_answer_pass": false,
+          "repetition_pass": true
+        },
+        {
+          "question_number": 2,
+          "synthetic_question": "本次測試的代碼與截止日期是什麼？",
+          "source_version_before_question": 99,
+          "payloads": [],
+          "first_canonical_fact_coverage": {
+            "ORBIT51": false,
+            "週四": false
+          },
+          "first_canonical_complete": false,
+          "first_canonical_stale_terms": {},
+          "canonical_answer_count": 2,
+          "rpc_done_count": 2,
+          "repeat_count": 0,
+          "first_generation_before_marker": true,
+          "generation_events_during_chunks": 0,
+          "chunk_send_count": 0,
+          "chunk_bytes_returned": 0,
+          "marker_return": null,
+          "first_generation_t": 49.916058,
+          "pcm_packets": 0,
+          "completed": false,
+          "fresh_read_pass": false,
+          "first_answer_pass": false,
+          "repetition_pass": true
+        }
+      ]
+    },
+    {
+      "variant": "facts-first",
+      "model": "gpt-live-1-codex",
+      "cli_required": "codex-cli 0.159.0-alpha.3",
+      "source_sha256": {
+        "b_native.py": "c7ebe6e26c1597d4ed8f622218665862ddf990a6f979b5f032b8145074b72c29",
+        "b_live.py": "cfe78b2c4d1d8ce3897e07e5bbd64727808ae3d7033144ff85ae3422a8c66ea3",
+        "b_context.py": "a44ca30ceb752854f05822449b4bef71278443834ecc535b4c1153e471fe22f0",
+        "b_media_profile.py": "4044e515fedab8d07d93c609f9e25f32268475f0f8f0a318d80432ffe67db519"
+      },
+      "prompt_sha256": "0d9f41582c4cbc1b40b592fce2e11ae35261d74f4dd93ec98bd60c4321b8e025",
+      "same_thread": true,
+      "failure": {
+        "exception_type": "PhaseWaitTimeout",
+        "code": "diagnostic_incomplete"
+      },
+      "input_mode": "synthetic_question_stage",
+      "source_mode": "finals",
+      "accepted": false,
+      "owned_cleanup": {
+        "status": "cleaned",
+        "stop_status": "stopped",
+        "stop_ack_received": true,
+        "stop_closed_received": true,
+        "native_cleanup_status": "cleaned",
+        "owned_processes": 2,
+        "live_processes": 0,
+        "reaped": true,
+        "pending_close_tasks": 0,
+        "pending_operation": false
+      },
+      "observation": "Readable facts plus original graph metadata still produced extra dialogue; third question was not admitted. Negative control retained.",
+      "rounds": [
+        {
+          "question_number": 1,
+          "synthetic_question": "上次留下的待辦工作是什麼？",
+          "source_version_before_question": 98,
+          "payloads": [
+            {
+              "t": 9.378738,
+              "kind": "payload",
+              "bytes": 83867,
+              "source_version": 98,
+              "refs": 99,
+              "locators": 99,
+              "omitted": false,
+              "question_offset": 12088,
+              "payload_hash": "57c80122ff91cfa9"
+            }
+          ],
+          "first_canonical_fact_coverage": {
+            "回歸測試": true
+          },
+          "first_canonical_complete": true,
+          "first_canonical_stale_terms": {},
+          "canonical_answer_count": 2,
+          "rpc_done_count": 2,
+          "repeat_count": 0,
+          "first_generation_before_marker": false,
+          "generation_events_during_chunks": 0,
+          "chunk_send_count": 168,
+          "chunk_bytes_returned": 83867,
+          "marker_return": 9.587651,
+          "first_generation_t": 29.630433,
+          "pcm_packets": 1345,
+          "completed": true,
+          "fresh_read_pass": true,
+          "first_answer_pass": true,
+          "repetition_pass": true
+        },
+        {
+          "question_number": 2,
+          "synthetic_question": "本次測試的代碼與截止日期是什麼？",
+          "source_version_before_question": 99,
+          "payloads": [
+            {
+              "t": 77.491944,
+              "kind": "payload",
+              "bytes": 65007,
+              "source_version": 99,
+              "refs": 99,
+              "locators": 99,
+              "omitted": false,
+              "question_offset": 12107,
+              "payload_hash": "66c0ae105561b4bb"
+            }
+          ],
+          "first_canonical_fact_coverage": {
+            "ORBIT51": true,
+            "週四": true
+          },
+          "first_canonical_complete": true,
+          "first_canonical_stale_terms": {},
+          "canonical_answer_count": 1,
+          "rpc_done_count": 1,
+          "repeat_count": 0,
+          "first_generation_before_marker": false,
+          "generation_events_during_chunks": 0,
+          "chunk_send_count": 131,
+          "chunk_bytes_returned": 65007,
+          "marker_return": 77.660787,
+          "first_generation_t": 88.972842,
+          "pcm_packets": 543,
+          "completed": true,
+          "fresh_read_pass": true,
+          "first_answer_pass": true,
+          "repetition_pass": true
+        },
+        {
+          "question_number": 3,
+          "synthetic_question": "最新測試結論、代碼與截止日期是什麼？",
+          "source_version_before_question": 100,
+          "payloads": [],
+          "first_canonical_fact_coverage": {
+            "通過": false,
+            "RIVER72": false,
+            "週五": false
+          },
+          "first_canonical_complete": false,
+          "first_canonical_stale_terms": {
+            "ORBIT51": true,
+            "週四": true,
+            "未通過": false
+          },
+          "canonical_answer_count": 2,
+          "rpc_done_count": 2,
+          "repeat_count": 0,
+          "first_generation_before_marker": true,
+          "generation_events_during_chunks": 0,
+          "chunk_send_count": 0,
+          "chunk_bytes_returned": 0,
+          "marker_return": null,
+          "first_generation_t": 105.612197,
+          "pcm_packets": 0,
+          "completed": false,
+          "fresh_read_pass": false,
+          "first_answer_pass": false,
+          "repetition_pass": true
+        }
+      ]
+    },
+    {
+      "variant": "compact",
+      "model": "gpt-live-1-codex",
+      "cli_required": "codex-cli 0.159.0-alpha.3",
+      "source_sha256": {
+        "b_native.py": "c7ebe6e26c1597d4ed8f622218665862ddf990a6f979b5f032b8145074b72c29",
+        "b_live.py": "cfe78b2c4d1d8ce3897e07e5bbd64727808ae3d7033144ff85ae3422a8c66ea3",
+        "b_context.py": "a44ca30ceb752854f05822449b4bef71278443834ecc535b4c1153e471fe22f0",
+        "b_media_profile.py": "4044e515fedab8d07d93c609f9e25f32268475f0f8f0a318d80432ffe67db519"
+      },
+      "prompt_sha256": "0d9f41582c4cbc1b40b592fce2e11ae35261d74f4dd93ec98bd60c4321b8e025",
+      "same_thread": true,
+      "failure": null,
+      "input_mode": "synthetic_question_stage",
+      "source_mode": "finals",
+      "accepted": false,
+      "owned_cleanup": {
+        "status": "cleaned",
+        "stop_status": "stopped",
+        "stop_ack_received": true,
+        "stop_closed_received": true,
+        "native_cleanup_status": "cleaned",
+        "owned_processes": 2,
+        "live_processes": 0,
+        "reaped": true,
+        "pending_close_tasks": 0,
+        "pending_operation": false
+      },
+      "observation": "All three substantive answers used the expected synthetic facts; third answer began with a separate filler turn. Strict first-canonical acceptance remained false.",
+      "rounds": [
+        {
+          "question_number": 1,
+          "synthetic_question": "上次留下的待辦工作是什麼？",
+          "source_version_before_question": 98,
+          "payloads": [
+            {
+              "t": 8.935075,
+              "kind": "payload",
+              "bytes": 14359,
+              "source_version": 98,
+              "refs": 99,
+              "locators": 99,
+              "omitted": false,
+              "question_offset": 12392,
+              "payload_hash": "44121f05ab30b418"
+            }
+          ],
+          "first_canonical_fact_coverage": {
+            "回歸測試": true
+          },
+          "first_canonical_complete": true,
+          "first_canonical_stale_terms": {},
+          "canonical_answer_count": 1,
+          "rpc_done_count": 1,
+          "repeat_count": 0,
+          "first_generation_before_marker": false,
+          "generation_events_during_chunks": 0,
+          "chunk_send_count": 29,
+          "chunk_bytes_returned": 14359,
+          "marker_return": 8.97966,
+          "first_generation_t": 18.037772,
+          "pcm_packets": 658,
+          "completed": true,
+          "fresh_read_pass": true,
+          "first_answer_pass": true,
+          "repetition_pass": true
+        },
+        {
+          "question_number": 2,
+          "synthetic_question": "本次測試的代碼與截止日期是什麼？",
+          "source_version_before_question": 99,
+          "payloads": [
+            {
+              "t": 46.885878,
+              "kind": "payload",
+              "bytes": 14411,
+              "source_version": 99,
+              "refs": 99,
+              "locators": 99,
+              "omitted": false,
+              "question_offset": 12411,
+              "payload_hash": "41aaf7068d892ffe"
+            }
+          ],
+          "first_canonical_fact_coverage": {
+            "ORBIT51": true,
+            "週四": true
+          },
+          "first_canonical_complete": true,
+          "first_canonical_stale_terms": {},
+          "canonical_answer_count": 1,
+          "rpc_done_count": 1,
+          "repeat_count": 0,
+          "first_generation_before_marker": false,
+          "generation_events_during_chunks": 0,
+          "chunk_send_count": 29,
+          "chunk_bytes_returned": 14411,
+          "marker_return": 46.920554,
+          "first_generation_t": 55.405899,
+          "pcm_packets": 442,
+          "completed": true,
+          "fresh_read_pass": true,
+          "first_answer_pass": true,
+          "repetition_pass": true
+        },
+        {
+          "question_number": 3,
+          "synthetic_question": "最新測試結論、代碼與截止日期是什麼？",
+          "source_version_before_question": 100,
+          "payloads": [
+            {
+              "t": 76.153696,
+              "kind": "payload",
+              "bytes": 14415,
+              "source_version": 100,
+              "refs": 99,
+              "locators": 99,
+              "omitted": false,
+              "question_offset": 12411,
+              "payload_hash": "6ea4c7a61a4540dd"
+            }
+          ],
+          "first_canonical_fact_coverage": {
+            "通過": false,
+            "RIVER72": false,
+            "週五": false
+          },
+          "first_canonical_complete": false,
+          "first_canonical_stale_terms": {
+            "ORBIT51": false,
+            "週四": false,
+            "未通過": false
+          },
+          "canonical_answer_count": 2,
+          "rpc_done_count": 2,
+          "repeat_count": 0,
+          "first_generation_before_marker": false,
+          "generation_events_during_chunks": 0,
+          "chunk_send_count": 29,
+          "chunk_bytes_returned": 14415,
+          "marker_return": 76.193157,
+          "first_generation_t": 79.271475,
+          "pcm_packets": 402,
+          "completed": true,
+          "fresh_read_pass": true,
+          "first_answer_pass": false,
+          "repetition_pass": true
+        }
+      ]
+    },
+    {
+      "variant": "production",
+      "model": "gpt-live-1-codex",
+      "cli_required": "codex-cli 0.159.0-alpha.3",
+      "source_sha256": {
+        "b_native.py": "f5ad33dc5f420d51e931e7c27648b8978e22e0f5fed71067816ac7cf04cf6834",
+        "b_live.py": "cfe78b2c4d1d8ce3897e07e5bbd64727808ae3d7033144ff85ae3422a8c66ea3",
+        "b_context.py": "85da94826ca1e628eac46331a008caed49a460cc32505cfedfeec5910a3bf416",
+        "b_media_profile.py": "4044e515fedab8d07d93c609f9e25f32268475f0f8f0a318d80432ffe67db519"
+      },
+      "prompt_sha256": "987d59fd958fb55b4c4c762a00664cb17f58c866ee27677ce4e1f590185f48e5",
+      "same_thread": true,
+      "failure": null,
+      "input_mode": "woken",
+      "source_mode": "finals",
+      "accepted": false,
+      "owned_cleanup": {
+        "status": "cleaned",
+        "stop_status": "stopped",
+        "stop_ack_received": true,
+        "stop_closed_received": true,
+        "native_cleanup_status": "cleaned",
+        "owned_processes": 2,
+        "live_processes": 0,
+        "reaped": true,
+        "pending_close_tasks": 0,
+        "pending_operation": false
+      },
+      "observation": "Actual wake and ASR path. Q1 correct once. Q2 ASR changed the question to code-freeze date; answer did not include expected code. Q3 gave the latest facts but also cited older facts. Strict acceptance failed.",
+      "rounds": [
+        {
+          "question_number": 1,
+          "synthetic_question": "上次留下的待辦工作是什麼？",
+          "source_version_before_question": 98,
+          "payloads": [
+            {
+              "t": 10.43306,
+              "kind": "payload",
+              "bytes": 14359,
+              "source_version": 98,
+              "refs": 99,
+              "locators": 99,
+              "omitted": false,
+              "question_offset": 12392,
+              "payload_hash": "44121f05ab30b418"
+            }
+          ],
+          "first_canonical_fact_coverage": {
+            "回歸測試": true
+          },
+          "first_canonical_complete": true,
+          "first_canonical_stale_terms": {},
+          "canonical_answer_count": 1,
+          "rpc_done_count": 1,
+          "repeat_count": 0,
+          "first_generation_before_marker": false,
+          "generation_events_during_chunks": 0,
+          "chunk_send_count": 29,
+          "chunk_bytes_returned": 14359,
+          "marker_return": 10.469542,
+          "first_generation_t": 19.699722,
+          "pcm_packets": 404,
+          "completed": true,
+          "fresh_read_pass": true,
+          "first_answer_pass": true,
+          "repetition_pass": true
+        },
+        {
+          "question_number": 2,
+          "synthetic_question": "本次測試的代碼與截止日期是什麼？",
+          "source_version_before_question": 99,
+          "payloads": [
+            {
+              "t": 38.685981,
+              "kind": "payload",
+              "bytes": 14408,
+              "source_version": 99,
+              "refs": 99,
+              "locators": 99,
+              "omitted": false,
+              "question_offset": 12411,
+              "payload_hash": "b3b74db727582144"
+            }
+          ],
+          "first_canonical_fact_coverage": {
+            "ORBIT51": false,
+            "週四": true
+          },
+          "first_canonical_complete": false,
+          "first_canonical_stale_terms": {},
+          "canonical_answer_count": 1,
+          "rpc_done_count": 1,
+          "repeat_count": 0,
+          "first_generation_before_marker": false,
+          "generation_events_during_chunks": 0,
+          "chunk_send_count": 29,
+          "chunk_bytes_returned": 14408,
+          "marker_return": 38.723264,
+          "first_generation_t": 44.969596,
+          "pcm_packets": 399,
+          "completed": true,
+          "fresh_read_pass": true,
+          "first_answer_pass": false,
+          "repetition_pass": true
+        },
+        {
+          "question_number": 3,
+          "synthetic_question": "最新測試結論、代碼與截止日期是什麼？",
+          "source_version_before_question": 100,
+          "payloads": [
+            {
+              "t": 67.225124,
+              "kind": "payload",
+              "bytes": 14415,
+              "source_version": 100,
+              "refs": 99,
+              "locators": 99,
+              "omitted": false,
+              "question_offset": 12411,
+              "payload_hash": "6ea4c7a61a4540dd"
+            }
+          ],
+          "first_canonical_fact_coverage": {
+            "通過": true,
+            "RIVER72": true,
+            "週五": true
+          },
+          "first_canonical_complete": true,
+          "first_canonical_stale_terms": {
+            "ORBIT51": true,
+            "週四": true,
+            "未通過": true
+          },
+          "canonical_answer_count": 1,
+          "rpc_done_count": 1,
+          "repeat_count": 0,
+          "first_generation_before_marker": false,
+          "generation_events_during_chunks": 0,
+          "chunk_send_count": 29,
+          "chunk_bytes_returned": 14415,
+          "marker_return": 67.258493,
+          "first_generation_t": 70.236358,
+          "pcm_packets": 376,
+          "completed": true,
+          "fresh_read_pass": true,
+          "first_answer_pass": false,
+          "repetition_pass": true
+        }
+      ]
+    },
+    {
+      "variant": "production",
+      "model": "gpt-live-1-codex",
+      "cli_required": "codex-cli 0.159.0-alpha.3",
+      "source_sha256": {
+        "b_native.py": "f5ad33dc5f420d51e931e7c27648b8978e22e0f5fed71067816ac7cf04cf6834",
+        "b_live.py": "cfe78b2c4d1d8ce3897e07e5bbd64727808ae3d7033144ff85ae3422a8c66ea3",
+        "b_context.py": "b1859805434fb78536df2c24b0bbc9b08d0c755286f9d24f93862e5fb9b91638",
+        "b_media_profile.py": "4044e515fedab8d07d93c609f9e25f32268475f0f8f0a318d80432ffe67db519"
+      },
+      "prompt_sha256": "987d59fd958fb55b4c4c762a00664cb17f58c866ee27677ce4e1f590185f48e5",
+      "same_thread": true,
+      "failure": null,
+      "input_mode": "woken",
+      "source_mode": "receipts",
+      "accepted": false,
+      "owned_cleanup": {
+        "status": "cleaned",
+        "stop_status": "stopped",
+        "stop_ack_received": true,
+        "stop_closed_received": true,
+        "native_cleanup_status": "cleaned",
+        "owned_processes": 2,
+        "live_processes": 0,
+        "reaped": true,
+        "pending_close_tasks": 0,
+        "pending_operation": false
+      },
+      "observation": "Actual wake with 582/596/617 application receipts. Full fragment-coordinate metadata on wire: Q1 denied available history, Q2 denied new facts twice; Q3 gave latest facts. Strict acceptance failed; motivated retaining exact coordinates only on host.",
+      "rounds": [
+        {
+          "question_number": 1,
+          "synthetic_question": "上次留下的待辦工作是什麼？",
+          "source_version_before_question": 581,
+          "payloads": [
+            {
+              "t": 10.498027,
+              "kind": "payload",
+              "bytes": 32477,
+              "source_version": 581,
+              "refs": 582,
+              "locators": 582,
+              "omitted": false,
+              "question_offset": 30510,
+              "payload_hash": "a959c3b026a29e65"
+            }
+          ],
+          "first_canonical_fact_coverage": {
+            "回歸測試": false
+          },
+          "first_canonical_complete": false,
+          "first_canonical_stale_terms": {},
+          "canonical_answer_count": 1,
+          "rpc_done_count": 1,
+          "repeat_count": 0,
+          "first_generation_before_marker": false,
+          "generation_events_during_chunks": 0,
+          "chunk_send_count": 65,
+          "chunk_bytes_returned": 32477,
+          "marker_return": 10.576368,
+          "first_generation_t": 24.12942,
+          "pcm_packets": 662,
+          "completed": true,
+          "fresh_read_pass": true,
+          "first_answer_pass": false,
+          "repetition_pass": true
+        },
+        {
+          "question_number": 2,
+          "synthetic_question": "請分別說出本次測試的代碼，以及預定完成的星期幾。",
+          "source_version_before_question": 595,
+          "payloads": [
+            {
+              "t": 50.669121,
+              "kind": "payload",
+              "bytes": 33261,
+              "source_version": 595,
+              "refs": 596,
+              "locators": 596,
+              "omitted": false,
+              "question_offset": 31223,
+              "payload_hash": "8085c0449ac4317e"
+            }
+          ],
+          "first_canonical_fact_coverage": {
+            "ORBIT51": false,
+            "週四": false
+          },
+          "first_canonical_complete": false,
+          "first_canonical_stale_terms": {},
+          "canonical_answer_count": 2,
+          "rpc_done_count": 2,
+          "repeat_count": 0,
+          "first_generation_before_marker": false,
+          "generation_events_during_chunks": 0,
+          "chunk_send_count": 67,
+          "chunk_bytes_returned": 33261,
+          "marker_return": 50.750859,
+          "first_generation_t": 61.499318,
+          "pcm_packets": 866,
+          "completed": true,
+          "fresh_read_pass": true,
+          "first_answer_pass": false,
+          "repetition_pass": true
+        },
+        {
+          "question_number": 3,
+          "synthetic_question": "請只說最新測試結論，最新的代碼，還有最新的截止日期。",
+          "source_version_before_question": 616,
+          "payloads": [
+            {
+              "t": 101.228338,
+              "kind": "payload",
+              "bytes": 34405,
+              "source_version": 616,
+              "refs": 617,
+              "locators": 617,
+              "omitted": false,
+              "question_offset": 32293,
+              "payload_hash": "e317bbf488670c96"
+            }
+          ],
+          "first_canonical_fact_coverage": {
+            "通過": true,
+            "RIVER72": false,
+            "週五": true
+          },
+          "first_canonical_complete": false,
+          "first_canonical_stale_terms": {
+            "ORBIT51": false,
+            "週四": false,
+            "未通過": false
+          },
+          "canonical_answer_count": 1,
+          "rpc_done_count": 1,
+          "repeat_count": 0,
+          "first_generation_before_marker": false,
+          "generation_events_during_chunks": 0,
+          "chunk_send_count": 69,
+          "chunk_bytes_returned": 34405,
+          "marker_return": 101.293537,
+          "first_generation_t": 109.551782,
+          "pcm_packets": 260,
+          "completed": true,
+          "fresh_read_pass": true,
+          "first_answer_pass": false,
+          "repetition_pass": true
+        }
+      ]
+    },
+    {
+      "variant": "production",
+      "model": "gpt-live-1-codex",
+      "cli_required": "codex-cli 0.159.0-alpha.3",
+      "source_sha256": {
+        "b_native.py": "eea8b05520fc7b96f06df2701e4e7954c9413a2da17cbe58d72ac6f834d3c7ae",
+        "b_live.py": "cfe78b2c4d1d8ce3897e07e5bbd64727808ae3d7033144ff85ae3422a8c66ea3",
+        "b_context.py": "bdeca9d2ddc3a86ac9290f2f0a3dc7443c9a95e79612e2baed347a189a2633d9",
+        "b_media_profile.py": "4044e515fedab8d07d93c609f9e25f32268475f0f8f0a318d80432ffe67db519"
+      },
+      "prompt_sha256": "8b8096bd1362fa089c34cea3b73088bd6331394f677a7f0ac30eb8050ebd048d",
+      "same_thread": true,
+      "failure": null,
+      "input_mode": "woken",
+      "source_mode": "receipts",
+      "accepted": false,
+      "owned_cleanup": {
+        "status": "cleaned",
+        "stop_status": "stopped",
+        "stop_ack_received": true,
+        "stop_closed_received": true,
+        "native_cleanup_status": "cleaned",
+        "owned_processes": 2,
+        "live_processes": 0,
+        "reaped": true,
+        "pending_close_tasks": 0,
+        "pending_operation": false
+      },
+      "observation": "Identical receipt-source scenario after moving full character coordinates to host-only metadata. All three substantive answers contained the correct task/current facts; Q3 did not repeat stale values. No repeated full sentences observed. Literal checker remained false because spoken codes were rendered ORBIT五一 and RIVER七二, not ASCII digits. This is transcript-level observation, not Teams audibility.",
+      "rounds": [
+        {
+          "question_number": 1,
+          "synthetic_question": "上次留下的待辦工作是什麼？",
+          "source_version_before_question": 581,
+          "payloads": [
+            {
+              "t": 10.270268,
+              "kind": "payload",
+              "bytes": 4057,
+              "source_version": 581,
+              "refs": 582,
+              "locators": 582,
+              "omitted": false,
+              "question_offset": 2090,
+              "payload_hash": "1164ecd2af8aab62"
+            }
+          ],
+          "first_canonical_fact_coverage": {
+            "回歸測試": true
+          },
+          "first_canonical_complete": true,
+          "first_canonical_stale_terms": {},
+          "canonical_answer_count": 1,
+          "rpc_done_count": 1,
+          "repeat_count": 0,
+          "first_generation_before_marker": false,
+          "generation_events_during_chunks": 0,
+          "chunk_send_count": 9,
+          "chunk_bytes_returned": 4057,
+          "marker_return": 10.287629,
+          "first_generation_t": 14.001693,
+          "pcm_packets": 468,
+          "completed": true,
+          "fresh_read_pass": true,
+          "first_answer_pass": true,
+          "repetition_pass": true
+        },
+        {
+          "question_number": 2,
+          "synthetic_question": "請分別說出本次測試的代碼，以及預定完成的星期幾。",
+          "source_version_before_question": 595,
+          "payloads": [
+            {
+              "t": 43.12141,
+              "kind": "payload",
+              "bytes": 4154,
+              "source_version": 595,
+              "refs": 596,
+              "locators": 596,
+              "omitted": false,
+              "question_offset": 2117,
+              "payload_hash": "84df8045c75e47d0"
+            }
+          ],
+          "first_canonical_fact_coverage": {
+            "ORBIT51": false,
+            "週四": true
+          },
+          "first_canonical_complete": false,
+          "first_canonical_stale_terms": {},
+          "canonical_answer_count": 1,
+          "rpc_done_count": 1,
+          "repeat_count": 0,
+          "first_generation_before_marker": false,
+          "generation_events_during_chunks": 0,
+          "chunk_send_count": 9,
+          "chunk_bytes_returned": 4154,
+          "marker_return": 43.133989,
+          "first_generation_t": 46.433418,
+          "pcm_packets": 443,
+          "completed": true,
+          "fresh_read_pass": true,
+          "first_answer_pass": false,
+          "repetition_pass": true
+        },
+        {
+          "question_number": 3,
+          "synthetic_question": "請只說最新測試結論，最新的代碼，還有最新的截止日期。",
+          "source_version_before_question": 616,
+          "payloads": [
+            {
+              "t": 75.480844,
+              "kind": "payload",
+              "bytes": 4270,
+              "source_version": 616,
+              "refs": 617,
+              "locators": 617,
+              "omitted": false,
+              "question_offset": 2158,
+              "payload_hash": "485e5d4379a79b9c"
+            }
+          ],
+          "first_canonical_fact_coverage": {
+            "通過": true,
+            "RIVER72": false,
+            "週五": true
+          },
+          "first_canonical_complete": false,
+          "first_canonical_stale_terms": {
+            "ORBIT51": false,
+            "週四": false,
+            "未通過": false
+          },
+          "canonical_answer_count": 1,
+          "rpc_done_count": 1,
+          "repeat_count": 0,
+          "first_generation_before_marker": false,
+          "generation_events_during_chunks": 0,
+          "chunk_send_count": 9,
+          "chunk_bytes_returned": 4270,
+          "marker_return": 75.491954,
+          "first_generation_t": 78.7896,
+          "pcm_packets": 457,
+          "completed": true,
+          "fresh_read_pass": true,
+          "first_answer_pass": false,
+          "repetition_pass": true
+        }
+      ],
+      "synthetic_answer_observations": [
+        {
+          "question_number": 1,
+          "text": "上次留下的待辦是「完成回歸測試」。目前我們只有上次保存的摘要和跨場待辦,沒有上次的完整逐字稿,而且本場紀錄也標示為部分涵蓋,所以只能以這些資料為準。"
+        },
+        {
+          "question_number": 2,
+          "text": "本次測試代碼是ORBIT五一,預定完成是週四。這是依本場紀錄中的內容回答,但整體紀錄標示為部分涵蓋,並非完整逐字稿,所以只能以現有內容為準。"
+        },
+        {
+          "question_number": 3,
+          "text": "最新測試結論是通過,代碼是RIVER七二,截止日期是週五。這是依本場紀錄中的最新更正內容,但整體紀錄標示為部分涵蓋,並非完整逐字稿,所以只能以現有內容為準。"
+        }
+      ]
+    },
+    {
+      "variant": "production",
+      "model": "gpt-live-1-codex",
+      "cli_required": "codex-cli 0.159.0-alpha.3",
+      "source_sha256": {
+        "b_native.py": "eea8b05520fc7b96f06df2701e4e7954c9413a2da17cbe58d72ac6f834d3c7ae",
+        "b_live.py": "cfe78b2c4d1d8ce3897e07e5bbd64727808ae3d7033144ff85ae3422a8c66ea3",
+        "b_context.py": "bdeca9d2ddc3a86ac9290f2f0a3dc7443c9a95e79612e2baed347a189a2633d9",
+        "b_media_profile.py": "4044e515fedab8d07d93c609f9e25f32268475f0f8f0a318d80432ffe67db519"
+      },
+      "prompt_sha256": "8b8096bd1362fa089c34cea3b73088bd6331394f677a7f0ac30eb8050ebd048d",
+      "same_thread": true,
+      "failure": null,
+      "input_mode": "woken",
+      "source_mode": "finals",
+      "accepted": true,
+      "owned_cleanup": {
+        "status": "cleaned",
+        "stop_status": "stopped",
+        "stop_ack_received": true,
+        "stop_closed_received": true,
+        "native_cleanup_status": "cleaned",
+        "owned_processes": 2,
+        "live_processes": 0,
+        "reaped": true,
+        "pending_close_tasks": 0,
+        "pending_operation": false
+      },
+      "observation": "Final production code with actual wake and ASR, 99 provider-final/history sources and same-identity source revisions. All three first canonical answers passed literal fact, no-stale and no-repetition checks. Clean owned shutdown. Muted boundary, not Teams remote audibility.",
+      "rounds": [
+        {
+          "question_number": 1,
+          "synthetic_question": "上次留下的待辦工作是什麼？",
+          "source_version_before_question": 98,
+          "payloads": [
+            {
+              "t": 10.538848,
+              "kind": "payload",
+              "bytes": 14359,
+              "source_version": 98,
+              "refs": 99,
+              "locators": 99,
+              "omitted": false,
+              "question_offset": 12392,
+              "payload_hash": "44121f05ab30b418"
+            }
+          ],
+          "first_canonical_fact_coverage": {
+            "回歸測試": true
+          },
+          "first_canonical_complete": true,
+          "first_canonical_stale_terms": {},
+          "canonical_answer_count": 1,
+          "rpc_done_count": 1,
+          "repeat_count": 0,
+          "first_generation_before_marker": false,
+          "generation_events_during_chunks": 0,
+          "chunk_send_count": 29,
+          "chunk_bytes_returned": 14359,
+          "marker_return": 10.575048,
+          "first_generation_t": 18.239205,
+          "pcm_packets": 433,
+          "completed": true,
+          "fresh_read_pass": true,
+          "first_answer_pass": true,
+          "repetition_pass": true
+        },
+        {
+          "question_number": 2,
+          "synthetic_question": "請分別說出本次測試的代碼，以及預定完成的星期幾。",
+          "source_version_before_question": 99,
+          "payloads": [
+            {
+              "t": 41.931061,
+              "kind": "payload",
+              "bytes": 14433,
+              "source_version": 99,
+              "refs": 99,
+              "locators": 99,
+              "omitted": false,
+              "question_offset": 12411,
+              "payload_hash": "b6e43ed93316137e"
+            }
+          ],
+          "first_canonical_fact_coverage": {
+            "ORBIT51": true,
+            "週四": true
+          },
+          "first_canonical_complete": true,
+          "first_canonical_stale_terms": {},
+          "canonical_answer_count": 1,
+          "rpc_done_count": 1,
+          "repeat_count": 0,
+          "first_generation_before_marker": false,
+          "generation_events_during_chunks": 0,
+          "chunk_send_count": 29,
+          "chunk_bytes_returned": 14433,
+          "marker_return": 41.965308,
+          "first_generation_t": 50.263486,
+          "pcm_packets": 401,
+          "completed": true,
+          "fresh_read_pass": true,
+          "first_answer_pass": true,
+          "repetition_pass": true
+        },
+        {
+          "question_number": 3,
+          "synthetic_question": "請只說最新測試結論，最新的代碼，還有最新的截止日期。",
+          "source_version_before_question": 100,
+          "payloads": [
+            {
+              "t": 72.530266,
+              "kind": "payload",
+              "bytes": 14437,
+              "source_version": 100,
+              "refs": 99,
+              "locators": 99,
+              "omitted": false,
+              "question_offset": 12411,
+              "payload_hash": "93aa82d1876ced62"
+            }
+          ],
+          "first_canonical_fact_coverage": {
+            "通過": true,
+            "RIVER72": true,
+            "週五": true
+          },
+          "first_canonical_complete": true,
+          "first_canonical_stale_terms": {
+            "ORBIT51": false,
+            "週四": false,
+            "未通過": false
+          },
+          "canonical_answer_count": 1,
+          "rpc_done_count": 1,
+          "repeat_count": 0,
+          "first_generation_before_marker": false,
+          "generation_events_during_chunks": 0,
+          "chunk_send_count": 29,
+          "chunk_bytes_returned": 14437,
+          "marker_return": 72.56305,
+          "first_generation_t": 80.850293,
+          "pcm_packets": 434,
+          "completed": true,
+          "fresh_read_pass": true,
+          "first_answer_pass": true,
+          "repetition_pass": true
+        }
+      ]
+    }
+  ],
+  "local_waveform": {
+    "sent_frames": 12288,
+    "observed_active_samples": 11743,
+    "first_440hz_magnitude": 501.29,
+    "tail_880hz_magnitude": 970.39,
+    "drained": true,
+    "truncated": false,
+    "remote_audibility_verified": false
+  },
+  "limits": [
+    "Model send-return is not consumption acknowledgement.",
+    "Local audio conservation does not establish that every original interior word dropout had the same cause.",
+    "Native semantic correctness and arbitrary live speech recognition are not guaranteed.",
+    "Existing active service was not restarted and has not loaded the source changes."
+  ],
+  "real_meeting_read_only_observation": {
+    "observed_at_utc": "2026-10-19T03:00",
+    "state": "recording",
+    "response_state": "sleeping",
+    "error_code": null,
+    "output_muted": true,
+    "tool_calls": 4,
+    "stop_requested": false,
+    "loaded_repair": false,
+    "raw_meeting_content_exported": false
+  },
+  "pre_repair_real_meeting_diagnosis": {
+    "tool_calls": 4,
+    "tool_results_complete": true,
+    "budget_omission": false,
+    "new_facts_present_and_selected": true,
+    "rpc_assistant_done_count": 19,
+    "rpc_done_count_is_independent_answer_count": false,
+    "per_turn_text_evidence_available": false
+  },
+  "change_contract": {
+    "fresh_sql_per_question": true,
+    "model_incremental_cache_protocol_removed": true,
+    "all_source_texts_retained": true,
+    "text_deduplication": false,
+    "host_keeps_full_source_coordinates": true,
+    "wire_projection_mapping": "record_index_range_inclusive",
+    "content_or_record_quota": null,
+    "first_audio_capture": "same browser evaluation as final marker dispatch; existing finite FIFO waits for send-return and TX/scope admission",
+    "response_progress_schema": 3,
+    "old_cache_count_replaced_by": "committed_records"
+  },
+  "source_sha256": {
+    "b_native.py": "eea8b05520fc7b96f06df2701e4e7954c9413a2da17cbe58d72ac6f834d3c7ae",
+    "b_live.py": "cfe78b2c4d1d8ce3897e07e5bbd64727808ae3d7033144ff85ae3422a8c66ea3",
+    "b_context.py": "bdeca9d2ddc3a86ac9290f2f0a3dc7443c9a95e79612e2baed347a189a2633d9",
+    "diagnostics.py": "ce0f660d4d461e243efe6995ed30053840aab93ffa90ef7c0b2c1366a960b9ca"
+  },
+  "regression": {
+    "full_available_run": {
+      "tests": 978,
+      "seconds": 256.656,
+      "failures": 0,
+      "errors": 1,
+      "skips": 0,
+      "error_test": "test_b_browser_tx.BrowserTXTests.test_native_continuation_backlog_respects_real_browser_playback_bound",
+      "error": "Timed out waiting for drain after fake-clock advancement before queued first-answer PCM delivery."
+    },
+    "correction": "Browser fixture now waits for 2048 active output frames before advancing its fake quiet clock. No production completion rule or timeout changed.",
+    "corrective_run": {
+      "command": "PYTHONPATH=tests:. python -m unittest test_b_browser_tx -v",
+      "tests": 2,
+      "seconds": 2.665,
+      "failures": 0,
+      "errors": 0,
+      "skips": 0
+    },
+    "remaining_failures": 0,
+    "verification_scope": "977 unchanged tests passed in the full run; the corrected browser suite passed separately. This is not a second all-green full discovery run.",
+    "excluded_missing_source_modules": [
+      "test_bridge_integration.py",
+      "test_media_bridge.py"
+    ],
+    "original_full_discovery_claimed": false
+  }
+}

@@ -1,0 +1,177 @@
+{
+  "kind": "real_teams_round19_current_facts_omitted",
+  "recorded_at": "2026-10-18T11:01:29.590507+00:00",
+  "session_id": "74787e81ca3f4f03bea563f6d8e8c34c",
+  "operator_report": "B does not know current meeting content.",
+  "source_available": true,
+  "A_state": "recording",
+  "A_live_state": "connected",
+  "B": {
+    "state": "failed",
+    "error_code": "response_failed",
+    "runtime_failure": {
+      "code": "response_output_backpressure",
+      "elapsed_ms": 215464,
+      "exception_type": "none",
+      "phase": "audio_callback"
+    },
+    "progress": {
+      "context": {
+        "failure_code": null,
+        "known_paragraphs": 20,
+        "pending": false,
+        "sent_bytes": 23069,
+        "total_limit_bytes": null
+      },
+      "fanout": {
+        "accepted_packets": 8006,
+        "clock_missing_packets": 0,
+        "error_packets": 0,
+        "offered_packets": 8567,
+        "rejected_packets": 561
+      },
+      "pending_input": {
+        "characters": 0,
+        "has_question": false,
+        "has_wake": false
+      },
+      "question_receipts": {
+        "admitted": 2,
+        "last_rejection": null,
+        "received": 2,
+        "rejected": 0
+      },
+      "rx": {
+        "accepted_packets": 8006,
+        "dropped_packets": 522,
+        "peer_push_packets": 8006
+      },
+      "schema_version": 2,
+      "speech": {
+        "activity_frames": 305152,
+        "done_is_set": true,
+        "drained": true,
+        "error_code": "native_error",
+        "nonzero_frames": 339532,
+        "output_active": false,
+        "packet_frames": 2048,
+        "packet_nonzero_frames": 15,
+        "phase": "closed",
+        "truncated": false
+      },
+      "state": "failed",
+      "tool_calls": 2,
+      "tool_deliveries": [
+        {
+          "available": true,
+          "marker_returned": true,
+          "model_consumption_verified": false,
+          "omitted_for_budget": true,
+          "payload_bytes": 11638,
+          "phase": "delivered",
+          "question_number": 1,
+          "selected_indexes_truncated": false,
+          "selected_record_indexes": [
+            2,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30,
+            31,
+            32,
+            33
+          ],
+          "selected_ref_count": 11,
+          "sent_bytes": 11653,
+          "source_version": 30,
+          "started_elapsed_ms": 152947
+        },
+        {
+          "available": true,
+          "marker_returned": true,
+          "model_consumption_verified": false,
+          "omitted_for_budget": true,
+          "payload_bytes": 11401,
+          "phase": "delivered",
+          "question_number": 2,
+          "selected_indexes_truncated": false,
+          "selected_record_indexes": [
+            3,
+            4,
+            5,
+            6,
+            37,
+            42,
+            48,
+            50,
+            51,
+            52,
+            53,
+            54,
+            55
+          ],
+          "selected_ref_count": 13,
+          "sent_bytes": 11416,
+          "source_version": 52,
+          "started_elapsed_ms": 199522
+        }
+      ],
+      "transcripts": {
+        "assistant_delta": 156,
+        "assistant_done": 4,
+        "user_delta": 53,
+        "user_done": 3
+      }
+    },
+    "native_contract": "v3-host-question"
+  },
+  "source_selection_replay": [
+    {
+      "version": 30,
+      "selected_record_indexes": [
+        2,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33
+      ],
+      "all_three_controlled_facts_in_complete_current_sources": true,
+      "all_three_controlled_facts_absent_from_selected_current_sources": true,
+      "replay_method": "Read-only original SQLite backup into in-memory DB; discard later source rows only in memory; publish through actual MeetingStore/MeetingStoreMinutesReader."
+    },
+    {
+      "version": 52,
+      "selected_record_indexes": [
+        3,
+        4,
+        5,
+        6,
+        37,
+        42,
+        48,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55
+      ],
+      "all_three_controlled_facts_in_complete_current_sources": true,
+      "all_three_controlled_facts_absent_from_selected_current_sources": true,
+      "replay_method": "Read-only original SQLite backup into in-memory DB; discard later source rows only in memory; publish through actual MeetingStore/MeetingStoreMinutesReader."
+    }
+  ],
+  "diagnosis": "Both queries sent context, but their selected current records omit all three saved facts. Byte-budget truncation plus tiny ASR-fragment ranking is a host context delivery failure, not evidence that the model received those facts and could not understand them.",
+  "separate_audio_failure": "A later active-answer callback pending overflow is separately recorded, not relabeled as the earlier idle defect.",
+  "meeting_text_audio_urls_credentials_exported": false,
+  "repairs_verified": false
+}

@@ -1,0 +1,36 @@
+name: Oracle staging bounded diagnostics
+
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: oracle-staging
+  cancel-in-progress: false
+
+jobs:
+  diagnostics:
+    if: >-
+      github.repository == 'paulpai0412/teams-transcription' &&
+      github.ref == 'refs/heads/main' && vars.STAGING_READY == 'true'
+    environment: staging
+    runs-on: [self-hosted, Linux, ARM64, teams-transcription-staging]
+    timeout-minutes: 3
+    steps:
+      - name: Installed read-only diagnostic command
+        run: |
+          set -euo pipefail
+          /opt/teams-staging/bin/stagingctl diagnostics | tee "$RUNNER_TEMP/staging-diagnostics.json"
+      - name: Diagnostic summary
+        if: always()
+        run: |
+          printf '%s\n' '### Oracle diagnostics' 'Job result: ${{ job.status }}' \
+            'Read-only allowlisted metadata; raw logs, environment, DB contents and credentials omitted.' >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: always()
+        with:
+          name: staging-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/staging-diagnostics.json
+          retention-days: 7
+          if-no-files-found: warn

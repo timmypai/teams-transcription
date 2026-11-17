@@ -1,0 +1,119 @@
+{
+  "kind": "system_completion_self_verification",
+  "self_verification_complete": false,
+  "ready_for_human_Teams_acceptance": false,
+  "completed_self_slices": 4,
+  "blocked_self_slices": 1,
+  "implementation_fixes": [
+    "B query-centred secondary excerpt clipping with exact source offsets",
+    "B per-question fresh delegation/read/RESULT_COMPLETE prompt clarification; not server enforcement",
+    "Compose renderer isolates template variables from ambient operator environment",
+    "Standard amd64 Docker build separates verified public artifact acquisition from offline installation"
+  ],
+  "self_verification": {
+    "A_native_and_glossary": {
+      "status": "passed for declared synthetic facts",
+      "glossary_accuracy_improvement_claimed": false,
+      "PCM_handshake_negative_preserved": true,
+      "evidence": "system-completion-A-differential-20261017.json"
+    },
+    "B_current_history_original_tasks": {
+      "status": "passed for completed questions",
+      "best_same_thread_fresh_answers": 10,
+      "observed_cumulative_context_bytes": 34194,
+      "local_total_limit_bytes": null
+    },
+    "A_Codex_next_occurrence": {
+      "status": "passed",
+      "first_native_seconds": 1829.194,
+      "actual_Codex_summaries": 2,
+      "actual_model": "gpt-6.1-sol",
+      "evidence": "system-completion-native-lifecycle-20261017.json"
+    },
+    "native_B_long": {
+      "status": "blocked",
+      "qualified_failure_question": 7,
+      "source_completed": true,
+      "source_audio_seconds": 4.520625,
+      "source_wall_seconds": 5.249,
+      "raw_input_delta_events": 9,
+      "raw_user_completion_events": 0,
+      "raw_new_delegation_events": 0,
+      "host_handoff_rejections": 0,
+      "capture_and_RTP_live": true,
+      "internal_service_cause_proven": false,
+      "evidence": "system-completion-B-qualified-native-blocker-20261017.json"
+    },
+    "native_output_revocation": {
+      "status": "passed at count-only sink boundary",
+      "Teams_sender_or_remote_audibility_verified": false,
+      "evidence": "system-completion-B-revocation-20261017.json"
+    },
+    "Docker_and_admin": {
+      "status": "passed",
+      "image_id": "sha256:2430a6234a113267022658bb6ce2e31a069b6d1fa992bf27a5dd79c0fb27c11f",
+      "identical_source_modules": 49,
+      "compose_checks": 15,
+      "actual_media_tests": 17,
+      "actual_browser_checks": 14,
+      "actual_offline_app_server_initialization": true
+    }
+  },
+  "regression": {
+    "tests": 916,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "excluded_transfer_missing_experiments": [
+      "test_bridge_integration",
+      "test_media_bridge"
+    ],
+    "passed": true
+  },
+  "blocking_prerequisite": "Obtain a supported fixed-v3 user-turn completion/new-delegation or documented recovery contract for this locally completed and transmitted woken input. RTP send and transcript deltas do not prove complete model consumption. No verified safe client API exists to synthesize completion; application must not promote deltas, reuse prior delegation or rotate a thread per question.",
+  "pinned_native": {
+    "Codex": "0.159.0-alpha.3",
+    "model": "gpt-live-1-codex",
+    "source_commit": "3b01b36fa5eb96ba82a776bd3c2fc57f8969181f",
+    "protocol": "v3/FramelessBidi"
+  },
+  "standby": {
+    "service": "calendar-system-completion23",
+    "pid": 1295372,
+    "started": true,
+    "active_session_id": null,
+    "scheduler_paused": true,
+    "media_checked": 0,
+    "capture_interlock": false,
+    "last_error": null,
+    "evidence": "system-completion-standby-20261017.json"
+  },
+  "authorization": {
+    "Teams_joins_this_turn": 0,
+    "Calendar_writes_this_turn": 0,
+    "activity_count_unchanged": 18,
+    "real_join_attempt_count_unchanged": 17,
+    "push_publish_deploy": false,
+    "OAuth_or_tokens_copied": false,
+    "new_provider_or_API_key": false
+  },
+  "recovery_checkpoint": {
+    "temporary_tmpfs": true,
+    "directory": "/dev/shm/assistant-native-blocker-i41u0xbn",
+    "script": "/dev/shm/assistant-native-blocker-i41u0xbn/repro.py",
+    "input": "/dev/shm/assistant-native-blocker-i41u0xbn/input.json",
+    "script_sha256": "53a1ddfca36b0db90c5b9d73b8fa963a794808d41ba3cdd7a840470691acf4c2",
+    "input_sha256": "664c49bd5e8e53a6d7173b486c46896de5ae608e9f878314a5cb73655fca7c9f",
+    "contains_credentials_or_real_meeting_data": false,
+    "command": "source .tools/activate && PYTHONPATH=tests:. python /dev/shm/assistant-native-blocker-i41u0xbn/repro.py /dev/shm/assistant-native-blocker-i41u0xbn/input.json"
+  },
+  "cleanup": {
+    "owned_UI_container_and_browser_removed": true,
+    "completed_temporary_scripts_and_synthetic_SQLite_removed": true,
+    "own_build_and_egg_info_removed": true,
+    "public_prefetch_contexts_removed_after_image_verification": true,
+    "minimal_blocker_reproducer_intentionally_retained": true,
+    "qualified_control_all_cleanup_returned": true,
+    "original_transfer_manifest_unchanged": true
+  }
+}

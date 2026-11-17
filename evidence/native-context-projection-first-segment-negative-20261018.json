@@ -1,0 +1,177 @@
+{
+  "replay": [
+    {
+      "source_version": 30,
+      "records": 33,
+      "previous_selected_facts": {
+        "codeword": false,
+        "budget": false,
+        "day": false
+      },
+      "new_wire_facts": {
+        "codeword": true,
+        "budget": true,
+        "day": true
+      },
+      "batches": 3,
+      "selected_refs": 33,
+      "payload_bytes": 34373,
+      "max_batch_bytes": 11933,
+      "omitted_for_budget": false,
+      "source_database_read_only": true,
+      "filtered_database_in_memory": true
+    },
+    {
+      "source_version": 52,
+      "records": 55,
+      "previous_selected_facts": {
+        "codeword": false,
+        "budget": false,
+        "day": false
+      },
+      "new_wire_facts": {
+        "codeword": true,
+        "budget": true,
+        "day": true
+      },
+      "batches": 5,
+      "selected_refs": 55,
+      "payload_bytes": 56140,
+      "max_batch_bytes": 11941,
+      "omitted_for_budget": false,
+      "source_database_read_only": true,
+      "filtered_database_in_memory": true
+    }
+  ],
+  "real_native": {
+    "teams_joined": false,
+    "physical_output": false,
+    "input_mode": "explicit_application_question_transport_smoke_not_asr",
+    "questions": [
+      {
+        "number": 1,
+        "facts": {
+          "codeword": false,
+          "budget": false,
+          "day": false
+        },
+        "reader_calls": 1,
+        "synthetic_assistant_text": " მიიღე მიიღე",
+        "transcripts": null,
+        "tool_calls": 1,
+        "same_thread": true,
+        "batches": 4,
+        "max_batch_bytes": 11784,
+        "one_final_marker": true,
+        "sequential_batches": true,
+        "renderer_stall_ms": 650,
+        "runtime_failure": null,
+        "speech": {
+          "phase": "closed",
+          "native_state": "sleeping",
+          "done_is_set": true,
+          "speech_task_done": true,
+          "speech_task_cancelled": false,
+          "error_code": null,
+          "output_active": false,
+          "nonzero_frames": 5590,
+          "activity_frames": 6144,
+          "packet_frames": 2048,
+          "packet_nonzero_frames": 0,
+          "packet_peak_abs": 0,
+          "packet_rms": 0,
+          "activity_rms_threshold": 8,
+          "last_active_age_seconds": 1.917974623000191,
+          "last_nonzero_age_seconds": 1.917974623000191,
+          "drain_result": {
+            "present": true,
+            "truncated": false,
+            "drained": false,
+            "muted": true
+          }
+        },
+        "bridge": {
+          "capture_enabled": false,
+          "failed": false,
+          "queued_bytes": 0,
+          "queued_packets": 0,
+          "max_bytes": 4320000
+        },
+        "delivery": {
+          "question_number": 1,
+          "phase": "delivered",
+          "started_elapsed_ms": 4864,
+          "source_version": 41,
+          "available": true,
+          "selected_ref_count": 42,
+          "selected_record_indexes": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30,
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40,
+            41,
+            42
+          ],
+          "selected_indexes_truncated": false,
+          "omitted_for_budget": false,
+          "payload_bytes": 41590,
+          "sent_bytes": 41605,
+          "marker_returned": true,
+          "model_consumption_verified": false
+        },
+        "passed": false
+      }
+    ],
+    "failure_type": "RuntimeError",
+    "cleanup": {
+      "status": "cleaned",
+      "stop_status": "stopped",
+      "stop_ack_received": true,
+      "stop_closed_received": true,
+      "native_cleanup_status": "cleaned",
+      "owned_processes": 2,
+      "live_processes": 0,
+      "reaped": true,
+      "pending_close_tasks": 0,
+      "pending_operation": false
+    },
+    "passed": false
+  },
+  "observation_limit": "Direct application-question harness stopped on the first closed assistant segment, despite production allowing same-answer continuation. It observed a short non-Chinese utterance, not the requested facts. This is not full-answer semantic acceptance. Subsequent verification uses actual spoken-question PCM/ASR and observes the existing answer lease, without changing production deadlines."
+}

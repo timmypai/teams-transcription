@@ -1,0 +1,10 @@
+{
+  "passed": false,
+  "failure": "image_media_result_unavailable",
+  "image_id": "sha256:2430a6234a113267022658bb6ce2e31a069b6d1fa992bf27a5dd79c0fb27c11f",
+  "network": "routed local bridge; no external ICE",
+  "nonroot_readonly_dropcaps": true,
+  "credentials_mounted": false,
+  "models_or_teams_called": false,
+  "exit_code": 0
+}

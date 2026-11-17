@@ -1,0 +1,148 @@
+{
+  "base_source_sha": "45caaed44dbb40be73308e6a00056659223ae6fa",
+  "implementation_source_sha": "aafd3953c8faf34dbd5331078b8a537d3abde1c3",
+  "final_browser_test_source_sha": "aafd3953c8faf34dbd5331078b8a537d3abde1c3",
+  "prior_internal_browser_source_sha": "085b9bb406339c3ab98988e12580019eeebd6685",
+  "files": {
+    "docs/B-LIVE-NATIVE.md": {
+      "sha256": "ca553dbb7dbed5c7bceede56858a946b3b8013ffa1bf7b4528068d441cb488ed",
+      "bytes": 31756
+    },
+    "evidence/RESULTS.md": {
+      "sha256": "0976bbc8e285820bd11cf6a6328703783b8cbdab982453627402cc2a307f9a1f",
+      "bytes": 186913
+    },
+    "evidence/b-native-start-browser-20261103/full-driver.py": {
+      "sha256": "c1a423f0a7a03b75b0bea2a030576bd89c98615a35894f93c9f6e536a32aad40",
+      "bytes": 4440
+    },
+    "evidence/b-native-start-browser-20261103/internal_full-result.json": {
+      "sha256": "5c964a78acd8575ffd4cfa4dbdc3449dceff157c56008e9d4a70990743dbd862",
+      "bytes": 512
+    },
+    "evidence/b-native-start-browser-20261103/internal_full-stderr.log": {
+      "sha256": "e8528f7406172d50a1840d9549d11f2f7d05f4d998d20695a552816627d2f311",
+      "bytes": 16207
+    },
+    "evidence/b-native-start-browser-20261103/internal_full-stdout.log": {
+      "sha256": "b8a9f3db013ee2e8436e2f80ae54942dbb4d99501cf8cc72d0a22e3acb45eb3d",
+      "bytes": 154
+    },
+    "evidence/b-native-start-browser-20261103/internal_smoke-result.json": {
+      "sha256": "dc0b34d79e8c3af2038d75c3820dfe8af2d0080db4a0684d0a3be8aebe14b017",
+      "bytes": 509
+    },
+    "evidence/b-native-start-browser-20261103/internal_smoke-stderr.log": {
+      "sha256": "dfa8cb3fcd50d14a96c1b558664a14a1ea87d97ba9b6f4a6c6e9315f94c4ac9d",
+      "bytes": 235
+    },
+    "evidence/b-native-start-browser-20261103/internal_smoke-stdout.log": {
+      "sha256": "43f2356dc8ad00f544ca3a0ab850bd5c61e1427100a7e96f170c802ae4ae2c67",
+      "bytes": 151
+    },
+    "evidence/b-native-start-browser-20261103/no_interface-result.json": {
+      "sha256": "e8f6d93c5d8cf4a57451f8042e25b9ce9bbe21cf5fba2f979cf83e4170912ae3",
+      "bytes": 468
+    },
+    "evidence/b-native-start-browser-20261103/no_interface-stderr.log": {
+      "sha256": "5caa70a0e96e7ef4b9b63ccf4c9f9a6fa136d39501e4f8556b5488a4f46c7d7a",
+      "bytes": 34963
+    },
+    "evidence/b-native-start-browser-20261103/no_interface-stdout.log": {
+      "sha256": "fd87982cc57e40e95b06e921a34f12c5f8ad014476ab8cc8208e59052f31a50b",
+      "bytes": 156
+    },
+    "evidence/b-native-start-browser-20261103/offline-149.log": {
+      "sha256": "0600c82e30cf80413fc74b0a9221133285f0e35ef981007ace22754c37fc45d8",
+      "bytes": 100
+    },
+    "evidence/b-native-start-browser-20261103/paired-driver.py": {
+      "sha256": "0eedd499a5199e8e1eb2eefd717f5b9f4045a7f72797deccb59787e9c2112fec",
+      "bytes": 6376
+    },
+    "evidence/b-native-start-browser-20261103/paired-result.json": {
+      "sha256": "bcba71f2b2bd1295e899002b8e32c10570c3ba0f57418a53a6b643d8c7f78a9b",
+      "bytes": 808
+    },
+    "evidence/b-native-start-browser-20261103/paired-stderr.log": {
+      "sha256": "b8285e4e3dcc853fa3038cb8368e3b03ee0f58659f4082f41f2aad33fa80ea22",
+      "bytes": 7932
+    },
+    "evidence/b-native-start-browser-20261103/paired-stdout.log": {
+      "sha256": "88ab35ab8f7fb557728a80d04c1e741d0be9c1c0ff1d1a6ab08ba817456c32ee",
+      "bytes": 1003
+    },
+    "evidence/b-native-start-browser-20261103/routed-full-driver.py": {
+      "sha256": "b8b8d7620821f280fdda1b805a548eda3cf0e728f168a111c6d252efbe367a14",
+      "bytes": 4481
+    },
+    "evidence/b-native-start-browser-20261103/routed-paired-driver.py": {
+      "sha256": "aac5814e043e6cd346e037c053dc424db490c14178d8af7538dbaa12781bcce5",
+      "bytes": 6426
+    },
+    "evidence/b-native-start-browser-20261103/routed_full-result.json": {
+      "sha256": "ce6256368a6fe83c9f0a5e0aebc4bdf65513c40817d7040dadb890e5c562fdf1",
+      "bytes": 568
+    },
+    "evidence/b-native-start-browser-20261103/routed_full-stderr.log": {
+      "sha256": "978b93ed54ba19bf51223457244576a3bc7894de263d797f5c0faf91fa1facb2",
+      "bytes": 3197
+    },
+    "evidence/b-native-start-browser-20261103/routed_full-stdout.log": {
+      "sha256": "dbe03059e13ad9db7a13031cd31ee4c954188639b06382d74a4e9b7cd2378f3c",
+      "bytes": 154
+    },
+    "evidence/b-native-start-browser-20261103/routed_paired-result.json": {
+      "sha256": "6165cc534381e78b067dc3b3d7b349ab367d98cfde960e7f7b9056083a38bb6e",
+      "bytes": 861
+    },
+    "evidence/b-native-start-browser-20261103/routed_paired-stderr.log": {
+      "sha256": "0a1e546a3b6a5da2741c4c2f94cd4fe8c119e0a4ae05b7242fd4ed6eef1cc40e",
+      "bytes": 1901
+    },
+    "evidence/b-native-start-browser-20261103/routed_paired-stdout.log": {
+      "sha256": "f920df02a4dba9c09bd345b246dea7dd9ba15f0fabdfc373c95dcc0ce461fa78",
+      "bytes": 812
+    },
+    "evidence/b-native-start-fanout-20261103.json": {
+      "sha256": "b07fb9dcf10be134f1de6ec66ee7e1dbbd5caf0415dec92809e9c475edf7cf00",
+      "bytes": 7158
+    },
+    "teams_transcription/b_dual_policy.py": {
+      "sha256": "def2ff1b61bdf5a2bb705cb1c8c4f1196386702a04984b53b72c5ba3f15c0e2c",
+      "bytes": 9831
+    },
+    "teams_transcription/diagnostics.py": {
+      "sha256": "5ef6ffea5efd50c5000d7c007c49bd858bcae500c2c5f54a7441fe0cdb4d0637",
+      "bytes": 37671
+    },
+    "teams_transcription/native_media.py": {
+      "sha256": "8bc49c993e966566cbd064e01058b65242716b9e4029c5a25685693087be78bb",
+      "bytes": 31974
+    },
+    "teams_transcription/response_runtime.py": {
+      "sha256": "9fc68cb22ff964a84769e063ecbebc8f20b1045977d1d63fb55d265d31f5361b",
+      "bytes": 15558
+    },
+    "teams_transcription/worker.py": {
+      "sha256": "929c63cda92a49a2488e87bc64e519abb62ad2099d4b46d33e6c59b0f728d6de",
+      "bytes": 43167
+    },
+    "tests/test_response_capture_fanout.py": {
+      "sha256": "200c3330177bce3cd2bc0ee6e756cc2273710cc9262f7ce187d7ec280b4e56e4",
+      "bytes": 12104
+    },
+    "tests/test_response_policy_failure.py": {
+      "sha256": "9e0a0355e84fa272908cb14206b565d22f39e8ba6ad361f4d2fc75bd76c01dcf",
+      "bytes": 24328
+    },
+    "tests/test_response_start_diagnostics.py": {
+      "sha256": "cbd433f24b7979723a2538f75b185aeba55f1154ff8bb14d3b88eec48301b669",
+      "bytes": 25974
+    },
+    "tests/test_rx_contract.py": {
+      "sha256": "2ebd03d58586cd8d878d48ef58e3342720353209d61e59508ed776eba18d15ec",
+      "bytes": 70591
+    }
+  }
+}

@@ -1,0 +1,225 @@
+{
+  "recorded_at": "2026-10-30T05:11:13.820763+00:00",
+  "repository": "paulpai0412/teams-transcription",
+  "branch": "fix/qa-mandarin-phoneme-preflight",
+  "base_for_this_change": "28e26bbd5df5e92d412ffaa82f8d0dd748a882d9",
+  "base_main": "00ba60768dc347fe41d64e3887f4e3bd748e2a79",
+  "scope": "Generic current-snapshot authority, conditional answer-format contract and bounded QA context evidence. Keep existing voice fix, question/expected/strict acceptance/RX/cleanup/security/deploy unchanged.",
+  "case0004": {
+    "origin": "Exact synthetic answer fields supplied by parent; original host private receipt not fetched",
+    "runtime_source": "00ba60768dc347fe41d64e3887f4e3bd748e2a79",
+    "runtime_image_digest": "sha256:503353098f23ebec8e3c2bde14699690143ec3edd6627debbe8aca6d1562e52d",
+    "voice_override": "QA-process-only cmn-latn-pinyin adapter; branch28e26bb was not deployed",
+    "first_final": "好的,我只引用原文:「預算十萬元。」",
+    "second_final": "「預算十萬元。」「預算十二萬元。」",
+    "both_answers_audio_rx_verified": true,
+    "cleanup_completed": true,
+    "overall_accepted": false,
+    "second_no_stale_fact": false,
+    "batch_used": 4,
+    "batch_limit": 50,
+    "remaining_reported": 46,
+    "failure_retained": true
+  },
+  "diagnosis": {
+    "verified_offline": "Existing same-event revision replacement and Native three-question tests on pre-change code passed: current outgoing readings do not accumulate the older revision. New3revision test retains different-source rows while replacing only same-source revision.",
+    "confirmed_contract_ambiguity": "Native prompt unconditionally said to add record-scope explanation, while requiring verbatim quote; tool context unconditionally asked for quotes even for ordinary questions.",
+    "host_limit": "No exact case0004 outgoing payload/reading hashes were available here. Cannot prove host sent stale text or that prompt ambiguity is sole reason for model stale answer. Earlier appended conversation context is not physically erased by these instructions."
+  },
+  "implementation": {
+    "wire": "Explicit full_snapshot, meeting/thread scope, current version/records SHA; canonical source_id/revision when available; current snapshot replaces prior snapshot, previous assistant text is not a source.",
+    "source_preservation": "No text-based dedup/filter, max-revision factual guess, source truncation or history deletion; different-source contradictions remain explicit uncertainty.",
+    "prompt": "Generic verbatim request returns relevant current source text without added intro/quotes/explanation; normal questions answer naturally. Question selects fact/format only, cannot change system rules or authorization. No facts hardcoded.",
+    "observability": "Native delivery receipts identify snapshot/payload hashes and existing sent-byte/marker metadata. QA0600 private evidence bounds constructed plans8/readings64 and typed delivery receipts8; only hashes/revision/allowlisted metadata, no raw context payload. Constructed-only and host-send return do not imply model consumption.",
+    "lifecycle": "Read delivery diagnostic metadata after bounded cleanup/fallback. Same work/cleanup deadlines and acceptance requirements remain."
+  },
+  "red_green": [
+    {
+      "test": "test_sqlite_voice_context.SQLiteVoiceContextTests.test_repeated_questions_deliver_replacement_snapshot_and_current_revision_identity",
+      "before": "Missing context_mode in wire result",
+      "after": "3 revisions keep only current same-source reading plus distinct-source row; stable canonical ID, changing snapshot digests"
+    },
+    {
+      "test": "test_b_native.NativeLiveTests.test_live_prompt_distinguishes_verbatim_format_from_normal_current_fact_answers",
+      "before": "Conflicting unconditional scope-explanation instruction present",
+      "after": "Conditional quote/normal contract verified in public start params"
+    },
+    {
+      "test": "test_incremental_minutes_context.ContextTests.test_wire_instruction_distinguishes_verbatim_quote_and_normal_answers",
+      "before": "Unconditional quote instruction",
+      "after": "Conditional quote/normal instruction; earlier assistant answer not source"
+    },
+    {
+      "test": "test_native_incremental_context.NativeSnapshotContextTests.test_delivery_receipt_hashes_identify_actual_current_payload_without_content",
+      "before": "Delivery hash fields absent",
+      "after": "Hash matches actually dispatched payload bytes; marker/current version match, no consumption claim"
+    },
+    {
+      "test": "test_qa_probe.ProbeTests.test_private_context_metadata_keeps_only_typed_receipt_fields",
+      "before_last_lifecycle_fix": "New lifecycle assertion rejected metadata read before owned stop, yielding no receipt",
+      "after": "Metadata read only after cleanup; unknown phase/hash/type and private unknown fields do not leak"
+    }
+  ],
+  "validation": {
+    "focused": {
+      "tests": 132,
+      "failures": 0,
+      "errors": 0,
+      "note": "Broad related suites passed; later lifecycle-only delta additionally passed3 targeted and final aggregate."
+    },
+    "aggregate_final": {
+      "scope": "controlled offline subset",
+      "suites": [
+        "test_assistant_store",
+        "test_assistant_daemon",
+        "test_calendar_client",
+        "test_glossary_context",
+        "test_admin_web",
+        "test_sqlite_voice_context",
+        "test_sqlite_only_store",
+        "test_rx_contract",
+        "test_prefetch_codex_npm",
+        "test_staging_control",
+        "test_capture_cleanup_review",
+        "test_release_gate",
+        "test_diagnostic_projection",
+        "test_codex_auth",
+        "test_provider_state",
+        "test_workflow_triggers",
+        "test_staging_docker_diagnostics",
+        "test_staging_compose",
+        "test_first_deploy_recovery",
+        "test_qa_probe.ProbeTests",
+        "test_qa_receiver_projection",
+        "test_incremental_minutes_context.ContextTests.test_wire_instruction_distinguishes_verbatim_quote_and_normal_answers",
+        "test_native_incremental_context.NativeSnapshotContextTests.test_delivery_receipt_hashes_identify_actual_current_payload_without_content",
+        "test_b_native.NativeLiveTests.test_live_prompt_distinguishes_verbatim_format_from_normal_current_fact_answers",
+        "test_b_native.NativeLiveTests.test_three_physical_questions_in_one_provider_turn_query_current_sqlite_each_time"
+      ],
+      "tests": 259,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "success": true,
+      "teams_or_model_called": false,
+      "audio_e2e_tested": false
+    },
+    "initial_failures_retained": [
+      {
+        "suite": "131 focused",
+        "failure": "Existing startup-shield cleanup test elapsed0.120675544s versus0.12s assertion"
+      },
+      {
+        "suite": "259 aggregate before diagnostic-order fix",
+        "failure": "Same existing startup cleanup test pending_operation=True; full receipt success=False retained"
+      }
+    ],
+    "isolation": {
+      "baseline_28e26bb_aggregate": {
+        "scope": "controlled offline subset",
+        "suites": [
+          "test_assistant_store",
+          "test_assistant_daemon",
+          "test_calendar_client",
+          "test_glossary_context",
+          "test_admin_web",
+          "test_sqlite_voice_context",
+          "test_sqlite_only_store",
+          "test_rx_contract",
+          "test_prefetch_codex_npm",
+          "test_staging_control",
+          "test_capture_cleanup_review",
+          "test_release_gate",
+          "test_diagnostic_projection",
+          "test_codex_auth",
+          "test_provider_state",
+          "test_workflow_triggers",
+          "test_staging_docker_diagnostics",
+          "test_staging_compose",
+          "test_first_deploy_recovery",
+          "test_qa_probe.ProbeTests",
+          "test_qa_receiver_projection"
+        ],
+        "tests": 253,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "success": true,
+        "teams_or_model_called": false,
+        "audio_e2e_tested": false
+      },
+      "bounded_comparison": [
+        {
+          "source": "baseline",
+          "attempt": 1,
+          "exit_code": 0,
+          "log": "/tmp/qa-context-timing-baseline-1.log"
+        },
+        {
+          "source": "baseline",
+          "attempt": 2,
+          "exit_code": 0,
+          "log": "/tmp/qa-context-timing-baseline-2.log"
+        },
+        {
+          "source": "baseline",
+          "attempt": 3,
+          "exit_code": 0,
+          "log": "/tmp/qa-context-timing-baseline-3.log"
+        },
+        {
+          "source": "current",
+          "attempt": 1,
+          "exit_code": 0,
+          "log": "/tmp/qa-context-timing-current-1.log"
+        },
+        {
+          "source": "current",
+          "attempt": 2,
+          "exit_code": 0,
+          "log": "/tmp/qa-context-timing-current-2.log"
+        },
+        {
+          "source": "current",
+          "attempt": 3,
+          "exit_code": 0,
+          "log": "/tmp/qa-context-timing-current-3.log"
+        }
+      ],
+      "conclusion": "Both baseline/current isolated deadline checks passed3x2 tests each. Timing root cause is not established. Removed avoidable pre-cleanup diagnostic work and tested order; did not widen deadlines or delete/skip tests."
+    },
+    "actionlint": "v1.7.7 passed",
+    "py_compile": "passed",
+    "diff_check": "passed",
+    "actual_synthesis_browser_model_or_teams_run": false,
+    "model_calls_this_task": 0,
+    "full_original_discovery": false
+  },
+  "reviews": {
+    "spec": "0 confirmed findings;8 targeted tests passed independently; final lifecycle delta0 new findings/3 targeted passed.",
+    "standards": "0 confirmed actionable violations/smells;5 targeted tests passed independently; final lifecycle delta0 findings/3 targeted passed."
+  },
+  "files_sha256": {
+    "docs/INCREMENTAL-QA-CONTEXT.md": "4675cba99439aceed8774cc65e4ea13d5c8699e93c0054ce78ffb64e72790fe6",
+    "teams_transcription/b_context.py": "73448ec9b717c76c3f398501977a040a1b73abbef290f5cfcb15d301218da8d9",
+    "teams_transcription/b_native.py": "02fbd6d0bceb7ca028f2cd96dcad9cb7785cd16dc4b95771b97232672488f0c2",
+    "teams_transcription/qa_probe.py": "741aa613644638b506860e5664aa1dd07c11f54309c9c66bfcf9902436347e38",
+    "tests/test_b_native.py": "d5ab72699bc71857a757e6f23917a4fcf99c0346bb6e04bc02776881e9c37aa8",
+    "tests/test_incremental_minutes_context.py": "cde9ce1a4586fbfc01858284d7c2c8de6cbe8fb2eb9583735cd77ebfd559e82c",
+    "tests/test_native_incremental_context.py": "4c8e4306b772d75e4557b8015a166ada7be8311b9234698410689d739fbfcf6b",
+    "tests/test_qa_probe.py": "53047acabbdd9503ec054bd69e2ffc09705abc5e158ae5543aadbbec5d7f5bbe",
+    "tests/test_sqlite_voice_context.py": "e1fe6e601433ee849c17c68549105f5116f2aeab87ebcc500bd544414c985682",
+    "tools/ci_contracts.py": "668ee0c65cf04efee117f86b3cf9bf302bf16a607793c30b455d4467c7121c21"
+  },
+  "needed_original_host_fields": [
+    "Per-round source_version/source_paragraph_sha256",
+    "Actual outgoing payload/snapshot SHA if already captured; do not infer or reconstruct missing original wire proof",
+    "Selected reading revision/text SHA, sent_bytes/payload_bytes, marker_returned",
+    "Prompt SHA and existing image/profile/stage/voice-wrapper identity"
+  ],
+  "remaining": [
+    "Authorized branch push only; no PR/merge/dispatch/deploy in this task",
+    "Future reviewed release and actual latest-fact/quote multi-round model validation; no retrofit success for case0004"
+  ],
+  "operations": "No new OAuth/model/Teams calls, VM changes, security settings, PR, merge, workflow dispatch, build or deployment."
+}

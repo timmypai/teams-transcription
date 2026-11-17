@@ -1,0 +1,33 @@
+{
+  "recorded_at": "2026-11-02T18:13:57.582877+00:00",
+  "before_head": "a683fe4c379595787fcd0882a35d8cd76a2bd436",
+  "source_manifest_sha256": "cecade0e2010335ce2ca31a13166e96a66c31703e996484f2beff258e5aba667",
+  "focused_tests": 214,
+  "focused_failures": 0,
+  "focused_errors": 0,
+  "existing_offline_subset": 549,
+  "suites_overlap": true,
+  "real_sqlite_asgi_and_b_projection": true,
+  "browser_rerun": false,
+  "legacy_public_api_upgrade": {
+    "seed_head": "a683fe4c379595787fcd0882a35d8cd76a2bd436",
+    "public_sqlite_upgrade": true,
+    "before_pending_snapshot_revisions": [
+      2,
+      3
+    ],
+    "after_pending_snapshot_revisions": [
+      3,
+      3
+    ],
+    "old_revision": 4,
+    "new_revision": 5,
+    "replay_unchanged": true,
+    "no_reaccept_or_close": true
+  },
+  "unchanged_pr41_head": "c37192bd10c3d5eb568813fb1d9c3a6b7b0e9a04",
+  "independent_recheck": "pending parent reviewer",
+  "real_google_codex_teams_oracle": false,
+  "merged": false,
+  "deployed": false
+}

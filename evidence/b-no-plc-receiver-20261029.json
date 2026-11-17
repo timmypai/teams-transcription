@@ -1,0 +1,323 @@
+{
+  "kind": "b_no_plc_receiver_cutover",
+  "date_utc": "2026-10-29",
+  "status": "local_source_verified_not_deployed",
+  "scope": {
+    "owned_receivers": [
+      "B provider receive",
+      "B local relay receive"
+    ],
+    "provider_called": false,
+    "teams_joined": false,
+    "physical_output": false,
+    "audio_saved": false,
+    "docker_deployed": false
+  },
+  "implementation": {
+    "module": "teams_transcription/b_no_plc.py",
+    "path": "Actual Opus packets -> continuous AudioDecoder -> MediaStreamTrackGenerator -> native WebAudio destination -> native relay -> same no-PLC receiver -> owned Teams sender",
+    "missing_media": "Native WebAudio zero underflow, not extrapolated speech. No packets are forwarded into the owned native NetEq decoder.",
+    "backpressure": "One RFC6716 Opus packet admitted through decode/output/write at a time; AudioData closed after write. No answer-length, total-byte, or total-duration quota.",
+    "completion": "Require independently observed actual source quiet and rendered quiet; underflow zeros cannot satisfy source quiet.",
+    "codec": "Negotiate supported Opus48k; validate actual payload codec; retain continuous decoder state.",
+    "timestamp": "Unwrap 32-bit RTP timestamp; do not replay duplicate/backward frames."
+  },
+  "regression": {
+    "modules": [
+      "test_b_no_plc",
+      "test_b_native_output",
+      "test_b_browser_tx",
+      "test_b_browser_identity",
+      "test_b_output_leases",
+      "test_b_dual_policy",
+      "test_b_live",
+      "test_response_media_profile",
+      "test_qa_probe",
+      "test_b_native",
+      "test_native_incremental_context",
+      "test_muted_probe_greeting",
+      "test_response_progress",
+      "test_pcm_activity_floor",
+      "test_b_close",
+      "test_b_echo",
+      "test_native_initial_rule",
+      "test_qa_prompt_isolation",
+      "test_null_track_local_browser",
+      "test_runtime_guard",
+      "test_b_guard"
+    ],
+    "command": "source .tools/activate && PYTHONPATH=tests:. python -m unittest test_b_no_plc test_b_native_output test_b_browser_tx test_b_browser_identity test_b_output_leases test_b_dual_policy test_b_live test_response_media_profile test_qa_probe test_b_native test_native_incremental_context test_muted_probe_greeting test_response_progress test_pcm_activity_floor test_b_close test_b_echo test_native_initial_rule test_qa_prompt_isolation test_null_track_local_browser test_runtime_guard test_b_guard -v",
+    "tests": 243,
+    "seconds": 138.893,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0,
+    "full_repository_discovery": false
+  },
+  "actual_entrypoint_smoke": {
+    "provider_called": false,
+    "teams_joined": false,
+    "physical_output": false,
+    "chromium": "153.0.8010.12",
+    "gap_peak_rms": 3.4120730848373197e-06,
+    "source_frames_during_gap": 0,
+    "render_frames_during_gap": 54656,
+    "early_quiet": false,
+    "distinct_tone_resumed": true,
+    "same_track": true,
+    "completion": {
+      "status": "quiet",
+      "truncated": false,
+      "drained": false,
+      "reason": null
+    },
+    "cleanup": "closed"
+  },
+  "prototype": {
+    "path": "AudioDecoder -> MediaStreamTrackGenerator -> createMediaStreamSource -> createMediaStreamDestination -> native sender. No rendering AudioWorklet; worklets used only as zero-gain scalar meters.",
+    "verdict": "PASS for measured packet-starvation case: exact zero gap, old-tone extrapolation absent, continuous RTP and stable sender track, distinct after-gap tone restored.",
+    "browser": "153.0.8010.12",
+    "errors": [],
+    "summary": {
+      "native": {
+        "before": {
+          "count": 40,
+          "rms": 0.21192005804701833,
+          "maxRms": 0.21481260709550445,
+          "frequency": 440,
+          "missingSamples": 0
+        },
+        "earlyGap": {
+          "count": 10,
+          "rms": 0.19720355225829816,
+          "maxRms": 0.21359619092167423,
+          "frequency": 440,
+          "missingSamples": 0
+        },
+        "middleGap": {
+          "count": 30,
+          "rms": 0.012344957785966794,
+          "maxRms": 0.037756447189261265,
+          "frequency": 441.6666666666667,
+          "missingSamples": 0
+        },
+        "after": {
+          "count": 40,
+          "rms": 0.2121165699552391,
+          "maxRms": 0.21701581016311955,
+          "frequency": 880,
+          "missingSamples": 0
+        }
+      },
+      "generator": {
+        "before": {
+          "count": 40,
+          "rms": 0.21191331536675986,
+          "maxRms": 0.21486042366146346,
+          "frequency": 440,
+          "missingSamples": 0
+        },
+        "earlyGap": {
+          "count": 10,
+          "rms": 0.056023274585450415,
+          "maxRms": 0.1771611496710488,
+          "frequency": 35,
+          "missingSamples": 0
+        },
+        "middleGap": {
+          "count": 30,
+          "rms": 0,
+          "maxRms": 0,
+          "frequency": 0,
+          "missingSamples": 0
+        },
+        "after": {
+          "count": 40,
+          "rms": 0.21211353426649274,
+          "maxRms": 0.2163518980164086,
+          "frequency": 880,
+          "missingSamples": 0
+        }
+      },
+      "relay": {
+        "before": {
+          "count": 40,
+          "rms": 0.2121811221067021,
+          "maxRms": 0.2158169235095617,
+          "frequency": 440,
+          "missingSamples": 0
+        },
+        "earlyGap": {
+          "count": 10,
+          "rms": 0.19527264641199366,
+          "maxRms": 0.21336474125974594,
+          "frequency": 440,
+          "missingSamples": 0
+        },
+        "middleGap": {
+          "count": 30,
+          "rms": 0.011706518810072284,
+          "maxRms": 0.035781236723716164,
+          "frequency": 440,
+          "missingSamples": 0
+        },
+        "after": {
+          "count": 40,
+          "rms": 0.211261736133916,
+          "maxRms": 0.21696353125109147,
+          "frequency": 880,
+          "missingSamples": 0
+        }
+      },
+      "rendered": {
+        "before": {
+          "count": 40,
+          "rms": 0.21191236072064837,
+          "maxRms": 0.21497099535627545,
+          "frequency": 440,
+          "missingSamples": 0
+        },
+        "earlyGap": {
+          "count": 10,
+          "rms": 0.11099969935468615,
+          "maxRms": 0.20947569469197902,
+          "frequency": 125,
+          "missingSamples": 0
+        },
+        "middleGap": {
+          "count": 30,
+          "rms": 0,
+          "maxRms": 0,
+          "frequency": 0,
+          "missingSamples": 0
+        },
+        "after": {
+          "count": 40,
+          "rms": 0.2121136469349032,
+          "maxRms": 0.21465335986582842,
+          "frequency": 880,
+          "missingSamples": 0
+        }
+      },
+      "renderedRelay": {
+        "before": {
+          "count": 40,
+          "rms": 0.21259980020483465,
+          "maxRms": 0.21577060471576168,
+          "frequency": 440,
+          "missingSamples": 0
+        },
+        "earlyGap": {
+          "count": 10,
+          "rms": 0.21213480178542946,
+          "maxRms": 0.2153946001442418,
+          "frequency": 440,
+          "missingSamples": 0
+        },
+        "middleGap": {
+          "count": 30,
+          "rms": 0,
+          "maxRms": 0,
+          "frequency": 0,
+          "missingSamples": 0
+        },
+        "after": {
+          "count": 40,
+          "rms": 0.2122792596878942,
+          "maxRms": 0.21595898716290038,
+          "frequency": 880,
+          "missingSamples": 0
+        }
+      }
+    },
+    "concealment": {
+      "native": [
+        {
+          "packetsReceived": 191,
+          "packetsLost": 0,
+          "concealedSamples": 27646,
+          "concealmentEvents": 1
+        }
+      ],
+      "relay": [
+        {
+          "packetsReceived": 191,
+          "packetsLost": 0,
+          "concealedSamples": 27359,
+          "concealmentEvents": 3
+        }
+      ],
+      "renderedRelay": [
+        {
+          "packetsReceived": 219,
+          "packetsLost": 0,
+          "concealedSamples": 0,
+          "concealmentEvents": 0
+        }
+      ]
+    },
+    "mediaOnlyCounters": {
+      "decodedPackets": 191,
+      "decodedFrames": 183360,
+      "decodedDurationSeconds": 3.82,
+      "decodedPacketsMiddleGap": 0,
+      "generatedFramesMiddleGap": 0
+    },
+    "continuity": {
+      "renderSenderPacketsDuringSuppression": 30,
+      "generatorMaxCallbackGapMs": 607.3999999985099,
+      "maxWriteResolutionMs": 0.20000000298023224,
+      "maxPendingWrites": 1,
+      "maxDecodeQueueBeforeSubmission": 0,
+      "stableSenderTrack": {
+        "readyState": "live",
+        "muted": false,
+        "id": "ec262524-0b98-4f8a-9d09-1d8dc3558df1",
+        "senderTrackId": "ec262524-0b98-4f8a-9d09-1d8dc3558df1"
+      }
+    },
+    "zeroTimesMs": {
+      "native": 2549.9791666666665,
+      "generator": 2056.6458333333335,
+      "relay": 2535.3125,
+      "rendered": 2076.6458333333335,
+      "renderedRelay": 2171.9791666666665
+    },
+    "timestampOrder": {
+      "duplicateTimestamps": 0,
+      "backwardSteps": 0
+    },
+    "limitations": [
+      "No reordering, duplicate, drift, burst-overload, or wrap test. No general NetEq replacement claim.",
+      "Async decoder output callbacks are not awaited by WebCodecs. Writer promise resolution is not playback pacing; JS cap8 for pending writes plus separate decodeQueue cap8 do not establish internal browser queue bounds. Production should bound total admitted decode/write work and release each slot only on completed write/closed AudioData.",
+      "Decoded-media counters above exclude continuous WebAudio underflow zeros; RTP baseline counters are not bypass-path delivery evidence.",
+      "Close checked for all owned peers/tracks/context/decoder. Explicit reader cancel/writer close/AudioData closes are in probe source. Production ownership/A isolation not tested."
+    ],
+    "closed": {
+      "peers": true,
+      "tracks": true,
+      "audioContext": "closed",
+      "decoder": "closed"
+    }
+  },
+  "resolved_validation_failures": [
+    "Owned sender policy migrated from raw receiver track identity to exact receiver -> no-PLC decoder -> rendered track -> sender identity.",
+    "Per-packet AudioDecoder.flush degraded tone and was replaced with continuous decoder and packet-output rendezvous.",
+    "Initial regression runs timed out on unsupported API setup in insecure fixtures. Validate APIs before stream acquisition; initialize target decoder after setRemoteDescription settles, before publishing answer, so failure does not close the peer inside its ontrack negotiation callback. Added early-failure cleanup regression."
+  ],
+  "limits": [
+    "Not a real GPT Live or Teams listening test.",
+    "Remote Teams may still perform PLC; existing buffered true audio is not erased.",
+    "No NetEq reordering/time stretching; late/backward packets are not replayed.",
+    "Browser main-thread stalls and late/missing input may now be audible silence; no promise of improved smoothness or word completeness.",
+    "No new application jitter-buffer target setting; jitterBufferTarget does not control this bypass path."
+  ],
+  "raw_receipts": [
+    "/tmp/no-plc-integrated-1go8rxau/result.json"
+  ],
+  "cleanup": {
+    "final_smoke": "closed",
+    "temporary_scripts_removed": true,
+    "retained_scalar_receipts": true
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "before": {
+    "tests": 2,
+    "failures": 0,
+    "errors": 2,
+    "success": false
+  },
+  "after": {
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "success": true
+  },
+  "scope": "Actual local native RTC/waveform scenarios for suspended new source and queued document generation; no models/Teams/devices.",
+  "before_snapshot_lines": 421,
+  "passed": true
+}

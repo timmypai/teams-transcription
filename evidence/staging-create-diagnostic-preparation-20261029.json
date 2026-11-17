@@ -1,0 +1,84 @@
+{
+  "recorded_at": "2026-10-29T13:57:50.297113+00:00",
+  "repository": "paulpai0412/teams-transcription",
+  "base_main": "c70250a09b5dbe64e5118bf86dae4f9f52000b10",
+  "branch": "fix/staging-create-diagnostics",
+  "related_issues": [
+    3,
+    4
+  ],
+  "observed_runs": {
+    "deploy": "https://github.com/paulpai0412/teams-transcription/actions/runs/40880287493",
+    "diagnostics": "https://github.com/paulpai0412/teams-transcription/actions/runs/40880788344"
+  },
+  "host_evidence_from_parent": "phase failed/current fixed digest/previous null/revisionc70250a/deployment_run_id40880287493; ARM image/labels correct; rootless and volume normal; projectbridge exists and0app containers; maintenance/storelock present but DB absent; registry credentials cleared. Dry-run create passes, no engine error, original stderr discarded. Not independently executed by this Cloud task.",
+  "root_cause": "Unknown; no claimed fix for the original real create failure. This change supplies bounded diagnostic evidence for one separately approved real stopped-create.",
+  "change_scope": {
+    "controller_only_host_install": "deploy/stagingctl.py",
+    "new_controller_sha256": "345a9bc887d80093fbb5c7deb86910b88d60a8f08263dbdb53fe2a33d23f47ae",
+    "previous_controller_sha256": "5ee963e31ee203226cc98557b75a47531267348d5286be63b8453c34f03b4f3b",
+    "stderr": "Controller.docker fixed operation/category/exit-code/truncation projection; stdout64KiB/stderr16KiB in-memory caps; no raw fallback/disk capture in that wrapper. Existing recent-log TemporaryFile path unchanged.",
+    "cli_ownership": "Own CLI/plugin session terminated on timeout/overflow; no daemon/service kill. Original error and cleanup metadata preserved.",
+    "diagnose_create": "Host-only fixed operation, no workflow exposure; first-failed/no previous/noDB/maintenance/quiescent/no app/existing project bridge/state+pin+revision checks;0600 O_EXCL audit and file+directory fsync before one compose create --no-build --pull never. No app start/stop/removal/health promotion/recovery/state reset/marker clear/credentials. Existing read-only metadata helpers still execute.",
+    "workflow_hook_security_credential_image_changes": "None. Existing app image source/run/digest unchanged; only reviewed host controller update would be required after approval."
+  },
+  "red_evidence": [
+    "Create stderr classification test failed because Refused had no docker_error",
+    "CLI projection test failed because failure JSON had no docker metadata",
+    "Stopped-create tests failed with unsupported_operation/trusted_job_identity_required",
+    "Directory-sync regression failed because real create continued without directory fsync"
+  ],
+  "green_evidence": {
+    "focused_tests": 30,
+    "focused_failures": 0,
+    "focused_errors": 0,
+    "new_tests": 15,
+    "aggregate": {
+      "scope": "controlled offline subset",
+      "suites": [
+        "test_assistant_store",
+        "test_assistant_daemon",
+        "test_calendar_client",
+        "test_glossary_context",
+        "test_admin_web",
+        "test_sqlite_voice_context",
+        "test_sqlite_only_store",
+        "test_rx_contract",
+        "test_prefetch_codex_npm",
+        "test_staging_control",
+        "test_capture_cleanup_review",
+        "test_release_gate",
+        "test_diagnostic_projection",
+        "test_codex_auth",
+        "test_provider_state",
+        "test_workflow_triggers",
+        "test_staging_docker_diagnostics"
+      ],
+      "tests": 201,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "success": true,
+      "teams_or_model_called": false,
+      "audio_e2e_tested": false
+    },
+    "actionlint": "v1.7.7 passed",
+    "diff_check": "passed",
+    "py_compile": "passed"
+  },
+  "independent_review": {
+    "standards": "No P0/P1; audit directory fsync finding fixed and regression independently passed; wording narrowed to Controller.docker wrapper, separate logs path disclosed.",
+    "spec": "No confirmed defects; stopped-app vs metadata helpers clarified, existing recovery gates preserved; initial29 focused tests independently passed, small fsync/doc fix reviewed."
+  },
+  "operations_this_task": "Local source edits/tests/review and authorized branch push only; no PR create/merge, host installation, real create, dispatch, build, login, OAuth, network/security/Billing changes.",
+  "proposed_operator_command_after_source_and_install_approval": "sudo -u teams-staging -- /opt/teams-staging/bin/stagingctl diagnose-create",
+  "real_host_probe_executed": false,
+  "recovery_implemented": false,
+  "remaining": [
+    "Specific Draft PR/merge approval",
+    "Reviewed installation of updated controller only (root-owned0755)",
+    "Specific once-only stopped-create diagnostic approval/execution by existing host task",
+    "Actual error category or stopped-create result, state/marker/noDB preservation readback",
+    "Separate reviewed recovery plan; no deletion of audit/state/marker to retry"
+  ]
+}

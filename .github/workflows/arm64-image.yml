@@ -1,0 +1,106 @@
+name: ARM64 image validation and optional GHCR publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish the tested image to private GHCR (never deploys)
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: arm64-image
+  cancel-in-progress: false
+
+jobs:
+  image:
+    if: >-
+      github.repository == 'paulpai0412/teams-transcription' &&
+      github.ref == 'refs/heads/main' && vars.ENABLE_HOSTED_CI == 'true'
+    runs-on: ubuntu-24.04-arm
+    environment: image-build
+    timeout-minutes: 35
+    permissions:
+      contents: read
+      packages: write
+    env:
+      DOCKER_HOST: unix:///var/run/docker.sock
+      IMAGE: ghcr.io/paulpai0412/teams-transcription
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.12'
+      - name: Isolate job scratch paths
+        run: |
+          mkdir -p "$RUNNER_TEMP/image-results" "$RUNNER_TEMP/image-docker-config" "$RUNNER_TEMP/empty-codex-home"
+          printf 'DOCKER_CONFIG=%s\nCODEX_HOME=%s\nRESULTS=%s\n' \
+            "$RUNNER_TEMP/image-docker-config" "$RUNNER_TEMP/empty-codex-home" "$RUNNER_TEMP/image-results" >> "$GITHUB_ENV"
+      - name: Prepare public-only native ARM64 build contexts
+        run: |
+          set -euo pipefail
+          test "$(uname -m)" = aarch64
+          mkdir -p "$DOCKER_CONFIG" "$RESULTS"
+          python -m pip install --disable-pip-version-check . 'build==1.3.0'
+          python tools/ci_contracts.py "$RESULTS"
+          python tools/check_repo_skills.py > "$RESULTS/skills-inventory.json"
+          python tools/prefetch_codex_npm.py /tmp/teams-codex-npm --platform linux-arm64 > "$RESULTS/npm-prefetch.jsonl"
+          python -m build --wheel --outdir /tmp/teams-python-wheels
+          python -m pip download --only-binary=:all: --dest /tmp/teams-python-wheels /tmp/teams-python-wheels/teams_transcription-*.whl 'setuptools>=68'
+      - name: Build a local image from current source
+        run: |
+          set -euo pipefail
+          docker buildx build --platform linux/arm64 --load --provenance=false \
+            --build-context codex_npm=/tmp/teams-codex-npm \
+            --build-context python_wheels=/tmp/teams-python-wheels \
+            --label org.opencontainers.image.source=https://github.com/paulpai0412/teams-transcription \
+            --label org.opencontainers.image.revision="$GITHUB_SHA" \
+            --label io.teams-transcription.staging-maintenance=v1 \
+            --iidfile "$RESULTS/image-id" --tag "$IMAGE:build-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" .
+          test "$(docker image inspect --format '{{.Architecture}}' "$(cat "$RESULTS/image-id")")" = arm64
+      - name: Test installed image, sandboxed browser and disposable SQLite
+        run: |
+          set -euo pipefail
+          python tools/check_compose.py --output "$RESULTS/compose-config.json"
+          python tools/image_content_check.py --image "$(cat "$RESULTS/image-id")" --output "$RESULTS/image-content.json"
+          python tools/compose_smoke.py --image "$(cat "$RESULTS/image-id")" --output "$RESULTS/compose-smoke.json"
+      - name: Push exactly the tested local image
+        if: inputs.publish
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          printf '%s' "$GHCR_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+          docker push "$IMAGE:build-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          docker image inspect --format '{{range .RepoDigests}}{{println .}}{{end}}' \
+            "$IMAGE:build-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" > "$RESULTS/repo-digest.txt"
+          python tools/release_receipt.py "$RESULTS"
+          python - <<'PY'
+          import os, pathlib, re
+          p = pathlib.Path(os.environ['RESULTS'])
+          digest = (p / 'repo-digest.txt').read_text().strip()
+          assert re.fullmatch(r'ghcr.io/paulpai0412/teams-transcription@sha256:[0-9a-f]{64}', digest)
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as f:
+              f.write(f'### Published tested ARM64 image\n\n`{digest}`\n\nSource: `{os.environ["GITHUB_SHA"]}`\n')
+          PY
+      - name: Scope of validation
+        if: always()
+        run: |
+          printf '%s\n' 'Image job result: ${{ job.status }}. See artifacts for executed checks.' \
+            'Real Teams admission, GPT Live and remote audio E2E are untested. No deployment was triggered.' >> "$GITHUB_STEP_SUMMARY"
+      - name: Remove registry credential
+        if: always()
+        run: docker logout ghcr.io
+      - name: Retain build and test evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: arm64-image-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/image-results/
+          retention-days: 7
+          if-no-files-found: warn

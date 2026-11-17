@@ -1,0 +1,92 @@
+{
+  "date": "2026-11-03",
+  "base_commit": "294c0f46aeaa27636128fa1b2ca3e9a1dba656ec",
+  "branch": "feat/web-account-authorization-20261103",
+  "initial_workspace": {
+    "uncommitted_changes": false,
+    "worktree_count": 1,
+    "branch": "work",
+    "previous_task_thread_read": "unavailable_no_thread_read_tool",
+    "previous_task_thread_id": "01a19c5a-7f28-7417-a906-7496a989e0d8"
+  },
+  "scope": {
+    "google": "Existing readonly web OAuth, actionable missing-client and redirect setup, safe denial and single-use callback state",
+    "chatgpt": "Official native app-server chatgptDeviceCode, session-private short-lived code, explicit consent and reauthorization, idle daemon reservation, bounded cancellation and cleanup",
+    "real_oauth_grants": "not_attempted",
+    "real_account_verification": "not_attempted",
+    "live_or_teams_audio": "not_attempted",
+    "real_credentials_created_or_imported": false,
+    "deployment_or_security_configuration_changes": false,
+    "push_merge_or_deployment": "Working branch push authorized and confirmed at 06f190c7b34121476b40f7630ff50a32a052c9f7; final browser evidence followup uses same branch; no PR, merge or deployment"
+  },
+  "official_contracts": {
+    "codex_version": "codex-cli 0.159.0-alpha.3",
+    "schema_generation": "offline generate-json-schema succeeded; native login not started",
+    "codex_docs": "https://developers.openai.com/codex/app-server",
+    "google_docs": "https://developers.google.com/identity/protocols/oauth2/web-server"
+  },
+  "verification": {
+    "command": "PYTHONPATH=tests:. python -m unittest test_web_authorization test_codex_device_rpc test_admin_web test_codex_auth test_assistant_daemon test_calendar_client test_assistant_store -q",
+    "tests": 97,
+    "duration_seconds": 16.355,
+    "result": "OK",
+    "failures": 0,
+    "errors": 0,
+    "log": "/tmp/web-authorization-final-regression.log",
+    "cli_help": "passed",
+    "syntax_check": "passed",
+    "git_diff_check": "passed",
+    "fixtures": "Synthetic RPC child processes, HTTP and auth metadata only; no real tokens or provider grants",
+    "earlier_command_error": "An initial invocation named nonexistent test_assistant_config; corrected final suite command above"
+  },
+  "browser": {
+    "command": "python tools/run_web_authorization_browser.py --image sha256:c397b661c65a3c689e43b92b1a3656bfd6fa6163182d7f0e117803fdc53928d0 --output /tmp/web-auth-browser-final3",
+    "status": "passed_in_safe_offline_docker",
+    "observed_result": "3 browser tests passed, 0 failures/errors/skips; 9.935 seconds",
+    "action": "Offline sandboxed Chromium in immutable local Docker test image",
+    "ui_interactions_completed": "Google and ChatGPT synthetic flows, existing native admin login",
+    "security_workarounds_attempted": false,
+    "initial_host_attempt": {
+      "observed_result": "ERROR before UI interaction",
+      "action": "Launch sandboxed /usr/bin/chromium via existing Browser helper",
+      "reason": "/usr/lib/chromium/chrome-sandbox is nobody:nogroup mode 4755; Chromium requires root-owned sandbox helper and aborts at setuid_sandbox_host.cc:166",
+      "ui_interactions_completed": 0,
+      "alternative_existing_chromium": "not_found"
+    },
+    "evidence": "evidence/web-authorization-browser-20261103/result.json",
+    "cleanup_outcome": "cleaned",
+    "host_helper_modified": false,
+    "container_policy": "network none, UID10001, readonly, drop ALL, no-new-privileges, original seccomp, tmpfs, no ports or mounts",
+    "google_fixture": "Native same-origin form POST and handler303 checked; response replaced with same-origin offline synthetic consent HTML. No Google-origin navigation or real token exchange."
+  },
+  "independent_advisory_review": {
+    "standards_agent": "/root/standards_review",
+    "spec_agent": "/root/spec_review",
+    "initial_findings": {
+      "standards": 2,
+      "spec": 1
+    },
+    "resolved": [
+      "Expired owner at render now returns nonsecret expired state instead of missing code fields",
+      "Original authorization error and cleanup error are retained separately",
+      "Scheduler enable is serialized with authorization; reservation rejection cannot consume a due occurrence attempt"
+    ],
+    "resolution_tests": "Each issue reproduced by a failing synthetic regression before its fix; final regressions pass",
+    "final_findings": {
+      "standards": "No remaining documented violations identified; optional private-daemon-field encapsulation suggestion",
+      "spec": "No remaining material spec issues identified; independently reran scheduler tests, 2 passed"
+    },
+    "native_cloud_review": {
+      "status": "pending",
+      "target": "Candidate branch compared with base commit",
+      "reason": "AGENTS.md and docs/PR-AUTOMATION.md require independently verifiable native review completion; advisory subagents do not satisfy this gate. No remote PR or native review was requested in this task."
+    },
+    "follow_up_launcher": "Unique per-run exact-container cleanup, bounded stop/remove and absence verification added after advisory review; unknown cleanup stays nonzero. Final browser run cleaned."
+  },
+  "remaining_production_requirements": [
+    "Prepare Google Web application client through a separately authorized configuration action",
+    "Confirm same-deployment private durable writable codex_home and runtime prerequisites",
+    "Obtain required native review completion evidence",
+    "Separately authorize deployment and real-account OAuth validation"
+  ]
+}

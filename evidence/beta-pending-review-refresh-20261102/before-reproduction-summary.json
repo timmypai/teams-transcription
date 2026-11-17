@@ -1,0 +1,13 @@
+{
+  "head": "a683fe4c379595787fcd0882a35d8cd76a2bd436",
+  "tests": [
+    "test_task_workflow.TaskWorkflowTests.test_unresolved_correction_chain_refreshes_latest_review_without_restoring_commitment",
+    "test_postmeeting_ui.PostmeetingUIHTTPTests.test_unresolved_corrections_show_latest_evidence_in_http_and_b_snapshot"
+  ],
+  "exit_code": 1,
+  "raw_html_traceback_exported": false,
+  "failing_assertions": [
+    "test_unresolved_correction_chain_refreshes_latest_review_without_restoring_commitment (test_task_workflow.TaskWorkflowTests.test_unresolved_correction_chain_refreshes_latest_review_without_restoring_commitment)",
+    "test_unresolved_corrections_show_latest_evidence_in_http_and_b_snapshot (test_postmeeting_ui.PostmeetingUIHTTPTests.test_unresolved_corrections_show_latest_evidence_in_http_and_b_snapshot)"
+  ]
+}

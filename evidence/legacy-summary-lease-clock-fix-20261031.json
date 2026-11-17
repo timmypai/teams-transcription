@@ -1,0 +1,187 @@
+{
+  "schema_version": 1,
+  "scope": "test-only legacy summary lease renewal stabilization",
+  "branch": "fix/legacy-summary-lease-test-clock",
+  "base_main_sha": "56667d18503c911ce3ef28049d3c0689d571c4fc",
+  "reviewed_code_commit": "b9f2af3b5d829cd8b30928f33c4d36d1987ce83a",
+  "source_diff": {
+    "path": "tests/test_assistant_daemon.py",
+    "sha256": "e4314b723f9805529170aa2610dc8d6c137da512de777563c93c0d7e73a547c1",
+    "production_runtime_changed": false,
+    "workflow_or_permissions_changed": false,
+    "lease_duration_changed": false,
+    "description": "scoped controlled lease clock after capture completion; same0.6s TTL/four heartbeats; publication beyond initial expiry; owner/token/generation rejection; bounded harness"
+  },
+  "original_failure": {
+    "run_id": 41174541086,
+    "run_url": "https://github.com/paulpai0412/teams-transcription/actions/runs/41174541086",
+    "source_sha": "56667d18503c911ce3ef28049d3c0689d571c4fc",
+    "test": "test_assistant_daemon.AssistantDaemonTests.test_explicit_legacy_summary_lease_is_renewed_until_publication",
+    "error": "MeetingStoreError: stale_execution_lease",
+    "tests": 402,
+    "failures": 0,
+    "errors": 1,
+    "artifact_id": 13031869907,
+    "artifact_sha256": "10ea27301c0a59eab4d2cc94bf8cd81973f4ec11c3a0cd15982518fb8c3284d3",
+    "build_test_push": "skipped; no new image or release receipt",
+    "history_preserved": true
+  },
+  "bounded_before_diagnosis": {
+    "unchanged_targeted_fixture": "passed",
+    "synthetic0.7s_publication_block": {
+      "mode": "synthetic_blocking_0_7_seconds",
+      "tests": 1,
+      "failures": 0,
+      "errors": 1,
+      "success": false,
+      "lease_failures": [
+        {
+          "kind": "summary",
+          "row_present": true,
+          "state": "active",
+          "boot_matches": true,
+          "expired": true,
+          "remaining_seconds": -0.10274750299868174,
+          "owner_matches": true,
+          "token_matches": true,
+          "generation_matches": true,
+          "session_matches": true
+        }
+      ],
+      "model_or_host_called": false,
+      "limitation": "Synthetic failure mode only; actual ARM failure lease-clock snapshot was not recorded."
+    },
+    "limitation": "The actual ARM run did not record lease-clock/identity snapshots; this reproduces a supported failure mode, not a unique retrospective diagnosis."
+  },
+  "bounded_after_proof": [
+    {
+      "mode": "blocking_publication_0_7_seconds",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "success": true,
+      "expected_success": true,
+      "model_or_host_called": false,
+      "expectation_met": true
+    },
+    {
+      "mode": "mutation_no_renewal",
+      "tests": 1,
+      "failures": 0,
+      "errors": 1,
+      "success": false,
+      "expected_success": false,
+      "model_or_host_called": false,
+      "expectation_met": true
+    }
+  ],
+  "proof_procedure": [
+    "Run only the targeted test with a test-fixture-only0.7s synchronous delay immediately before controlled publication; changed test passes.",
+    "In a separate isolated process replace heartbeat_summary with a no-op; changed test must fail with stale_execution_lease. The expected negative is recorded as1error, not a passing run.",
+    "No production clock/validation/source or lease fence is changed; all patches are scoped to synthetic fixture processes."
+  ],
+  "targeted_regression": {
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "seconds": 0.996,
+    "includes": [
+      "renewal until publication",
+      "lease-loss cleanup/source retention",
+      "stale summary generation after restart",
+      "elapsed expiry despite backward wall clock"
+    ]
+  },
+  "related_regression": {
+    "tests": 35,
+    "failures": 0,
+    "errors": 0,
+    "seconds": 5.104
+  },
+  "aggregate": {
+    "scope": "controlled offline subset",
+    "suites": [
+      "test_assistant_store",
+      "test_assistant_daemon",
+      "test_calendar_client",
+      "test_glossary_context",
+      "test_admin_web",
+      "test_sqlite_voice_context",
+      "test_sqlite_only_store",
+      "test_b_no_plc_startup",
+      "test_rx_contract",
+      "test_prefetch_codex_npm",
+      "test_staging_control",
+      "test_capture_cleanup_review",
+      "test_release_gate",
+      "test_diagnostic_projection",
+      "test_codex_auth",
+      "test_provider_state",
+      "test_workflow_triggers",
+      "test_pr_policy",
+      "test_pr_policy_github",
+      "test_pr_policy_workflow",
+      "test_staging_docker_diagnostics",
+      "test_staging_compose",
+      "test_first_deploy_recovery",
+      "test_qa_probe.ProbeTests",
+      "test_qa_receiver_projection",
+      "test_qa_audio_observer",
+      "test_qa_content",
+      "test_qa_candidate_versions",
+      "test_cloud_qa_semantic.SemanticRuntimeTests",
+      "test_cloud_qa_startup.StartupRuntimeTests",
+      "test_teams_acceptance",
+      "test_teams_acceptance_host",
+      "test_cloud_qa_contract",
+      "test_cloud_qa_bridge.CloudQABridgeTests",
+      "test_cloud_qa_isolated.CloudQAIsolatedTests",
+      "test_turn_lifecycle_evidence.TurnLifecycleEvidenceTests",
+      "test_speech_completion_snapshot.SpeechCompletionSnapshotTests",
+      "test_incremental_minutes_context.ContextTests.test_wire_instruction_distinguishes_verbatim_quote_and_normal_answers",
+      "test_native_incremental_context.NativeSnapshotContextTests.test_delivery_receipt_hashes_identify_actual_current_payload_without_content",
+      "test_b_native.NativeLiveTests.test_live_prompt_distinguishes_verbatim_format_from_normal_current_fact_answers",
+      "test_b_native.NativeLiveTests.test_three_physical_questions_in_one_provider_turn_query_current_sqlite_each_time"
+    ],
+    "tests": 402,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "success": true,
+    "teams_or_model_called": false,
+    "audio_e2e_tested": false
+  },
+  "independent_cloud_codex_review": {
+    "spec": {
+      "confirmed_findings": 0,
+      "targeted_tests": 1,
+      "seconds": 0.687
+    },
+    "standards": {
+      "confirmed_violations_or_actionable_smells": 0,
+      "targeted_tests": 2,
+      "seconds": 0.973
+    },
+    "official_github_review_integration": "not claimed active; pending owner settings/plan"
+  },
+  "runtime_assessment": {
+    "defect_scope": "test-only timing dependency; production functions and deadlines unchanged",
+    "remaining_availability_limit": "An explicitly invoked retained legacy helper can still lose its real lease if synchronous work blocks its event loop longer than the TTL. Existing fences reject publication; transcript/source remain. This patch does not promise to remove that runtime availability limit.",
+    "automatic_summary": "remains disabled in merged PR26 source; no worker/outbox/retry restored",
+    "ARM_validation": "not rerun; this branch is not covered by the prior fixed-head merge/build approval"
+  },
+  "unchanged_real_usage": {
+    "model": "12/50",
+    "hosted_replay": "13/20"
+  },
+  "not_performed": [
+    "new PR",
+    "merge",
+    "Actions dispatch",
+    "image build/publish",
+    "Oracle operation",
+    "model request",
+    "permission/network/credential change"
+  ],
+  "approval_scope": "source branch upload only; no new PR notification, merge or release authorization inferred"
+}

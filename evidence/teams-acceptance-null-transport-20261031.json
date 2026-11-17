@@ -1,0 +1,114 @@
+{
+  "recorded_at": "2026-10-31T12:24:54.721201+00:00",
+  "scope": "Missing/null RX transport normalization in authenticated acceptance projection only",
+  "base_source_sha": "149c98caa300c09736e29cd77759b467282bce2d",
+  "historical_failure": {
+    "run_id": 41200180630,
+    "source_sha": "9aa041bc8d8df99a006fe8c51e42c0dd8f2012bc",
+    "public_error_code": "teams_admin_request_rejected",
+    "root_cause": "GET acceptance projection calls .get on null live_transport during early startup",
+    "host_evidence_source": "Parent relayed host readback; historical run/receipt unchanged",
+    "ledger": "Host reported 14/50 with two reserved entries and interlock; not modified by this branch"
+  },
+  "red": {
+    "command": "PYTHONPATH=tests:. python -m unittest test_teams_acceptance.AcceptanceAdminTests.test_acceptance_view_before_media_start_preserves_unknown_metrics_and_zero_attempts -v",
+    "tests": 1,
+    "errors": 2,
+    "failure": "AttributeError: NoneType has no attribute get in meeting_view",
+    "log_sha256": "51e9851b649dd632f7b94da8b92731c0289916949fd3df26aa47a14931cf843c"
+  },
+  "green": {
+    "original_regression_tests": 1,
+    "errors": 0,
+    "focused_command": "PYTHONPATH=tests:. python -m unittest test_teams_acceptance test_teams_acceptance_host test_admin_web -v",
+    "focused_tests": 37,
+    "focused_errors": 0,
+    "focused_failures": 0,
+    "focused_seconds": 7.017,
+    "aggregate": {
+      "scope": "controlled offline subset",
+      "suites": [
+        "test_assistant_store",
+        "test_assistant_daemon",
+        "test_calendar_client",
+        "test_glossary_context",
+        "test_admin_web",
+        "test_sqlite_voice_context",
+        "test_sqlite_only_store",
+        "test_b_no_plc_startup",
+        "test_rx_contract",
+        "test_prefetch_codex_npm",
+        "test_staging_control",
+        "test_capture_cleanup_review",
+        "test_release_gate",
+        "test_diagnostic_projection",
+        "test_codex_auth",
+        "test_provider_state",
+        "test_workflow_triggers",
+        "test_pr_policy",
+        "test_pr_policy_github",
+        "test_pr_policy_workflow",
+        "test_staging_docker_diagnostics",
+        "test_staging_compose",
+        "test_first_deploy_recovery",
+        "test_qa_probe.ProbeTests",
+        "test_qa_receiver_projection",
+        "test_qa_audio_observer",
+        "test_qa_content",
+        "test_qa_candidate_versions",
+        "test_cloud_qa_semantic.SemanticRuntimeTests",
+        "test_cloud_qa_startup.StartupRuntimeTests",
+        "test_teams_acceptance",
+        "test_teams_acceptance_host",
+        "test_cloud_qa_contract",
+        "test_cloud_qa_bridge.CloudQABridgeTests",
+        "test_cloud_qa_isolated.CloudQAIsolatedTests",
+        "test_turn_lifecycle_evidence.TurnLifecycleEvidenceTests",
+        "test_speech_completion_snapshot.SpeechCompletionSnapshotTests",
+        "test_incremental_minutes_context.ContextTests.test_wire_instruction_distinguishes_verbatim_quote_and_normal_answers",
+        "test_native_incremental_context.NativeSnapshotContextTests.test_delivery_receipt_hashes_identify_actual_current_payload_without_content",
+        "test_b_native.NativeLiveTests.test_live_prompt_distinguishes_verbatim_format_from_normal_current_fact_answers",
+        "test_b_native.NativeLiveTests.test_three_physical_questions_in_one_provider_turn_query_current_sqlite_each_time"
+      ],
+      "tests": 406,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "success": true,
+      "teams_or_model_called": false,
+      "audio_e2e_tested": false
+    },
+    "aggregate_log_sha256": "f1d91cae34d15181f0ce7936f6fc73752fbf8a19efa85344144bb62a206e67e3"
+  },
+  "independent_cloud_reviews": {
+    "standards": {
+      "actionable_findings": 0,
+      "new_api_regressions_passed": 3,
+      "seconds": 0.841
+    },
+    "spec": {
+      "actionable_findings": 0,
+      "new_api_regressions_passed": 3,
+      "seconds": 0.743
+    },
+    "native_github_review": "Not requested; no PR created"
+  },
+  "preserved": [
+    "Unknown metrics remain null",
+    "Missing/null RX containers alone normalized; malformed types still raise",
+    "Joined/cleanup/counts reflect existing durable evidence",
+    "No authority/helper/deadline/ledger/interlock changes"
+  ],
+  "unverified": [
+    "New ARM64 image",
+    "Oracle runtime with this fix",
+    "Real Teams RX/TX/remote audibility/continuity"
+  ],
+  "external_actions": {
+    "models_called": false,
+    "meeting_joined": false,
+    "host_changed": false,
+    "pull_request_created": false,
+    "workflow_dispatched": false
+  }
+}

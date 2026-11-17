@@ -1,0 +1,117 @@
+{
+  "schema_version": 1,
+  "scope": "local source/container-loader and controlled offline adapter tests only",
+  "base_commit": "e82bb30900e90c9559b9c3dcb71e532cad86b72e",
+  "branch": "fix/qa-startup-runtime-contract",
+  "candidate_identity_kind": "git-source-and-manifest",
+  "candidate_source_sha": "e82bb30900e90c9559b9c3dcb71e532cad86b72e",
+  "candidate_manifest_sha256": "0e1996c09d73144485b26ff178a9b0b99fe54d3ba5b636698dbc460eb3109292",
+  "new_tests": {
+    "tests": 10,
+    "failures": 0,
+    "errors": 0
+  },
+  "related_tests": {
+    "tests": 79,
+    "failures": 0,
+    "errors": 0
+  },
+  "aggregate": {
+    "scope": "controlled offline subset",
+    "suites": [
+      "test_assistant_store",
+      "test_assistant_daemon",
+      "test_calendar_client",
+      "test_glossary_context",
+      "test_admin_web",
+      "test_sqlite_voice_context",
+      "test_sqlite_only_store",
+      "test_b_no_plc_startup",
+      "test_rx_contract",
+      "test_prefetch_codex_npm",
+      "test_staging_control",
+      "test_capture_cleanup_review",
+      "test_release_gate",
+      "test_diagnostic_projection",
+      "test_codex_auth",
+      "test_provider_state",
+      "test_workflow_triggers",
+      "test_staging_docker_diagnostics",
+      "test_staging_compose",
+      "test_first_deploy_recovery",
+      "test_qa_probe.ProbeTests",
+      "test_qa_receiver_projection",
+      "test_qa_audio_observer",
+      "test_qa_content",
+      "test_qa_candidate_versions",
+      "test_cloud_qa_semantic.SemanticRuntimeTests",
+      "test_cloud_qa_startup.StartupRuntimeTests",
+      "test_cloud_qa_contract",
+      "test_cloud_qa_bridge.CloudQABridgeTests",
+      "test_cloud_qa_isolated.CloudQAIsolatedTests",
+      "test_turn_lifecycle_evidence.TurnLifecycleEvidenceTests",
+      "test_speech_completion_snapshot.SpeechCompletionSnapshotTests",
+      "test_incremental_minutes_context.ContextTests.test_wire_instruction_distinguishes_verbatim_quote_and_normal_answers",
+      "test_native_incremental_context.NativeSnapshotContextTests.test_delivery_receipt_hashes_identify_actual_current_payload_without_content",
+      "test_b_native.NativeLiveTests.test_live_prompt_distinguishes_verbatim_format_from_normal_current_fact_answers",
+      "test_b_native.NativeLiveTests.test_three_physical_questions_in_one_provider_turn_query_current_sqlite_each_time"
+    ],
+    "tests": 356,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "success": true,
+    "teams_or_model_called": false,
+    "audio_e2e_tested": false
+  },
+  "red_green": [
+    "missing startup profile rejected first then profile added",
+    "new offline operation rejected first then physical source loader added",
+    "new route rejected first then fixed operation plan added",
+    "real CLI hid release_not_ready then exact safe code allowlisted",
+    "runtime probe was called pending release then moved gate before locks/runtime/child/quota"
+  ],
+  "reviews": {
+    "standards": "one confirmed P2 generic CLI pending-release reason; corrected with red/green test",
+    "spec": "same confirmed P2; corrected",
+    "parent_review": "runtime probe before pending gate; corrected with assert_not_called regression",
+    "final_independent_review": "Spec and Standards frozen-commit re-review:0remainingconfirmed; CLI reason and early release gate P2s resolved"
+  },
+  "checks": {
+    "actionlint": true,
+    "diff_check": true,
+    "legacy_contract_constants_unchanged": true,
+    "historical_candidate_manifests_unchanged": true,
+    "application_runtime_files_unchanged": true,
+    "credential_pattern_scan": true
+  },
+  "release": {
+    "source_sha": null,
+    "image_digest": null,
+    "build_run_id": null,
+    "build_run_attempt": null
+  },
+  "runtime_admission": "release_not_ready before lock/runtime probe/child/quota; source loader may verify offline with release_ready=false",
+  "not_performed": [
+    "image build",
+    "browser run",
+    "model request",
+    "host change",
+    "GitHub write",
+    "workflow dispatch",
+    "PR",
+    "merge",
+    "deployment"
+  ],
+  "host_authority_ledger_locks_interlock": "not accessed or changed; existing checkpoint7/global50/two-slot protocol retained",
+  "source_file_sha256": {
+    ".github/workflows/oracle-qa.yml": "e3178d69d1bec77f78b3d3e19060e469b0cb624282b5cd97190e65e9c54a932f",
+    "deploy/qa_cloud_bridge.py": "d75be07823ee313c4b862c2fb1fa33f8bf1baf69af1c3657f3333403cb809172",
+    "deploy/qa_cloud_contract.py": "ed19f72d04face661cc694b159756136430c0fffb00069b49c9c45b91ee0ceef",
+    "deploy/qa_container_entry.py": "a12113ad38b9dc9c9f1d9c7477e81fac289f4d921e52bf4d25a6090918fbcfed",
+    "tools/ci_contracts.py": "3b72a2f4c223a3c410a4f178830a120d41247ccb8c0b06f80ccf840cd0a0d964",
+    "tests/test_cloud_qa_startup.py": "02519879cd8b71a7ea40925b1c5cd9274b94de6c7f86910b08ddc5311db1c357",
+    "evidence/semantic-startup-candidate-v1.json": "0e1996c09d73144485b26ff178a9b0b99fe54d3ba5b636698dbc460eb3109292",
+    "docs/QA-STARTUP-RUNTIME-ADAPTER.md": "14b9c56c01d00557807d10e8dc248be2f299c2f97e0c49428164b3b27873667d"
+  }
+}

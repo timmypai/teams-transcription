@@ -1,0 +1,457 @@
+test_capture_generation_discards_waiting_waveform_without_decoder_reset (test_b_live.IncomingTrackTests.test_capture_generation_discards_waiting_waveform_without_decoder_reset) ... 
+  test_capture_generation_discards_waiting_waveform_without_decoder_reset (test_b_live.IncomingTrackTests.test_capture_generation_discards_waiting_waveform_without_decoder_reset) (profile='legacy') ... ERROR
+  test_capture_generation_discards_waiting_waveform_without_decoder_reset (test_b_live.IncomingTrackTests.test_capture_generation_discards_waiting_waveform_without_decoder_reset) (profile='trusted-none') ... ERROR
+test_generic_pcm_probe_preserves_waveform_during_renderer_stall (test_b_live.IncomingTrackTests.test_generic_pcm_probe_preserves_waveform_during_renderer_stall) ... 
+  test_generic_pcm_probe_preserves_waveform_during_renderer_stall (test_b_live.IncomingTrackTests.test_generic_pcm_probe_preserves_waveform_during_renderer_stall) (profile='legacy', slow=False) ... ERROR
+  test_generic_pcm_probe_preserves_waveform_during_renderer_stall (test_b_live.IncomingTrackTests.test_generic_pcm_probe_preserves_waveform_during_renderer_stall) (profile='legacy', slow=True) ... ERROR
+  test_generic_pcm_probe_preserves_waveform_during_renderer_stall (test_b_live.IncomingTrackTests.test_generic_pcm_probe_preserves_waveform_during_renderer_stall) (profile='trusted-none', slow=False) ... ERROR
+  test_generic_pcm_probe_preserves_waveform_during_renderer_stall (test_b_live.IncomingTrackTests.test_generic_pcm_probe_preserves_waveform_during_renderer_stall) (profile='trusted-none', slow=True) ... ERROR
+test_idle_decoder_stall_does_not_fail_next_scoped_speech_capture (test_b_live.IncomingTrackTests.test_idle_decoder_stall_does_not_fail_next_scoped_speech_capture) ... ERROR
+test_input_keeps_real_silent_samples_between_utterances_on_same_track (test_b_live.IncomingTrackTests.test_input_keeps_real_silent_samples_between_utterances_on_same_track) ... ERROR
+test_native_peer_installs_no_pcm_tap_or_callback (test_b_live.IncomingTrackTests.test_native_peer_installs_no_pcm_tap_or_callback) ... ERROR
+test_slow_binding_overflow_is_audio_bounded_and_explicit (test_b_live.IncomingTrackTests.test_slow_binding_overflow_is_audio_bounded_and_explicit) ... 
+  test_slow_binding_overflow_is_audio_bounded_and_explicit (test_b_live.IncomingTrackTests.test_slow_binding_overflow_is_audio_bounded_and_explicit) (profile='legacy') ... ERROR
+  test_slow_binding_overflow_is_audio_bounded_and_explicit (test_b_live.IncomingTrackTests.test_slow_binding_overflow_is_audio_bounded_and_explicit) (profile='trusted-none') ... ERROR
+test_synthetic_track_to_48k_pcm_default_mute_then_opt_in_fake_sink (test_b_live.IncomingTrackTests.test_synthetic_track_to_48k_pcm_default_mute_then_opt_in_fake_sink) ... ok
+test_actual_worker_fans_capture_clock_to_scoped_native_default_muted (test_response_runtime.ResponseRuntimeTests.test_actual_worker_fans_capture_clock_to_scoped_native_default_muted) ... Executing <Task pending name='Task-139' coro=<ResponseRuntimeTests.test_actual_worker_fans_capture_clock_to_scoped_native_default_muted() running at /tmp/current-source/tests/test_response_runtime.py:126> wait_for=<Future pending cb=[Task.task_wakeup()] created at /usr/local/lib/python3.12/asyncio/base_events.py:448> cb=[_run_until_complete_cb() at /usr/local/lib/python3.12/asyncio/base_events.py:181] created at /usr/local/lib/python3.12/asyncio/runners.py:100> took 0.164 seconds
+FAIL
+test_explicit_deny_all_starts_B_muted_and_blocks_browser_requests (test_response_runtime.ResponseRuntimeTests.test_explicit_deny_all_starts_B_muted_and_blocks_browser_requests) ... FAIL
+test_explicit_owned_TX_and_restore_keep_actual_worker_RX_alive (test_response_runtime.ResponseRuntimeTests.test_explicit_owned_TX_and_restore_keep_actual_worker_RX_alive) ... FAIL
+test_missing_allowlist_never_starts_B_rpc_and_A_keeps_transcribing (test_response_runtime.ResponseRuntimeTests.test_missing_allowlist_never_starts_B_rpc_and_A_keeps_transcribing) ... FAIL
+test_partial_native_start_restores_owned_sender_and_A_continues (test_response_runtime.ResponseRuntimeTests.test_partial_native_start_restores_owned_sender_and_A_continues) ... FAIL
+test_source_timestamp_required_for_B_but_not_A (test_response_runtime.ResponseRuntimeTests.test_source_timestamp_required_for_B_but_not_A) ... FAIL
+test_stop_after_admission_with_no_PCM_is_stopped_not_failed (test_response_runtime.ResponseRuntimeTests.test_stop_after_admission_with_no_PCM_is_stopped_not_failed) ... FAIL
+test_unknown_native_cleanup_preserves_actual_unmuted_flags_and_rejects_enable (test_response_runtime.ResponseRuntimeTests.test_unknown_native_cleanup_preserves_actual_unmuted_flags_and_rejects_enable) ... ERROR
+
+======================================================================
+ERROR: test_capture_generation_discards_waiting_waveform_without_decoder_reset (test_b_live.IncomingTrackTests.test_capture_generation_discards_waiting_waveform_without_decoder_reset) (profile='legacy')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/current-source/tests/test_b_live.py", line 379, in test_capture_generation_discards_waiting_waveform_without_decoder_reset
+    await peer.offer()
+  File "/tmp/current-source/teams_transcription/b_live.py", line 143, in offer
+    offer = await self.page.evaluate(SILENT_PEER_JS, self.ice_servers)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/playwright/async_api/_generated.py", line 9389, in evaluate
+    await self._impl_obj.evaluate(
+  File "/usr/local/lib/python3.12/site-packages/playwright/_impl/_page.py", line 472, in evaluate
+    return await self._main_frame.evaluate(expression, arg)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/playwright/_impl/_frame.py", line 345, in evaluate
+    await self._channel.send(
+  File "/usr/local/lib/python3.12/site-packages/playwright/_impl/_connection.py", line 76, in send
+    return await self._connection.wrap_api_call(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/playwright/_impl/_connection.py", line 632, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+playwright._impl._errors.Error: Page.evaluate: Error: ICE gathering did not finish; no partial offer was sent
+    at eval (eval at evaluate (:311:30), <anonymous>:73:50)
+    at async <anonymous>:337:30
+
+======================================================================
+ERROR: test_capture_generation_discards_waiting_waveform_without_decoder_reset (test_b_live.IncomingTrackTests.test_capture_generation_discards_waiting_waveform_without_decoder_reset) (profile='trusted-none')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/current-source/tests/test_b_live.py", line 379, in test_capture_generation_discards_waiting_waveform_without_decoder_reset
+    await peer.offer()
+  File "/tmp/current-source/teams_transcription/b_live.py", line 133, in offer
+    offer = await self.page.evaluate(SILENT_PEER_JS, self.ice_servers)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/playwright/async_api/_generated.py", line 9389, in evaluate
+    await self._impl_obj.evaluate(
+  File "/usr/local/lib/python3.12/site-packages/playwright/_impl/_page.py", line 472, in evaluate
+    return await self._main_frame.evaluate(expression, arg)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/playwright/_impl/_frame.py", line 345, in evaluate
+    await self._channel.send(
+  File "/usr/local/lib/python3.12/site-packages/playwright/_impl/_connection.py", line 76, in send
+    return await self._connection.wrap_api_call(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/playwright/_impl/_connection.py", line 632, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+playwright._impl._errors.Error: Page.evaluate: Error: ICE gathering did not finish; no partial offer was sent
+    at eval (eval at evaluate (:311:30), <anonymous>:73:50)
+    at async <anonymous>:337:30
+
+======================================================================
+ERROR: test_generic_pcm_probe_preserves_waveform_during_renderer_stall (test_b_live.IncomingTrackTests.test_generic_pcm_probe_preserves_waveform_during_renderer_stall) (profile='legacy', slow=False)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/current-source/tests/test_b_live.py", line 274, in test_generic_pcm_probe_preserves_waveform_during_renderer_stall
+    await peer.offer()
+  File "/tmp/current-source/teams_transcription/b_live.py", line 143, in offer
+    offer = await self.page.evaluate(SILENT_PEER_JS, self.ice_servers)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/playwright/async_api/_generated.py", line 9389, in evaluate
+    await self._impl_obj.evaluate(
+  File "/usr/local/lib/python3.12/site-packages/playwright/_impl/_page.py", line 472, in evaluate
+    return await self._main_frame.evaluate(expression, arg)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/playwright/_impl/_frame.py", line 345, in evaluate
+    await self._channel.send(
+  File "/usr/local/lib/python3.12/site-packages/playwright/_impl/_connection.py", line 76, in send
+    return await self._connection.wrap_api_call(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/playwright/_impl/_connection.py", line 632, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+playwright._impl._errors.Error: Page.evaluate: Error: ICE gathering did not finish; no partial offer was sent
+    at eval (eval at evaluate (:311:30), <anonymous>:73:50)
+    at async <anonymous>:337:30
+
+======================================================================
+ERROR: test_generic_pcm_probe_preserves_waveform_during_renderer_stall (test_b_live.IncomingTrackTests.test_generic_pcm_probe_preserves_waveform_during_renderer_stall) (profile='legacy', slow=True)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/current-source/tests/test_b_live.py", line 274, in test_generic_pcm_probe_preserves_waveform_during_renderer_stall
+    await peer.offer()
+  File "/tmp/current-source/teams_transcription/b_live.py", line 143, in offer
+    offer = await self.page.evaluate(SILENT_PEER_JS, self.ice_servers)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/playwright/async_api/_generated.py", line 9389, in evaluate
+    await self._impl_obj.evaluate(
+  File "/usr/local/lib/python3.12/site-packages/playwright/_impl/_page.py", line 472, in evaluate
+    return await self._main_frame.evaluate(expression, arg)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/playwright/_impl/_frame.py", line 345, in evaluate
+    await self._channel.send(
+  File "/usr/local/lib/python3.12/site-packages/playwright/_impl/_connection.py", line 76, in send
+    return await self._connection.wrap_api_call(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/playwright/_impl/_connection.py", line 632, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+playwright._impl._errors.Error: Page.evaluate: Error: ICE gathering did not finish; no partial offer was sent
+    at eval (eval at evaluate (:311:30), <anonymous>:73:50)
+    at async <anonymous>:337:30
+
+======================================================================
+ERROR: test_generic_pcm_probe_preserves_waveform_during_renderer_stall (test_b_live.IncomingTrackTests.test_generic_pcm_probe_preserves_waveform_during_renderer_stall) (profile='trusted-none', slow=False)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/current-source/tests/test_b_live.py", line 274, in test_generic_pcm_probe_preserves_waveform_during_renderer_stall
+    await peer.offer()
+  File "/tmp/current-source/teams_transcription/b_live.py", line 133, in offer
+    offer = await self.page.evaluate(SILENT_PEER_JS, self.ice_servers)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/playwright/async_api/_generated.py", line 9389, in evaluate
+    await self._impl_obj.evaluate(
+  File "/usr/local/lib/python3.12/site-packages/playwright/_impl/_page.py", line 472, in evaluate
+    return await self._main_frame.evaluate(expression, arg)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/playwright/_impl/_frame.py", line 345, in evaluate
+    await self._channel.send(
+  File "/usr/local/lib/python3.12/site-packages/playwright/_impl/_connection.py", line 76, in send
+    return await self._connection.wrap_api_call(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/playwright/_impl/_connection.py", line 632, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+playwright._impl._errors.Error: Page.evaluate: Error: ICE gathering did not finish; no partial offer was sent
+    at eval (eval at evaluate (:311:30), <anonymous>:73:50)
+    at async <anonymous>:337:30
+
+======================================================================
+ERROR: test_generic_pcm_probe_preserves_waveform_during_renderer_stall (test_b_live.IncomingTrackTests.test_generic_pcm_probe_preserves_waveform_during_renderer_stall) (profile='trusted-none', slow=True)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/current-source/tests/test_b_live.py", line 274, in test_generic_pcm_probe_preserves_waveform_during_renderer_stall
+    await peer.offer()
+  File "/tmp/current-source/teams_transcription/b_live.py", line 133, in offer
+    offer = await self.page.evaluate(SILENT_PEER_JS, self.ice_servers)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/playwright/async_api/_generated.py", line 9389, in evaluate
+    await self._impl_obj.evaluate(
+  File "/usr/local/lib/python3.12/site-packages/playwright/_impl/_page.py", line 472, in evaluate
+    return await self._main_frame.evaluate(expression, arg)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/playwright/_impl/_frame.py", line 345, in evaluate
+    await self._channel.send(
+  File "/usr/local/lib/python3.12/site-packages/playwright/_impl/_connection.py", line 76, in send
+    return await self._connection.wrap_api_call(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/playwright/_impl/_connection.py", line 632, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+playwright._impl._errors.Error: Page.evaluate: Error: ICE gathering did not finish; no partial offer was sent
+    at eval (eval at evaluate (:311:30), <anonymous>:73:50)
+    at async <anonymous>:337:30
+
+======================================================================
+ERROR: test_idle_decoder_stall_does_not_fail_next_scoped_speech_capture (test_b_live.IncomingTrackTests.test_idle_decoder_stall_does_not_fail_next_scoped_speech_capture)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/tmp/current-source/tests/test_b_live.py", line 492, in test_idle_decoder_stall_does_not_fail_next_scoped_speech_capture
+    await peer.page.evaluate("async()=>{fixture.oscillator.stop();await fixture.ctx.close();}")
+  File "/usr/local/lib/python3.12/site-packages/playwright/async_api/_generated.py", line 9389, in evaluate
+    await self._impl_obj.evaluate(
+  File "/usr/local/lib/python3.12/site-packages/playwright/_impl/_page.py", line 472, in evaluate
+    return await self._main_frame.evaluate(expression, arg)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/playwright/_impl/_frame.py", line 345, in evaluate
+    await self._channel.send(
+  File "/usr/local/lib/python3.12/site-packages/playwright/_impl/_connection.py", line 76, in send
+    return await self._connection.wrap_api_call(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/playwright/_impl/_connection.py", line 632, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+playwright._impl._errors.Error: Page.evaluate: ReferenceError: fixture is not defined
+    at eval (eval at evaluate (:311:30), <anonymous>:1:11)
+    at UtilityScript.evaluate (<anonymous>:318:18)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)
+
+======================================================================
+ERROR: test_input_keeps_real_silent_samples_between_utterances_on_same_track (test_b_live.IncomingTrackTests.test_input_keeps_real_silent_samples_between_utterances_on_same_track)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/tmp/current-source/tests/test_b_live.py", line 556, in test_input_keeps_real_silent_samples_between_utterances_on_same_track
+    offer = await peer.offer()
+            ^^^^^^^^^^^^^^^^^^
+  File "/tmp/current-source/teams_transcription/b_live.py", line 131, in offer
+    offer = await self.page.evaluate(NO_PLC_PEER_JS, self.ice_servers)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/playwright/async_api/_generated.py", line 9389, in evaluate
+    await self._impl_obj.evaluate(
+  File "/usr/local/lib/python3.12/site-packages/playwright/_impl/_page.py", line 472, in evaluate
+    return await self._main_frame.evaluate(expression, arg)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/playwright/_impl/_frame.py", line 345, in evaluate
+    await self._channel.send(
+  File "/usr/local/lib/python3.12/site-packages/playwright/_impl/_connection.py", line 76, in send
+    return await self._connection.wrap_api_call(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/playwright/_impl/_connection.py", line 632, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+playwright._impl._errors.Error: Page.evaluate: Error: ICE gathering did not finish; no partial offer was sent
+    at eval (eval at evaluate (:311:30), <anonymous>:536:50)
+    at async <anonymous>:337:30
+
+======================================================================
+ERROR: test_native_peer_installs_no_pcm_tap_or_callback (test_b_live.IncomingTrackTests.test_native_peer_installs_no_pcm_tap_or_callback)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/tmp/current-source/tests/test_b_live.py", line 419, in test_native_peer_installs_no_pcm_tap_or_callback
+    await peer.offer()
+  File "/tmp/current-source/teams_transcription/b_live.py", line 131, in offer
+    offer = await self.page.evaluate(NO_PLC_PEER_JS, self.ice_servers)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/playwright/async_api/_generated.py", line 9389, in evaluate
+    await self._impl_obj.evaluate(
+  File "/usr/local/lib/python3.12/site-packages/playwright/_impl/_page.py", line 472, in evaluate
+    return await self._main_frame.evaluate(expression, arg)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/playwright/_impl/_frame.py", line 345, in evaluate
+    await self._channel.send(
+  File "/usr/local/lib/python3.12/site-packages/playwright/_impl/_connection.py", line 76, in send
+    return await self._connection.wrap_api_call(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/playwright/_impl/_connection.py", line 632, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+playwright._impl._errors.Error: Page.evaluate: Error: ICE gathering did not finish; no partial offer was sent
+    at eval (eval at evaluate (:311:30), <anonymous>:536:50)
+    at async <anonymous>:337:30
+
+======================================================================
+ERROR: test_slow_binding_overflow_is_audio_bounded_and_explicit (test_b_live.IncomingTrackTests.test_slow_binding_overflow_is_audio_bounded_and_explicit) (profile='legacy')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/current-source/tests/test_b_live.py", line 329, in test_slow_binding_overflow_is_audio_bounded_and_explicit
+    await peer.offer()
+  File "/tmp/current-source/teams_transcription/b_live.py", line 143, in offer
+    offer = await self.page.evaluate(SILENT_PEER_JS, self.ice_servers)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/playwright/async_api/_generated.py", line 9389, in evaluate
+    await self._impl_obj.evaluate(
+  File "/usr/local/lib/python3.12/site-packages/playwright/_impl/_page.py", line 472, in evaluate
+    return await self._main_frame.evaluate(expression, arg)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/playwright/_impl/_frame.py", line 345, in evaluate
+    await self._channel.send(
+  File "/usr/local/lib/python3.12/site-packages/playwright/_impl/_connection.py", line 76, in send
+    return await self._connection.wrap_api_call(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/playwright/_impl/_connection.py", line 632, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+playwright._impl._errors.Error: Page.evaluate: Error: ICE gathering did not finish; no partial offer was sent
+    at eval (eval at evaluate (:311:30), <anonymous>:73:50)
+    at async <anonymous>:337:30
+
+======================================================================
+ERROR: test_slow_binding_overflow_is_audio_bounded_and_explicit (test_b_live.IncomingTrackTests.test_slow_binding_overflow_is_audio_bounded_and_explicit) (profile='trusted-none')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/current-source/tests/test_b_live.py", line 329, in test_slow_binding_overflow_is_audio_bounded_and_explicit
+    await peer.offer()
+  File "/tmp/current-source/teams_transcription/b_live.py", line 133, in offer
+    offer = await self.page.evaluate(SILENT_PEER_JS, self.ice_servers)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/playwright/async_api/_generated.py", line 9389, in evaluate
+    await self._impl_obj.evaluate(
+  File "/usr/local/lib/python3.12/site-packages/playwright/_impl/_page.py", line 472, in evaluate
+    return await self._main_frame.evaluate(expression, arg)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/playwright/_impl/_frame.py", line 345, in evaluate
+    await self._channel.send(
+  File "/usr/local/lib/python3.12/site-packages/playwright/_impl/_connection.py", line 76, in send
+    return await self._connection.wrap_api_call(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/playwright/_impl/_connection.py", line 632, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+playwright._impl._errors.Error: Page.evaluate: Error: ICE gathering did not finish; no partial offer was sent
+    at eval (eval at evaluate (:311:30), <anonymous>:73:50)
+    at async <anonymous>:337:30
+
+======================================================================
+ERROR: test_unknown_native_cleanup_preserves_actual_unmuted_flags_and_rejects_enable (test_response_runtime.ResponseRuntimeTests.test_unknown_native_cleanup_preserves_actual_unmuted_flags_and_rejects_enable)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/tmp/current-source/tests/test_response_runtime.py", line 315, in test_unknown_native_cleanup_preserves_actual_unmuted_flags_and_rejects_enable
+    self.assertEqual(session.status()['cleanup_status'], 'unknown')
+                     ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+KeyError: 'cleanup_status'
+
+======================================================================
+FAIL: test_actual_worker_fans_capture_clock_to_scoped_native_default_muted (test_response_runtime.ResponseRuntimeTests.test_actual_worker_fans_capture_clock_to_scoped_native_default_muted)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/current-source/tests/test_response_runtime.py", line 126, in test_actual_worker_fans_capture_clock_to_scoped_native_default_muted
+    controller = await wait_for_response_controller(session, task)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/current-source/tests/test_response_runtime.py", line 40, in wait_for_response_controller
+    raise AssertionError("worker ended before response controller ready: " + json.dumps(details))
+AssertionError: worker ended before response controller ready: {"worker_result": 1, "phase": "live_start", "exception_type": "Error"}
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/tmp/current-source/tests/test_response_runtime.py", line 134, in test_actual_worker_fans_capture_clock_to_scoped_native_default_muted
+    self.assertEqual(await asyncio.wait_for(task, 5), 0)
+AssertionError: 1 != 0
+
+======================================================================
+FAIL: test_explicit_deny_all_starts_B_muted_and_blocks_browser_requests (test_response_runtime.ResponseRuntimeTests.test_explicit_deny_all_starts_B_muted_and_blocks_browser_requests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/tmp/current-source/tests/test_response_runtime.py", line 165, in test_explicit_deny_all_starts_B_muted_and_blocks_browser_requests
+    controller = await wait_for_response_controller(session, task)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/current-source/tests/test_response_runtime.py", line 40, in wait_for_response_controller
+    raise AssertionError("worker ended before response controller ready: " + json.dumps(details))
+AssertionError: worker ended before response controller ready: {"worker_result": 1, "phase": "live_start", "exception_type": "Error"}
+
+======================================================================
+FAIL: test_explicit_owned_TX_and_restore_keep_actual_worker_RX_alive (test_response_runtime.ResponseRuntimeTests.test_explicit_owned_TX_and_restore_keep_actual_worker_RX_alive)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/tmp/current-source/tests/test_response_runtime.py", line 203, in test_explicit_owned_TX_and_restore_keep_actual_worker_RX_alive
+    controller = await wait_for_response_controller(session, task)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/current-source/tests/test_response_runtime.py", line 40, in wait_for_response_controller
+    raise AssertionError("worker ended before response controller ready: " + json.dumps(details))
+AssertionError: worker ended before response controller ready: {"worker_result": 1, "phase": "live_start", "exception_type": "Error"}
+
+======================================================================
+FAIL: test_missing_allowlist_never_starts_B_rpc_and_A_keeps_transcribing (test_response_runtime.ResponseRuntimeTests.test_missing_allowlist_never_starts_B_rpc_and_A_keeps_transcribing)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/tmp/current-source/tests/test_response_runtime.py", line 187, in test_missing_allowlist_never_starts_B_rpc_and_A_keeps_transcribing
+    self.assertEqual(await run_session(session, install_signals=False), 0)
+AssertionError: 1 != 0
+
+======================================================================
+FAIL: test_partial_native_start_restores_owned_sender_and_A_continues (test_response_runtime.ResponseRuntimeTests.test_partial_native_start_restores_owned_sender_and_A_continues)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/current-source/tests/test_response_runtime.py", line 270, in test_partial_native_start_restores_owned_sender_and_A_continues
+    self.assertFalse(task.done(), "A stopped before B startup failure")
+AssertionError: True is not false : A stopped before B startup failure
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/tmp/current-source/tests/test_response_runtime.py", line 283, in test_partial_native_start_restores_owned_sender_and_A_continues
+    self.assertEqual(await asyncio.wait_for(task, 5), 0)
+AssertionError: 1 != 0
+
+======================================================================
+FAIL: test_source_timestamp_required_for_B_but_not_A (test_response_runtime.ResponseRuntimeTests.test_source_timestamp_required_for_B_but_not_A)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/tmp/current-source/tests/test_response_runtime.py", line 349, in test_source_timestamp_required_for_B_but_not_A
+    self.assertEqual(result, 0, {key:session.status().get(key)
+AssertionError: 1 != 0 : {'state': 'failed', 'error': 'live_start_failed', 'diagnostic': {'error_code': 'operation_failed', 'exception_type': 'Error', 'phase': 'live_start', 'source': {'file': 'browser.py', 'line': 593}}, 'cleanup_status': None}
+
+======================================================================
+FAIL: test_stop_after_admission_with_no_PCM_is_stopped_not_failed (test_response_runtime.ResponseRuntimeTests.test_stop_after_admission_with_no_PCM_is_stopped_not_failed)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/tmp/current-source/tests/test_response_runtime.py", line 244, in test_stop_after_admission_with_no_PCM_is_stopped_not_failed
+    self.assertEqual(await run_session(session, install_signals=False), 0)
+AssertionError: 1 != 0
+
+----------------------------------------------------------------------
+Ran 15 tests in 79.342s
+
+FAILED (failures=7, errors=12)

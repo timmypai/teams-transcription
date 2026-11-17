@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "scope": "Playback only. Every question still uses the existing read_meeting_context and RESULT_COMPLETE gate. History-direct routing was withdrawn and not implemented.",
+  "real_run14_operator_result": {
+    "remote_audio_heard": true,
+    "middle_phrase_interrupted_by_following_phrase": true,
+    "remote_continuity_accepted": false,
+    "unique_live_cause_proven": false
+  },
+  "tail_reproducer": {
+    "surface": "Production Native notification/PCM seam with a held predecessor drain and synthetic PCM markers",
+    "expected": [32, 64, 80, 96, 128],
+    "before_delivered": [32, 128],
+    "before_passed": false,
+    "after_delivered": [32, 64, 80, 96, 128],
+    "after_passed": true,
+    "tool_calls": 1,
+    "finding": "A new assistant turn cleared unplayed PCM belonging to the same authorized answer. FIFO ownership now follows the answer scope, not the latest assistant turn."
+  },
+  "final_real_browser_smoke": {
+    "surface": "Actual sandboxed Chromium, production Native/GatedPCMOutput/BrowserTXSink, generated MediaStream track observed through WebAudio",
+    "rendered_positive_marker_sample_counts": {"32": 960, "64": 2048, "80": 2048, "96": 1920, "128": 2016},
+    "all_tail_signals_observed": true,
+    "same_sender_track_retained_after_drain": true,
+    "tool_calls": 1,
+    "runtime_error": null,
+    "drained": true,
+    "truncated": false,
+    "teams": false,
+    "model": false,
+    "physical_microphone": false,
+    "limitation": "Observed marker presence is not an exact end-to-end frame-count assertion or remote recording. Exact packet order and completeness are checked at the Native output seam."
+  },
+  "playback_contract": {
+    "same_browser_player_and_track_across_speech": true,
+    "normal_completion_pauses_instead_of_disposing": true,
+    "cancel_revoke_expiry_discards_pending_audio": true,
+    "final_close_restores_original_muted_sender_and_closes_context": true,
+    "initial_headroom_max_ms": 160,
+    "projected_queue_bound_ms": 500,
+    "controlled_jitter_ms": 120,
+    "controlled_jitter_contiguous": true,
+    "unbounded_buffer": false
+  },
+  "review": {
+    "fresh_read_only_reviewers": 2,
+    "native_fifo_concrete_findings": 0,
+    "persistent_adapter_concrete_findings": 1,
+    "adapter_finding": "Paused old drain could borrow a newer generation's successful mutable delivery receipt.",
+    "finding_regression_before": "FAIL: interrupted.truncated was false",
+    "finding_fix": "Generation mismatch returns its own fixed interrupted/truncated receipt, never the next generation's success.",
+    "finding_regression_after": "All 21 browser identity tests passed; reviewer acknowledged the fix."
+  },
+  "test_runs": [
+    {"kind": "initial focused integration", "tests": 212, "seconds": 53.032, "failures": 2, "explanation": "Removed obsolete duplicate expectation that discarded same-answer tail; changed jitter fixture to absolute capture cadence instead of accumulating sleep plus IPC duration."},
+    {"kind": "corrected focused FIFO and jitter", "tests": 3, "seconds": 1.787, "failures": 0},
+    {"kind": "available suites before review receipt fix", "tests": 860, "seconds": 146.388, "failures": 0},
+    {"kind": "browser identity after receipt fix", "tests": 21, "seconds": 15.423, "failures": 0},
+    {"kind": "final available suites", "tests": 861, "seconds": 146.062, "failures": 0, "skips": 0}
+  ],
+  "excluded_transfer_missing_modules": ["test_bridge_integration", "test_media_bridge"],
+  "full_original_discovery_claimed": false,
+  "source_sha256": {
+    "b_native.py": "6ebafb03f922e1abfee006d8b1ef8f80017d33a027743a2c8ee4e2099221a4a5",
+    "b_audio.py": "d8873b873790e15b443fe2b2400eed7d1abbdb6946cfe2736516e4fe266ce5cd",
+    "b_browser_tx.py": "2fed22bb33fd47e5b057f52543e9668d3c96f93684ebe0bb6d56135d9b35503a",
+    "qa_probe.py": "087cb5498cff7738ee72882348a2df5220abff8f9d610db065d8e352b301a184"
+  },
+  "local_candidate": {
+    "image_id": "sha256:337206e3b1d184cc069f965a4fabda844ad87c6d57e079334370f25f3c12fff8",
+    "build_receipt": "persistent-player-candidate-build-20261016.json",
+    "compose_receipt": "standalone-compose-persistent-player-20261016.json",
+    "compose_checks_passed": 15,
+    "compose_sigterm_seconds": 1.08,
+    "installed_workdir_host_hashes_match": true,
+    "network": "none",
+    "credentials_mounted": false,
+    "published_or_deployed": false,
+    "stock_cold_build_claimed": false
+  },
+  "service_cutover": {
+    "old_service": "calendar-live-native-wake17",
+    "old_service_was_idle_before_termination": true,
+    "old_service_supervisor_exit_after_requested_sigterm": 1,
+    "intermediate_service": "calendar-live-player18",
+    "intermediate_service_sigint_exit": 0,
+    "final_service": "calendar-live-player19",
+    "pid": 1748798,
+    "observed_at_utc": "2026-10-16T08:14:59.809927+00:00",
+    "started": true,
+    "active": false,
+    "capture_interlock": false,
+    "last_error": null,
+    "recording_policy_checked": 0,
+    "speaking_policy_checked": 0,
+    "new_calendar_activities": 0,
+    "new_join_submitted": false,
+    "real_model_probe_called": false
+  },
+  "remote_fixed_version_acceptance": "pending fresh in-meeting acknowledgement before any new Join"
+}

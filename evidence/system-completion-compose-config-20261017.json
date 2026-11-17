@@ -1,0 +1,28 @@
+{
+  "test_id": "standalone-compose-config",
+  "tested_at": "2026-10-16T23:58:52.576838+00:00",
+  "input_kind": "synthetic non-secret configuration",
+  "service_started": false,
+  "registry_accessed": false,
+  "model_or_meeting_called": false,
+  "checks": {
+    "fixture_ignores_ambient_deployment": true,
+    "base_has_no_published_ports": true,
+    "nonroot_explicit_identity": true,
+    "read_only_drop_caps": true,
+    "sandbox_without_privilege_bypass": true,
+    "bounded_resources": true,
+    "background_entrypoint": true,
+    "health_port_matches_runtime": true,
+    "private_data_mount_no_auto_creation": true,
+    "local_management_loopback_only": true,
+    "codex_auth_opt_in": true,
+    "auth_refresh_same_private_directory": true,
+    "environment_overrides_yaml": true,
+    "required_TRANSCRIPTION_IMAGE": true,
+    "required_PUID": true,
+    "required_PGID": true,
+    "required_APPDATA_HOST": true
+  },
+  "success": true
+}

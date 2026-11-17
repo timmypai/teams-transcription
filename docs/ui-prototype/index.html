@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>小白會議 · 行事曆設計提案</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif;background:#f4f5f4;color:#1b2428}iframe{display:block;width:100%;height:100dvh;border:0}.switcher{position:fixed;bottom:17px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:6px;padding:8px 10px;background:#20292c;color:#fff;border:1px solid #465053;border-radius:13px;box-shadow:0 8px 30px #18202430;z-index:20}.preview-label{font-size:11px;letter-spacing:.1em;color:#bdc6c7;padding:0 10px;white-space:nowrap}.switcher button{font:inherit;font-size:13px;white-space:nowrap;border:0;border-radius:7px;padding:10px 13px;background:transparent;color:#d4dcdc;cursor:pointer}.switcher button:hover{background:#364246}.switcher button[aria-pressed=true]{background:#f2f4f2;color:#20292c;font-weight:650}.switcher .arrow{padding:8px;display:grid;place-items:center}.arrow svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.6}.divider{height:24px;width:1px;background:#4c5659;margin:0 3px}.switcher .about{color:#cbd5d6;font-size:12px}button:focus-visible,a:focus-visible{outline:2px solid #52c9bb;outline-offset:3px}dialog{border:1px solid #ccd1cf;border-radius:14px;max-width:650px;width:calc(100% - 32px);padding:28px;color:#20292c;background:#fafbf8;box-shadow:0 20px 80px #0003}dialog::backdrop{background:#14202566}dialog header{display:flex;align-items:center;justify-content:space-between}dialog h2{font-size:23px;margin:0}dialog h3{font-size:15px;margin-bottom:5px}dialog p{line-height:1.8;font-size:14px;color:#546066}dialog .close{border:1px solid #ccd1cf;border-radius:6px;padding:7px 12px;background:transparent;cursor:pointer}dialog .recommend{font-size:11px;background:#dfece6;color:#285740;padding:3px 7px;border-radius:4px;margin-left:8px}.note{font-size:12px!important;border-top:1px solid #d7ddda;padding-top:13px}#current{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+@media(max-width:650px){.switcher{bottom:10px;padding:6px;gap:2px;max-width:calc(100% - 14px)}.preview-label{display:none}.switcher button{font-size:12px;padding:10px 9px}.switcher .arrow{padding:6px}.divider{margin:0 1px}.switcher .about{padding:10px 7px}.wide{display:none}}
+</style>
+</head>
+<body>
+<!-- Throwaway UI proposal: three calendar-first layouts, shared fictional data. No production routes or controls. -->
+<iframe id="preview" title="會議行事曆設計預覽"></iframe>
+<nav class="switcher" aria-label="切換設計版本">
+<span class="preview-label">設計預覽</span>
+<button class="arrow" id="previous" aria-label="上一個設計版本"><svg viewBox="0 0 20 20"><path d="m12 4-6 6 6 6"/></svg></button>
+<button data-variant="A" aria-pressed="false">A<span class="wide"> ·</span> 週曆</button>
+<button data-variant="B" aria-pressed="false">B<span class="wide"> ·</span> 月曆</button>
+<button data-variant="C" aria-pressed="false">C<span class="wide"> ·</span> 現場</button>
+<button class="arrow" id="next" aria-label="下一個設計版本"><svg viewBox="0 0 20 20"><path d="m8 4 6 6-6 6"/></svg></button>
+<span class="divider"></span><button class="about" id="compare">設計取捨</button>
+</nav>
+<span id="current" role="status" aria-live="polite"></span>
+<dialog id="rationale" aria-labelledby="rationale-title">
+<header><h2 id="rationale-title">同一套資料，三種使用重心</h2><button class="close" id="close-dialog">關閉</button></header>
+<h3>A · 週行事曆工作台 <span class="recommend">主推</span></h3>
+<p>先掌握本週安排與進行中的會議，點選查看前次結論與待辦，需要跟會時展開閱讀空間。最符合以行事曆為首頁與會議導航的日常工作方式。</p>
+<h3>B · 月曆與會議檔案</h3>
+<p>適合跨週規劃與回顧同系列會議。會議內容以完整檔案閱讀；整月脈絡清楚，但查看現場需要進入會議頁。</p>
+<h3>C · 日期議程與現場閱讀</h3>
+<p>保留日期與議程導航，同時閱讀本場內容與前次脈絡。跟會效率最高，但不如週曆容易比較多個時段的安排。</p>
+<p class="note">全部為示範資料，日期固定為 2026/10/28。進入進行中的「產品協作週會」，可播放示範逐字稿與問答；不會連接 Teams、Google 或模型。設定與操作只用於介面確認，不保存。可用下方按鈕或左右方向鍵切換版本。</p>
+</dialog>
+<script>
+(() => {
+'use strict';
+const versions=['A','B','C'];
+const names={A:'週行事曆工作台',B:'月曆與會議檔案',C:'日期議程與現場閱讀'};
+const frame=document.getElementById('preview');
+let selected='A';
+function show(value,push=false){
+ selected=versions.includes(value)?value:'A';
+ const url=new URL(location.href);url.searchParams.set('variant',selected);
+ if(push)history.pushState({},'',url);else history.replaceState({},'',url);
+ frame.src='variant-'+selected.toLowerCase()+'.html';frame.title=names[selected]+'（示範資料）';
+ document.querySelectorAll('[data-variant]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.variant===selected)));
+ document.getElementById('current').textContent='版本 '+selected+'：'+names[selected];
+ document.title=selected+' · '+names[selected]+' — 小白會議設計提案';
+}
+const cycle=direction=>show(versions[(versions.indexOf(selected)+direction+3)%3],true);
+document.querySelectorAll('[data-variant]').forEach(button=>button.addEventListener('click',()=>show(button.dataset.variant,true)));
+document.getElementById('previous').onclick=()=>cycle(-1);document.getElementById('next').onclick=()=>cycle(1);
+const dialog=document.getElementById('rationale');
+document.getElementById('compare').onclick=()=>dialog.showModal();document.getElementById('close-dialog').onclick=()=>dialog.close();
+window.addEventListener('popstate',()=>show(new URL(location.href).searchParams.get('variant')));
+window.addEventListener('message',event=>{if(event.source!==frame.contentWindow||event.origin!==location.origin||dialog.open)return;if(event.data?.type==='prototype-key'&&['ArrowLeft','ArrowRight'].includes(event.data.key))cycle(event.data.key==='ArrowLeft'?-1:1);});
+document.addEventListener('keydown',event=>{if(dialog.open||event.altKey||event.ctrlKey||event.metaKey||event.shiftKey||event.target.closest('input,textarea,select,[contenteditable="true"]'))return;if(['ArrowLeft','ArrowRight'].includes(event.key)){event.preventDefault();cycle(event.key==='ArrowLeft'?-1:1);}});
+show(new URL(location.href).searchParams.get('variant'));
+})();
+</script>
+</body>
+</html>

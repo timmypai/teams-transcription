@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "assistant_deltas": [
+    {
+      "text": "我在",
+      "received_seconds": 25.31336886200006,
+      "phase": "wake_revision_1"
+    },
+    {
+      "text": "，有什",
+      "received_seconds": 25.50277987299978,
+      "phase": "wake_revision_1"
+    },
+    {
+      "text": "麼問題",
+      "received_seconds": 25.668640978999974,
+      "phase": "wake_revision_1"
+    },
+    {
+      "text": "？",
+      "received_seconds": 26.08465195000008,
+      "phase": "wake_revision_1"
+    }
+  ],
+  "assistant_done_observed": false,
+  "question_sent": false,
+  "audio_completion": "unverified"
+}

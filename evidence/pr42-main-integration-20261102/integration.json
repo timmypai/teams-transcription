@@ -1,0 +1,189 @@
+{
+  "main_integrated": "56f73782dfa0c6456badb26a9743cfaaee16787c",
+  "head_before_merge": "ad0fec7c0e918e66a70430eef704c1e87295315c",
+  "pr40_merge": "7f3bbd6849b68665eafe54616ac5ca3eedf9c19d",
+  "main_contains_pr40": true,
+  "automatic_merge_without_conflict": true,
+  "incoming_files": [
+    {
+      "path": "docs/POSTMEETING-CALENDAR-ACCEPTANCE.md",
+      "sha256": "920e0907ec960d6ec4cfd79a91343f05ba7f49e252908c470bac5a303c288640",
+      "identical_to_main": true
+    },
+    {
+      "path": "docs/POSTMEETING-HOST-ADAPTER.md",
+      "sha256": "8d7a4a93e1b379dae7bc6441c88e1ac859874e08f8d614a34406f9cef6b9671b",
+      "identical_to_main": true
+    },
+    {
+      "path": "docs/POSTMEETING-SERIES-PLAN.md",
+      "sha256": "2854f443014eb8e7011454aa6f229482bbff672a10276c69583e743a43c3ddd6",
+      "identical_to_main": true
+    },
+    {
+      "path": "teams_transcription/admin_ui.py",
+      "sha256": "57ee46664cb13ddfac79de46e59deb2b49854c653147a0e9061a82861a66de94",
+      "identical_to_main": true
+    },
+    {
+      "path": "teams_transcription/admin_web.py",
+      "sha256": "34956b516c5912a712f6a052fb04b642ecbb4aada5b81f3e02e0ec28447c3be3",
+      "identical_to_main": true
+    },
+    {
+      "path": "teams_transcription/assistant_store.py",
+      "sha256": "a712c3cf34e4ae08ea295dc3c221d6f10dbdaf4cdc2d232055a77ef6c2de5ca9",
+      "identical_to_main": true
+    },
+    {
+      "path": "teams_transcription/b_context.py",
+      "sha256": "7cc39d9a7afa147e1ae6f5a7e8731f95b1b43befecac267c498e52ab418a77b6",
+      "identical_to_main": true
+    },
+    {
+      "path": "teams_transcription/b_response.py",
+      "sha256": "06f6da80b606daca4a10e2dfd65df7c4309db473a667c1df7c5b124a62a38e65",
+      "identical_to_main": true
+    },
+    {
+      "path": "teams_transcription/calendar_view.py",
+      "sha256": "91a0af39b4ff8734a4d51964431922365b4f670c5fff608b0efc3dd7a394774b",
+      "identical_to_main": true
+    },
+    {
+      "path": "teams_transcription/postmeeting_adapter.py",
+      "sha256": "fa75405f384c6642abbaf42468c7c055284f8b4e9b8dcebdb5bda881429c2c88",
+      "identical_to_main": true
+    },
+    {
+      "path": "teams_transcription/postmeeting_store.py",
+      "sha256": "1fd541a9d9d26f6252506914f8c92454ffbff2c04c382b0d3c9bbb39edf58cc2",
+      "identical_to_main": true
+    },
+    {
+      "path": "teams_transcription/response_runtime.py",
+      "sha256": "09cf7fa3da3b9b28b6b42527469c322f63704f74adb97f1dfa7f7f0eca033b83",
+      "identical_to_main": true
+    },
+    {
+      "path": "teams_transcription/static/calendar.css",
+      "sha256": "a43f608202937a537daacc1184c030c61e6ee66eb29c2a334240686d2a6ff666",
+      "identical_to_main": true
+    },
+    {
+      "path": "teams_transcription/static/calendar.js",
+      "sha256": "9f30bb4afa0c7569e19a2e3c22519dc33ec0045a06a1af2ccfd026120a1ae129",
+      "identical_to_main": true
+    },
+    {
+      "path": "tests/test_postmeeting_adapter.py",
+      "sha256": "89e2c6cd1897d1505be43eae0050f052a6e25844f17bf4eb36861e1c489a1ef6",
+      "identical_to_main": true
+    },
+    {
+      "path": "tests/test_postmeeting_calendar_identity.py",
+      "sha256": "be36aabae397c15509e9438f9390b9acee95476a1010f3e2b38000cbc2c34eac",
+      "identical_to_main": true
+    },
+    {
+      "path": "tests/test_postmeeting_host_contract.py",
+      "sha256": "17e019dd2fd4b2e7ff8e6b34dbb8912d35e32cff00067c077d6df00513e4478e",
+      "identical_to_main": true
+    },
+    {
+      "path": "tests/test_postmeeting_series_question.py",
+      "sha256": "218b8654d95861ca2e387c3676ceac6274fb5e4fe99dd5ce75f8c165c18269ac",
+      "identical_to_main": true
+    },
+    {
+      "path": "tests/test_postmeeting_store.py",
+      "sha256": "1350e43569e5884aeb216bc3f3352ba4ca0aac58f3a7d7f66ac7aaddc2a04ce5",
+      "identical_to_main": true
+    },
+    {
+      "path": "tests/test_postmeeting_ui.py",
+      "sha256": "8173ee776e5d66b7455c7dad4fb98bf4391b3f53ddeaa71289379389b4b1f6df",
+      "identical_to_main": true
+    }
+  ],
+  "controlled_offline": {
+    "scope": "controlled offline subset",
+    "suites": [
+      "test_assistant_store",
+      "test_assistant_daemon",
+      "test_calendar_client",
+      "test_glossary_context",
+      "test_admin_web",
+      "test_sqlite_voice_context",
+      "test_sqlite_only_store",
+      "test_b_no_plc_startup",
+      "test_rx_contract",
+      "test_prefetch_codex_npm",
+      "test_no_plc_setup_failure",
+      "test_render_history",
+      "test_history_output_consumers",
+      "test_decoder_continuity_check",
+      "test_b_no_plc_pacing",
+      "test_beta_voice_duration",
+      "test_glossary_asr_eval",
+      "test_glossary_native_pair",
+      "test_live_cleanup_snapshot",
+      "test_question_input_diagnostics",
+      "test_response_capture_fanout",
+      "test_response_policy_failure",
+      "test_b_document_policy",
+      "test_staging_control",
+      "test_capture_cleanup_review",
+      "test_teams_recovery_reader",
+      "test_release_gate",
+      "test_diagnostic_projection",
+      "test_codex_auth",
+      "test_provider_state",
+      "test_workflow_triggers",
+      "test_pr_policy",
+      "test_pr_policy_github",
+      "test_pr_policy_workflow",
+      "test_staging_docker_diagnostics",
+      "test_staging_compose",
+      "test_first_deploy_recovery",
+      "test_qa_probe.ProbeTests",
+      "test_qa_receiver_projection",
+      "test_qa_audio_observer",
+      "test_qa_content",
+      "test_qa_candidate_versions",
+      "test_cloud_qa_semantic.SemanticRuntimeTests",
+      "test_cloud_qa_startup.StartupRuntimeTests",
+      "test_teams_acceptance",
+      "test_teams_acceptance_host",
+      "test_teams_local_control.LocalControlTests",
+      "test_teams_target_prepare.TargetPrepareTests",
+      "test_teams_preparation_host.HostPreparationTests",
+      "test_teams_immediate_recovery.ImmediateRecoveryTests",
+      "test_teams_immediate_chain.ImmediateChainTests",
+      "test_native_output_attach_diagnostics",
+      "test_cloud_qa_contract",
+      "test_cloud_qa_bridge.CloudQABridgeTests",
+      "test_cloud_qa_isolated.CloudQAIsolatedTests",
+      "test_turn_lifecycle_evidence.TurnLifecycleEvidenceTests",
+      "test_speech_completion_snapshot.SpeechCompletionSnapshotTests",
+      "test_incremental_minutes_context.ContextTests.test_wire_instruction_distinguishes_verbatim_quote_and_normal_answers",
+      "test_native_incremental_context.NativeSnapshotContextTests.test_delivery_receipt_hashes_identify_actual_current_payload_without_content",
+      "test_b_native.NativeLiveTests.test_live_prompt_distinguishes_verbatim_format_from_normal_current_fact_answers",
+      "test_b_native.NativeLiveTests.test_three_physical_questions_in_one_provider_turn_query_current_sqlite_each_time"
+    ],
+    "tests": 622,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "success": true,
+    "teams_or_model_called": false,
+    "audio_e2e_tested": false
+  },
+  "additional_postmeeting_tests": {
+    "tests": 54,
+    "success": true,
+    "browser_cases_executed": false
+  },
+  "model_or_oracle_operations": 0,
+  "ci_dispatches": 0
+}

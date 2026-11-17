@@ -1,0 +1,31 @@
+{
+  "kind": "idle_local_source_reload",
+  "before_service": "calendar-native-media22",
+  "before_pid": 3437177,
+  "before": {
+    "started": true,
+    "active_session_id": null,
+    "capture_interlock": false,
+    "last_error": null,
+    "scheduler_paused": true,
+    "media_inputs": 4,
+    "media_checked": 0
+  },
+  "old_sigint_exit_code": 0,
+  "after_service": "calendar-system-completion23",
+  "after_pid": 1295372,
+  "after": {
+    "started": true,
+    "active_session_id": null,
+    "capture_interlock": false,
+    "last_error": null,
+    "scheduler_paused": true,
+    "media_inputs": 4,
+    "media_checked": 0
+  },
+  "private_config_changed": false,
+  "calendar_writes": 0,
+  "teams_joins": 0,
+  "human_acceptance_ready": false,
+  "passed": true
+}

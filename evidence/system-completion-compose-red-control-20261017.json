@@ -1,0 +1,8 @@
+{
+  "kind": "isolated_original_compose_interpolation_regression",
+  "exit": 1,
+  "expected_rejection": true,
+  "service_started": false,
+  "credentials_read": false,
+  "original_snapshot_sha256": "e4e9320e0123365318a10a67bb4082c7f83cbfa8d1196be94f401e1bf3ec59c2"
+}

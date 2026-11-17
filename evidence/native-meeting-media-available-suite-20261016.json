@@ -1,0 +1,16 @@
+{
+  "kind": "all_available_local_regressions",
+  "tests": 915,
+  "seconds": 227.005,
+  "failures": 0,
+  "errors": 0,
+  "skips": 0,
+  "success": true,
+  "excluded_transfer_missing_modules": [
+    "test_bridge_integration",
+    "test_media_bridge"
+  ],
+  "full_original_discovery_claimed": false,
+  "disposable_home": true,
+  "real_meetings_or_models_authorized_by_runner": false
+}

@@ -1,0 +1,156 @@
+{
+  "schema_version": 1,
+  "status": "reviewable A/B source only; no host installation or model execution by this task",
+  "candidate_sha": "d5f729f6db228cc60b67674a031e99bc0545629b",
+  "files": [
+    {
+      "source": "deploy/qa_cloud_bridge.py",
+      "target": "/opt/teams-staging/bin/qa-cloud-bridge",
+      "sha256": "1755f00939121965bc5132e689430991fa03fcd0a4117bdfc05c00c71f925395",
+      "owner": "root:root",
+      "mode": "0755"
+    },
+    {
+      "source": "deploy/qa_cloud_contract.py",
+      "target": "/opt/teams-staging/bin/qa_cloud_contract.py",
+      "sha256": "94ea96dce6c11d31b308acac15f40f0828f8f6ad8d1b1388f3f1ea3868834d78",
+      "owner": "root:root",
+      "mode": "0644"
+    },
+    {
+      "source": "deploy/qa_container_entry.py",
+      "target": "/opt/teams-staging/bin/qa_container_entry.py",
+      "sha256": "15877092550f04be2f79026bcf5e0c09faeea1e178459cdd018134fd2d4bf222",
+      "owner": "root:root",
+      "mode": "0644"
+    },
+    {
+      "source": "deploy/stagingctl.py",
+      "target": "/opt/teams-staging/bin/stagingctl",
+      "sha256": "23cdc1ab91cd6dc424dabd1811b6aff15a460083c26de10a2189bc48c4deed16",
+      "owner": "root:root",
+      "mode": "0755"
+    },
+    {
+      "source": "teams_transcription/qa_audio_observation.py",
+      "target": "/opt/teams-staging/qa-candidate/qa_audio_observation.py",
+      "sha256": "582203b817ca7e96fd4d7c6baf36f800b3781580da0bac9ffb20546cb11c2bd3",
+      "owner": "root:root",
+      "mode": "0644",
+      "fixed_candidate_sha": "d5f729f6db228cc60b67674a031e99bc0545629b"
+    },
+    {
+      "source": "teams_transcription/qa_audio_tap.py",
+      "target": "/opt/teams-staging/qa-candidate/qa_audio_tap.py",
+      "sha256": "84eeec403097d73e17f5a01a8be7da0200dfd9c0a501598be858e136e49e007c",
+      "owner": "root:root",
+      "mode": "0644",
+      "fixed_candidate_sha": "d5f729f6db228cc60b67674a031e99bc0545629b"
+    },
+    {
+      "source": "teams_transcription/qa_audio_probe.py",
+      "target": "/opt/teams-staging/qa-candidate/qa_audio_probe.py",
+      "sha256": "78da4e0bcfd35b96f51cd7e8c09253aba5d77c0a46f05800020bf534d9001323",
+      "owner": "root:root",
+      "mode": "0644",
+      "fixed_candidate_sha": "d5f729f6db228cc60b67674a031e99bc0545629b"
+    },
+    {
+      "source": "evidence/passive-audio-candidate-manifest-20261030.json",
+      "target": "/opt/teams-staging/qa-candidate/passive-audio-candidate-manifest-20261030.json",
+      "sha256": "f496f4d9f4df36f8f09129f1f921283ff1b2f6c6c6cab70776b99a6294eaf4ad",
+      "owner": "root:root",
+      "mode": "0644",
+      "fixed_candidate_sha": "d5f729f6db228cc60b67674a031e99bc0545629b"
+    },
+    {
+      "source": "tools/check_qa_audio_candidate.py",
+      "target": "/opt/teams-staging/qa-candidate/check_qa_audio_candidate.py",
+      "sha256": "5711a2b4a1c800a232ce58a524b08e43fb5c75fd07d84fb9c0151baeb2dbb319",
+      "owner": "root:root",
+      "mode": "0644",
+      "fixed_candidate_sha": "d5f729f6db228cc60b67674a031e99bc0545629b"
+    },
+    {
+      "source": "deploy/qa_isolated_candidate/qa_probe.py",
+      "target": "/opt/teams-staging/qa-isolated-candidate/qa_probe.py",
+      "sha256": "6616f75dbf175acc2991cb2b933098d3230adc5e9720c4a64f0ab00cbbf39a29",
+      "owner": "root:root",
+      "mode": "0644",
+      "fixed_candidate_sha": "836ecbe88d69b14a66326474d08a4c26d15c1e90"
+    },
+    {
+      "source": "deploy/qa_isolated_candidate/qa_session_isolation.py",
+      "target": "/opt/teams-staging/qa-isolated-candidate/qa_session_isolation.py",
+      "sha256": "5d0befd7fa5af94d33250ba80434e8659071409de78e3a74b02e6f2fd62467fd",
+      "owner": "root:root",
+      "mode": "0644",
+      "fixed_candidate_sha": "836ecbe88d69b14a66326474d08a4c26d15c1e90"
+    },
+    {
+      "source": "evidence/isolated-qa-candidate-manifest-20261030.json",
+      "target": "/opt/teams-staging/qa-isolated-candidate/isolated-qa-candidate-manifest-20261030.json",
+      "sha256": "7102a643472e81407ceefdc693cdc24b58a783886b9cce7046857c204bafce99",
+      "owner": "root:root",
+      "mode": "0644",
+      "fixed_candidate_sha": "836ecbe88d69b14a66326474d08a4c26d15c1e90"
+    }
+  ],
+  "workflow": {
+    "path": ".github/workflows/oracle-qa.yml",
+    "sha256": "a25ad3ba79d818e24ef5ce2d99736ade251d768d97455b7e68651085a0ad4b5f",
+    "manual_only": true,
+    "default_operation": "offline",
+    "permissions": {},
+    "dispatch_performed": false
+  },
+  "hook": {
+    "source": "deploy/runner-job-started.sh",
+    "current_sha256": "3da8f4cce9ace3eb008c45944adc3d378d4bf7ba84defc337b65f1dc2ec5539f",
+    "source_changed": false,
+    "new_workflow_currently_rejected": true,
+    "pending_exact_case": "paulpai0412/teams-transcription/.github/workflows/oracle-qa.yml@refs/heads/main) ;;"
+  },
+  "authority": {
+    "target": "/opt/teams-staging/qa-candidate/qa-authority.json",
+    "owner": "root:root",
+    "mode": "0644",
+    "actual_values_known": false,
+    "file_created": false,
+    "required_fields": [
+      "ledger_path",
+      "lock_path",
+      "checkpoint_sha256",
+      "legacy_writers_coordinated"
+    ],
+    "automatic_initialization_or_quota_reset": false
+  },
+  "new_privileges_required": [],
+  "pending_security_policy_change": "exact host hook case for reviewed new main-only QA workflow",
+  "pending_trusted_code_update": "Review/install current fixed bridge, entry and contract hashes plus separate B candidate bundle; existing controller interlock guard retained",
+  "candidates": {
+    "passive": {
+      "sha": "d5f729f6db228cc60b67674a031e99bc0545629b",
+      "reserved_starts": 1,
+      "operations": [
+        "offline",
+        "observe"
+      ]
+    },
+    "isolated": {
+      "sha": "836ecbe88d69b14a66326474d08a4c26d15c1e90",
+      "reserved_starts": 2,
+      "operations": [
+        "isolated-offline",
+        "isolated"
+      ]
+    }
+  },
+  "additional_directories": [
+    {
+      "target": "/opt/teams-staging/qa-isolated-candidate",
+      "owner": "root:root",
+      "mode": "0755"
+    }
+  ]
+}

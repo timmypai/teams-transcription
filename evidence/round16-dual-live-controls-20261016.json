@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "teams_joined": false,
+  "physical_input_output": false,
+  "python_producer_control": {
+    "passed": true,
+    "source_packets": 260,
+    "returned_packets": 260,
+    "B_ready": true,
+    "A_close_returned": true,
+    "cleanup": {
+      "status": "cleaned",
+      "stop_status": "stopped",
+      "stop_ack_received": true,
+      "stop_closed_received": true,
+      "native_cleanup_status": "cleaned",
+      "owned_processes": 3,
+      "live_processes": 0,
+      "reaped": true,
+      "pending_close_tasks": 0,
+      "pending_operation": false
+    }
+  },
+  "production_capture_callback_control": {
+    "passed": true,
+    "production_capture_callbacks": true,
+    "source_packets": 260,
+    "returned_packets": 260,
+    "B_ready": true,
+    "safe_clock_code": null,
+    "A_close_returned": true,
+    "sample_count": 260,
+    "guard_failures": [],
+    "minimum_observed_rate": 0.9988459648038021,
+    "maximum_observed_rate": 1.0025620104449537,
+    "cleanup": {
+      "status": "cleaned",
+      "stop_status": "stopped",
+      "stop_ack_received": true,
+      "stop_closed_received": true,
+      "native_cleanup_status": "cleaned",
+      "owned_processes": 3,
+      "live_processes": 0,
+      "reaped": true,
+      "pending_close_tasks": 0,
+      "pending_operation": false
+    }
+  },
+  "clock_sampler_timing_changed": false,
+  "real_round16_failure_reproduced": false,
+  "original_failure_unique_cause_proven": false,
+  "limitation": "Synthetic silence and local owned capture tracks, not Teams content/DOM/network; no real admission or remote-audio acceptance."
+}

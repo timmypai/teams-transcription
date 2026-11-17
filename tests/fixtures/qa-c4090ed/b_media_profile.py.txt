@@ -1,0 +1,261 @@
+"""Continuous Native input and opt-in trusted none-sink output graphs.
+
+Only media construction is reused; no fixed-text prompt, appendSpeech, model,
+summary workflow, capture observer or network listener is imported/executed.
+"""
+import re
+from .browser import PEER_JS
+from .b_no_plc import NO_PLC_RECEIVER_JS
+
+LOCAL_AUDIO_ORIGIN = 'http://127.0.0.1'
+
+LOCAL_AUDIO_PAGE = LOCAL_AUDIO_ORIGIN + '/__fixed_speech_control__/'
+
+LOCAL_AUDIO_HTML = '<!doctype html><meta charset="utf-8"><title>Local audio control</title>'
+
+TRUSTED_PAGE_CHECK_JS = r"""() => ({
+  trusted_origin:location.origin === 'http://127.0.0.1' && window.top === window,
+  secure_context:window.isSecureContext === true,
+  audio_context_present:typeof AudioContext === 'function',
+  set_sink_id_present:typeof AudioContext === 'function' &&
+    typeof AudioContext.prototype.setSinkId === 'function'
+})"""
+
+LOCAL_AUDIO_FAILURES = (
+    'trusted_audio_navigation_failed','trusted_audio_origin_mismatch',
+    'audio_context_not_secure','audio_context_missing','silent_sink_api_missing',
+    'silent_sink_not_verified','silent_sink_rejected_not_allowed',
+    'silent_sink_rejected_security','silent_sink_rejected_not_supported',
+    'silent_sink_rejected_other')
+
+def local_audio_failure(error):
+    # Only fixed locally emitted labels; never serialize an exception payload.
+    text = str(error)
+    return next((label for label in LOCAL_AUDIO_FAILURES
+                 if re.search(r'(?<![A-Za-z0-9_])'+re.escape(label)+r'(?![A-Za-z0-9_])',text)),
+                'local_audio_context_failed')
+
+async def prepare_trusted_audio_page(page):
+    async def local_document(route):
+        request = route.request
+        if (request.url != LOCAL_AUDIO_PAGE or request.method != 'GET'
+                or not request.is_navigation_request() or request.frame is not page.main_frame):
+            await route.abort('blockedbyclient')
+            return
+        # Fulfill bytes locally, never continue/fetch/open a listener. The host
+        # context guard still handles all other URLs and WebSockets unchanged.
+        await route.fulfill(status=200,body=LOCAL_AUDIO_HTML,content_type='text/html')
+    await page.route(LOCAL_AUDIO_PAGE,local_document)
+    try:
+        try:
+            await page.goto(LOCAL_AUDIO_PAGE,wait_until='domcontentloaded',timeout=3000)
+        except Exception:
+            raise ValueError('trusted_audio_navigation_failed') from None
+    finally:
+        await page.unroute(LOCAL_AUDIO_PAGE,local_document)
+    state = await page.evaluate(TRUSTED_PAGE_CHECK_JS)
+    if not isinstance(state,dict) or state.get('trusted_origin') is not True:
+        raise ValueError('trusted_audio_origin_mismatch')
+    if state.get('secure_context') is not True:
+        raise ValueError('audio_context_not_secure')
+    if state.get('audio_context_present') is not True:
+        raise ValueError('audio_context_missing')
+    if state.get('set_sink_id_present') is not True:
+        raise ValueError('silent_sink_api_missing')
+    return {key:True for key in ('trusted_origin','secure_context','audio_context_present','set_sink_id_present')}
+
+def silent_peer_js(*, no_plc=False):
+    # Retain the published peer/ICE/DC binding implementation. Fail on drift.
+    marker = '  pc.addTrack(destination.stream.getAudioTracks()[0], destination.stream);'
+    state = '  window.__live = {pc, dc, ctx, destination, next: 0, sentFrames: 0,'
+    if PEER_JS.count(marker) != 1 or PEER_JS.count(state) != 1:
+        raise ValueError('published_peer_graph_contract_changed')
+    script = PEER_JS.replace(marker, '''  const oscillator = ctx.createOscillator();
+  const silentGain = ctx.createGain(); silentGain.gain.value = 0;
+  oscillator.connect(silentGain); silentGain.connect(destination); oscillator.start();
+''' + marker).replace(state, '''  window.__live = {pc, dc, ctx, destination,
+    silentInput:{oscillator, gain:silentGain, active:true}, next:0, sentFrames:0,''')
+    if no_plc:
+        constructor = '  const pc = new RTCPeerConnection({iceServers});'
+        offer = '  await pc.setLocalDescription(await pc.createOffer());'
+        if script.count(constructor) != 1 or script.count(offer) != 1:
+            raise ValueError('published_peer_graph_contract_changed')
+        script = script.replace(constructor,
+            '  const pc = new RTCPeerConnection({iceServers, encodedInsertableStreams:true});')
+        script = script.replace(offer, NO_PLC_RECEIVER_JS + '''
+  const opus=RTCRtpReceiver.getCapabilities('audio').codecs.filter(codec=>
+    codec.mimeType.toLowerCase()==='audio/opus' && codec.clockRate===48000 &&
+    [1,2].includes(codec.channels));
+  if(!opus.length) throw new Error('native_no_plc_opus_unavailable');
+  pc.getTransceivers()[0].setCodecPreferences(opus);
+  window.__live.noPlc = await createNoPlcReceiver(pc.getReceivers()[0],
+    () => window.responseAudioError('native_no_plc_failed'));
+  const outgoing=pc.getSenders()[0].createEncodedStreams();
+  const outgoingAbort=window.__live.noPlcInputAbort=new AbortController();
+  window.__live.noPlcForwarding=outgoing.readable.pipeTo(outgoing.writable,
+    {signal:outgoingAbort.signal}).catch(() => {
+      if(!outgoingAbort.signal.aborted && window.__live.noPlc.valid())
+        window.responseAudioError('native_input_forwarding_failed');
+    });
+''' + offer)
+    return script
+
+SILENT_PEER_JS = silent_peer_js()
+NO_PLC_PEER_JS = silent_peer_js(no_plc=True)
+
+# One binding at a time, not a count of unresolved Playwright acknowledgements.
+# Retain a finite PCM backlog, including the in-flight block. This RAM ceiling
+# is independent of the lifetime of an admitted answer.
+PCM_OUTPUT_BRIDGE_JS = r"""out => {
+  const sampleRate = out.ctx.sampleRate, blockFrames = 2048;
+  const maxBytes = 4_320_000;
+  const maxPackets = Math.ceil(maxBytes / (blockFrames * 2));
+  const queue = new Array(maxPackets);
+  let head = 0, tail = 0, count = 0, nextSendAt = null, wake = null;
+  const bridge = out.pcmBridge = {maxBytes, maxPackets, queuedBytes:0,
+    queuedPackets:0, sending:false, failed:false};
+  const discardWaiting = () => {
+    while (count) {
+      const packet = queue[head]; queue[head] = undefined;
+      head = (head+1)%maxPackets; count--;
+      bridge.queuedBytes -= packet.bytes.byteLength; bridge.queuedPackets--;
+    }
+    head = tail = 0;
+    if (wake) wake();
+  };
+  bridge.setCapture = (enabled, generation) => {
+    if (enabled && bridge.failed) throw new Error('output_backpressure');
+    out.captureEnabled = enabled; out.captureGeneration = generation;
+    nextSendAt = null; discardWaiting();
+  };
+  const fail = label => {
+    if (bridge.failed) return;
+    bridge.failed = true; out.captureEnabled = false;
+    discardWaiting(); window.responseAudioError(label);
+  };
+  const current = packet => !out.closing && out.captureEnabled &&
+    packet.generation === out.captureGeneration && !bridge.failed;
+  async function pump() {
+    if (bridge.sending) return;
+    bridge.sending = true;
+    try {
+      while (count) {
+        const packet = queue[head]; queue[head] = undefined;
+        head = (head+1)%maxPackets; count--;
+        try {
+          if (!current(packet)) continue;
+          const delay = (nextSendAt ?? performance.now()) - performance.now();
+          if (delay > 0) await new Promise(resolve => {
+            const timer = setTimeout(() => {wake = null; resolve();}, delay);
+            wake = () => {clearTimeout(timer); wake = null; resolve();};
+          });
+          if (!current(packet)) continue;
+          const sentAt = performance.now(), duration = packet.bytes.byteLength/(sampleRate*2)*1000;
+          // Exact audio-time deadlines do not add IPC time per block. A late
+          // renderer may catch up by one block, never dump its whole backlog
+          // into the unchanged 0.5-second downstream playback queue.
+          nextSendAt = nextSendAt === null ? sentAt+duration : Math.max(nextSendAt+duration,sentAt);
+          let binary = ''; for (const b of packet.bytes) binary += String.fromCharCode(b);
+          await window.responseAudio({data:btoa(binary),sample_rate:sampleRate,
+            channels:1,capture_generation:packet.generation});
+        } catch (_) {
+          if (current(packet)) fail('output_delivery_failed');
+        } finally {
+          bridge.queuedBytes -= packet.bytes.byteLength; bridge.queuedPackets--;
+        }
+      }
+    } finally { bridge.sending = false; }
+  }
+  bridge.capture = event => {
+    // Do not even read/copy/encode idle waveform. The decoder stays alive.
+    if (out.closing || !out.captureEnabled || bridge.failed) return;
+    const samples = event.inputBuffer.getChannelData(0), size = samples.length*2;
+    if (bridge.queuedBytes+size > maxBytes || bridge.queuedPackets >= maxPackets) {
+      out.dropped++; fail('output_backpressure'); return;
+    }
+    const bytes = new Uint8Array(size), view = new DataView(bytes.buffer);
+    for (let i=0;i<samples.length;i++)
+      view.setInt16(i*2,Math.max(-32768,Math.min(32767,Math.round(samples[i]*32768))),true);
+    queue[tail] = {bytes,generation:out.captureGeneration};
+    tail = (tail+1)%maxPackets; count++;
+    bridge.queuedBytes += size; bridge.queuedPackets++; out.frames += samples.length;
+    void pump();
+  };
+}"""
+
+RENDER_OUTPUT_JS = r"""async () => {
+  const state = window.__live;
+  if (window.isSecureContext !== true) throw new Error('audio_context_not_secure');
+  if (typeof AudioContext !== 'function') throw new Error('audio_context_missing');
+  const ctx = new AudioContext({sampleRate:48000});
+  try {
+    if (typeof ctx.setSinkId !== 'function') throw new Error('silent_sink_api_missing');
+    try { await ctx.setSinkId({type:'none'}); }
+    catch (error) {
+      const label = {NotAllowedError:'silent_sink_rejected_not_allowed',
+        SecurityError:'silent_sink_rejected_security',NotSupportedError:'silent_sink_rejected_not_supported'};
+      throw new Error(Object.hasOwn(label,error?.name) ? label[error.name] : 'silent_sink_rejected_other');
+    }
+    if (!ctx.sinkId || ctx.sinkId.type !== 'none') throw new Error('silent_sink_not_verified');
+    const renderGain = ctx.createGain(); renderGain.gain.value = 1;
+    renderGain.connect(ctx.destination);
+    const tracks = new Set(), nodes = new Set();
+    state.output = {ctx, renderGain, tracks, nodes, dropped:0, frames:0,
+      graphTracks:0, sinkVerified:true, closing:false, captureEnabled:false, captureGeneration:0};
+    (""" + PCM_OUTPUT_BRIDGE_JS + r""")(state.output);
+    await ctx.resume();
+    state.pc.ontrack = async e => {
+      const track = e.track, out = state.output;
+      if (out.closing || track.kind !== 'audio' || tracks.has(track)) return;
+      if (tracks.size >= 8) { await window.responseAudioError('output_track_limit'); return; }
+      tracks.add(track);
+      const stream = new MediaStream([track]);
+      const player = document.createElement('audio'); player.muted = true;
+      player.srcObject = stream;
+      const source = ctx.createMediaStreamSource(stream);
+      const processor = ctx.createScriptProcessor(2048,1,1);
+      const tapMute = ctx.createGain(); tapMute.gain.value = 0;
+      // Real render path. The capture branch cannot replace this connection.
+      source.connect(renderGain);
+      source.connect(processor); processor.connect(tapMute); tapMute.connect(ctx.destination);
+      const owned = {source, processor, tapMute, player, track, dispose:null};
+      owned.dispose = () => {
+        if (!nodes.delete(owned)) return;
+        processor.onaudioprocess = null;
+        source.disconnect(); processor.disconnect(); tapMute.disconnect();
+        player.pause(); player.srcObject = null; tracks.delete(track); out.graphTracks--;
+      };
+      nodes.add(owned); out.graphTracks++;
+      track.onended = owned.dispose;
+      try { await player.play(); if (!out.closing) await ctx.resume(); }
+      catch (_) { owned.dispose(); await window.responseAudioError('remote_decoder_failed'); return; }
+      if (out.closing || !nodes.has(owned)) return;
+      processor.onaudioprocess = event => {
+        if (out.closing) return;
+        if (ctx.sinkId?.type !== 'none') {
+          renderGain.gain.value = 0; out.sinkVerified = false;
+          window.responseAudioError('silent_sink_changed'); return;
+        }
+        out.pcmBridge.capture(event);
+      };
+    };
+    return {sink:'none', render_gain:1, side_capture:true};
+  } catch (error) { await ctx.close(); throw error; }
+}"""
+
+FULL_CLOSE_JS = r"""async () => {
+  const s = window.__live; if (!s) return;
+  if (s.output) {
+    const o = s.output; o.closing = true; s.pc.ontrack = null;
+    o.pcmBridge.setCapture(false,o.captureGeneration+1);
+    o.renderGain.gain.value = 0;
+    for (const n of [...o.nodes]) { n.dispose(); n.track.stop(); }
+    o.renderGain.disconnect(); await o.ctx.close();
+  }
+  if (s.silentInput) {
+    s.silentInput.active = false; s.silentInput.oscillator.stop();
+    s.silentInput.oscillator.disconnect(); s.silentInput.gain.disconnect();
+  }
+  s.destination.stream.getTracks().forEach(t => t.stop());
+  s.pc.close(); await s.ctx.close();
+}"""

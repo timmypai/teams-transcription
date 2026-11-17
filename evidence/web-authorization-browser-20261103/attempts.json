@@ -1,0 +1,62 @@
+[
+  {
+    "tests": 2,
+    "failures": 0,
+    "errors": 2,
+    "skipped": 0,
+    "successful": false,
+    "source_manifest_sha256": "5cff583813bdee6994f02f04f95344e104366944e144b1edd3a49ee31cd81a62",
+    "explanation": "Browser sandbox worked; proxy prevented loopback navigation before local proxy bypass",
+    "cleanup_outcome": "confirmed_absent_by_followup_ps"
+  },
+  {
+    "tests": 2,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0,
+    "successful": false,
+    "source_manifest_sha256": "5cff583813bdee6994f02f04f95344e104366944e144b1edd3a49ee31cd81a62",
+    "explanation": "Harness expected hidden details text without opening disclosure; corrected test interaction",
+    "cleanup_outcome": "confirmed_absent_by_followup_ps"
+  },
+  {
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "successful": true,
+    "source_manifest_sha256": "58eaf57fcb7f0c379da1513b8d90da622dcbe02480b2144c6d8b864f5f65bd7a",
+    "explanation": "ChatGPT and existing admin browser tests passed",
+    "cleanup_outcome": "confirmed_absent_by_followup_ps"
+  },
+  {
+    "tests": 3,
+    "failures": 0,
+    "errors": 1,
+    "skipped": 0,
+    "successful": false,
+    "source_manifest_sha256": "b5080cd97a4c411f8e45cd6d4ea0f9339bba153e5a122d18fcba0f4cbbc3a6c0",
+    "explanation": "Additional synthetic Google HTTPS redirect attempted unavailable proxy; network none blocked it",
+    "cleanup_outcome": "cleaned"
+  },
+  {
+    "tests": 3,
+    "failures": 0,
+    "errors": 1,
+    "skipped": 0,
+    "successful": false,
+    "source_manifest_sha256": "5b9d55ba69d4b7adb4d8cf8d68a5e311d7576e9f2c9742e1eaf258e2730ef9f8",
+    "explanation": "Offline synthetic consent page omitted UTF-8 metadata; corrected test fixture",
+    "cleanup_outcome": "cleaned"
+  },
+  {
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "successful": true,
+    "source_manifest_sha256": "9830b266c375910975908f1b8f118a96d937d36e7f99d7d687e993712d8a18cd",
+    "explanation": "Both authorization browser flows and existing admin browser test passed",
+    "cleanup_outcome": "cleaned"
+  }
+]

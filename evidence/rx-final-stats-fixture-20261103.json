@@ -1,0 +1,87 @@
+{
+  "base_sha": "5035cb45b98c468a2dd23a0b03a2a4026ce7b4c0",
+  "branch": "fix/rx-final-stats-sync-20261103",
+  "scope": "Test fixture and bounded evidence only; production, workflows, runtime deadlines and sample-cap tests unchanged",
+  "blocked_publish": {
+    "run_id": 41662818606,
+    "run_attempt": 1,
+    "artifact_id": 13242254200,
+    "artifact_zip_sha256": "d8daebcf5d11e649e384e26faf8bc8c814e80adbc49476f0e01d330f57e2aa17",
+    "local_zip_verified": true,
+    "tests": 629,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0,
+    "failing_test": "test_rx_contract.RxContractTests.test_slow_final_stats_closes_ingress_before_await",
+    "assertion": "worker result1 instead0",
+    "session_failure_metadata_captured": false,
+    "registry_push_executed": false
+  },
+  "diagnosis": {
+    "original_unmodified_local_repeats": 12,
+    "original_local_repeats_passed": 12,
+    "controlled_stall_seconds": 0.08,
+    "controlled_original_result": 1,
+    "controlled_original_incoming_frames": 0,
+    "controlled_original_error": "rx_drain_failed",
+    "controlled_original_captures": 0,
+    "interpretation": "Old60ms capture window can expire during synchronous startup persistence before first PCM; red-capable reproducer for an incidental fixture race",
+    "actual_CI_specific_cause": "Not established: failed CI artifact did not retain session diagnostics. Do not claim injected stall proves that exact CI cause."
+  },
+  "revised_property": {
+    "capture_end": "Confirmed synthetic meeting end after actual receiving_ready, entering normal final-stats drain path",
+    "setup_stall_subcases_seconds": [
+      0,
+      0.08
+    ],
+    "case_local_capture_seconds": null,
+    "total_seconds": 3,
+    "cleanup_seconds": 1,
+    "slow_final_stats_seconds": 0.1,
+    "late_PCM_callback_attempts": 1,
+    "incoming_frames": 32,
+    "WAV_frames": 32,
+    "provider_PCM_pushes": 0,
+    "cleanup_status": "cleaned",
+    "dedicated_capture_deadline_and_sample_cap_tests": "Unchanged"
+  },
+  "mutation": {
+    "mutant": "Only in-memory callback admission guards removed; production files unchanged",
+    "caught_by_both_setup_stall_subcases": true,
+    "failure_count": 2,
+    "receipts": [
+      {
+        "result": 1,
+        "incoming_frames": 64,
+        "late_pcm_attempts": 1,
+        "error": "rx_cleanup_unknown"
+      },
+      {
+        "result": 1,
+        "incoming_frames": 64,
+        "late_pcm_attempts": 1,
+        "error": "rx_cleanup_unknown"
+      }
+    ]
+  },
+  "validation": {
+    "targeted_test": "Passed both subcases",
+    "controlled_offline": {
+      "tests": 629,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "success": true,
+      "teams_or_model_called": false
+    },
+    "independent_local_reviews": {
+      "standards_safety": "No material findings",
+      "spec": "No material findings; independently ran targeted test"
+    },
+    "native_PR_review": "Not yet run for this new candidate"
+  },
+  "production_changes": false,
+  "workflow_or_security_changes": false,
+  "new_publication_or_deployment": false,
+  "test_file_sha256": "e53484614e25d850cc27c11c1be986ea844adc9f2b325a53a50bebb4a9066be1"
+}

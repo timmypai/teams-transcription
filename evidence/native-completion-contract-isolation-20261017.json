@@ -1,0 +1,2525 @@
+{
+  "kind": "native_completion_contract_isolation",
+  "recorded_at": "2026-10-17T10:56:50.757896+00:00",
+  "requested_model": "gpt-live-1-codex",
+  "codex_version": "0.159.0-alpha.3",
+  "source_changes": false,
+  "repair_verified": false,
+  "teams_joined": false,
+  "calendar_writes": 0,
+  "physical_input_output": false,
+  "same_approved_oauth_only": true,
+  "runs": {
+    "question_eight_first": {
+      "probe_assertions_passed": true,
+      "connected_seconds": 63.752,
+      "questions": [
+        {
+          "number": 1,
+          "source_completed": true,
+          "source_audio_seconds": 7.97575,
+          "source_wall_seconds": 8.708,
+          "native_events": [
+            {
+              "type": "turn.created",
+              "role": "user",
+              "elapsed_seconds": 1.926,
+              "client_delegation": false
+            },
+            {
+              "type": "delegation.created",
+              "role": null,
+              "elapsed_seconds": 9.021,
+              "client_delegation": true
+            },
+            {
+              "type": "turn.done",
+              "role": "user",
+              "elapsed_seconds": 10.582,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.created",
+              "role": "assistant",
+              "elapsed_seconds": 10.582,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.done",
+              "role": "assistant",
+              "elapsed_seconds": 28.528,
+              "client_delegation": false
+            }
+          ],
+          "tool_calls": 1,
+          "reader_calls": 1,
+          "marker_sent": true,
+          "sent_bytes": 4492,
+          "keyword_fact_matches": {
+            "task_one": true,
+            "task_two": true,
+            "owner_one": true,
+            "owner_two": true,
+            "date_one": true,
+            "date_two": true
+          },
+          "probe_assertions_passed": true,
+          "input_pending": {
+            "characters": 0,
+            "has_wake": false,
+            "has_question": false
+          },
+          "runtime_error": false,
+          "output_enabled": false,
+          "observation_seconds": 63.742
+        }
+      ],
+      "context": {
+        "sent_bytes": 4492,
+        "total_limit_bytes": null,
+        "known_paragraphs": 4,
+        "source_version": 2,
+        "pending": false,
+        "model_consumption_verified": false,
+        "preparing": false,
+        "delivery_scope": "successful_host_send_returns_this_live_thread"
+      },
+      "raw_event_counts": {
+        "session.started": 1,
+        "input_transcript.added": 17,
+        "turn.created": 2,
+        "turn.delta": 82,
+        "delegation.created": 1,
+        "delegation.context.appended": 10,
+        "output_transcript.added": 67,
+        "turn.done": 2,
+        "session.usage.updated": 4
+      },
+      "handoff_counts": {
+        "received": 1,
+        "admitted": 1,
+        "rejected": 0
+      },
+      "cleanup": {
+        "local_A_media": true,
+        "local_receiver": true,
+        "capture": true,
+        "B": true,
+        "browser": true
+      },
+      "stop_result": "stopped",
+      "model_process_reaped": true
+    },
+    "shortened_original_sequence": {
+      "probe_assertions_passed": false,
+      "connected_seconds": 248.161,
+      "questions": [
+        {
+          "number": 1,
+          "source_completed": true,
+          "source_audio_seconds": 4.553583333333333,
+          "source_wall_seconds": 5.287,
+          "native_events": [
+            {
+              "type": "delegation.created",
+              "role": null,
+              "elapsed_seconds": 5.457,
+              "client_delegation": true
+            },
+            {
+              "type": "turn.done",
+              "role": "user",
+              "elapsed_seconds": 9.146,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.created",
+              "role": "assistant",
+              "elapsed_seconds": 9.146,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.done",
+              "role": "assistant",
+              "elapsed_seconds": 16.379,
+              "client_delegation": false
+            }
+          ],
+          "tool_calls": 1,
+          "reader_calls": 1,
+          "marker_sent": true,
+          "sent_bytes": 4492,
+          "keyword_fact_matches": {
+            "codeword": true,
+            "amount": true
+          },
+          "probe_assertions_passed": true,
+          "input_pending": {
+            "characters": 0,
+            "has_wake": false,
+            "has_question": false
+          },
+          "runtime_error": false,
+          "output_enabled": false,
+          "observation_seconds": 18.48
+        },
+        {
+          "number": 2,
+          "source_completed": true,
+          "source_audio_seconds": 4.375,
+          "source_wall_seconds": 5.097,
+          "native_events": [
+            {
+              "type": "turn.created",
+              "role": "user",
+              "elapsed_seconds": 2.426,
+              "client_delegation": false
+            },
+            {
+              "type": "delegation.created",
+              "role": null,
+              "elapsed_seconds": 5.534,
+              "client_delegation": true
+            },
+            {
+              "type": "turn.done",
+              "role": "user",
+              "elapsed_seconds": 6.673,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.created",
+              "role": "assistant",
+              "elapsed_seconds": 6.673,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.done",
+              "role": "assistant",
+              "elapsed_seconds": 13.199,
+              "client_delegation": false
+            }
+          ],
+          "tool_calls": 1,
+          "reader_calls": 1,
+          "marker_sent": true,
+          "sent_bytes": 3266,
+          "keyword_fact_matches": {
+            "delivery_day": true
+          },
+          "probe_assertions_passed": true,
+          "input_pending": {
+            "characters": 0,
+            "has_wake": false,
+            "has_question": false
+          },
+          "runtime_error": false,
+          "output_enabled": false,
+          "observation_seconds": 15.372
+        },
+        {
+          "number": 3,
+          "source_completed": true,
+          "source_audio_seconds": 7.719291666666667,
+          "source_wall_seconds": 8.447,
+          "native_events": [
+            {
+              "type": "turn.created",
+              "role": "user",
+              "elapsed_seconds": 2.048,
+              "client_delegation": false
+            },
+            {
+              "type": "delegation.created",
+              "role": null,
+              "elapsed_seconds": 9.047,
+              "client_delegation": true
+            },
+            {
+              "type": "turn.done",
+              "role": "user",
+              "elapsed_seconds": 11.52,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.created",
+              "role": "assistant",
+              "elapsed_seconds": 11.52,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.done",
+              "role": "assistant",
+              "elapsed_seconds": 33.177,
+              "client_delegation": false
+            }
+          ],
+          "tool_calls": 1,
+          "reader_calls": 1,
+          "marker_sent": true,
+          "sent_bytes": 3266,
+          "keyword_fact_matches": {
+            "task_one": true,
+            "task_two": true,
+            "owner_one": true,
+            "owner_two": true,
+            "date_one": true,
+            "date_two": true
+          },
+          "probe_assertions_passed": true,
+          "input_pending": {
+            "characters": 0,
+            "has_wake": false,
+            "has_question": false
+          },
+          "runtime_error": false,
+          "output_enabled": false,
+          "observation_seconds": 35.332
+        },
+        {
+          "number": 4,
+          "source_completed": true,
+          "source_audio_seconds": 4.520625,
+          "source_wall_seconds": 5.245,
+          "native_events": [
+            {
+              "type": "turn.created",
+              "role": "user",
+              "elapsed_seconds": 2.099,
+              "client_delegation": false
+            },
+            {
+              "type": "delegation.created",
+              "role": null,
+              "elapsed_seconds": 6.229,
+              "client_delegation": true
+            },
+            {
+              "type": "turn.done",
+              "role": "user",
+              "elapsed_seconds": 7.248,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.created",
+              "role": "assistant",
+              "elapsed_seconds": 7.266,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.done",
+              "role": "assistant",
+              "elapsed_seconds": 16.022,
+              "client_delegation": false
+            }
+          ],
+          "tool_calls": 1,
+          "reader_calls": 1,
+          "marker_sent": true,
+          "sent_bytes": 3574,
+          "keyword_fact_matches": {
+            "corrected_amount": true
+          },
+          "probe_assertions_passed": true,
+          "input_pending": {
+            "characters": 0,
+            "has_wake": false,
+            "has_question": false
+          },
+          "runtime_error": false,
+          "output_enabled": false,
+          "observation_seconds": 18.132
+        },
+        {
+          "number": 5,
+          "source_completed": true,
+          "source_audio_seconds": 7.97575,
+          "source_wall_seconds": 8.704,
+          "native_events": [
+            {
+              "type": "turn.created",
+              "role": "user",
+              "elapsed_seconds": 2.358,
+              "client_delegation": false
+            },
+            {
+              "type": "delegation.created",
+              "role": null,
+              "elapsed_seconds": 9.986,
+              "client_delegation": true
+            },
+            {
+              "type": "turn.done",
+              "role": "user",
+              "elapsed_seconds": 10.853,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.created",
+              "role": "assistant",
+              "elapsed_seconds": 10.853,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.done",
+              "role": "assistant",
+              "elapsed_seconds": 32.014,
+              "client_delegation": false
+            }
+          ],
+          "tool_calls": 1,
+          "reader_calls": 1,
+          "marker_sent": true,
+          "sent_bytes": 3266,
+          "keyword_fact_matches": {
+            "task_one": true,
+            "task_two": true,
+            "owner_one": true,
+            "owner_two": true,
+            "date_one": true,
+            "date_two": true
+          },
+          "probe_assertions_passed": true,
+          "input_pending": {
+            "characters": 0,
+            "has_wake": false,
+            "has_question": false
+          },
+          "runtime_error": false,
+          "output_enabled": false,
+          "observation_seconds": 34.47
+        },
+        {
+          "number": 6,
+          "source_completed": true,
+          "source_audio_seconds": 7.97575,
+          "source_wall_seconds": 8.702,
+          "native_events": [
+            {
+              "type": "turn.created",
+              "role": "user",
+              "elapsed_seconds": 1.962,
+              "client_delegation": false
+            },
+            {
+              "type": "delegation.created",
+              "role": null,
+              "elapsed_seconds": 10.037,
+              "client_delegation": true
+            },
+            {
+              "type": "turn.done",
+              "role": "user",
+              "elapsed_seconds": 10.935,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.created",
+              "role": "assistant",
+              "elapsed_seconds": 10.936,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.done",
+              "role": "assistant",
+              "elapsed_seconds": 31.714,
+              "client_delegation": false
+            }
+          ],
+          "tool_calls": 1,
+          "reader_calls": 1,
+          "marker_sent": true,
+          "sent_bytes": 3266,
+          "keyword_fact_matches": {
+            "task_one": true,
+            "task_two": true,
+            "owner_one": true,
+            "owner_two": true,
+            "date_one": true,
+            "date_two": true
+          },
+          "probe_assertions_passed": true,
+          "input_pending": {
+            "characters": 0,
+            "has_wake": false,
+            "has_question": false
+          },
+          "runtime_error": false,
+          "output_enabled": false,
+          "observation_seconds": 34.173
+        },
+        {
+          "number": 7,
+          "source_completed": true,
+          "source_audio_seconds": 4.520625,
+          "source_wall_seconds": 5.242,
+          "native_events": [
+            {
+              "type": "turn.created",
+              "role": "user",
+              "elapsed_seconds": 1.904,
+              "client_delegation": false
+            },
+            {
+              "type": "delegation.created",
+              "role": null,
+              "elapsed_seconds": 6.644,
+              "client_delegation": true
+            },
+            {
+              "type": "turn.done",
+              "role": "user",
+              "elapsed_seconds": 7.62,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.created",
+              "role": "assistant",
+              "elapsed_seconds": 7.641,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.done",
+              "role": "assistant",
+              "elapsed_seconds": 12.467,
+              "client_delegation": false
+            }
+          ],
+          "tool_calls": 1,
+          "reader_calls": 1,
+          "marker_sent": true,
+          "sent_bytes": 3266,
+          "keyword_fact_matches": {
+            "corrected_amount": true
+          },
+          "probe_assertions_passed": true,
+          "input_pending": {
+            "characters": 0,
+            "has_wake": false,
+            "has_question": false
+          },
+          "runtime_error": false,
+          "output_enabled": false,
+          "observation_seconds": 14.698
+        },
+        {
+          "number": 8,
+          "source_completed": true,
+          "source_audio_seconds": 7.97575,
+          "source_wall_seconds": 8.729,
+          "native_events": [
+            {
+              "type": "turn.created",
+              "role": "user",
+              "elapsed_seconds": 2.231,
+              "client_delegation": false
+            }
+          ],
+          "tool_calls": 0,
+          "reader_calls": 0,
+          "marker_sent": false,
+          "sent_bytes": 0,
+          "keyword_fact_matches": {
+            "task_one": false,
+            "task_two": false,
+            "owner_one": false,
+            "owner_two": false,
+            "date_one": false,
+            "date_two": false
+          },
+          "probe_assertions_passed": false,
+          "input_pending": {
+            "characters": 31,
+            "has_wake": true,
+            "has_question": true
+          },
+          "runtime_error": false,
+          "output_enabled": false,
+          "observation_seconds": 63.738
+        }
+      ],
+      "context": {
+        "sent_bytes": 24396,
+        "total_limit_bytes": null,
+        "known_paragraphs": 4,
+        "source_version": 3,
+        "pending": false,
+        "model_consumption_verified": false,
+        "preparing": false,
+        "delivery_scope": "successful_host_send_returns_this_live_thread"
+      },
+      "raw_event_counts": {
+        "session.started": 1,
+        "input_transcript.added": 127,
+        "turn.created": 15,
+        "turn.delta": 437,
+        "session.usage.updated": 16,
+        "delegation.created": 7,
+        "delegation.context.appended": 59,
+        "output_transcript.added": 325,
+        "turn.done": 14
+      },
+      "handoff_counts": {
+        "received": 7,
+        "admitted": 7,
+        "rejected": 0
+      },
+      "cleanup": {
+        "local_A_media": true,
+        "local_receiver": true,
+        "capture": true,
+        "B": true,
+        "browser": true
+      },
+      "stop_result": "stopped",
+      "model_process_reaped": true
+    },
+    "same_question_five": {
+      "probe_assertions_passed": true,
+      "connected_seconds": 186.224,
+      "questions": [
+        {
+          "number": 1,
+          "source_completed": true,
+          "source_audio_seconds": 7.97575,
+          "source_wall_seconds": 8.727,
+          "native_events": [
+            {
+              "type": "turn.created",
+              "role": "user",
+              "elapsed_seconds": 2.196,
+              "client_delegation": false
+            },
+            {
+              "type": "delegation.created",
+              "role": null,
+              "elapsed_seconds": 8.964,
+              "client_delegation": true
+            },
+            {
+              "type": "turn.done",
+              "role": "user",
+              "elapsed_seconds": 10.738,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.created",
+              "role": "assistant",
+              "elapsed_seconds": 10.738,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.done",
+              "role": "assistant",
+              "elapsed_seconds": 34.815,
+              "client_delegation": false
+            }
+          ],
+          "tool_calls": 1,
+          "reader_calls": 1,
+          "marker_sent": true,
+          "sent_bytes": 4492,
+          "keyword_fact_matches": {
+            "task_one": true,
+            "task_two": true,
+            "owner_one": true,
+            "owner_two": true,
+            "date_one": true,
+            "date_two": true
+          },
+          "probe_assertions_passed": true,
+          "input_pending": {
+            "characters": 0,
+            "has_wake": false,
+            "has_question": false
+          },
+          "runtime_error": false,
+          "output_enabled": false,
+          "observation_seconds": 36.928
+        },
+        {
+          "number": 2,
+          "source_completed": true,
+          "source_audio_seconds": 7.97575,
+          "source_wall_seconds": 8.706,
+          "native_events": [
+            {
+              "type": "turn.created",
+              "role": "user",
+              "elapsed_seconds": 2.115,
+              "client_delegation": false
+            },
+            {
+              "type": "delegation.created",
+              "role": null,
+              "elapsed_seconds": 9.351,
+              "client_delegation": true
+            },
+            {
+              "type": "turn.done",
+              "role": "user",
+              "elapsed_seconds": 12.521,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.created",
+              "role": "assistant",
+              "elapsed_seconds": 12.521,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.done",
+              "role": "assistant",
+              "elapsed_seconds": 34.691,
+              "client_delegation": false
+            }
+          ],
+          "tool_calls": 1,
+          "reader_calls": 1,
+          "marker_sent": true,
+          "sent_bytes": 3266,
+          "keyword_fact_matches": {
+            "task_one": true,
+            "task_two": true,
+            "owner_one": true,
+            "owner_two": true,
+            "date_one": true,
+            "date_two": true
+          },
+          "probe_assertions_passed": true,
+          "input_pending": {
+            "characters": 0,
+            "has_wake": false,
+            "has_question": false
+          },
+          "runtime_error": false,
+          "output_enabled": false,
+          "observation_seconds": 36.798
+        },
+        {
+          "number": 3,
+          "source_completed": true,
+          "source_audio_seconds": 7.97575,
+          "source_wall_seconds": 8.73,
+          "native_events": [
+            {
+              "type": "turn.created",
+              "role": "user",
+              "elapsed_seconds": 2.128,
+              "client_delegation": false
+            },
+            {
+              "type": "delegation.created",
+              "role": null,
+              "elapsed_seconds": 10.049,
+              "client_delegation": true
+            },
+            {
+              "type": "turn.done",
+              "role": "user",
+              "elapsed_seconds": 13.192,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.created",
+              "role": "assistant",
+              "elapsed_seconds": 13.192,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.done",
+              "role": "assistant",
+              "elapsed_seconds": 36.914,
+              "client_delegation": false
+            }
+          ],
+          "tool_calls": 1,
+          "reader_calls": 1,
+          "marker_sent": true,
+          "sent_bytes": 3266,
+          "keyword_fact_matches": {
+            "task_one": true,
+            "task_two": true,
+            "owner_one": true,
+            "owner_two": true,
+            "date_one": true,
+            "date_two": true
+          },
+          "probe_assertions_passed": true,
+          "input_pending": {
+            "characters": 0,
+            "has_wake": false,
+            "has_question": false
+          },
+          "runtime_error": false,
+          "output_enabled": false,
+          "observation_seconds": 39.045
+        },
+        {
+          "number": 4,
+          "source_completed": true,
+          "source_audio_seconds": 7.97575,
+          "source_wall_seconds": 8.708,
+          "native_events": [
+            {
+              "type": "turn.created",
+              "role": "user",
+              "elapsed_seconds": 2.144,
+              "client_delegation": false
+            },
+            {
+              "type": "delegation.created",
+              "role": null,
+              "elapsed_seconds": 10.717,
+              "client_delegation": true
+            },
+            {
+              "type": "turn.done",
+              "role": "user",
+              "elapsed_seconds": 13.152,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.created",
+              "role": "assistant",
+              "elapsed_seconds": 13.152,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.done",
+              "role": "assistant",
+              "elapsed_seconds": 35.029,
+              "client_delegation": false
+            }
+          ],
+          "tool_calls": 1,
+          "reader_calls": 1,
+          "marker_sent": true,
+          "sent_bytes": 3266,
+          "keyword_fact_matches": {
+            "task_one": true,
+            "task_two": true,
+            "owner_one": true,
+            "owner_two": true,
+            "date_one": true,
+            "date_two": true
+          },
+          "probe_assertions_passed": true,
+          "input_pending": {
+            "characters": 0,
+            "has_wake": false,
+            "has_question": false
+          },
+          "runtime_error": false,
+          "output_enabled": false,
+          "observation_seconds": 37.112
+        },
+        {
+          "number": 5,
+          "source_completed": true,
+          "source_audio_seconds": 7.97575,
+          "source_wall_seconds": 8.693,
+          "native_events": [
+            {
+              "type": "turn.created",
+              "role": "user",
+              "elapsed_seconds": 1.933,
+              "client_delegation": false
+            },
+            {
+              "type": "delegation.created",
+              "role": null,
+              "elapsed_seconds": 10.301,
+              "client_delegation": true
+            },
+            {
+              "type": "turn.done",
+              "role": "user",
+              "elapsed_seconds": 12.407,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.created",
+              "role": "assistant",
+              "elapsed_seconds": 12.407,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.done",
+              "role": "assistant",
+              "elapsed_seconds": 34.189,
+              "client_delegation": false
+            }
+          ],
+          "tool_calls": 1,
+          "reader_calls": 1,
+          "marker_sent": true,
+          "sent_bytes": 3266,
+          "keyword_fact_matches": {
+            "task_one": true,
+            "task_two": true,
+            "owner_one": true,
+            "owner_two": true,
+            "date_one": true,
+            "date_two": true
+          },
+          "probe_assertions_passed": true,
+          "input_pending": {
+            "characters": 0,
+            "has_wake": false,
+            "has_question": false
+          },
+          "runtime_error": false,
+          "output_enabled": false,
+          "observation_seconds": 36.287
+        }
+      ],
+      "context": {
+        "sent_bytes": 17556,
+        "total_limit_bytes": null,
+        "known_paragraphs": 4,
+        "source_version": 2,
+        "pending": false,
+        "model_consumption_verified": false,
+        "preparing": false,
+        "delivery_scope": "successful_host_send_returns_this_live_thread"
+      },
+      "raw_event_counts": {
+        "session.started": 1,
+        "input_transcript.added": 105,
+        "turn.created": 10,
+        "turn.delta": 531,
+        "delegation.created": 5,
+        "delegation.context.appended": 42,
+        "output_transcript.added": 436,
+        "turn.done": 10,
+        "session.usage.updated": 12
+      },
+      "handoff_counts": {
+        "received": 5,
+        "admitted": 5,
+        "rejected": 0
+      },
+      "cleanup": {
+        "local_A_media": true,
+        "local_receiver": true,
+        "capture": true,
+        "B": true,
+        "browser": true
+      },
+      "stop_result": "stopped",
+      "model_process_reaped": true
+    },
+    "same_question_extended": {
+      "probe_assertions_passed": false,
+      "connected_seconds": 249.687,
+      "questions": [
+        {
+          "number": 1,
+          "source_completed": true,
+          "source_audio_seconds": 7.97575,
+          "source_wall_seconds": 8.721,
+          "native_events": [
+            {
+              "type": "turn.created",
+              "role": "user",
+              "elapsed_seconds": 1.68,
+              "client_delegation": false
+            },
+            {
+              "type": "delegation.created",
+              "role": null,
+              "elapsed_seconds": 8.649,
+              "client_delegation": true
+            },
+            {
+              "type": "turn.done",
+              "role": "user",
+              "elapsed_seconds": 11.301,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.created",
+              "role": "assistant",
+              "elapsed_seconds": 11.301,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.done",
+              "role": "assistant",
+              "elapsed_seconds": 37.068,
+              "client_delegation": false
+            }
+          ],
+          "tool_calls": 1,
+          "reader_calls": 1,
+          "marker_sent": true,
+          "sent_bytes": 4492,
+          "keyword_fact_matches": {
+            "task_one": true,
+            "task_two": true,
+            "owner_one": true,
+            "owner_two": true,
+            "date_one": true,
+            "date_two": true
+          },
+          "probe_assertions_passed": true,
+          "input_pending": {
+            "characters": 0,
+            "has_wake": false,
+            "has_question": false
+          },
+          "runtime_error": false,
+          "output_enabled": false,
+          "observation_seconds": 39.546
+        },
+        {
+          "number": 2,
+          "source_completed": true,
+          "source_audio_seconds": 7.97575,
+          "source_wall_seconds": 8.713,
+          "native_events": [
+            {
+              "type": "turn.created",
+              "role": "user",
+              "elapsed_seconds": 1.989,
+              "client_delegation": false
+            },
+            {
+              "type": "delegation.created",
+              "role": null,
+              "elapsed_seconds": 8.785,
+              "client_delegation": true
+            },
+            {
+              "type": "turn.done",
+              "role": "user",
+              "elapsed_seconds": 11.471,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.created",
+              "role": "assistant",
+              "elapsed_seconds": 11.471,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.done",
+              "role": "assistant",
+              "elapsed_seconds": 34.239,
+              "client_delegation": false
+            }
+          ],
+          "tool_calls": 1,
+          "reader_calls": 1,
+          "marker_sent": true,
+          "sent_bytes": 3266,
+          "keyword_fact_matches": {
+            "task_one": true,
+            "task_two": true,
+            "owner_one": true,
+            "owner_two": true,
+            "date_one": true,
+            "date_two": true
+          },
+          "probe_assertions_passed": true,
+          "input_pending": {
+            "characters": 0,
+            "has_wake": false,
+            "has_question": false
+          },
+          "runtime_error": false,
+          "output_enabled": false,
+          "observation_seconds": 36.321
+        },
+        {
+          "number": 3,
+          "source_completed": true,
+          "source_audio_seconds": 7.97575,
+          "source_wall_seconds": 8.722,
+          "native_events": [
+            {
+              "type": "turn.created",
+              "role": "user",
+              "elapsed_seconds": 1.762,
+              "client_delegation": false
+            },
+            {
+              "type": "delegation.created",
+              "role": null,
+              "elapsed_seconds": 9.543,
+              "client_delegation": true
+            },
+            {
+              "type": "turn.done",
+              "role": "user",
+              "elapsed_seconds": 11.812,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.created",
+              "role": "assistant",
+              "elapsed_seconds": 11.831,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.done",
+              "role": "assistant",
+              "elapsed_seconds": 34.318,
+              "client_delegation": false
+            }
+          ],
+          "tool_calls": 1,
+          "reader_calls": 1,
+          "marker_sent": true,
+          "sent_bytes": 3266,
+          "keyword_fact_matches": {
+            "task_one": true,
+            "task_two": true,
+            "owner_one": true,
+            "owner_two": true,
+            "date_one": true,
+            "date_two": true
+          },
+          "probe_assertions_passed": true,
+          "input_pending": {
+            "characters": 0,
+            "has_wake": false,
+            "has_question": false
+          },
+          "runtime_error": false,
+          "output_enabled": false,
+          "observation_seconds": 36.411
+        },
+        {
+          "number": 4,
+          "source_completed": true,
+          "source_audio_seconds": 7.97575,
+          "source_wall_seconds": 8.724,
+          "native_events": [
+            {
+              "type": "turn.created",
+              "role": "user",
+              "elapsed_seconds": 1.825,
+              "client_delegation": false
+            },
+            {
+              "type": "delegation.created",
+              "role": null,
+              "elapsed_seconds": 10.338,
+              "client_delegation": true
+            },
+            {
+              "type": "turn.done",
+              "role": "user",
+              "elapsed_seconds": 12.222,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.created",
+              "role": "assistant",
+              "elapsed_seconds": 12.222,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.done",
+              "role": "assistant",
+              "elapsed_seconds": 34.353,
+              "client_delegation": false
+            }
+          ],
+          "tool_calls": 1,
+          "reader_calls": 1,
+          "marker_sent": true,
+          "sent_bytes": 3266,
+          "keyword_fact_matches": {
+            "task_one": true,
+            "task_two": true,
+            "owner_one": true,
+            "owner_two": true,
+            "date_one": true,
+            "date_two": true
+          },
+          "probe_assertions_passed": true,
+          "input_pending": {
+            "characters": 0,
+            "has_wake": false,
+            "has_question": false
+          },
+          "runtime_error": false,
+          "output_enabled": false,
+          "observation_seconds": 36.521
+        },
+        {
+          "number": 5,
+          "source_completed": true,
+          "source_audio_seconds": 7.97575,
+          "source_wall_seconds": 8.714,
+          "native_events": [
+            {
+              "type": "turn.created",
+              "role": "user",
+              "elapsed_seconds": 1.741,
+              "client_delegation": false
+            },
+            {
+              "type": "delegation.created",
+              "role": null,
+              "elapsed_seconds": 10.488,
+              "client_delegation": true
+            },
+            {
+              "type": "turn.done",
+              "role": "user",
+              "elapsed_seconds": 12.611,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.created",
+              "role": "assistant",
+              "elapsed_seconds": 12.612,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.done",
+              "role": "assistant",
+              "elapsed_seconds": 34.852,
+              "client_delegation": false
+            }
+          ],
+          "tool_calls": 1,
+          "reader_calls": 1,
+          "marker_sent": true,
+          "sent_bytes": 3266,
+          "keyword_fact_matches": {
+            "task_one": true,
+            "task_two": true,
+            "owner_one": true,
+            "owner_two": true,
+            "date_one": true,
+            "date_two": true
+          },
+          "probe_assertions_passed": true,
+          "input_pending": {
+            "characters": 0,
+            "has_wake": false,
+            "has_question": false
+          },
+          "runtime_error": false,
+          "output_enabled": false,
+          "observation_seconds": 37.014
+        },
+        {
+          "number": 6,
+          "source_completed": true,
+          "source_audio_seconds": 7.97575,
+          "source_wall_seconds": 8.721,
+          "native_events": [
+            {
+              "type": "turn.created",
+              "role": "user",
+              "elapsed_seconds": 1.823,
+              "client_delegation": false
+            }
+          ],
+          "tool_calls": 0,
+          "reader_calls": 0,
+          "marker_sent": false,
+          "sent_bytes": 0,
+          "keyword_fact_matches": {
+            "task_one": false,
+            "task_two": false,
+            "owner_one": false,
+            "owner_two": false,
+            "date_one": false,
+            "date_two": false
+          },
+          "probe_assertions_passed": false,
+          "input_pending": {
+            "characters": 31,
+            "has_wake": true,
+            "has_question": true
+          },
+          "runtime_error": false,
+          "output_enabled": false,
+          "observation_seconds": 63.805
+        }
+      ],
+      "context": {
+        "sent_bytes": 17556,
+        "total_limit_bytes": null,
+        "known_paragraphs": 4,
+        "source_version": 2,
+        "pending": false,
+        "model_consumption_verified": false,
+        "preparing": false,
+        "delivery_scope": "successful_host_send_returns_this_live_thread"
+      },
+      "raw_event_counts": {
+        "session.started": 1,
+        "input_transcript.added": 122,
+        "turn.created": 11,
+        "turn.delta": 523,
+        "delegation.created": 5,
+        "delegation.context.appended": 42,
+        "output_transcript.added": 412,
+        "turn.done": 10,
+        "session.usage.updated": 16
+      },
+      "handoff_counts": {
+        "received": 5,
+        "admitted": 5,
+        "rejected": 0
+      },
+      "cleanup": {
+        "local_A_media": true,
+        "local_receiver": true,
+        "capture": true,
+        "B": true,
+        "browser": true
+      },
+      "stop_result": "stopped",
+      "model_process_reaped": true
+    },
+    "structured_prompt_control": {
+      "probe_assertions_passed": false,
+      "connected_seconds": 335.806,
+      "questions": [
+        {
+          "number": 1,
+          "source_completed": true,
+          "source_audio_seconds": 4.553583333333333,
+          "source_wall_seconds": 5.287,
+          "native_events": [
+            {
+              "type": "delegation.created",
+              "role": null,
+              "elapsed_seconds": 5.53,
+              "client_delegation": true
+            },
+            {
+              "type": "turn.done",
+              "role": "user",
+              "elapsed_seconds": 7.166,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.created",
+              "role": "assistant",
+              "elapsed_seconds": 7.167,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.done",
+              "role": "assistant",
+              "elapsed_seconds": 17.108,
+              "client_delegation": false
+            }
+          ],
+          "tool_calls": 1,
+          "reader_calls": 1,
+          "marker_sent": true,
+          "sent_bytes": 4492,
+          "keyword_fact_matches": {
+            "codeword": true,
+            "amount": true
+          },
+          "probe_assertions_passed": true,
+          "input_pending": {
+            "characters": 0,
+            "has_wake": false,
+            "has_question": false
+          },
+          "runtime_error": false,
+          "output_enabled": false,
+          "observation_seconds": 19.384
+        },
+        {
+          "number": 2,
+          "source_completed": true,
+          "source_audio_seconds": 4.375,
+          "source_wall_seconds": 5.095,
+          "native_events": [
+            {
+              "type": "turn.created",
+              "role": "user",
+              "elapsed_seconds": 1.908,
+              "client_delegation": false
+            },
+            {
+              "type": "delegation.created",
+              "role": null,
+              "elapsed_seconds": 6.143,
+              "client_delegation": true
+            },
+            {
+              "type": "turn.done",
+              "role": "user",
+              "elapsed_seconds": 8.897,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.created",
+              "role": "assistant",
+              "elapsed_seconds": 8.898,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.done",
+              "role": "assistant",
+              "elapsed_seconds": 12.661,
+              "client_delegation": false
+            }
+          ],
+          "tool_calls": 1,
+          "reader_calls": 1,
+          "marker_sent": true,
+          "sent_bytes": 3266,
+          "keyword_fact_matches": {
+            "delivery_day": true
+          },
+          "probe_assertions_passed": true,
+          "input_pending": {
+            "characters": 0,
+            "has_wake": false,
+            "has_question": false
+          },
+          "runtime_error": false,
+          "output_enabled": false,
+          "observation_seconds": 14.755
+        },
+        {
+          "number": 3,
+          "source_completed": true,
+          "source_audio_seconds": 7.719291666666667,
+          "source_wall_seconds": 8.445,
+          "native_events": [
+            {
+              "type": "turn.created",
+              "role": "user",
+              "elapsed_seconds": 1.836,
+              "client_delegation": false
+            },
+            {
+              "type": "delegation.created",
+              "role": null,
+              "elapsed_seconds": 9.242,
+              "client_delegation": true
+            },
+            {
+              "type": "turn.done",
+              "role": "user",
+              "elapsed_seconds": 12.277,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.created",
+              "role": "assistant",
+              "elapsed_seconds": 12.278,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.done",
+              "role": "assistant",
+              "elapsed_seconds": 32.562,
+              "client_delegation": false
+            }
+          ],
+          "tool_calls": 1,
+          "reader_calls": 1,
+          "marker_sent": true,
+          "sent_bytes": 3266,
+          "keyword_fact_matches": {
+            "task_one": true,
+            "task_two": true,
+            "owner_one": true,
+            "owner_two": true,
+            "date_one": true,
+            "date_two": true
+          },
+          "probe_assertions_passed": true,
+          "input_pending": {
+            "characters": 0,
+            "has_wake": false,
+            "has_question": false
+          },
+          "runtime_error": false,
+          "output_enabled": false,
+          "observation_seconds": 34.624
+        },
+        {
+          "number": 4,
+          "source_completed": true,
+          "source_audio_seconds": 4.520625,
+          "source_wall_seconds": 5.246,
+          "native_events": [
+            {
+              "type": "turn.created",
+              "role": "user",
+              "elapsed_seconds": 1.836,
+              "client_delegation": false
+            },
+            {
+              "type": "delegation.created",
+              "role": null,
+              "elapsed_seconds": 5.954,
+              "client_delegation": true
+            },
+            {
+              "type": "turn.done",
+              "role": "user",
+              "elapsed_seconds": 9.332,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.created",
+              "role": "assistant",
+              "elapsed_seconds": 9.333,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.done",
+              "role": "assistant",
+              "elapsed_seconds": 18.49,
+              "client_delegation": false
+            }
+          ],
+          "tool_calls": 1,
+          "reader_calls": 1,
+          "marker_sent": true,
+          "sent_bytes": 3574,
+          "keyword_fact_matches": {
+            "corrected_amount": true
+          },
+          "probe_assertions_passed": true,
+          "input_pending": {
+            "characters": 0,
+            "has_wake": false,
+            "has_question": false
+          },
+          "runtime_error": false,
+          "output_enabled": false,
+          "observation_seconds": 20.557
+        },
+        {
+          "number": 5,
+          "source_completed": true,
+          "source_audio_seconds": 7.97575,
+          "source_wall_seconds": 8.72,
+          "native_events": [
+            {
+              "type": "turn.created",
+              "role": "user",
+              "elapsed_seconds": 1.752,
+              "client_delegation": false
+            },
+            {
+              "type": "delegation.created",
+              "role": null,
+              "elapsed_seconds": 9.861,
+              "client_delegation": true
+            },
+            {
+              "type": "turn.done",
+              "role": "user",
+              "elapsed_seconds": 12.82,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.created",
+              "role": "assistant",
+              "elapsed_seconds": 12.821,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.done",
+              "role": "assistant",
+              "elapsed_seconds": 35.331,
+              "client_delegation": false
+            }
+          ],
+          "tool_calls": 1,
+          "reader_calls": 1,
+          "marker_sent": true,
+          "sent_bytes": 3266,
+          "keyword_fact_matches": {
+            "task_one": true,
+            "task_two": true,
+            "owner_one": true,
+            "owner_two": true,
+            "date_one": true,
+            "date_two": true
+          },
+          "probe_assertions_passed": true,
+          "input_pending": {
+            "characters": 0,
+            "has_wake": false,
+            "has_question": false
+          },
+          "runtime_error": false,
+          "output_enabled": false,
+          "observation_seconds": 37.42
+        },
+        {
+          "number": 6,
+          "source_completed": true,
+          "source_audio_seconds": 7.97575,
+          "source_wall_seconds": 8.705,
+          "native_events": [
+            {
+              "type": "turn.created",
+              "role": "user",
+              "elapsed_seconds": 1.757,
+              "client_delegation": false
+            },
+            {
+              "type": "delegation.created",
+              "role": null,
+              "elapsed_seconds": 10.478,
+              "client_delegation": true
+            },
+            {
+              "type": "turn.done",
+              "role": "user",
+              "elapsed_seconds": 13.387,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.created",
+              "role": "assistant",
+              "elapsed_seconds": 13.387,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.done",
+              "role": "assistant",
+              "elapsed_seconds": 35.867,
+              "client_delegation": false
+            }
+          ],
+          "tool_calls": 1,
+          "reader_calls": 1,
+          "marker_sent": true,
+          "sent_bytes": 3266,
+          "keyword_fact_matches": {
+            "task_one": true,
+            "task_two": true,
+            "owner_one": true,
+            "owner_two": true,
+            "date_one": true,
+            "date_two": true
+          },
+          "probe_assertions_passed": true,
+          "input_pending": {
+            "characters": 0,
+            "has_wake": false,
+            "has_question": false
+          },
+          "runtime_error": false,
+          "output_enabled": false,
+          "observation_seconds": 38.412
+        },
+        {
+          "number": 7,
+          "source_completed": true,
+          "source_audio_seconds": 4.520625,
+          "source_wall_seconds": 5.25,
+          "native_events": [
+            {
+              "type": "turn.created",
+              "role": "user",
+              "elapsed_seconds": 1.619,
+              "client_delegation": false
+            },
+            {
+              "type": "delegation.created",
+              "role": null,
+              "elapsed_seconds": 6.374,
+              "client_delegation": true
+            },
+            {
+              "type": "turn.done",
+              "role": "user",
+              "elapsed_seconds": 9.278,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.created",
+              "role": "assistant",
+              "elapsed_seconds": 9.279,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.done",
+              "role": "assistant",
+              "elapsed_seconds": 13.925,
+              "client_delegation": false
+            }
+          ],
+          "tool_calls": 1,
+          "reader_calls": 1,
+          "marker_sent": true,
+          "sent_bytes": 3266,
+          "keyword_fact_matches": {
+            "corrected_amount": true
+          },
+          "probe_assertions_passed": true,
+          "input_pending": {
+            "characters": 0,
+            "has_wake": false,
+            "has_question": false
+          },
+          "runtime_error": false,
+          "output_enabled": false,
+          "observation_seconds": 16.019
+        },
+        {
+          "number": 8,
+          "source_completed": true,
+          "source_audio_seconds": 7.97575,
+          "source_wall_seconds": 8.72,
+          "native_events": [
+            {
+              "type": "turn.created",
+              "role": "user",
+              "elapsed_seconds": 1.748,
+              "client_delegation": false
+            },
+            {
+              "type": "delegation.created",
+              "role": null,
+              "elapsed_seconds": 10.767,
+              "client_delegation": true
+            },
+            {
+              "type": "turn.done",
+              "role": "user",
+              "elapsed_seconds": 13.668,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.created",
+              "role": "assistant",
+              "elapsed_seconds": 13.671,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.done",
+              "role": "assistant",
+              "elapsed_seconds": 36.644,
+              "client_delegation": false
+            }
+          ],
+          "tool_calls": 1,
+          "reader_calls": 1,
+          "marker_sent": true,
+          "sent_bytes": 3266,
+          "keyword_fact_matches": {
+            "task_one": true,
+            "task_two": true,
+            "owner_one": true,
+            "owner_two": true,
+            "date_one": true,
+            "date_two": true
+          },
+          "probe_assertions_passed": true,
+          "input_pending": {
+            "characters": 0,
+            "has_wake": false,
+            "has_question": false
+          },
+          "runtime_error": false,
+          "output_enabled": false,
+          "observation_seconds": 38.724
+        },
+        {
+          "number": 9,
+          "source_completed": true,
+          "source_audio_seconds": 4.520625,
+          "source_wall_seconds": 5.249,
+          "native_events": [
+            {
+              "type": "turn.created",
+              "role": "user",
+              "elapsed_seconds": 1.966,
+              "client_delegation": false
+            },
+            {
+              "type": "delegation.created",
+              "role": null,
+              "elapsed_seconds": 7.85,
+              "client_delegation": true
+            },
+            {
+              "type": "turn.done",
+              "role": "user",
+              "elapsed_seconds": 10.876,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.created",
+              "role": "assistant",
+              "elapsed_seconds": 10.876,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.done",
+              "role": "assistant",
+              "elapsed_seconds": 17.046,
+              "client_delegation": false
+            }
+          ],
+          "tool_calls": 1,
+          "reader_calls": 1,
+          "marker_sent": true,
+          "sent_bytes": 3266,
+          "keyword_fact_matches": {
+            "corrected_amount": true
+          },
+          "probe_assertions_passed": true,
+          "input_pending": {
+            "characters": 0,
+            "has_wake": false,
+            "has_question": false
+          },
+          "runtime_error": false,
+          "output_enabled": false,
+          "observation_seconds": 19.14
+        },
+        {
+          "number": 10,
+          "source_completed": true,
+          "source_audio_seconds": 4.520625,
+          "source_wall_seconds": 5.238,
+          "native_events": [
+            {
+              "type": "turn.created",
+              "role": "user",
+              "elapsed_seconds": 1.748,
+              "client_delegation": false
+            },
+            {
+              "type": "delegation.created",
+              "role": null,
+              "elapsed_seconds": 7.741,
+              "client_delegation": true
+            },
+            {
+              "type": "turn.done",
+              "role": "user",
+              "elapsed_seconds": 10.754,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.created",
+              "role": "assistant",
+              "elapsed_seconds": 10.754,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.done",
+              "role": "assistant",
+              "elapsed_seconds": 17.18,
+              "client_delegation": false
+            }
+          ],
+          "tool_calls": 1,
+          "reader_calls": 1,
+          "marker_sent": true,
+          "sent_bytes": 3266,
+          "keyword_fact_matches": {
+            "corrected_amount": true
+          },
+          "probe_assertions_passed": true,
+          "input_pending": {
+            "characters": 0,
+            "has_wake": false,
+            "has_question": false
+          },
+          "runtime_error": false,
+          "output_enabled": false,
+          "observation_seconds": 19.234
+        },
+        {
+          "number": 11,
+          "source_completed": true,
+          "source_audio_seconds": 7.97575,
+          "source_wall_seconds": 8.7,
+          "native_events": [
+            {
+              "type": "turn.created",
+              "role": "user",
+              "elapsed_seconds": 1.993,
+              "client_delegation": false
+            }
+          ],
+          "tool_calls": 0,
+          "reader_calls": 0,
+          "marker_sent": false,
+          "sent_bytes": 0,
+          "keyword_fact_matches": {
+            "task_one": false,
+            "task_two": false,
+            "owner_one": false,
+            "owner_two": false,
+            "date_one": false,
+            "date_two": false
+          },
+          "probe_assertions_passed": false,
+          "input_pending": {
+            "characters": 31,
+            "has_wake": true,
+            "has_question": true
+          },
+          "runtime_error": false,
+          "output_enabled": false,
+          "observation_seconds": 63.723
+        }
+      ],
+      "context": {
+        "sent_bytes": 34194,
+        "total_limit_bytes": null,
+        "known_paragraphs": 4,
+        "source_version": 3,
+        "pending": false,
+        "model_consumption_verified": false,
+        "preparing": false,
+        "delivery_scope": "successful_host_send_returns_this_live_thread"
+      },
+      "raw_event_counts": {
+        "session.started": 1,
+        "input_transcript.added": 167,
+        "turn.created": 21,
+        "turn.delta": 610,
+        "session.usage.updated": 22,
+        "delegation.created": 10,
+        "delegation.context.appended": 83,
+        "output_transcript.added": 464,
+        "turn.done": 20
+      },
+      "handoff_counts": {
+        "received": 10,
+        "admitted": 10,
+        "rejected": 0
+      },
+      "cleanup": {
+        "local_A_media": true,
+        "local_receiver": true,
+        "capture": true,
+        "B": true,
+        "browser": true
+      },
+      "stop_result": "stopped",
+      "model_process_reaped": true
+    },
+    "original_prompt_post_failure_continuation": {
+      "probe_assertions_passed": false,
+      "connected_seconds": 417.263,
+      "questions": [
+        {
+          "number": 1,
+          "source_completed": true,
+          "source_audio_seconds": 4.553583333333333,
+          "source_wall_seconds": 5.276,
+          "native_events": [
+            {
+              "type": "delegation.created",
+              "role": null,
+              "elapsed_seconds": 5.281,
+              "client_delegation": true
+            },
+            {
+              "type": "turn.done",
+              "role": "user",
+              "elapsed_seconds": 6.443,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.created",
+              "role": "assistant",
+              "elapsed_seconds": 6.446,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.done",
+              "role": "assistant",
+              "elapsed_seconds": 13.496,
+              "client_delegation": false
+            }
+          ],
+          "tool_calls": 1,
+          "reader_calls": 1,
+          "marker_sent": true,
+          "sent_bytes": 4492,
+          "keyword_fact_matches": {
+            "codeword": true,
+            "amount": true
+          },
+          "probe_assertions_passed": true,
+          "input_pending": {
+            "characters": 0,
+            "has_wake": false,
+            "has_question": false
+          },
+          "runtime_error": false,
+          "output_enabled": false,
+          "observation_seconds": 15.548
+        },
+        {
+          "number": 2,
+          "source_completed": true,
+          "source_audio_seconds": 4.375,
+          "source_wall_seconds": 5.086,
+          "native_events": [
+            {
+              "type": "turn.created",
+              "role": "user",
+              "elapsed_seconds": 1.782,
+              "client_delegation": false
+            },
+            {
+              "type": "delegation.created",
+              "role": null,
+              "elapsed_seconds": 5.53,
+              "client_delegation": true
+            },
+            {
+              "type": "turn.done",
+              "role": "user",
+              "elapsed_seconds": 6.523,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.created",
+              "role": "assistant",
+              "elapsed_seconds": 6.534,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.done",
+              "role": "assistant",
+              "elapsed_seconds": 10.069,
+              "client_delegation": false
+            }
+          ],
+          "tool_calls": 1,
+          "reader_calls": 1,
+          "marker_sent": true,
+          "sent_bytes": 3266,
+          "keyword_fact_matches": {
+            "delivery_day": true
+          },
+          "probe_assertions_passed": true,
+          "input_pending": {
+            "characters": 0,
+            "has_wake": false,
+            "has_question": false
+          },
+          "runtime_error": false,
+          "output_enabled": false,
+          "observation_seconds": 12.53
+        },
+        {
+          "number": 3,
+          "source_completed": true,
+          "source_audio_seconds": 7.719291666666667,
+          "source_wall_seconds": 8.451,
+          "native_events": [
+            {
+              "type": "turn.created",
+              "role": "user",
+              "elapsed_seconds": 1.775,
+              "client_delegation": false
+            },
+            {
+              "type": "delegation.created",
+              "role": null,
+              "elapsed_seconds": 8.935,
+              "client_delegation": true
+            },
+            {
+              "type": "turn.done",
+              "role": "user",
+              "elapsed_seconds": 9.816,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.created",
+              "role": "assistant",
+              "elapsed_seconds": 9.816,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.done",
+              "role": "assistant",
+              "elapsed_seconds": 29.655,
+              "client_delegation": false
+            }
+          ],
+          "tool_calls": 1,
+          "reader_calls": 1,
+          "marker_sent": true,
+          "sent_bytes": 3266,
+          "keyword_fact_matches": {
+            "task_one": true,
+            "task_two": true,
+            "owner_one": true,
+            "owner_two": true,
+            "date_one": true,
+            "date_two": true
+          },
+          "probe_assertions_passed": true,
+          "input_pending": {
+            "characters": 0,
+            "has_wake": false,
+            "has_question": false
+          },
+          "runtime_error": false,
+          "output_enabled": false,
+          "observation_seconds": 32.114
+        },
+        {
+          "number": 4,
+          "source_completed": true,
+          "source_audio_seconds": 4.520625,
+          "source_wall_seconds": 5.242,
+          "native_events": [
+            {
+              "type": "turn.created",
+              "role": "user",
+              "elapsed_seconds": 1.763,
+              "client_delegation": false
+            },
+            {
+              "type": "delegation.created",
+              "role": null,
+              "elapsed_seconds": 6.246,
+              "client_delegation": true
+            },
+            {
+              "type": "turn.done",
+              "role": "user",
+              "elapsed_seconds": 7.211,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.created",
+              "role": "assistant",
+              "elapsed_seconds": 7.211,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.done",
+              "role": "assistant",
+              "elapsed_seconds": 11.944,
+              "client_delegation": false
+            }
+          ],
+          "tool_calls": 1,
+          "reader_calls": 1,
+          "marker_sent": true,
+          "sent_bytes": 3574,
+          "keyword_fact_matches": {
+            "corrected_amount": true
+          },
+          "probe_assertions_passed": true,
+          "input_pending": {
+            "characters": 0,
+            "has_wake": false,
+            "has_question": false
+          },
+          "runtime_error": false,
+          "output_enabled": false,
+          "observation_seconds": 13.999
+        },
+        {
+          "number": 5,
+          "source_completed": true,
+          "source_audio_seconds": 7.97575,
+          "source_wall_seconds": 8.72,
+          "native_events": [
+            {
+              "type": "turn.created",
+              "role": "user",
+              "elapsed_seconds": 1.798,
+              "client_delegation": false
+            },
+            {
+              "type": "delegation.created",
+              "role": null,
+              "elapsed_seconds": 9.954,
+              "client_delegation": true
+            },
+            {
+              "type": "turn.done",
+              "role": "user",
+              "elapsed_seconds": 10.833,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.created",
+              "role": "assistant",
+              "elapsed_seconds": 10.836,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.done",
+              "role": "assistant",
+              "elapsed_seconds": 30.39,
+              "client_delegation": false
+            }
+          ],
+          "tool_calls": 1,
+          "reader_calls": 1,
+          "marker_sent": true,
+          "sent_bytes": 3266,
+          "keyword_fact_matches": {
+            "task_one": true,
+            "task_two": true,
+            "owner_one": true,
+            "owner_two": true,
+            "date_one": true,
+            "date_two": true
+          },
+          "probe_assertions_passed": true,
+          "input_pending": {
+            "characters": 0,
+            "has_wake": false,
+            "has_question": false
+          },
+          "runtime_error": false,
+          "output_enabled": false,
+          "observation_seconds": 32.988
+        },
+        {
+          "number": 6,
+          "source_completed": true,
+          "source_audio_seconds": 7.97575,
+          "source_wall_seconds": 8.713,
+          "native_events": [
+            {
+              "type": "turn.created",
+              "role": "user",
+              "elapsed_seconds": 1.777,
+              "client_delegation": false
+            },
+            {
+              "type": "delegation.created",
+              "role": null,
+              "elapsed_seconds": 10.533,
+              "client_delegation": true
+            },
+            {
+              "type": "turn.done",
+              "role": "user",
+              "elapsed_seconds": 11.368,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.created",
+              "role": "assistant",
+              "elapsed_seconds": 11.368,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.done",
+              "role": "assistant",
+              "elapsed_seconds": 30.957,
+              "client_delegation": false
+            }
+          ],
+          "tool_calls": 1,
+          "reader_calls": 1,
+          "marker_sent": true,
+          "sent_bytes": 3266,
+          "keyword_fact_matches": {
+            "task_one": true,
+            "task_two": true,
+            "owner_one": true,
+            "owner_two": true,
+            "date_one": true,
+            "date_two": true
+          },
+          "probe_assertions_passed": true,
+          "input_pending": {
+            "characters": 0,
+            "has_wake": false,
+            "has_question": false
+          },
+          "runtime_error": false,
+          "output_enabled": false,
+          "observation_seconds": 33.288
+        },
+        {
+          "number": 7,
+          "source_completed": true,
+          "source_audio_seconds": 4.520625,
+          "source_wall_seconds": 5.233,
+          "native_events": [
+            {
+              "type": "turn.created",
+              "role": "user",
+              "elapsed_seconds": 1.692,
+              "client_delegation": false
+            },
+            {
+              "type": "delegation.created",
+              "role": null,
+              "elapsed_seconds": 6.731,
+              "client_delegation": true
+            },
+            {
+              "type": "turn.done",
+              "role": "user",
+              "elapsed_seconds": 7.606,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.created",
+              "role": "assistant",
+              "elapsed_seconds": 7.606,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.done",
+              "role": "assistant",
+              "elapsed_seconds": 12.892,
+              "client_delegation": false
+            }
+          ],
+          "tool_calls": 1,
+          "reader_calls": 1,
+          "marker_sent": true,
+          "sent_bytes": 3266,
+          "keyword_fact_matches": {
+            "corrected_amount": true
+          },
+          "probe_assertions_passed": true,
+          "input_pending": {
+            "characters": 0,
+            "has_wake": false,
+            "has_question": false
+          },
+          "runtime_error": false,
+          "output_enabled": false,
+          "observation_seconds": 14.993
+        },
+        {
+          "number": 8,
+          "source_completed": true,
+          "source_audio_seconds": 7.97575,
+          "source_wall_seconds": 8.717,
+          "native_events": [
+            {
+              "type": "turn.created",
+              "role": "user",
+              "elapsed_seconds": 1.739,
+              "client_delegation": false
+            }
+          ],
+          "tool_calls": 0,
+          "reader_calls": 0,
+          "marker_sent": false,
+          "sent_bytes": 0,
+          "keyword_fact_matches": {
+            "task_one": false,
+            "task_two": false,
+            "owner_one": false,
+            "owner_two": false,
+            "date_one": false,
+            "date_two": false
+          },
+          "probe_assertions_passed": false,
+          "input_pending": {
+            "characters": 31,
+            "has_wake": true,
+            "has_question": true
+          },
+          "runtime_error": false,
+          "output_enabled": false,
+          "observation_seconds": 63.737
+        },
+        {
+          "number": 9,
+          "source_completed": true,
+          "source_audio_seconds": 4.520625,
+          "source_wall_seconds": 5.237,
+          "native_events": [],
+          "tool_calls": 0,
+          "reader_calls": 0,
+          "marker_sent": false,
+          "sent_bytes": 0,
+          "keyword_fact_matches": {
+            "corrected_amount": false
+          },
+          "probe_assertions_passed": false,
+          "input_pending": {
+            "characters": 47,
+            "has_wake": true,
+            "has_question": true
+          },
+          "runtime_error": false,
+          "output_enabled": false,
+          "observation_seconds": 60.256
+        },
+        {
+          "number": 10,
+          "source_completed": true,
+          "source_audio_seconds": 4.520625,
+          "source_wall_seconds": 5.26,
+          "native_events": [
+            {
+              "type": "turn.done",
+              "role": "user",
+              "elapsed_seconds": 12.685,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.created",
+              "role": "assistant",
+              "elapsed_seconds": 12.685,
+              "client_delegation": false
+            },
+            {
+              "type": "turn.done",
+              "role": "assistant",
+              "elapsed_seconds": 17.432,
+              "client_delegation": false
+            }
+          ],
+          "tool_calls": 0,
+          "reader_calls": 0,
+          "marker_sent": false,
+          "sent_bytes": 0,
+          "keyword_fact_matches": {
+            "corrected_amount": true
+          },
+          "probe_assertions_passed": false,
+          "input_pending": {
+            "characters": 0,
+            "has_wake": false,
+            "has_question": false
+          },
+          "runtime_error": false,
+          "output_enabled": false,
+          "observation_seconds": 60.272
+        },
+        {
+          "number": 11,
+          "source_completed": true,
+          "source_audio_seconds": 7.97575,
+          "source_wall_seconds": 8.703,
+          "native_events": [
+            {
+              "type": "turn.created",
+              "role": "user",
+              "elapsed_seconds": 1.779,
+              "client_delegation": false
+            }
+          ],
+          "tool_calls": 0,
+          "reader_calls": 0,
+          "marker_sent": false,
+          "sent_bytes": 0,
+          "keyword_fact_matches": {
+            "task_one": false,
+            "task_two": false,
+            "owner_one": false,
+            "owner_two": false,
+            "date_one": false,
+            "date_two": false
+          },
+          "probe_assertions_passed": false,
+          "input_pending": {
+            "characters": 31,
+            "has_wake": true,
+            "has_question": true
+          },
+          "runtime_error": false,
+          "output_enabled": false,
+          "observation_seconds": 63.726
+        }
+      ],
+      "context": {
+        "sent_bytes": 24396,
+        "total_limit_bytes": null,
+        "known_paragraphs": 4,
+        "source_version": 3,
+        "pending": false,
+        "model_consumption_verified": false,
+        "preparing": false,
+        "delivery_scope": "successful_host_send_returns_this_live_thread"
+      },
+      "raw_event_counts": {
+        "session.started": 1,
+        "input_transcript.added": 178,
+        "turn.created": 17,
+        "turn.delta": 432,
+        "session.usage.updated": 27,
+        "delegation.created": 7,
+        "delegation.context.appended": 59,
+        "output_transcript.added": 271,
+        "turn.done": 16
+      },
+      "handoff_counts": {
+        "received": 7,
+        "admitted": 7,
+        "rejected": 0
+      },
+      "cleanup": {
+        "local_A_media": true,
+        "local_receiver": true,
+        "capture": true,
+        "B": true,
+        "browser": true
+      },
+      "stop_result": "stopped",
+      "model_process_reaped": true
+    }
+  },
+  "decisive_observation": {
+    "run": "original_prompt_post_failure_continuation",
+    "question_eight_and_nine_have_no_separate_final": true,
+    "question_ten_final_combines_three_spoken_questions": [
+      "小白小白,請再唸出全部系列未完成待辦的原文,並說明負責人與日期小白小白,本場更正後的預算是多少小白小白,本場更正後的預算是多少"
+    ],
+    "question_ten_assistant_text_without_new_delegation": "本場更正後的預算是一萬五千元。",
+    "new_delegations_questions_eight_through_eleven": 0,
+    "output_gate_remained_closed": true,
+    "input_context_silence_rtp_and_next_question_continue": true
+  },
+  "conclusions": {
+    "observed": "Native retains one user turn across separately completed physical utterances and can answer from prior context without a new client delegation. No raw completion/delegation was dropped by the application in the failed questions. The fresh-tool output gate remains closed, as required.",
+    "contract_defect": "The application cannot treat Native user turn.done as a guaranteed per-utterance boundary or prompt-only delegation as a guaranteed every-question SQLite trigger.",
+    "provider_internal_reason_for_non_response": "unknown; not inferred as quota, fixed question count, byte cap, repetition filter or transport loss",
+    "prompt_control": "Ten delegated questions and 34194 host bytes succeeded before the eleventh missed completion/delegation; not a fix.",
+    "remaining_decision": "Changing question framing/tool ownership to the host is a material departure from the existing native-final/new-delegation admission contract. No such cutover is made without approval.",
+    "keyword_assertion_limit": "Presence of expected fact strings is not a full semantic correctness check; one budget answer also contained a contradictory no-data clause."
+  },
+  "primary_sources": [
+    {
+      "url": "https://raw.githubusercontent.com/openai/codex/3b01b36fa5eb96ba82a776bd3c2fc57f8969181f/codex-rs/codex-api/src/endpoint/realtime_websocket/protocol_frameless_bidi.rs",
+      "scope": "Pinned mapping of provisional input fragments, actual turn.done and client delegation."
+    },
+    {
+      "url": "https://raw.githubusercontent.com/openai/codex/3b01b36fa5eb96ba82a776bd3c2fc57f8969181f/codex-rs/codex-api/src/endpoint/realtime_websocket/methods_frameless_bidi.rs",
+      "scope": "Pinned context append/startup controls; not a forced per-question completion API."
+    },
+    {
+      "url": "https://developers.openai.com/api/docs/guides/live-conversations.md",
+      "scope": "Current public Live explicitly separates transcript fragments, speech and task state; its newer event names/limits are not assumed supported by pinned Codex."
+    },
+    {
+      "url": "https://developers.openai.com/api/docs/guides/live-prompting.md",
+      "scope": "Structured delegation-policy experiment guidance, not a guarantee or a provider switch."
+    }
+  ],
+  "checkpoint": {
+    "private_reproducer": "/dev/shm/assistant-native-cause-effbv3h1/recovery.py",
+    "private_input": "/dev/shm/assistant-native-cause-effbv3h1/recovery-input.json",
+    "private_raw_receipt": "/dev/shm/assistant-native-cause-effbv3h1/recovery.json",
+    "contains_only_synthetic_meeting_content": true,
+    "production_runtime_not_restarted": true,
+    "production_prompt_unchanged": true
+  }
+}

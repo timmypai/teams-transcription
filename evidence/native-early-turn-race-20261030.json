@@ -1,0 +1,192 @@
+{
+  "recorded_at": "2026-10-30",
+  "repository": "paulpai0412/teams-transcription",
+  "branch": "fix/native-turn-lifecycle-evidence",
+  "increment_base": "b7aa29a40c1c1a156add9519ca70c203c8d2bc9a",
+  "implementation_head": "98b4c005af2a02fce2f61e67636708d38503d272",
+  "case0006_parent_report": {
+    "provenance": "Parent-supplied host observation; original receipt not downloaded or reconstructed here.",
+    "clock": "Native monotonic callback-relative seconds, not provider emission time",
+    "events": [
+      {
+        "sequence": 11,
+        "seconds": 24.317,
+        "event": "assistant turn.created",
+        "state": "thinking",
+        "reason": "inactive_scope"
+      },
+      {
+        "sequence": 12,
+        "seconds": 24.317,
+        "event": "new_output_lease",
+        "action": "clear",
+        "current_turn": null,
+        "open_turn_count": 0
+      },
+      {
+        "sequence": 13,
+        "seconds": 29.421,
+        "event": "assistant turn.done",
+        "reason": "unmatched_done"
+      },
+      {
+        "sequence": 14,
+        "seconds": 29.423,
+        "event": "RPC final",
+        "done_is_set": false
+      }
+    ],
+    "created_done_identity_sha256": "3387b5fcbb1fc2518e36faa8c72f8ada108265d0ee8187a479f56c9cc3dc0945",
+    "dc_delivery": {
+      "messages": 100,
+      "json_failures": 0,
+      "binding_failures": 0,
+      "all_bindings_passed": true
+    },
+    "trace_dropped": 0,
+    "trace_saturated": false,
+    "q1_done_set": true,
+    "q2_done_is_set": false,
+    "q2_open_turn_count": 0,
+    "q2_quiet_seconds": 39.06,
+    "content_accepted": false,
+    "cleanup_owned_alive": 0,
+    "app": "healthy paused maintenance",
+    "real_model_budget_used": 6,
+    "real_model_budget_limit": 50,
+    "real_model_budget_remaining": 44
+  },
+  "confirmed_defect": "Current snapshot input can produce assistant created while thinking. Old code rejected it and reset IDs at lease admission, so matching done could never pair. This establishes case0006 only; case0005 DC fields remain unavailable.",
+  "fix": {
+    "tracking_boundary": "After valid current plan/scope, immediately before first snapshot chunk dispatch. Clear previous answer latch and begin current ID tracking while playback remains muted.",
+    "lease": "Do not discard current IDs/open turns when opening output lease. A done received before lease still requires marker return, current-scope commit and true media activity/quiet.",
+    "identity_fence": "Keep all admitted assistant-ID SHA256 hashes for this responder. Current/open duplicates are no-op; known retired IDs cannot be re-admitted, including nonfinal turns of old questions.",
+    "identity_memory_limit": 4096,
+    "identity_eviction": false,
+    "identity_overflow": "New ID at capacity records response_turn_identity_capacity, fails channel closed and mutes; no retry/session creation. This is explicit local identity-memory protection, not a provider/content/duration limit.",
+    "strict_rejections": [
+      "done before created",
+      "unknown or missing ID",
+      "wrong role",
+      "known prior IDs",
+      "revoked/closed request scope"
+    ],
+    "no_substitute_completion": [
+      "RPC transcript final",
+      "quiet alone",
+      "send return",
+      "raw done_is_set alone"
+    ],
+    "content_correctness_fixed": false,
+    "session_isolation_implemented": false
+  },
+  "P2_precleanup": {
+    "field": "speech_completion_before_stop",
+    "position": "Synchronous safe Native snapshot before supervisor operation.cancel()/stop, including whole-work120s timeout. Per-question timeout snapshot retained separately.",
+    "failure_when_unavailable": null,
+    "runtime_work_seconds_unchanged": 120,
+    "test": "Injected supervisor timeout only after real offline Native reached pending media barrier; fixture clock is not a real 120s soak."
+  },
+  "red_green": [
+    {
+      "test": "created_during_snapshot_send_pairs_done_after_output_lease",
+      "red": "done_is_set false after matching done",
+      "green": true
+    },
+    {
+      "test": "whole_work_deadline_keeps_pending_media_snapshot_before_cleanup",
+      "red": "no completion snapshots captured",
+      "green": true
+    },
+    {
+      "test": "prior_nonfinal_turn_replay_cannot_complete_next_request",
+      "red": "done_is_set true from retired prefix created/done",
+      "green": true
+    }
+  ],
+  "test_harness_notes": [
+    "Initial whole-work fixture used1s wall budget and timed out before reaching question state; replaced with deterministic supervisor timeout injection at pending Native media state. Product budget remains120s.",
+    "Partial-send test initially referenced self.sink instead of fixture case.sink; corrected fixture reference."
+  ],
+  "validation": {
+    "architecture": "x86_64",
+    "focused": {
+      "tests": 101,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 13.928
+    },
+    "response_progress": {
+      "tests": 15,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 0.309
+    },
+    "controlled_offline_aggregate": {
+      "scope": "controlled offline subset",
+      "suites": [
+        "test_assistant_store",
+        "test_assistant_daemon",
+        "test_calendar_client",
+        "test_glossary_context",
+        "test_admin_web",
+        "test_sqlite_voice_context",
+        "test_sqlite_only_store",
+        "test_rx_contract",
+        "test_prefetch_codex_npm",
+        "test_staging_control",
+        "test_capture_cleanup_review",
+        "test_release_gate",
+        "test_diagnostic_projection",
+        "test_codex_auth",
+        "test_provider_state",
+        "test_workflow_triggers",
+        "test_staging_docker_diagnostics",
+        "test_staging_compose",
+        "test_first_deploy_recovery",
+        "test_qa_probe.ProbeTests",
+        "test_qa_receiver_projection",
+        "test_turn_lifecycle_evidence.TurnLifecycleEvidenceTests",
+        "test_speech_completion_snapshot.SpeechCompletionSnapshotTests",
+        "test_incremental_minutes_context.ContextTests.test_wire_instruction_distinguishes_verbatim_quote_and_normal_answers",
+        "test_native_incremental_context.NativeSnapshotContextTests.test_delivery_receipt_hashes_identify_actual_current_payload_without_content",
+        "test_b_native.NativeLiveTests.test_live_prompt_distinguishes_verbatim_format_from_normal_current_fact_answers",
+        "test_b_native.NativeLiveTests.test_three_physical_questions_in_one_provider_turn_query_current_sqlite_each_time"
+      ],
+      "tests": 277,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "success": true,
+      "teams_or_model_called": false,
+      "audio_e2e_tested": false
+    },
+    "AST_qa_accepted_criteria": "unchanged from increment base",
+    "py_compile": "passed",
+    "git_diff_check": "passed",
+    "real_browser_arm64_live_teams_tested": false,
+    "model_calls": 0,
+    "new_meetings": 0,
+    "credential_scan": "No known private-key/GitHub token/provider-key/JWT patterns in branch changes. Manual diff review found no raw meeting/credential data; heuristic scan is not proof of absence."
+  },
+  "reviews": {
+    "initial_spec": "One confirmed P2 retired nonfinal ID replay, reproduced and fixed; re-review pending.",
+    "initial_standards": "0 confirmed/heuristic findings at earlier0cd4e78;14 offline targeted passed. Identity fence re-review pending.",
+    "final_spec": "Original P2 fixed;0 new findings.16 offline targeted passed independently; no model/browser.",
+    "final_standards": "Increment re-review0 confirmed findings.2 new offline counterexamples passed independently; no model/browser."
+  },
+  "files_sha256": {
+    "docs/NATIVE-SESSION-ISOLATION.md": "915039cff8510353709a95a8bbfa57289c9ce54835ad9b8aa572314594b31c61",
+    "teams_transcription/b_native.py": "d52e3dfd98e64d7473857b599396d7bdb9a5cdb2f7df9b97d82e6ef1ea8b5802",
+    "teams_transcription/diagnostics.py": "73bac6e42988b14fa3d8a9646f754f100517a01f15f9eaf48125d32332623804",
+    "teams_transcription/qa_probe.py": "c718c7e08600b383a9916be3684393dcd531fb86007be8811b60a2431be39197",
+    "tests/test_speech_completion_snapshot.py": "b06f4520ebde33809e360a2367ea8555d8e6d3e40a89911a30c50e2510e44a48",
+    "tests/test_turn_lifecycle_evidence.py": "55e333208844c8b2560fbc1da1335936726006fe000803018b3fd2c28d252c19"
+  },
+  "remaining": [
+    "Reviewed release before real host validation; no PR/merge/deploy authorization in this task",
+    "Content-format/stale answer problem and A isolation remain separate"
+  ],
+  "operations": "Source/offline tests/review/authorized same-branch push only. No PR/merge/workflow/build/publish/deploy/security/credentials/model/Teams operations.",
+  "delivery": "Same branch push authorized; remote SHA verification reported after evidence commit."
+}

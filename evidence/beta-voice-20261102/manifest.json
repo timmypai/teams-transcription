@@ -1,0 +1,47 @@
+{
+  "scope": "synthetic/browser and controlled offline only; no model, Teams or Oracle operation",
+  "base_sha": "3632ac08a0c2e437f3098f14b9277e4f47349d70",
+  "models_started": 0,
+  "files": {
+    "beta-cleanup-directed-20261102.json.gz": {
+      "sha256": "355dbc4e746cd181f175082bac7359143001deadcf7b5685ef3b9a85a480b153",
+      "bytes": 1245
+    },
+    "beta-cleanup-directed-20261102.py.gz": {
+      "sha256": "d64371f73f168699e146b48e7779cbd11421c9d40c1e692abc8aeec3fdfb05e0",
+      "bytes": 687
+    },
+    "beta-long-audio.json.gz": {
+      "sha256": "de0f59866497e79ff08e2e702dd7b0d265cc0698a5cd3379472e63e19363520c",
+      "bytes": 38820
+    },
+    "cleanup-independent.log.gz": {
+      "sha256": "8587480d91e2587db11e723da34ce9560f93d3bc994cd66df7bc6c16033b46de",
+      "bytes": 341
+    },
+    "cleanup-path-identity.json": {
+      "sha256": "96a51d5f7434e3e84ae68f018bee2eefdd823e2f6ceec17be6f5a39f2987bbd9",
+      "bytes": 1017
+    },
+    "contracts-615-pass.json": {
+      "sha256": "ea97b98b3ef22040bab3a5d29d6ae0ac8298541bb8891a73682cf96f2d95bdaa",
+      "bytes": 2737
+    },
+    "contracts-616-failure.json": {
+      "sha256": "45ca86aed237ff820e30ef7f84627e48886e3c2d2ce41dede01f12e53ee31959",
+      "bytes": 2738
+    },
+    "contracts-616-failure.log.gz": {
+      "sha256": "f141e3bd2a262e6c1fd55f809c17e38648908e9798516c97252b7030390e787a",
+      "bytes": 19369
+    },
+    "focused.log.gz": {
+      "sha256": "88947b256e253657892ad3e3afb92d7f6db645b11ab0730bca14cbcb65a7c15f",
+      "bytes": 1911
+    },
+    "limits-audit.json.gz": {
+      "sha256": "f6ab3d16ec5049d43c2ee803571ce7af7cd114eae6beab60baf6f5cb58ae4b0e",
+      "bytes": 1607
+    }
+  }
+}

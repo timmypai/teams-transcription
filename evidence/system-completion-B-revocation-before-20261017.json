@@ -1,0 +1,17 @@
+{
+  "kind": "actual_native_B_output_revocation",
+  "physical_output": false,
+  "sink": "counts and rolling hash only; no audio retained",
+  "Teams_sender_verified": false,
+  "calendar_writes": 0,
+  "teams_joined": false,
+  "passed": false,
+  "failure": {
+    "type": "RuntimeError",
+    "code": null
+  },
+  "stop_result": "stopped",
+  "stop_ack_received": true,
+  "stop_closed_received": true,
+  "process_reaped": true
+}

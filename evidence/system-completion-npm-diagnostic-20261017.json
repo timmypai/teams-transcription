@@ -1,0 +1,9 @@
+{
+  "kind": "exact_pinned_npm_diagnostic",
+  "container_exit": 0,
+  "stdout": "{\"proxy_environment_names\": []}\n\nnpm http fetch GET 200 https://registry.npmjs.org/@openai%2fcodex 435ms (cache miss)\nnpm http fetch GET 200 https://registry.npmjs.org/@openai/codex/-/codex-0.159.0-alpha.3.tgz 321ms (cache miss)\nnpm ERR! code ECONNRESET\nnpm ERR! syscall read\nnpm ERR! errno -104\nnpm ERR! network read ECONNRESET\nnpm ERR! network This is a problem related to network connectivity.\nnpm ERR! network In most cases you are behind a proxy or have bad network settings.\nnpm ERR! network \nnpm ERR! network If you are behind a proxy, please make sure that the\nnpm ERR! network 'proxy' config is set properly.  See: 'npm help config'\n\nnpm ERR! A complete log of this run can be found in:\nnpm ERR!     /tmp/pinned-npm-cache/_logs/2026-10-17T00_12_41_207Z-debug-0.log\n\n{\"exit\": 152, \"seconds\": 5.926}\n",
+  "stderr": "",
+  "credentials_mounted": false,
+  "TLS_verification_disabled": false,
+  "runtime_changes_persisted": false
+}

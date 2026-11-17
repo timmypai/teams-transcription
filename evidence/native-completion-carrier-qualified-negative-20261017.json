@@ -1,0 +1,1013 @@
+{
+  "passed": false,
+  "teams_joined": false,
+  "calendar_writes": 0,
+  "physical_input_output": false,
+  "uses_formal_production_prompt": true,
+  "synthetic_text_gate": false,
+  "same_thread_all_questions": true,
+  "input_path": "capture_fanout",
+  "A_media_consumer": "real local native RTC receiver; not an A model or injected transcript",
+  "no_wake": {
+    "tool_calls": 0,
+    "accepted_output_frames": 0,
+    "runtime_error": false
+  },
+  "connected_seconds": 509.382,
+  "exceeded_old_32K": false,
+  "capture_counts": {
+    "offered": 5961,
+    "accepted": 5961,
+    "rejected": 0,
+    "invalid_clock": 0
+  },
+  "raw_event_counts": {
+    "session.started": 1,
+    "input_transcript.added": 126,
+    "turn.created": 15,
+    "turn.delta": 537,
+    "session.usage.updated": 34,
+    "delegation.created": 7,
+    "delegation.context.appended": 59,
+    "output_transcript.added": 426,
+    "turn.done": 14
+  },
+  "cleanup": {
+    "local_A_media": true,
+    "local_receiver": true,
+    "capture": true,
+    "B": true,
+    "browser": true
+  },
+  "stop_result": "stopped",
+  "model_process_reaped": true,
+  "kind": "native_completion_carrier_qualified_negative",
+  "requested_model": "gpt-live-1-codex",
+  "codex_version": "0.159.0-alpha.3",
+  "peer_media_profile": "legacy",
+  "callback_liveness": {
+    "kind": "native_callback_liveness_diagnostic",
+    "pcm_callbacks": 11980,
+    "max_in_flight": 1,
+    "max_callback_ms": 0.7778779981890693,
+    "host_max_loop_lag_ms": 3.4345469903200865,
+    "slow_callbacks": [],
+    "loop_lags": [],
+    "errors": [],
+    "browser_before_stop": {
+      "pending": 0,
+      "frames": 24535040,
+      "dropped": 0,
+      "carrier": true,
+      "loop": {
+        "max_gap_ms": 101.79999999701977,
+        "max_pending": 2
+      }
+    }
+  },
+  "context": {
+    "sent_bytes": 24396,
+    "total_limit_bytes": null,
+    "known_paragraphs": 4,
+    "source_version": 3,
+    "pending": false,
+    "model_consumption_verified": false,
+    "preparing": false,
+    "delivery_scope": "successful_host_send_returns_this_live_thread"
+  },
+  "handoff_counts": {
+    "received": 7,
+    "admitted": 7,
+    "rejected": 0
+  },
+  "stop_ack_received": true,
+  "stop_closed_received": true,
+  "probe_failure": {
+    "type": "AssertionError",
+    "code": null,
+    "stage": "ready"
+  },
+  "probe_failure_note": "The final over-32K assertion was not reached successfully because the eighth question had no native completion; it is not a local context-byte cap.",
+  "questions": [
+    {
+      "number": 1,
+      "fact_matches": {
+        "codeword": true,
+        "amount": true
+      },
+      "tool_calls": 1,
+      "reader_calls": 1,
+      "marker_sent": true,
+      "bytes_sent": 4492,
+      "state": "sleeping",
+      "runtime_failure": null,
+      "error": false,
+      "elapsed_seconds": 60.296,
+      "stimulus": {
+        "source_completed": true,
+        "frames": 109286,
+        "audio_seconds": 4.553583333333333,
+        "context_elapsed": 4.757333333333333,
+        "wall_seconds": 5.272
+      },
+      "input_pending": {
+        "characters": 0,
+        "has_wake": false,
+        "has_question": false
+      },
+      "sender_before": {
+        "point": "question_before",
+        "received_seconds": 13.695640787002048,
+        "read_status": "returned",
+        "connection": "connected",
+        "data_channel": "open",
+        "audio_context_state": "running",
+        "sent_frames": 329728,
+        "buffer_gap_count": 0,
+        "buffer_gap_frames": 0,
+        "scheduled_queue_ms": 135,
+        "outbound_audio": [
+          {
+            "bytesSent": 30090,
+            "packetsSent": 758
+          }
+        ]
+      },
+      "sender_after": {
+        "point": "question_after",
+        "received_seconds": 73.99104844599788,
+        "read_status": "returned",
+        "connection": "connected",
+        "data_channel": "open",
+        "audio_context_state": "running",
+        "sent_frames": 1773568,
+        "buffer_gap_count": 16,
+        "buffer_gap_frames": 2048,
+        "scheduled_queue_ms": 81,
+        "outbound_audio": [
+          {
+            "bytesSent": 136097,
+            "packetsSent": 3806
+          }
+        ]
+      },
+      "capture_counts": {
+        "offered": 866,
+        "accepted": 866,
+        "rejected": 0,
+        "invalid_clock": 0
+      },
+      "A_native_media": {
+        "ready": true,
+        "available": true,
+        "failed": false,
+        "failure_code": "none",
+        "stopped": false,
+        "capture_enabled": true,
+        "frame_count": 1,
+        "connected_frames": 1,
+        "live_tracks": 1,
+        "cleanup_status": "pending",
+        "packets_received": 3750,
+        "bytes_received": 134221
+      },
+      "passed": true,
+      "partial_event_count": 12,
+      "native_events": [
+        {
+          "type": "delegation.created",
+          "role": null,
+          "elapsed_seconds": 5.562,
+          "client_delegation": true
+        },
+        {
+          "type": "turn.done",
+          "role": "user",
+          "elapsed_seconds": 8.833,
+          "client_delegation": false
+        },
+        {
+          "type": "turn.created",
+          "role": "assistant",
+          "elapsed_seconds": 8.833,
+          "client_delegation": false
+        },
+        {
+          "type": "turn.done",
+          "role": "assistant",
+          "elapsed_seconds": 21.733,
+          "client_delegation": false
+        }
+      ]
+    },
+    {
+      "number": 2,
+      "fact_matches": {
+        "delivery_day": true
+      },
+      "tool_calls": 1,
+      "reader_calls": 1,
+      "marker_sent": true,
+      "bytes_sent": 3266,
+      "state": "sleeping",
+      "runtime_failure": null,
+      "error": false,
+      "elapsed_seconds": 60.093,
+      "stimulus": {
+        "source_completed": true,
+        "frames": 105000,
+        "audio_seconds": 4.375,
+        "context_elapsed": 4.581333333333333,
+        "wall_seconds": 5.076
+      },
+      "input_pending": {
+        "characters": 0,
+        "has_wake": false,
+        "has_question": false
+      },
+      "sender_before": {
+        "point": "question_before",
+        "received_seconds": 74.00258320500143,
+        "read_status": "returned",
+        "connection": "connected",
+        "data_channel": "open",
+        "audio_context_state": "running",
+        "sent_frames": 1775616,
+        "buffer_gap_count": 16,
+        "buffer_gap_frames": 2048,
+        "scheduled_queue_ms": 145,
+        "outbound_audio": [
+          {
+            "bytesSent": 136097,
+            "packetsSent": 3806
+          }
+        ]
+      },
+      "sender_after": {
+        "point": "question_after",
+        "received_seconds": 134.09584856500442,
+        "read_status": "returned",
+        "connection": "connected",
+        "data_channel": "open",
+        "audio_context_state": "running",
+        "sent_frames": 3215360,
+        "buffer_gap_count": 31,
+        "buffer_gap_frames": 4736,
+        "scheduled_queue_ms": 156,
+        "outbound_audio": [
+          {
+            "bytesSent": 237562,
+            "packetsSent": 6899
+          }
+        ]
+      },
+      "capture_counts": {
+        "offered": 1570,
+        "accepted": 1570,
+        "rejected": 0,
+        "invalid_clock": 0
+      },
+      "A_native_media": {
+        "ready": true,
+        "available": true,
+        "failed": false,
+        "failure_code": "none",
+        "stopped": false,
+        "capture_enabled": true,
+        "frame_count": 1,
+        "connected_frames": 1,
+        "live_tracks": 1,
+        "cleanup_status": "pending",
+        "packets_received": 6793,
+        "bytes_received": 239497
+      },
+      "passed": true,
+      "partial_event_count": 9,
+      "native_events": [
+        {
+          "type": "turn.created",
+          "role": "user",
+          "elapsed_seconds": 1.721,
+          "client_delegation": false
+        },
+        {
+          "type": "delegation.created",
+          "role": null,
+          "elapsed_seconds": 5.202,
+          "client_delegation": true
+        },
+        {
+          "type": "turn.done",
+          "role": "user",
+          "elapsed_seconds": 8.163,
+          "client_delegation": false
+        },
+        {
+          "type": "turn.created",
+          "role": "assistant",
+          "elapsed_seconds": 8.164,
+          "client_delegation": false
+        },
+        {
+          "type": "turn.done",
+          "role": "assistant",
+          "elapsed_seconds": 15.981,
+          "client_delegation": false
+        }
+      ]
+    },
+    {
+      "number": 3,
+      "fact_matches": {
+        "task_one": true,
+        "task_two": true,
+        "owner_one": true,
+        "owner_two": true,
+        "date_one": true,
+        "date_two": true
+      },
+      "tool_calls": 1,
+      "reader_calls": 1,
+      "marker_sent": true,
+      "bytes_sent": 3266,
+      "state": "sleeping",
+      "runtime_failure": null,
+      "error": false,
+      "elapsed_seconds": 63.458,
+      "stimulus": {
+        "source_completed": true,
+        "frames": 185263,
+        "audio_seconds": 7.719291666666667,
+        "context_elapsed": 7.920000000000016,
+        "wall_seconds": 8.45
+      },
+      "input_pending": {
+        "characters": 0,
+        "has_wake": false,
+        "has_question": false
+      },
+      "sender_before": {
+        "point": "question_before",
+        "received_seconds": 134.10398386100132,
+        "read_status": "returned",
+        "connection": "connected",
+        "data_channel": "open",
+        "audio_context_state": "running",
+        "sent_frames": 3215360,
+        "buffer_gap_count": 31,
+        "buffer_gap_frames": 4736,
+        "scheduled_queue_ms": 135,
+        "outbound_audio": [
+          {
+            "bytesSent": 237562,
+            "packetsSent": 6899
+          }
+        ]
+      },
+      "sender_after": {
+        "point": "question_after",
+        "received_seconds": 197.5615438780078,
+        "read_status": "returned",
+        "connection": "connected",
+        "data_channel": "open",
+        "audio_context_state": "running",
+        "sent_frames": 4734976,
+        "buffer_gap_count": 51,
+        "buffer_gap_frames": 7808,
+        "scheduled_queue_ms": 108,
+        "outbound_audio": [
+          {
+            "bytesSent": 356253,
+            "packetsSent": 10108
+          }
+        ]
+      },
+      "capture_counts": {
+        "offered": 2312,
+        "accepted": 2312,
+        "rejected": 0,
+        "invalid_clock": 0
+      },
+      "A_native_media": {
+        "ready": true,
+        "available": true,
+        "failed": false,
+        "failure_code": "none",
+        "stopped": false,
+        "capture_enabled": true,
+        "frame_count": 1,
+        "connected_frames": 1,
+        "live_tracks": 1,
+        "cleanup_status": "pending",
+        "packets_received": 10003,
+        "bytes_received": 358202
+      },
+      "passed": true,
+      "partial_event_count": 18,
+      "native_events": [
+        {
+          "type": "turn.created",
+          "role": "user",
+          "elapsed_seconds": 1.853,
+          "client_delegation": false
+        },
+        {
+          "type": "delegation.created",
+          "role": null,
+          "elapsed_seconds": 8.779,
+          "client_delegation": true
+        },
+        {
+          "type": "turn.done",
+          "role": "user",
+          "elapsed_seconds": 9.686,
+          "client_delegation": false
+        },
+        {
+          "type": "turn.created",
+          "role": "assistant",
+          "elapsed_seconds": 9.686,
+          "client_delegation": false
+        },
+        {
+          "type": "turn.done",
+          "role": "assistant",
+          "elapsed_seconds": 34.991,
+          "client_delegation": false
+        }
+      ]
+    },
+    {
+      "number": 4,
+      "fact_matches": {
+        "corrected_amount": true
+      },
+      "tool_calls": 1,
+      "reader_calls": 1,
+      "marker_sent": true,
+      "bytes_sent": 3574,
+      "state": "sleeping",
+      "runtime_failure": null,
+      "error": false,
+      "elapsed_seconds": 60.261,
+      "stimulus": {
+        "source_completed": true,
+        "frames": 108495,
+        "audio_seconds": 4.520625,
+        "context_elapsed": 4.73066666666665,
+        "wall_seconds": 5.247
+      },
+      "input_pending": {
+        "characters": 0,
+        "has_wake": false,
+        "has_question": false
+      },
+      "sender_before": {
+        "point": "question_before",
+        "received_seconds": 197.57038167399878,
+        "read_status": "returned",
+        "connection": "connected",
+        "data_channel": "open",
+        "audio_context_state": "running",
+        "sent_frames": 4734976,
+        "buffer_gap_count": 51,
+        "buffer_gap_frames": 7808,
+        "scheduled_queue_ms": 108,
+        "outbound_audio": [
+          {
+            "bytesSent": 356253,
+            "packetsSent": 10108
+          }
+        ]
+      },
+      "sender_after": {
+        "point": "question_after",
+        "received_seconds": 257.83184771500237,
+        "read_status": "returned",
+        "connection": "connected",
+        "data_channel": "open",
+        "audio_context_state": "running",
+        "sent_frames": 6180864,
+        "buffer_gap_count": 65,
+        "buffer_gap_frames": 9856,
+        "scheduled_queue_ms": 140,
+        "outbound_audio": [
+          {
+            "bytesSent": 462136,
+            "packetsSent": 13156
+          }
+        ]
+      },
+      "capture_counts": {
+        "offered": 3018,
+        "accepted": 3018,
+        "rejected": 0,
+        "invalid_clock": 0
+      },
+      "A_native_media": {
+        "ready": true,
+        "available": true,
+        "failed": false,
+        "failure_code": "none",
+        "stopped": false,
+        "capture_enabled": true,
+        "frame_count": 1,
+        "connected_frames": 1,
+        "live_tracks": 1,
+        "cleanup_status": "pending",
+        "packets_received": 13053,
+        "bytes_received": 464108
+      },
+      "passed": true,
+      "partial_event_count": 12,
+      "native_events": [
+        {
+          "type": "turn.created",
+          "role": "user",
+          "elapsed_seconds": 1.759,
+          "client_delegation": false
+        },
+        {
+          "type": "delegation.created",
+          "role": null,
+          "elapsed_seconds": 6.305,
+          "client_delegation": true
+        },
+        {
+          "type": "turn.done",
+          "role": "user",
+          "elapsed_seconds": 7.237,
+          "client_delegation": false
+        },
+        {
+          "type": "turn.created",
+          "role": "assistant",
+          "elapsed_seconds": 7.243,
+          "client_delegation": false
+        },
+        {
+          "type": "turn.done",
+          "role": "assistant",
+          "elapsed_seconds": 17.886,
+          "client_delegation": false
+        }
+      ]
+    },
+    {
+      "number": 5,
+      "fact_matches": {
+        "task_one": true,
+        "task_two": true,
+        "owner_one": true,
+        "owner_two": true,
+        "date_one": true,
+        "date_two": true
+      },
+      "tool_calls": 1,
+      "reader_calls": 1,
+      "marker_sent": true,
+      "bytes_sent": 3266,
+      "state": "sleeping",
+      "runtime_failure": null,
+      "error": false,
+      "elapsed_seconds": 63.738,
+      "stimulus": {
+        "source_completed": true,
+        "frames": 191418,
+        "audio_seconds": 7.97575,
+        "context_elapsed": 8.186666666666667,
+        "wall_seconds": 8.717
+      },
+      "input_pending": {
+        "characters": 0,
+        "has_wake": false,
+        "has_question": false
+      },
+      "sender_before": {
+        "point": "question_before",
+        "received_seconds": 257.84009931399487,
+        "read_status": "returned",
+        "connection": "connected",
+        "data_channel": "open",
+        "audio_context_state": "running",
+        "sent_frames": 6180864,
+        "buffer_gap_count": 65,
+        "buffer_gap_frames": 9856,
+        "scheduled_queue_ms": 140,
+        "outbound_audio": [
+          {
+            "bytesSent": 462136,
+            "packetsSent": 13156
+          }
+        ]
+      },
+      "sender_after": {
+        "point": "question_after",
+        "received_seconds": 321.5783323030046,
+        "read_status": "returned",
+        "connection": "connected",
+        "data_channel": "open",
+        "audio_context_state": "running",
+        "sent_frames": 7708672,
+        "buffer_gap_count": 85,
+        "buffer_gap_frames": 12544,
+        "scheduled_queue_ms": 156,
+        "outbound_audio": [
+          {
+            "bytesSent": 582030,
+            "packetsSent": 16380
+          }
+        ]
+      },
+      "capture_counts": {
+        "offered": 3764,
+        "accepted": 3764,
+        "rejected": 0,
+        "invalid_clock": 0
+      },
+      "A_native_media": {
+        "ready": true,
+        "available": true,
+        "failed": false,
+        "failure_code": "none",
+        "stopped": false,
+        "capture_enabled": true,
+        "frame_count": 1,
+        "connected_frames": 1,
+        "live_tracks": 1,
+        "cleanup_status": "pending",
+        "packets_received": 16280,
+        "bytes_received": 583834
+      },
+      "passed": true,
+      "partial_event_count": 20,
+      "native_events": [
+        {
+          "type": "turn.created",
+          "role": "user",
+          "elapsed_seconds": 1.86,
+          "client_delegation": false
+        },
+        {
+          "type": "delegation.created",
+          "role": null,
+          "elapsed_seconds": 9.597,
+          "client_delegation": true
+        },
+        {
+          "type": "turn.done",
+          "role": "user",
+          "elapsed_seconds": 10.546,
+          "client_delegation": false
+        },
+        {
+          "type": "turn.created",
+          "role": "assistant",
+          "elapsed_seconds": 10.547,
+          "client_delegation": false
+        },
+        {
+          "type": "turn.done",
+          "role": "assistant",
+          "elapsed_seconds": 37.607,
+          "client_delegation": false
+        }
+      ]
+    },
+    {
+      "number": 6,
+      "fact_matches": {
+        "task_one": true,
+        "task_two": true,
+        "owner_one": true,
+        "owner_two": true,
+        "date_one": true,
+        "date_two": true
+      },
+      "tool_calls": 1,
+      "reader_calls": 1,
+      "marker_sent": true,
+      "bytes_sent": 3266,
+      "state": "sleeping",
+      "runtime_failure": null,
+      "error": false,
+      "elapsed_seconds": 63.752,
+      "stimulus": {
+        "source_completed": true,
+        "frames": 191418,
+        "audio_seconds": 7.97575,
+        "context_elapsed": 8.181333333333328,
+        "wall_seconds": 8.714
+      },
+      "input_pending": {
+        "characters": 0,
+        "has_wake": false,
+        "has_question": false
+      },
+      "sender_before": {
+        "point": "question_before",
+        "received_seconds": 321.58729093900183,
+        "read_status": "returned",
+        "connection": "connected",
+        "data_channel": "open",
+        "audio_context_state": "running",
+        "sent_frames": 7708672,
+        "buffer_gap_count": 85,
+        "buffer_gap_frames": 12544,
+        "scheduled_queue_ms": 145,
+        "outbound_audio": [
+          {
+            "bytesSent": 582030,
+            "packetsSent": 16380
+          }
+        ]
+      },
+      "sender_after": {
+        "point": "question_after",
+        "received_seconds": 385.33956151899474,
+        "read_status": "returned",
+        "connection": "connected",
+        "data_channel": "open",
+        "audio_context_state": "running",
+        "sent_frames": 9236480,
+        "buffer_gap_count": 104,
+        "buffer_gap_frames": 15104,
+        "scheduled_queue_ms": 161,
+        "outbound_audio": [
+          {
+            "bytesSent": 701720,
+            "packetsSent": 19604
+          }
+        ]
+      },
+      "capture_counts": {
+        "offered": 4510,
+        "accepted": 4510,
+        "rejected": 0,
+        "invalid_clock": 0
+      },
+      "A_native_media": {
+        "ready": true,
+        "available": true,
+        "failed": false,
+        "failure_code": "none",
+        "stopped": false,
+        "capture_enabled": true,
+        "frame_count": 1,
+        "connected_frames": 1,
+        "live_tracks": 1,
+        "cleanup_status": "pending",
+        "packets_received": 19503,
+        "bytes_received": 703665
+      },
+      "passed": true,
+      "partial_event_count": 20,
+      "native_events": [
+        {
+          "type": "turn.created",
+          "role": "user",
+          "elapsed_seconds": 1.846,
+          "client_delegation": false
+        },
+        {
+          "type": "delegation.created",
+          "role": null,
+          "elapsed_seconds": 10.021,
+          "client_delegation": true
+        },
+        {
+          "type": "turn.done",
+          "role": "user",
+          "elapsed_seconds": 10.87,
+          "client_delegation": false
+        },
+        {
+          "type": "turn.created",
+          "role": "assistant",
+          "elapsed_seconds": 10.871,
+          "client_delegation": false
+        },
+        {
+          "type": "turn.done",
+          "role": "assistant",
+          "elapsed_seconds": 38.57,
+          "client_delegation": false
+        }
+      ]
+    },
+    {
+      "number": 7,
+      "fact_matches": {
+        "corrected_amount": true
+      },
+      "tool_calls": 1,
+      "reader_calls": 1,
+      "marker_sent": true,
+      "bytes_sent": 3266,
+      "state": "sleeping",
+      "runtime_failure": null,
+      "error": false,
+      "elapsed_seconds": 60.278,
+      "stimulus": {
+        "source_completed": true,
+        "frames": 108495,
+        "audio_seconds": 4.520625,
+        "context_elapsed": 4.73066666666665,
+        "wall_seconds": 5.252
+      },
+      "input_pending": {
+        "characters": 0,
+        "has_wake": false,
+        "has_question": false
+      },
+      "sender_before": {
+        "point": "question_before",
+        "received_seconds": 385.3497861610085,
+        "read_status": "returned",
+        "connection": "connected",
+        "data_channel": "open",
+        "audio_context_state": "running",
+        "sent_frames": 9236480,
+        "buffer_gap_count": 104,
+        "buffer_gap_frames": 15104,
+        "scheduled_queue_ms": 151,
+        "outbound_audio": [
+          {
+            "bytesSent": 701720,
+            "packetsSent": 19604
+          }
+        ]
+      },
+      "sender_after": {
+        "point": "question_after",
+        "received_seconds": 445.62812824100547,
+        "read_status": "returned",
+        "connection": "connected",
+        "data_channel": "open",
+        "audio_context_state": "running",
+        "sent_frames": 10680320,
+        "buffer_gap_count": 127,
+        "buffer_gap_frames": 18304,
+        "scheduled_queue_ms": 129,
+        "outbound_audio": [
+          {
+            "bytesSent": 807602,
+            "packetsSent": 22649
+          }
+        ]
+      },
+      "capture_counts": {
+        "offered": 5215,
+        "accepted": 5215,
+        "rejected": 0,
+        "invalid_clock": 0
+      },
+      "A_native_media": {
+        "ready": true,
+        "available": true,
+        "failed": false,
+        "failure_code": "none",
+        "stopped": false,
+        "capture_enabled": true,
+        "frame_count": 1,
+        "connected_frames": 1,
+        "live_tracks": 1,
+        "cleanup_status": "pending",
+        "packets_received": 22551,
+        "bytes_received": 809562
+      },
+      "passed": true,
+      "partial_event_count": 10,
+      "native_events": [
+        {
+          "type": "turn.created",
+          "role": "user",
+          "elapsed_seconds": 1.593,
+          "client_delegation": false
+        },
+        {
+          "type": "delegation.created",
+          "role": null,
+          "elapsed_seconds": 6.65,
+          "client_delegation": true
+        },
+        {
+          "type": "turn.done",
+          "role": "user",
+          "elapsed_seconds": 7.477,
+          "client_delegation": false
+        },
+        {
+          "type": "turn.created",
+          "role": "assistant",
+          "elapsed_seconds": 7.477,
+          "client_delegation": false
+        },
+        {
+          "type": "turn.done",
+          "role": "assistant",
+          "elapsed_seconds": 17.439,
+          "client_delegation": false
+        }
+      ]
+    },
+    {
+      "number": 8,
+      "fact_matches": {
+        "task_one": false,
+        "task_two": false,
+        "owner_one": false,
+        "owner_two": false,
+        "date_one": false,
+        "date_two": false
+      },
+      "tool_calls": 0,
+      "reader_calls": 0,
+      "marker_sent": false,
+      "bytes_sent": 0,
+      "state": "sleeping",
+      "runtime_failure": null,
+      "error": false,
+      "elapsed_seconds": 63.736,
+      "stimulus": {
+        "source_completed": true,
+        "frames": 191418,
+        "audio_seconds": 7.97575,
+        "context_elapsed": 8.192000000000007,
+        "wall_seconds": 8.716
+      },
+      "input_pending": {
+        "characters": 31,
+        "has_wake": true,
+        "has_question": true
+      },
+      "sender_before": {
+        "point": "question_before",
+        "received_seconds": 445.63733070800663,
+        "read_status": "returned",
+        "connection": "connected",
+        "data_channel": "open",
+        "audio_context_state": "running",
+        "sent_frames": 10680320,
+        "buffer_gap_count": 127,
+        "buffer_gap_frames": 18304,
+        "scheduled_queue_ms": 129,
+        "outbound_audio": [
+          {
+            "bytesSent": 807602,
+            "packetsSent": 22649
+          }
+        ]
+      },
+      "sender_after": {
+        "point": "question_after",
+        "received_seconds": 509.37377518099674,
+        "read_status": "returned",
+        "connection": "connected",
+        "data_channel": "open",
+        "audio_context_state": "running",
+        "sent_frames": 12208128,
+        "buffer_gap_count": 147,
+        "buffer_gap_frames": 21248,
+        "scheduled_queue_ms": 151,
+        "outbound_audio": [
+          {
+            "bytesSent": 927357,
+            "packetsSent": 25869
+          }
+        ]
+      },
+      "capture_counts": {
+        "offered": 5961,
+        "accepted": 5961,
+        "rejected": 0,
+        "invalid_clock": 0
+      },
+      "A_native_media": {
+        "ready": true,
+        "available": true,
+        "failed": false,
+        "failure_code": "none",
+        "stopped": false,
+        "capture_enabled": true,
+        "frame_count": 1,
+        "connected_frames": 1,
+        "live_tracks": 1,
+        "cleanup_status": "pending",
+        "packets_received": 25775,
+        "bytes_received": 929259
+      },
+      "passed": false,
+      "partial_event_count": 19,
+      "native_events": [
+        {
+          "type": "turn.created",
+          "role": "user",
+          "elapsed_seconds": 1.984,
+          "client_delegation": false
+        }
+      ]
+    }
+  ],
+  "conclusion": "Continuous input fixes demonstrated local RTP starvation, but does not resolve this qualified missing-native-user-final/client-delegation failure. No application runtime error, callback overflow or measured host/browser loop stall in this run. Service-internal cause unproven."
+}

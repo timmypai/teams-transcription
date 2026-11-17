@@ -1,0 +1,1198 @@
+{
+  "kind": "formal_native_B_five_spoken_questions",
+  "teams_joined": false,
+  "calendar_writes": 0,
+  "physical_input_output": false,
+  "synthetic_text_gate": false,
+  "context_input": "disposable SQLite synthetic sources",
+  "questions": [
+    {
+      "number": 1,
+      "question": "小白小白，這次代號和預算各是多少？",
+      "fact_matches": {
+        "codeword": true,
+        "amount": true
+      },
+      "tool_calls": 1,
+      "reader_calls": 1,
+      "tool_deliveries": [
+        {
+          "question_number": 1,
+          "phase": "delivered",
+          "started_elapsed_ms": 22981,
+          "source_version": 2,
+          "available": true,
+          "selected_ref_count": 4,
+          "selected_record_indexes": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "selected_indexes_truncated": false,
+          "omitted_for_budget": false,
+          "payload_bytes": 4477,
+          "sent_bytes": 4492,
+          "marker_returned": true,
+          "model_consumption_verified": false
+        }
+      ],
+      "marker_sent": true,
+      "bytes_sent": 4492,
+      "state": "sleeping",
+      "runtime_failure": null,
+      "error": false,
+      "output_enabled": false,
+      "speech": {
+        "phase": "closed",
+        "native_state": "sleeping",
+        "done_is_set": true,
+        "speech_task_done": true,
+        "speech_task_cancelled": false,
+        "error_code": null,
+        "output_active": false,
+        "nonzero_frames": 274227,
+        "activity_frames": 270336,
+        "packet_frames": 2048,
+        "packet_nonzero_frames": 12,
+        "packet_peak_abs": 1,
+        "packet_rms": 0.07654655446197431,
+        "activity_rms_threshold": 8,
+        "last_active_age_seconds": 41.86571965100302,
+        "last_nonzero_age_seconds": 40.93372013300541,
+        "drain_result": {
+          "present": true,
+          "truncated": false,
+          "drained": false,
+          "muted": true
+        }
+      },
+      "elapsed_seconds": 55.02,
+      "passed": true
+    },
+    {
+      "number": 2,
+      "question": "小白小白，上次會議決定何時交付？",
+      "fact_matches": {
+        "delivery_day": true
+      },
+      "tool_calls": 1,
+      "reader_calls": 1,
+      "tool_deliveries": [
+        {
+          "question_number": 2,
+          "phase": "delivered",
+          "started_elapsed_ms": 78644,
+          "source_version": 2,
+          "available": true,
+          "selected_ref_count": 4,
+          "selected_record_indexes": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "selected_indexes_truncated": false,
+          "omitted_for_budget": false,
+          "payload_bytes": 3251,
+          "sent_bytes": 3266,
+          "marker_returned": true,
+          "model_consumption_verified": false
+        }
+      ],
+      "marker_sent": true,
+      "bytes_sent": 3266,
+      "state": "sleeping",
+      "runtime_failure": null,
+      "error": false,
+      "output_enabled": false,
+      "speech": {
+        "phase": "closed",
+        "native_state": "sleeping",
+        "done_is_set": true,
+        "speech_task_done": true,
+        "speech_task_cancelled": false,
+        "error_code": null,
+        "output_active": false,
+        "nonzero_frames": 424387,
+        "activity_frames": 415744,
+        "packet_frames": 2048,
+        "packet_nonzero_frames": 12,
+        "packet_peak_abs": 1,
+        "packet_rms": 0.07654655446197431,
+        "activity_rms_threshold": 8,
+        "last_active_age_seconds": 38.136577171011595,
+        "last_nonzero_age_seconds": 37.334803546007606,
+        "drain_result": {
+          "present": true,
+          "truncated": false,
+          "drained": false,
+          "muted": true
+        }
+      },
+      "elapsed_seconds": 55.058,
+      "passed": true
+    },
+    {
+      "number": 3,
+      "question": "小白小白，請念出全部系列未完成待辦的原文，並說明負責人與日期。",
+      "fact_matches": {
+        "task_one": true,
+        "task_two": true,
+        "owner_one": true,
+        "owner_two": true,
+        "date_one": true,
+        "date_two": true
+      },
+      "tool_calls": 1,
+      "reader_calls": 1,
+      "tool_deliveries": [
+        {
+          "question_number": 3,
+          "phase": "delivered",
+          "started_elapsed_ms": 136833,
+          "source_version": 2,
+          "available": true,
+          "selected_ref_count": 4,
+          "selected_record_indexes": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "selected_indexes_truncated": false,
+          "omitted_for_budget": false,
+          "payload_bytes": 3251,
+          "sent_bytes": 3266,
+          "marker_returned": true,
+          "model_consumption_verified": false
+        }
+      ],
+      "marker_sent": true,
+      "bytes_sent": 3266,
+      "state": "sleeping",
+      "runtime_failure": null,
+      "error": false,
+      "output_enabled": false,
+      "speech": {
+        "phase": "closed",
+        "native_state": "sleeping",
+        "done_is_set": true,
+        "speech_task_done": true,
+        "speech_task_cancelled": false,
+        "error_code": null,
+        "output_active": false,
+        "nonzero_frames": 1064514,
+        "activity_frames": 1054720,
+        "packet_frames": 2048,
+        "packet_nonzero_frames": 12,
+        "packet_peak_abs": 1,
+        "packet_rms": 0.07654655446197431,
+        "activity_rms_threshold": 8,
+        "last_active_age_seconds": 22.04461741101113,
+        "last_nonzero_age_seconds": 20.894376408003154,
+        "drain_result": {
+          "present": true,
+          "truncated": false,
+          "drained": false,
+          "muted": true
+        }
+      },
+      "elapsed_seconds": 55.076,
+      "passed": true
+    },
+    {
+      "number": 4,
+      "question": "小白小白，本場更正後的預算是多少？",
+      "fact_matches": {
+        "corrected_amount": true
+      },
+      "tool_calls": 1,
+      "reader_calls": 1,
+      "tool_deliveries": [
+        {
+          "question_number": 4,
+          "phase": "delivered",
+          "started_elapsed_ms": 189628,
+          "source_version": 3,
+          "available": true,
+          "selected_ref_count": 4,
+          "selected_record_indexes": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "selected_indexes_truncated": false,
+          "omitted_for_budget": false,
+          "payload_bytes": 3559,
+          "sent_bytes": 3574,
+          "marker_returned": true,
+          "model_consumption_verified": false
+        }
+      ],
+      "marker_sent": true,
+      "bytes_sent": 3574,
+      "state": "sleeping",
+      "runtime_failure": null,
+      "error": false,
+      "output_enabled": false,
+      "speech": {
+        "phase": "closed",
+        "native_state": "sleeping",
+        "done_is_set": true,
+        "speech_task_done": true,
+        "speech_task_cancelled": false,
+        "error_code": null,
+        "output_active": false,
+        "nonzero_frames": 203400,
+        "activity_frames": 196608,
+        "packet_frames": 2048,
+        "packet_nonzero_frames": 12,
+        "packet_peak_abs": 1,
+        "packet_rms": 0.07654655446197431,
+        "activity_rms_threshold": 8,
+        "last_active_age_seconds": 42.40763064600469,
+        "last_nonzero_age_seconds": 41.46632634400157,
+        "drain_result": {
+          "present": true,
+          "truncated": false,
+          "drained": false,
+          "muted": true
+        }
+      },
+      "elapsed_seconds": 55.016,
+      "passed": true
+    },
+    {
+      "number": 5,
+      "question": "小白小白，請再念出全部系列未完成待辦的原文，並說明負責人與日期。",
+      "fact_matches": {
+        "task_one": true,
+        "task_two": true,
+        "owner_one": true,
+        "owner_two": true,
+        "date_one": true,
+        "date_two": true
+      },
+      "tool_calls": 1,
+      "reader_calls": 1,
+      "tool_deliveries": [
+        {
+          "question_number": 5,
+          "phase": "delivered",
+          "started_elapsed_ms": 248019,
+          "source_version": 3,
+          "available": true,
+          "selected_ref_count": 4,
+          "selected_record_indexes": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "selected_indexes_truncated": false,
+          "omitted_for_budget": false,
+          "payload_bytes": 3251,
+          "sent_bytes": 3266,
+          "marker_returned": true,
+          "model_consumption_verified": false
+        }
+      ],
+      "marker_sent": true,
+      "bytes_sent": 3266,
+      "state": "sleeping",
+      "runtime_failure": null,
+      "error": false,
+      "output_enabled": false,
+      "speech": {
+        "phase": "closed",
+        "native_state": "sleeping",
+        "done_is_set": true,
+        "speech_task_done": true,
+        "speech_task_cancelled": false,
+        "error_code": null,
+        "output_active": false,
+        "nonzero_frames": 1122563,
+        "activity_frames": 1112064,
+        "packet_frames": 2048,
+        "packet_nonzero_frames": 12,
+        "packet_peak_abs": 1,
+        "packet_rms": 0.07654655446197431,
+        "activity_rms_threshold": 8,
+        "last_active_age_seconds": 19.96252829999139,
+        "last_nonzero_age_seconds": 18.893541800993262,
+        "drain_result": {
+          "present": true,
+          "truncated": false,
+          "drained": false,
+          "muted": true
+        }
+      },
+      "elapsed_seconds": 55.035,
+      "passed": true
+    },
+    {
+      "number": 6,
+      "question": "小白小白，請再念出全部系列未完成待辦的原文，並說明負責人與日期。",
+      "fact_matches": {
+        "task_one": true,
+        "task_two": true,
+        "owner_one": true,
+        "owner_two": true,
+        "date_one": true,
+        "date_two": true
+      },
+      "tool_calls": 1,
+      "reader_calls": 1,
+      "tool_deliveries": [
+        {
+          "question_number": 6,
+          "phase": "delivered",
+          "started_elapsed_ms": 304034,
+          "source_version": 3,
+          "available": true,
+          "selected_ref_count": 4,
+          "selected_record_indexes": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "selected_indexes_truncated": false,
+          "omitted_for_budget": false,
+          "payload_bytes": 3251,
+          "sent_bytes": 3266,
+          "marker_returned": true,
+          "model_consumption_verified": false
+        }
+      ],
+      "marker_sent": true,
+      "bytes_sent": 3266,
+      "state": "sleeping",
+      "runtime_failure": null,
+      "error": false,
+      "output_enabled": false,
+      "speech": {
+        "phase": "closed",
+        "native_state": "sleeping",
+        "done_is_set": true,
+        "speech_task_done": true,
+        "speech_task_cancelled": false,
+        "error_code": null,
+        "output_active": false,
+        "nonzero_frames": 992746,
+        "activity_frames": 989184,
+        "packet_frames": 2048,
+        "packet_nonzero_frames": 12,
+        "packet_peak_abs": 1,
+        "packet_rms": 0.07654655446197431,
+        "activity_rms_threshold": 8,
+        "last_active_age_seconds": 21.394049367008847,
+        "last_nonzero_age_seconds": 20.324262745009037,
+        "drain_result": {
+          "present": true,
+          "truncated": false,
+          "drained": false,
+          "muted": true
+        }
+      },
+      "elapsed_seconds": 55.021,
+      "passed": true
+    },
+    {
+      "number": 7,
+      "question": "小白小白，本場更正後的預算是多少？",
+      "fact_matches": {
+        "corrected_amount": true
+      },
+      "tool_calls": 1,
+      "reader_calls": 1,
+      "tool_deliveries": [
+        {
+          "question_number": 7,
+          "phase": "delivered",
+          "started_elapsed_ms": 354806,
+          "source_version": 3,
+          "available": true,
+          "selected_ref_count": 4,
+          "selected_record_indexes": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "selected_indexes_truncated": false,
+          "omitted_for_budget": false,
+          "payload_bytes": 3251,
+          "sent_bytes": 3266,
+          "marker_returned": true,
+          "model_consumption_verified": false
+        }
+      ],
+      "marker_sent": true,
+      "bytes_sent": 3266,
+      "state": "sleeping",
+      "runtime_failure": null,
+      "error": false,
+      "output_enabled": false,
+      "speech": {
+        "phase": "closed",
+        "native_state": "sleeping",
+        "done_is_set": true,
+        "speech_task_done": true,
+        "speech_task_cancelled": false,
+        "error_code": null,
+        "output_active": false,
+        "nonzero_frames": 250175,
+        "activity_frames": 239616,
+        "packet_frames": 2048,
+        "packet_nonzero_frames": 12,
+        "packet_peak_abs": 1,
+        "packet_rms": 0.07654655446197431,
+        "activity_rms_threshold": 8,
+        "last_active_age_seconds": 41.590615167995566,
+        "last_nonzero_age_seconds": 40.64959897400695,
+        "drain_result": {
+          "present": true,
+          "truncated": false,
+          "drained": false,
+          "muted": true
+        }
+      },
+      "elapsed_seconds": 55.094,
+      "passed": true
+    },
+    {
+      "number": 8,
+      "question": "小白小白，請再念出全部系列未完成待辦的原文，並說明負責人與日期。",
+      "fact_matches": {
+        "task_one": true,
+        "task_two": true,
+        "owner_one": true,
+        "owner_two": true,
+        "date_one": true,
+        "date_two": true
+      },
+      "tool_calls": 1,
+      "reader_calls": 1,
+      "tool_deliveries": [
+        {
+          "question_number": 8,
+          "phase": "delivered",
+          "started_elapsed_ms": 414399,
+          "source_version": 3,
+          "available": true,
+          "selected_ref_count": 4,
+          "selected_record_indexes": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "selected_indexes_truncated": false,
+          "omitted_for_budget": false,
+          "payload_bytes": 3251,
+          "sent_bytes": 3266,
+          "marker_returned": true,
+          "model_consumption_verified": false
+        }
+      ],
+      "marker_sent": true,
+      "bytes_sent": 3266,
+      "state": "sleeping",
+      "runtime_failure": null,
+      "error": false,
+      "output_enabled": false,
+      "speech": {
+        "phase": "closed",
+        "native_state": "sleeping",
+        "done_is_set": true,
+        "speech_task_done": true,
+        "speech_task_cancelled": false,
+        "error_code": null,
+        "output_active": false,
+        "nonzero_frames": 956423,
+        "activity_frames": 956416,
+        "packet_frames": 2048,
+        "packet_nonzero_frames": 12,
+        "packet_peak_abs": 1,
+        "packet_rms": 0.07654655446197431,
+        "activity_rms_threshold": 8,
+        "last_active_age_seconds": 22.09790184799931,
+        "last_nonzero_age_seconds": 21.28458649700042,
+        "drain_result": {
+          "present": true,
+          "truncated": false,
+          "drained": false,
+          "muted": true
+        }
+      },
+      "elapsed_seconds": 55.046,
+      "passed": true
+    },
+    {
+      "number": 9,
+      "question": "小白小白，本場更正後的預算是多少？",
+      "fact_matches": {
+        "corrected_amount": false
+      },
+      "tool_calls": 0,
+      "reader_calls": 0,
+      "tool_deliveries": [],
+      "marker_sent": false,
+      "bytes_sent": 0,
+      "state": "sleeping",
+      "runtime_failure": null,
+      "error": false,
+      "output_enabled": false,
+      "speech": {
+        "phase": "closed",
+        "native_state": "sleeping",
+        "done_is_set": true,
+        "speech_task_done": true,
+        "speech_task_cancelled": false,
+        "error_code": null,
+        "output_active": false,
+        "nonzero_frames": 956423,
+        "activity_frames": 956416,
+        "packet_frames": 2048,
+        "packet_nonzero_frames": 12,
+        "packet_peak_abs": 1,
+        "packet_rms": 0.07654655446197431,
+        "activity_rms_threshold": 8,
+        "last_active_age_seconds": 77.2011691939988,
+        "last_nonzero_age_seconds": 76.3878538429999,
+        "drain_result": {
+          "present": true,
+          "truncated": false,
+          "drained": false,
+          "muted": true
+        }
+      },
+      "elapsed_seconds": 55.096,
+      "passed": false
+    }
+  ],
+  "passed": false,
+  "same_thread_all_questions": true,
+  "no_wake": {
+    "tool_calls": 0,
+    "accepted_output_frames": 0,
+    "runtime_error": false
+  },
+  "final_status": {
+    "meeting_id": "a9997341be04453891dab5a8a5882fe7",
+    "state": "sleeping",
+    "output_enabled": false,
+    "output_muted": true,
+    "rx_dropped": 0,
+    "tool_calls": 8,
+    "rx_accepted_packets": 0,
+    "rx_peer_push_packets": 0,
+    "transcript_notifications": {
+      "user_delta": 141,
+      "user_done": 8,
+      "assistant_delta": 416,
+      "assistant_done": 8
+    },
+    "input_pending": {
+      "characters": 16,
+      "has_wake": true,
+      "has_question": true
+    },
+    "speech_completion": {
+      "phase": "closed",
+      "native_state": "sleeping",
+      "done_is_set": true,
+      "speech_task_done": true,
+      "speech_task_cancelled": false,
+      "error_code": null,
+      "output_active": false,
+      "nonzero_frames": 956423,
+      "activity_frames": 956416,
+      "packet_frames": 2048,
+      "packet_nonzero_frames": 12,
+      "packet_peak_abs": 1,
+      "packet_rms": 0.07654655446197431,
+      "activity_rms_threshold": 8,
+      "last_active_age_seconds": 77.2019970859983,
+      "last_nonzero_age_seconds": 76.38868173499941,
+      "drain_result": {
+        "present": true,
+        "truncated": false,
+        "drained": false,
+        "muted": true
+      }
+    },
+    "stop_status": "not_started",
+    "drain": {
+      "status": "muted",
+      "truncated": false,
+      "reason": "output_disabled"
+    },
+    "output_delivery": {
+      "status": "muted",
+      "truncated": false,
+      "reason": "output_disabled"
+    },
+    "error": null,
+    "runtime_failure": null,
+    "cleanup_status": "idle",
+    "cleanup_errors": [],
+    "stop_error": null,
+    "stop_ack_received": false,
+    "stop_closed_received": false,
+    "context": {
+      "sent_bytes": 27662,
+      "total_limit_bytes": null,
+      "known_paragraphs": 4,
+      "source_version": 3,
+      "pending": false,
+      "model_consumption_verified": false,
+      "preparing": false,
+      "delivery_scope": "successful_host_send_returns_this_live_thread"
+    },
+    "context_failure_code": null,
+    "handoff_receipts": {
+      "counts": {
+        "received": 8,
+        "admitted": 8,
+        "rejected": 0
+      },
+      "events": [
+        {
+          "outcome": "admitted",
+          "reason": null,
+          "received_seconds": 22.977965162994224,
+          "decision_seconds": 22.98194529299508
+        },
+        {
+          "outcome": "admitted",
+          "reason": null,
+          "received_seconds": 78.64422296399425,
+          "decision_seconds": 78.6443084999919
+        },
+        {
+          "outcome": "admitted",
+          "reason": null,
+          "received_seconds": 136.83012800299912,
+          "decision_seconds": 136.8333591089904
+        },
+        {
+          "outcome": "admitted",
+          "reason": null,
+          "received_seconds": 189.62847769999644,
+          "decision_seconds": 189.62854531299672
+        },
+        {
+          "outcome": "admitted",
+          "reason": null,
+          "received_seconds": 248.01963087299373,
+          "decision_seconds": 248.01968949398724
+        },
+        {
+          "outcome": "admitted",
+          "reason": null,
+          "received_seconds": 304.03451982999104,
+          "decision_seconds": 304.03457977199287
+        },
+        {
+          "outcome": "admitted",
+          "reason": null,
+          "received_seconds": 354.80644852398837,
+          "decision_seconds": 354.80650332799996
+        },
+        {
+          "outcome": "admitted",
+          "reason": null,
+          "received_seconds": 414.39926375600044,
+          "decision_seconds": 414.3993176829972
+        }
+      ],
+      "event_limit": 64,
+      "count_limit": 2147483647,
+      "timing_basis": "host monotonic seconds relative to responder construction"
+    },
+    "tool_deliveries": [
+      {
+        "question_number": 1,
+        "phase": "delivered",
+        "started_elapsed_ms": 22981,
+        "source_version": 2,
+        "available": true,
+        "selected_ref_count": 4,
+        "selected_record_indexes": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "selected_indexes_truncated": false,
+        "omitted_for_budget": false,
+        "payload_bytes": 4477,
+        "sent_bytes": 4492,
+        "marker_returned": true,
+        "model_consumption_verified": false
+      },
+      {
+        "question_number": 2,
+        "phase": "delivered",
+        "started_elapsed_ms": 78644,
+        "source_version": 2,
+        "available": true,
+        "selected_ref_count": 4,
+        "selected_record_indexes": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "selected_indexes_truncated": false,
+        "omitted_for_budget": false,
+        "payload_bytes": 3251,
+        "sent_bytes": 3266,
+        "marker_returned": true,
+        "model_consumption_verified": false
+      },
+      {
+        "question_number": 3,
+        "phase": "delivered",
+        "started_elapsed_ms": 136833,
+        "source_version": 2,
+        "available": true,
+        "selected_ref_count": 4,
+        "selected_record_indexes": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "selected_indexes_truncated": false,
+        "omitted_for_budget": false,
+        "payload_bytes": 3251,
+        "sent_bytes": 3266,
+        "marker_returned": true,
+        "model_consumption_verified": false
+      },
+      {
+        "question_number": 4,
+        "phase": "delivered",
+        "started_elapsed_ms": 189628,
+        "source_version": 3,
+        "available": true,
+        "selected_ref_count": 4,
+        "selected_record_indexes": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "selected_indexes_truncated": false,
+        "omitted_for_budget": false,
+        "payload_bytes": 3559,
+        "sent_bytes": 3574,
+        "marker_returned": true,
+        "model_consumption_verified": false
+      },
+      {
+        "question_number": 5,
+        "phase": "delivered",
+        "started_elapsed_ms": 248019,
+        "source_version": 3,
+        "available": true,
+        "selected_ref_count": 4,
+        "selected_record_indexes": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "selected_indexes_truncated": false,
+        "omitted_for_budget": false,
+        "payload_bytes": 3251,
+        "sent_bytes": 3266,
+        "marker_returned": true,
+        "model_consumption_verified": false
+      },
+      {
+        "question_number": 6,
+        "phase": "delivered",
+        "started_elapsed_ms": 304034,
+        "source_version": 3,
+        "available": true,
+        "selected_ref_count": 4,
+        "selected_record_indexes": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "selected_indexes_truncated": false,
+        "omitted_for_budget": false,
+        "payload_bytes": 3251,
+        "sent_bytes": 3266,
+        "marker_returned": true,
+        "model_consumption_verified": false
+      },
+      {
+        "question_number": 7,
+        "phase": "delivered",
+        "started_elapsed_ms": 354806,
+        "source_version": 3,
+        "available": true,
+        "selected_ref_count": 4,
+        "selected_record_indexes": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "selected_indexes_truncated": false,
+        "omitted_for_budget": false,
+        "payload_bytes": 3251,
+        "sent_bytes": 3266,
+        "marker_returned": true,
+        "model_consumption_verified": false
+      },
+      {
+        "question_number": 8,
+        "phase": "delivered",
+        "started_elapsed_ms": 414399,
+        "source_version": 3,
+        "available": true,
+        "selected_ref_count": 4,
+        "selected_record_indexes": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "selected_indexes_truncated": false,
+        "omitted_for_budget": false,
+        "payload_bytes": 3251,
+        "sent_bytes": 3266,
+        "marker_returned": true,
+        "model_consumption_verified": false
+      }
+    ],
+    "native_contract": "v3-client-delegation",
+    "greeting_completion": null
+  },
+  "connected_seconds": 508.641,
+  "exceeded_old_32K": false,
+  "failure": {
+    "type": "AssertionError",
+    "code": null,
+    "stage": "ready"
+  },
+  "cleanup": {
+    "B": true,
+    "browser": true
+  },
+  "stop_result": "stopped",
+  "stopped_status": {
+    "meeting_id": "a9997341be04453891dab5a8a5882fe7",
+    "state": "stopped",
+    "output_enabled": false,
+    "output_muted": true,
+    "rx_dropped": 0,
+    "tool_calls": 8,
+    "rx_accepted_packets": 0,
+    "rx_peer_push_packets": 0,
+    "transcript_notifications": {
+      "user_delta": 141,
+      "user_done": 8,
+      "assistant_delta": 416,
+      "assistant_done": 8
+    },
+    "input_pending": {
+      "characters": 16,
+      "has_wake": true,
+      "has_question": true
+    },
+    "speech_completion": {
+      "phase": "closed",
+      "native_state": "stopped",
+      "done_is_set": true,
+      "speech_task_done": true,
+      "speech_task_cancelled": false,
+      "error_code": null,
+      "output_active": false,
+      "nonzero_frames": 956423,
+      "activity_frames": 956416,
+      "packet_frames": 2048,
+      "packet_nonzero_frames": 12,
+      "packet_peak_abs": 1,
+      "packet_rms": 0.07654655446197431,
+      "activity_rms_threshold": 8,
+      "last_active_age_seconds": 77.68978077500651,
+      "last_nonzero_age_seconds": 76.87646542400762,
+      "drain_result": {
+        "present": true,
+        "truncated": false,
+        "drained": false,
+        "muted": true
+      }
+    },
+    "stop_status": "stopped",
+    "drain": {
+      "status": "muted",
+      "truncated": false,
+      "reason": "output_disabled"
+    },
+    "output_delivery": {
+      "status": "muted",
+      "truncated": false,
+      "reason": "output_disabled"
+    },
+    "error": null,
+    "runtime_failure": null,
+    "cleanup_status": "cleaned",
+    "cleanup_errors": [],
+    "stop_error": null,
+    "stop_ack_received": true,
+    "stop_closed_received": true,
+    "context": {
+      "sent_bytes": 27662,
+      "total_limit_bytes": null,
+      "known_paragraphs": 0,
+      "source_version": 3,
+      "pending": false,
+      "model_consumption_verified": false,
+      "preparing": false,
+      "delivery_scope": "successful_host_send_returns_this_live_thread"
+    },
+    "context_failure_code": null,
+    "handoff_receipts": {
+      "counts": {
+        "received": 8,
+        "admitted": 8,
+        "rejected": 0
+      },
+      "events": [
+        {
+          "outcome": "admitted",
+          "reason": null,
+          "received_seconds": 22.977965162994224,
+          "decision_seconds": 22.98194529299508
+        },
+        {
+          "outcome": "admitted",
+          "reason": null,
+          "received_seconds": 78.64422296399425,
+          "decision_seconds": 78.6443084999919
+        },
+        {
+          "outcome": "admitted",
+          "reason": null,
+          "received_seconds": 136.83012800299912,
+          "decision_seconds": 136.8333591089904
+        },
+        {
+          "outcome": "admitted",
+          "reason": null,
+          "received_seconds": 189.62847769999644,
+          "decision_seconds": 189.62854531299672
+        },
+        {
+          "outcome": "admitted",
+          "reason": null,
+          "received_seconds": 248.01963087299373,
+          "decision_seconds": 248.01968949398724
+        },
+        {
+          "outcome": "admitted",
+          "reason": null,
+          "received_seconds": 304.03451982999104,
+          "decision_seconds": 304.03457977199287
+        },
+        {
+          "outcome": "admitted",
+          "reason": null,
+          "received_seconds": 354.80644852398837,
+          "decision_seconds": 354.80650332799996
+        },
+        {
+          "outcome": "admitted",
+          "reason": null,
+          "received_seconds": 414.39926375600044,
+          "decision_seconds": 414.3993176829972
+        }
+      ],
+      "event_limit": 64,
+      "count_limit": 2147483647,
+      "timing_basis": "host monotonic seconds relative to responder construction"
+    },
+    "tool_deliveries": [
+      {
+        "question_number": 1,
+        "phase": "delivered",
+        "started_elapsed_ms": 22981,
+        "source_version": 2,
+        "available": true,
+        "selected_ref_count": 4,
+        "selected_record_indexes": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "selected_indexes_truncated": false,
+        "omitted_for_budget": false,
+        "payload_bytes": 4477,
+        "sent_bytes": 4492,
+        "marker_returned": true,
+        "model_consumption_verified": false
+      },
+      {
+        "question_number": 2,
+        "phase": "delivered",
+        "started_elapsed_ms": 78644,
+        "source_version": 2,
+        "available": true,
+        "selected_ref_count": 4,
+        "selected_record_indexes": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "selected_indexes_truncated": false,
+        "omitted_for_budget": false,
+        "payload_bytes": 3251,
+        "sent_bytes": 3266,
+        "marker_returned": true,
+        "model_consumption_verified": false
+      },
+      {
+        "question_number": 3,
+        "phase": "delivered",
+        "started_elapsed_ms": 136833,
+        "source_version": 2,
+        "available": true,
+        "selected_ref_count": 4,
+        "selected_record_indexes": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "selected_indexes_truncated": false,
+        "omitted_for_budget": false,
+        "payload_bytes": 3251,
+        "sent_bytes": 3266,
+        "marker_returned": true,
+        "model_consumption_verified": false
+      },
+      {
+        "question_number": 4,
+        "phase": "delivered",
+        "started_elapsed_ms": 189628,
+        "source_version": 3,
+        "available": true,
+        "selected_ref_count": 4,
+        "selected_record_indexes": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "selected_indexes_truncated": false,
+        "omitted_for_budget": false,
+        "payload_bytes": 3559,
+        "sent_bytes": 3574,
+        "marker_returned": true,
+        "model_consumption_verified": false
+      },
+      {
+        "question_number": 5,
+        "phase": "delivered",
+        "started_elapsed_ms": 248019,
+        "source_version": 3,
+        "available": true,
+        "selected_ref_count": 4,
+        "selected_record_indexes": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "selected_indexes_truncated": false,
+        "omitted_for_budget": false,
+        "payload_bytes": 3251,
+        "sent_bytes": 3266,
+        "marker_returned": true,
+        "model_consumption_verified": false
+      },
+      {
+        "question_number": 6,
+        "phase": "delivered",
+        "started_elapsed_ms": 304034,
+        "source_version": 3,
+        "available": true,
+        "selected_ref_count": 4,
+        "selected_record_indexes": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "selected_indexes_truncated": false,
+        "omitted_for_budget": false,
+        "payload_bytes": 3251,
+        "sent_bytes": 3266,
+        "marker_returned": true,
+        "model_consumption_verified": false
+      },
+      {
+        "question_number": 7,
+        "phase": "delivered",
+        "started_elapsed_ms": 354806,
+        "source_version": 3,
+        "available": true,
+        "selected_ref_count": 4,
+        "selected_record_indexes": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "selected_indexes_truncated": false,
+        "omitted_for_budget": false,
+        "payload_bytes": 3251,
+        "sent_bytes": 3266,
+        "marker_returned": true,
+        "model_consumption_verified": false
+      },
+      {
+        "question_number": 8,
+        "phase": "delivered",
+        "started_elapsed_ms": 414399,
+        "source_version": 3,
+        "available": true,
+        "selected_ref_count": 4,
+        "selected_record_indexes": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "selected_indexes_truncated": false,
+        "omitted_for_budget": false,
+        "payload_bytes": 3251,
+        "sent_bytes": 3266,
+        "marker_returned": true,
+        "model_consumption_verified": false
+      }
+    ],
+    "native_contract": "v3-client-delegation",
+    "greeting_completion": null
+  },
+  "model_process_reaped": true,
+  "input_path": "direct synthetic PCM probe, not the continuous capture fanout",
+  "uses_formal_production_prompt": true,
+  "recognized_questions_with_fresh_tool": 8,
+  "uncompleted_user_turn_at_question": 9,
+  "interpretation": "No ninth user final or handoff; pending input has wake and question. Sender-specific evidence was absent, so neither an upstream nor local sender cause is proven."
+}

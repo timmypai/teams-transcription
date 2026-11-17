@@ -1,0 +1,10 @@
+{
+  "synthetic_only": true,
+  "target": "web-auth-cleanup-probe-281d311af2",
+  "cleanup_outcome": "unknown",
+  "image": "sha256:c397b661c65a3c689e43b92b1a3656bfd6fa6163182d7f0e117803fdc53928d0",
+  "timeout_seconds": 30,
+  "follow_up_readonly_ps": "exit 0; no exact container present",
+  "follow_up_inspect": "No such container",
+  "final_outcome": "confirmed_absent"
+}

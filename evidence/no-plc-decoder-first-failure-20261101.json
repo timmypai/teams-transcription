@@ -1,0 +1,206 @@
+{
+  "recorded_at": "2026-11-01T14:40:59.979421+00:00",
+  "base_sha": "38f61dcc8ea71c9d0eb4d57f9a9e10af70a8e188",
+  "scope": "Retain the first no-PLC decoder setup failure through existing cleanup and bounded target receipt. This does not repair an unproven media cause or change CSP, decoder/PLC, network, wake rules or success gates.",
+  "active_run_observation_from_parent": {
+    "run_id": 41313855978,
+    "joined": true,
+    "B_target_stage": "decoder_setup",
+    "B_exception_type": "Error",
+    "B_tx_packets": 0,
+    "A_transcript_observed": true,
+    "raw_meeting_content_included": false,
+    "quota_reserved": 20,
+    "quota_total": 50
+  },
+  "confirmed_code_defect": "b_no_plc.py outer catch replaced all original setup errors after cleanup with a new generic Error, preventing existing target diagnostic from carrying the first API or worklet failure.",
+  "browser_reproduction": {
+    "network": "none",
+    "scope": "actual target offer/answer setup only; no ICE connectivity, RTP or Teams success claimed",
+    "results": [
+      {
+        "synthetic_csp_blocks_blob": false,
+        "chromium_version": "156.0.8078.47",
+        "actual_target_answer_js": true,
+        "model_or_meeting_called": false,
+        "answer_created": false,
+        "failure": {
+          "phase": "native_output_attach",
+          "exception_type": "Error",
+          "output_step": "target_answer",
+          "target_document_policy": {
+            "available": true,
+            "policy_count": 0,
+            "policies": []
+          },
+          "target_stage": "ice_gather",
+          "target_exception_type": "Error"
+        },
+        "cleanup": {
+          "disposed": true,
+          "sender_original": true,
+          "muted": true
+        },
+        "policy_collector_closed": true
+      },
+      {
+        "synthetic_csp_blocks_blob": true,
+        "chromium_version": "156.0.8078.47",
+        "actual_target_answer_js": true,
+        "model_or_meeting_called": false,
+        "answer_created": false,
+        "failure": {
+          "phase": "native_output_attach",
+          "exception_type": "Error",
+          "output_step": "target_answer",
+          "target_document_policy": {
+            "available": true,
+            "policy_count": 1,
+            "policies": [
+              {
+                "directives": {
+                  "script-src": {
+                    "blob": false,
+                    "self": true,
+                    "nonce_present": false,
+                    "hash_present": false,
+                    "strict_dynamic": false,
+                    "unsafe_inline": false,
+                    "none": false
+                  },
+                  "default-src": {
+                    "blob": false,
+                    "self": false,
+                    "nonce_present": false,
+                    "hash_present": false,
+                    "strict_dynamic": false,
+                    "unsafe_inline": false,
+                    "none": true
+                  }
+                },
+                "trusted_types_script_required": false,
+                "trusted_types_none": false
+              }
+            ]
+          },
+          "target_stage": "decoder_setup",
+          "target_exception_type": "Error",
+          "decoder_stage": "worklet_module",
+          "decoder_exception_type": "AbortError",
+          "decoder_reason": "unknown",
+          "target_environment": {
+            "secure_context": true,
+            "cross_origin_isolated": false,
+            "meta_csp_present": false,
+            "receiver_encoded_streams": true,
+            "audio_decoder": true,
+            "encoded_audio_chunk": true,
+            "track_generator": true,
+            "audio_worklet_node": true,
+            "audio_context": true,
+            "context_audio_worklet": true,
+            "context_state": "running",
+            "sample_rate": 48000
+          }
+        },
+        "cleanup": {
+          "disposed": true,
+          "sender_original": true,
+          "muted": true
+        },
+        "policy_collector_closed": true
+      }
+    ]
+  },
+  "environment": {
+    "browser_image": "sha256:08020a8a9da4dde8e2495cd57868e575dd2ad722de29de910c32c2a3be000076",
+    "architecture": "amd64",
+    "network": "none",
+    "user": "10001:10001",
+    "sandbox": true,
+    "read_only_root": true,
+    "cap_drop": "ALL",
+    "no_new_privileges": true,
+    "approved_repository_seccomp": true,
+    "containers_removed": true,
+    "private_volume_or_credentials_mounted": false
+  },
+  "public_origin_header_probe": {
+    "origins": [
+      "https://teams.microsoft.com/",
+      "https://teams.microsoft.com/v2/"
+    ],
+    "status": 200,
+    "default_src_none": true,
+    "script_src_nonce_unsafe_inline_only": true,
+    "require_trusted_types_for_script": true,
+    "trusted_types_none": true,
+    "nonce_or_other_header_values_saved": false,
+    "actual_meeting_document_policy": "unknown; public root/v2 HEAD is not the actual frame policy"
+  },
+  "source_comparison": "Independent official-source check found no Worklet IDL/CSP/Trusted Types behavior change between the inspected155 and156 release tags. Do not claim browser-version cause. Live page already initialized the same no-PLC receiver before target attach.",
+  "tests": {
+    "red": "Actual JS new first-cause regression failed because bNoPlcSetup was undefined",
+    "focused": {
+      "tests": 34,
+      "failures": 0,
+      "errors": 0,
+      "skips": 0
+    },
+    "initial_aggregate": {
+      "tests": 460,
+      "errors": 14,
+      "failures": 0,
+      "reason": "historical c409 fixture correctly rejected changed current b_no_plc.py"
+    },
+    "fixture_resolution": "Restore exact old receiver bytes from verified base into test-only package; retain BASE and historical candidate hashes unchanged",
+    "historical_receiver_sha256": "5fb5e4322c27d36f74a31fe8cbc740fd232088d58db5e74ba417fff224525384",
+    "final_aggregate": {
+      "tests": 470,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "success": true
+    }
+  },
+  "review": {
+    "independent_agent": "/root/local_control_spec",
+    "tests_run": 9,
+    "result": "no new confirmed defect",
+    "limitations": "no VM/model/browser run by reviewer",
+    "final_result": "First-cause/safe snapshot/collector reviewed independently; cancellation P2 fixed and regression reviewed; no further confirmed defect",
+    "separate_source_research": "Official inspected155/156 worklet IDL and CSP behavior do not support a version-change diagnosis; native TrackProcessor and ScriptProcessor alternatives were studied but not adopted"
+  },
+  "not_performed": [
+    "new live request",
+    "Join",
+    "Stop",
+    "VM mutation",
+    "deployment",
+    "PR creation",
+    "merge",
+    "ARM build"
+  ],
+  "next_needed_nonsecret_evidence": "This new source can capture actual target-document CSP flags/API availability and first worklet/API failure on a later explicitly approved deployment. Actual active Oracle CSP remains unknown; no hot patch/debug pipe/port permitted. A validated CSP-compatible observer is a possible next functional change only if evidence supports it; none is claimed here.",
+  "prototype_note": "Native MediaStreamTrackProcessor audio is available in isolated Chromium156 and yields480-frame AudioData, but timestamps jitter/reorder at startup. No replacement observer or PLC change was adopted.",
+  "passive_document_snapshot": {
+    "source": "owned Playwright document response header_values(content-security-policy), registered before navigation",
+    "new_network_requests": false,
+    "raw_header_or_url_or_nonce_or_cookie_saved": false,
+    "max_concurrent_reads": 4,
+    "max_frames": 8,
+    "max_policies": 4,
+    "max_bytes_per_policy": 16384,
+    "read_timeout_seconds": 1,
+    "stale_document": "unknown; private in-RAM URL hash and frame object binding",
+    "not_a_permission_decision": true,
+    "meta_policy": "presence only in capability snapshot; contents not captured"
+  },
+  "first_failure_snapshot": {
+    "context_state": "captured before decoder cleanup; not inferred after close",
+    "capabilities": "fixed boolean/null API availability, secure context, cross-origin isolation and meta-CSP presence; sample rate only",
+    "read_only_failure_read_seconds": 1,
+    "read_failure": "does not replace first error or skip cleanup",
+    "cancellation": "independent P2 found and fixed with finally-owned cleanup regression"
+  }
+}

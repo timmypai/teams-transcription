@@ -1,0 +1,53 @@
+{
+  "activity_number": 15,
+  "attempt_number": 14,
+  "operator_report": {
+    "remote_audio_heard": true,
+    "middle_interruption_then_resumption": true,
+    "closing_phrase_reported": "以上是待辦的原文",
+    "complete_saved_task_content_verified": false,
+    "continuous_audio_accepted": false
+  },
+  "last_live_observation": {
+    "observed_at_utc": "2026-10-16T07:19:31.250290+00:00",
+    "active": true,
+    "capture_state": "recording",
+    "native_state": "sleeping",
+    "error_code": null,
+    "runtime_failure": null,
+    "handoff_received": 4,
+    "handoff_admitted": 4,
+    "tool_calls": 4,
+    "context_sent_bytes": 46802,
+    "speech_phase": "closed",
+    "drained": true,
+    "truncated": false,
+    "limitation": "Cumulative counters do not identify four human questions. A successful local drain does not prove gap-free remote playback. This is the previous observation, not a new live poll."
+  },
+  "offline_scheduling_probe": {
+    "surface": "Actual sandboxed Chromium with production BrowserTXSink and a synthetic local sender",
+    "network_requests_aborted": true,
+    "physical_microphone": false,
+    "model": false,
+    "teams": false,
+    "credential_free_subprocess_environment": true,
+    "source_module": "teams_transcription/b_browser_tx.py",
+    "source_sha256": "72e5ce4cf98736a5eb8bd1653cb52b81d656d317157cc348ed04706622bb2235",
+    "packets": 20,
+    "frames_per_packet": 2048,
+    "sample_rate": 48000,
+    "signal": "synthetic constant PCM16 mono",
+    "injected_midstream_arrival_delay_ms": 120,
+    "playback_gaps_over_1ms": 7,
+    "max_scheduled_gap_ms": 120.0,
+    "midstream_scheduled_gap_ms": 120.0,
+    "sum_scheduled_gap_ms": 141.333,
+    "drain": {"status": "drained", "truncated": false, "reason": null, "drained": true},
+    "elapsed_seconds": 2.55,
+    "finding": "Packet scheduling can insert silence after delayed arrival while reporting a successful non-truncated drain.",
+    "limitation": "This proves a local playout-underrun mechanism, not the unique cause, duration, or word loss of the reported real Teams interruption. The probe measures scheduled source intervals, not a remote recording."
+  },
+  "live_service_modified_or_restarted": false,
+  "new_join_submitted": false,
+  "runtime_fix_claimed": false
+}

@@ -1,0 +1,141 @@
+{
+  "recorded_at": "2026-10-30",
+  "repository": "paulpai0412/teams-transcription",
+  "branch": "test/qa-passive-audio-observer",
+  "base_source_sha": "c4090edb0e8e5db50d8950515522dba733618c51",
+  "observer_implementation_commit": "f346ef4b2d864a8e9c4364817e5c98c01d704d30",
+  "scope": "Optional fixed shared synthetic question QA observer only; isolated-session candidate not included.",
+  "official_sources": [
+    {
+      "url": "https://github.com/openai/codex/blob/3b01b36fa5eb96ba82a776bd3c2fc57f8969181f/codex-rs/voice-host/src/playout.rs",
+      "facts": "Native GStreamer RTP jitter latency60ms; drop-on-latencyfalse; Opus PLCtrue/FECfalse. Different evidence semantics; no PLC adopted here."
+    },
+    {
+      "url": "https://www.w3.org/TR/webrtc-encoded-transform/",
+      "facts": "Optional receiveTime is browser timestamp of last received packet for frame, relative to performance.timeOrigin; absent stays null."
+    },
+    {
+      "url": "https://www.w3.org/TR/webrtc-stats/",
+      "facts": "Reported RTP jitter is seconds, loss may be negative. These do not establish packet-level lost speech."
+    }
+  ],
+  "implemented": {
+    "source": "Copy admitted decoded scratch planes before clear, preserve channels in f32le; original decoder/read/write calls unchanged.",
+    "render": "Additional same-AudioContext clone/zero-gain worklet; one in-flight credit and bounded buffered PCM.",
+    "clock": "Source callback AudioContext.currentTime vs render currentFrame/sampleRate in same context; not sample-exact alignment.",
+    "metadata": "Numeric allowlist: optional receive time, application dequeue, RTP timestamp, decode/write timings, receiver loss/jitter, host mute, observer overhead.",
+    "audio_bytes_cap": 67108864,
+    "audio_bytes_per_stream_cap": 33554432,
+    "metadata_bytes_cap_including_manifest": 8388608,
+    "max_observer_seconds": 120,
+    "private_directory_mode": "0700",
+    "private_file_mode": "0600",
+    "original_qa_json_separate_directory": true,
+    "cleanup": "Observer task tracked in existing cleanup; final drain<=.75s/4batches/2MiB within original deadline; unknown JS evaluation not retried.",
+    "base_qa_accepted_rewritten": false,
+    "plc_decoder_queue_policy_changed": false,
+    "model_or_transcript_content_in_metadata": false
+  },
+  "limitations": [
+    "Only first GPT receiver segment. No Teams or second-relay measurement.",
+    "No browser/ARM64 image/host/real Live execution in this task.",
+    "Source decoded silence is not semantic natural-pause proof; RTP gaps can include DTX or reorder.",
+    "Render zero/source stall are candidates, confirmed underflow remains unavailable.",
+    "Extra graph/copy/messages/polling/I/O can alter timing. Noninterference not proved; worklet overhead may use coarse clock.",
+    "Finalization measurement excludes manifest write; no remote audibility, word-completeness or quality pass claim."
+  ],
+  "validation": {
+    "focused": {
+      "tests": 113,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 15.123
+    },
+    "controlled_offline_aggregate": {
+      "scope": "controlled offline subset",
+      "suites": [
+        "test_assistant_store",
+        "test_assistant_daemon",
+        "test_calendar_client",
+        "test_glossary_context",
+        "test_admin_web",
+        "test_sqlite_voice_context",
+        "test_sqlite_only_store",
+        "test_rx_contract",
+        "test_prefetch_codex_npm",
+        "test_staging_control",
+        "test_capture_cleanup_review",
+        "test_release_gate",
+        "test_diagnostic_projection",
+        "test_codex_auth",
+        "test_provider_state",
+        "test_workflow_triggers",
+        "test_staging_docker_diagnostics",
+        "test_staging_compose",
+        "test_first_deploy_recovery",
+        "test_qa_probe.ProbeTests",
+        "test_qa_receiver_projection",
+        "test_qa_audio_observer",
+        "test_turn_lifecycle_evidence.TurnLifecycleEvidenceTests",
+        "test_speech_completion_snapshot.SpeechCompletionSnapshotTests",
+        "test_incremental_minutes_context.ContextTests.test_wire_instruction_distinguishes_verbatim_quote_and_normal_answers",
+        "test_native_incremental_context.NativeSnapshotContextTests.test_delivery_receipt_hashes_identify_actual_current_payload_without_content",
+        "test_b_native.NativeLiveTests.test_live_prompt_distinguishes_verbatim_format_from_normal_current_fact_answers",
+        "test_b_native.NativeLiveTests.test_three_physical_questions_in_one_provider_turn_query_current_sqlite_each_time"
+      ],
+      "tests": 289,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "success": true,
+      "teams_or_model_called": false,
+      "audio_e2e_tested": false
+    },
+    "node_fixtures": "Scratch copy, common-clock metadata, single-credit final flush, parser/drift/native-call preservation.",
+    "wrapper_fixtures": "Preserve base accepted true/false, tracked cleanup, read uncertainty no retry, unauthorized/nonfixed/overlapping-output rejection.",
+    "loader": "Valid private stage passes; modified source rejects before execution; FIFO blocked before fix and rejects immediately after nonblocking regular-file check.",
+    "compile_diff_help_checks": "passed",
+    "pinned_base_module_hashes": {
+      "qa_probe.py": "c718c7e08600b383a9916be3684393dcd531fb86007be8811b60a2431be39197",
+      "b_no_plc.py": "5fb5e4322c27d36f74a31fe8cbc740fd232088d58db5e74ba417fff224525384",
+      "b_live.py": "1415852671c4377860511f93df284c12750f88165cbcef8021349c4090304547",
+      "b_media_profile.py": "1dfac1d3515b40874fe52408b1540660a2c8ae661620e095feb566f207257882"
+    },
+    "models_called": 0,
+    "real_chromium_called": false
+  },
+  "reviews": {
+    "spec": "0 confirmed findings;11 original offline tests and1 containment regression independently passed.",
+    "standards": "0 remaining confirmed findings;11 original tests and1 containment regression passed independently; loader FIFO gap fixed and statically re-reviewed."
+  },
+  "red_green": [
+    "Recorder module absent -> fixed-synthetic private/cap test passes.",
+    "Original QA JSON allowed inside observer directory -> reject before mkdir/model.",
+    "FIFO loader blocked before hash verification -> O_NONBLOCK + fstat regular-file rejection."
+  ],
+  "candidate_manifest": {
+    "path": "evidence/passive-audio-candidate-manifest-20261030.json",
+    "sha256": "f496f4d9f4df36f8f09129f1f921283ff1b2f6c6c6cab70776b99a6294eaf4ad",
+    "module_files": {
+      "qa_audio_observation.py": "582203b817ca7e96fd4d7c6baf36f800b3781580da0bac9ffb20546cb11c2bd3",
+      "qa_audio_tap.py": "84eeec403097d73e17f5a01a8be7da0200dfd9c0a501598be858e136e49e007c",
+      "qa_audio_probe.py": "78da4e0bcfd35b96f51cd7e8c09253aba5d77c0a46f05800020bf534d9001323"
+    }
+  },
+  "host_offline_checker": "tools/check_qa_audio_candidate.py; no Live-run option; hash all3 before any exec then verify fixed base only.",
+  "files_sha256": {
+    "teams_transcription/qa_audio_observation.py": "582203b817ca7e96fd4d7c6baf36f800b3781580da0bac9ffb20546cb11c2bd3",
+    "teams_transcription/qa_audio_tap.py": "84eeec403097d73e17f5a01a8be7da0200dfd9c0a501598be858e136e49e007c",
+    "teams_transcription/qa_audio_probe.py": "78da4e0bcfd35b96f51cd7e8c09253aba5d77c0a46f05800020bf534d9001323",
+    "tests/test_qa_audio_observer.py": "c70b9463c3ccfacf091f8bea817490ff92062729e538a4f0ee6085db6621ded2",
+    "docs/QA-PASSIVE-AUDIO.md": "91eddd14fec70b791a32ad930400769d1ff8d9649bcdad51e5ca8b7143392806",
+    "tools/ci_contracts.py": "0bbbd493e017a9fd1d4fdaab58920b41781ea9b0bd09829e451fbef1cc46f808",
+    "tools/check_qa_audio_candidate.py": "5711a2b4a1c800a232ce58a524b08e43fb5c75fd07d84fb9c0151baeb2dbb319",
+    "evidence/passive-audio-candidate-manifest-20261030.json": "f496f4d9f4df36f8f09129f1f921283ff1b2f6c6c6cab70776b99a6294eaf4ad"
+  },
+  "remaining": [
+    "Future host offline staging/preflight, then separately authorized synthetic QA capture.",
+    "No actual continuity conclusion; unchanged reported model ledger7/50,remaining43."
+  ],
+  "operations": "Source/offline checks/review/authorized workbranch push only. No PR/merge/workflow/build/publish/deploy/host/Live/Teams/security/credential changes."
+}

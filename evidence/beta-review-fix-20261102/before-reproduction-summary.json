@@ -1,0 +1,22 @@
+{
+  "head": "4805d5ae65b0a5301fc183f4c46569aceddfac17",
+  "public_seams": [
+    "SQLite",
+    "real ASGI admin app"
+  ],
+  "tests": [
+    "test_task_workflow.TaskWorkflowTests.test_correction_revokes_inherited_acceptance_even_when_task_is_omitted",
+    "test_postmeeting_ui.PostmeetingUIHTTPTests.test_series_page_and_task_form_keep_one_revision_across_concurrent_action",
+    "test_postmeeting_ui.PostmeetingUIHTTPTests.test_task_form_revision_and_history_match_visible_fields_during_concurrent_update",
+    "test_postmeeting_ui.PostmeetingUIHTTPTests.test_valid_lf_completion_note_is_accepted"
+  ],
+  "failing_assertions": [
+    "test_correction_revokes_inherited_acceptance_even_when_task_is_omitted (test_task_workflow.TaskWorkflowTests.test_correction_revokes_inherited_acceptance_even_when_task_is_omitted) (omit=False)",
+    "test_correction_revokes_inherited_acceptance_even_when_task_is_omitted (test_task_workflow.TaskWorkflowTests.test_correction_revokes_inherited_acceptance_even_when_task_is_omitted) (omit=True)",
+    "test_series_page_and_task_form_keep_one_revision_across_concurrent_action (test_postmeeting_ui.PostmeetingUIHTTPTests.test_series_page_and_task_form_keep_one_revision_across_concurrent_action)",
+    "test_task_form_revision_and_history_match_visible_fields_during_concurrent_update (test_postmeeting_ui.PostmeetingUIHTTPTests.test_task_form_revision_and_history_match_visible_fields_during_concurrent_update)",
+    "test_valid_lf_completion_note_is_accepted (test_postmeeting_ui.PostmeetingUIHTTPTests.test_valid_lf_completion_note_is_accepted)"
+  ],
+  "exit_code": 1,
+  "raw_html_traceback_exported": false
+}

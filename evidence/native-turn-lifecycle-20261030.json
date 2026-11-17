@@ -1,0 +1,127 @@
+{
+  "recorded_at": "2026-10-30T06:31:08.325782+00:00",
+  "repository": "paulpai0412/teams-transcription",
+  "branch": "fix/native-turn-lifecycle-evidence",
+  "base_main": "2a6540dcc05b7c4d53c76002115d59879e3ac1dc",
+  "implementation_commit": "135ae91f1fd950f4ddac9ed4e45ca0d3e88bf40d",
+  "scope": "Bounded lifecycle evidence and revision-isolated session proposal only; no runtime isolation switch, prompt, acceptance, model, credential or deployment change.",
+  "A": {
+    "status": "Documented proposal, not runtime implementation or proven live isolation",
+    "capability": "Existing same-model/OAuth thread/start + thread/realtime/start, new scoped session with includeStartupContext=false and no prior answer chat; no new grant/API key/port/permission required for proposed isolated synthetic QA. Concurrent admission/resource/latency unverified.",
+    "preservation": "Continuous A and B listener stay live; answer sessions require separately owned resources, one meeting output lease/echo exclusion and full post-await scope revalidation; unknown cleanup interlock, no stale fallback.",
+    "accounting": "Two answer-only starts omit real wake/listener proof. Persistent B listener + two changed-answer sessions may use3 B starts; newly started A adds1; count each real start/failure conservatively, no auto retries or prewarm.",
+    "latency": "Account/thread/browser/ICE/SDP/media startup measured separately; existing3sCLI/35sSDP/20sconnect component bounds,45sQAanswer/120sQAwork not silently extended.",
+    "offline_prototype": "Scenario table prepared; coordinator/mock isolation prototype not implemented in this branch.",
+    "doc": "docs/NATIVE-SESSION-ISOLATION.md"
+  },
+  "B": {
+    "Native_limits": {
+      "events": 64,
+      "open_turn_hashes_per_observation": 8,
+      "saturating_counter_limit": 2147483647
+    },
+    "fields": "Fixed host-relative callback/transition time,event/role/reason/action,ID presence+SHA,question/request/current/previous/open-turn hashes,scope delivered,latch state; DC ingress separated from RPC ingress and own-thread transcript counts.",
+    "privacy": "No raw turn/thread/request IDs, transcript,token,SDP,error body or arbitrary event fields retained; oversized IDs not hashed, invalid Unicode handled without new diagnostic exception.",
+    "delivery": "Existing browser messages/json_errors/binding_attempted/binding_returned/binding_failed projected as bounded integers into at most5 QA peer snapshots.",
+    "retention": "Per completed round; pre-cleanup completion timeout snapshot; post-cleanup control trace. Missing observation stays unavailable; truncation/dropped/saturation explicit.",
+    "control_invariance": "QA criteria/accepted AST and Native _speech_done set/clear calls match base exactly; observation not used to authorize completion/acceptance."
+  },
+  "case0005": {
+    "origin": "Parent safe field report only, no raw host receipt fetched",
+    "DC_lifecycle_original": "Not captured: created/done counts/order,turn IDs,open-turn/latch reasons,browser delivery counters all unavailable; not reconstructed.",
+    "RPC_probe_relative_seconds": {
+      "q1_user_first": 8.355308,
+      "q1_assistant_first": 13.840464,
+      "q1_user_done": 13.843041,
+      "q1_assistant_done": 19.308603,
+      "q2_user_first": 20.962694,
+      "q2_assistant_first": 26.67933,
+      "q2_user_done": 27.26695,
+      "q2_assistant_done": 31.699419
+    },
+    "q2_timeout": "waiting_done/nativeanswering/donefalse/speech_task_donefalse/quiet39.64/outputactive",
+    "overall_accepted": false,
+    "q1_rx_verified": true,
+    "q2_rx_verified": false,
+    "batch_used_reported": 5,
+    "batch_limit": 50,
+    "remaining_reported": 45
+  },
+  "validation": {
+    "initial_red": "Missing turn_lifecycle_snapshot at public Native event/receipt seam",
+    "initial_saturation_red": "Missing explicit saturation flag; added while preserving original done rejection",
+    "focused": {
+      "tests": 91,
+      "failures": 0,
+      "errors": 0
+    },
+    "aggregate": {
+      "scope": "controlled offline subset",
+      "suites": [
+        "test_assistant_store",
+        "test_assistant_daemon",
+        "test_calendar_client",
+        "test_glossary_context",
+        "test_admin_web",
+        "test_sqlite_voice_context",
+        "test_sqlite_only_store",
+        "test_rx_contract",
+        "test_prefetch_codex_npm",
+        "test_staging_control",
+        "test_capture_cleanup_review",
+        "test_release_gate",
+        "test_diagnostic_projection",
+        "test_codex_auth",
+        "test_provider_state",
+        "test_workflow_triggers",
+        "test_staging_docker_diagnostics",
+        "test_staging_compose",
+        "test_first_deploy_recovery",
+        "test_qa_probe.ProbeTests",
+        "test_qa_receiver_projection",
+        "test_turn_lifecycle_evidence.TurnLifecycleEvidenceTests",
+        "test_speech_completion_snapshot.SpeechCompletionSnapshotTests",
+        "test_incremental_minutes_context.ContextTests.test_wire_instruction_distinguishes_verbatim_quote_and_normal_answers",
+        "test_native_incremental_context.NativeSnapshotContextTests.test_delivery_receipt_hashes_identify_actual_current_payload_without_content",
+        "test_b_native.NativeLiveTests.test_live_prompt_distinguishes_verbatim_format_from_normal_current_fact_answers",
+        "test_b_native.NativeLiveTests.test_three_physical_questions_in_one_provider_turn_query_current_sqlite_each_time"
+      ],
+      "tests": 267,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "success": true,
+      "teams_or_model_called": false,
+      "audio_e2e_tested": false
+    },
+    "historical_first_broad_run": "44 tests passed: imported existing40 Native tests plus4 initial lifecycle tests. Final module import narrowed so CI does not accidentally duplicate that suite.",
+    "harness_correction": "Optional-evidence test initially used old helper None return; returned already-asserted result from helper, no product fix/acceptance change.",
+    "actionlint": "v1.7.7 passed",
+    "py_compile": "passed",
+    "diff_check": "passed",
+    "AST_control_invariance": "passed",
+    "actual_browser_arm64_host_dc_model_isolation_tested": false,
+    "models_called": 0,
+    "meetings_joined": 0,
+    "secret_scope_scan": "Changed files only: no known private-key, GitHub token, provider-key or JWT patterns; seven implementation file hashes match. Manual diff review found no raw meeting data or credentials. Heuristic scan is not proof of absence."
+  },
+  "reviews": {
+    "spec": "0 confirmed findings;8 targeted tests passed independently; no live/model/browser.",
+    "standards": "0 confirmed actionable findings and 0 actionable heuristic smells in independent static review. Independent targeted execution did not start: exec-server transport disconnected; not counted as a pass. No files changed or browser/model executed by reviewer."
+  },
+  "files_sha256": {
+    "docs/NATIVE-SESSION-ISOLATION.md": "53c8484ed09dc3f51d6a62857646465ad7c79fb9d6f8d2d2d14406fd6595b4af",
+    "teams_transcription/b_native.py": "f6294cc445d1b2706943724f8db8294ce0ea65176cd9664825064baf1faf7c49",
+    "teams_transcription/qa_probe.py": "66fc7e7b47fa0871e6615c5db5651dfc2d5989ce0d778f20d0aed337073a17fd",
+    "tests/test_qa_probe.py": "1f4a33c1cb6fd9ccd7c2159439f205ce7b265723bc8ce923d0e239c061b8bb36",
+    "tests/test_speech_completion_snapshot.py": "f551a5af5babd069b9a882605f5a5488b32fc7136694fb6798b90502b77233e5",
+    "tests/test_turn_lifecycle_evidence.py": "ff016fc1f605e2ce8734a8ea31c15e24ccd0df19aadce644b94f501d7e1426ca",
+    "tools/ci_contracts.py": "14fb771e1f46d5adc616aa3d6c08ee1ff4d009515bcf1ebbb0a97d29b55ac760"
+  },
+  "remaining": [
+    "Future reviewed release before actual host lifecycle capture",
+    "A prototype/actual startup cost and session isolation require separate implementation/execution; no automatic architecture switch"
+  ],
+  "operations": "Source/offline tests/review and authorized branch delivery only; no PR/merge/build/dispatch/deploy/model/credential/security modifications.",
+  "delivery": "Branch push authorized; remote commit verification recorded in final report after this evidence commit."
+}

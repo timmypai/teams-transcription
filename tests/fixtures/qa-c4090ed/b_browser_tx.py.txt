@@ -1,0 +1,519 @@
+"""Owned no-PLC Live receiver -> local WebRTC -> exact Teams audio sender.
+
+Only SDP and scalar media observations cross Python. Both owned receiving hops
+decode received Opus only; persistent native graphs render missing input as zero.
+"""
+import asyncio
+import inspect
+import math
+import uuid
+
+from .b_no_plc import NO_PLC_RECEIVER_JS
+
+
+BIND_TX_JS = r"""({owner, meetingId, peerIndex, senderIndex, selectionId, documentId, peerId, senderId}) => {
+  if (window.__bMeetingId !== meetingId) throw new Error('Meeting identity mismatch');
+  const capture=window.__meeting, selected=window.__bSelectedSender;
+  const pc=selectionId?selected?.pc:capture?.peers[peerIndex];
+  const sender=selectionId?selected?.sender:pc?.getSenders().filter(s=>s.track?.kind==='audio')[senderIndex];
+  const transceiver=selectionId?selected?.transceiver:null;
+  if(selectionId && (!selected || selected.selectionId!==selectionId || selected.document!==document ||
+      selected.capture!==capture || selected.href!==location.href ||
+      capture.peers[peerIndex]!==pc || !pc.getSenders().includes(sender) ||
+      sender.track!==selected.original)) throw new Error('Exact sender selection invalidated');
+  if(!selectionId && selected) throw new Error('Exact sender selection capability required');
+  const nullOriginal=sender?.track===null;
+  const canSendNull=()=>!!transceiver && pc.getTransceivers().includes(transceiver) &&
+    transceiver.sender===sender && pc.getTransceivers().filter(t=>t.sender===sender).length===1 &&
+    transceiver.receiver?.track?.kind==='audio' && transceiver.stopped===false &&
+    ['sendonly','sendrecv'].includes(transceiver.currentDirection);
+  if (!sender || pc.connectionState==='closed' ||
+      (nullOriginal?!canSendNull():sender.track.kind!=='audio' || sender.track.readyState!=='live' || sender.track.enabled))
+    throw new Error('Select an existing muted meeting audio sender');
+  if(!window.__bTXMeetingGuard) {
+    let meeting=window.__bMeetingId;
+    Object.defineProperty(window,'__bMeetingId',{configurable:false,
+      get:()=>meeting,set:value=>{
+        if(value!==meeting) for(const state of window.__bTXOwnedStates?.values() || [])
+          state.revoke('meeting_changed');
+        meeting=value;
+      }});
+    window.__bTXMeetingGuard=true;
+  }
+  window.__bTXBindings ||= new Map();
+  const binding={owner, meetingId, peerIndex, senderIndex, capture, document,
+    pc, sender, transceiver, original:sender.track, href:location.href, documentId, peerId, senderId};
+  window.__bTXBindings.set(owner,binding);
+  return {meeting_id:meetingId, document_id:documentId, peer_id:peerId, sender_id:senderId, owner};
+}"""
+
+_ICE = r"""
+  const gathered=pc=>new Promise((resolve,reject)=>{
+    if(pc.iceGatheringState==='complete') return resolve();
+    const finish=()=>{if(pc.iceGatheringState==='complete') {clearTimeout(timer);
+      pc.removeEventListener('icegatheringstatechange',finish);resolve();}};
+    const timer=setTimeout(()=>{pc.removeEventListener('icegatheringstatechange',finish);
+      reject(new Error('Native output ICE timeout'));},5000);
+    pc.addEventListener('icegatheringstatechange',finish);
+  });
+"""
+
+
+SOURCE_OFFER_JS = r"""async ({owner}) => {""" + _ICE + r"""
+  if(window.__bNativeTXSource) throw new Error('Native output source already owned');
+  const live=window.__live, pc=live?.pc;
+  const receivers=pc?.getReceivers().filter(r=>r.track?.kind==='audio' && r.track.readyState==='live') || [];
+  if(!pc?.remoteDescription || receivers.length!==1 || !receivers[0].track.enabled ||
+      ['closed','failed','disconnected'].includes(pc.connectionState))
+    throw new Error('Native Live audio receiver unavailable');
+  const decoder=live.noPlc, inputTrack=receivers[0].track;
+  if(!decoder || decoder.receiver!==receivers[0] || !decoder.valid())
+    throw new Error('No-PLC Live decoder unavailable');
+  const track=decoder.track, relay=new RTCPeerConnection({iceServers:[]});
+  const control=relay.createDataChannel('native-output-'+owner);
+  const state={owner,document,href:location.href,live,pc,track,inputTrack,decoder,
+    receiver:receivers[0],relay,control,disposed:false};
+  state.valid=()=>window.__bNativeTXSource===state && !state.disposed && state.document===document &&
+    location.href===state.href && window.__live===live && live.pc===pc &&
+    pc.getReceivers().includes(state.receiver) && state.receiver.track===inputTrack &&
+    inputTrack.readyState==='live' && inputTrack.enabled && live.noPlc===decoder &&
+    decoder.track===track && track.readyState==='live' && track.enabled &&
+    !['closed','failed','disconnected'].includes(pc.connectionState) && decoder.valid();
+  state.close=()=>{if(state.disposed) return; state.disposed=true; clearInterval(state.guard);
+    removeEventListener('pagehide',state.close); track.removeEventListener('ended',state.close);
+    inputTrack.removeEventListener('ended',state.close);
+    try{if(control.readyState==='open') control.send('revoke');}catch(_){}
+    control.close(); relay.close();};
+  window.__bNativeTXSource=state;
+  addEventListener('pagehide',state.close,{once:true}); track.addEventListener('ended',state.close,{once:true});
+  inputTrack.addEventListener('ended',state.close,{once:true});
+  state.guard=setInterval(()=>{if(!state.valid()) state.close();},25);
+  control.addEventListener('close',state.close);
+  relay.addEventListener('connectionstatechange',()=>{
+    if(['failed','closed','disconnected'].includes(relay.connectionState)) state.close();
+  });
+  try {
+    if(!state.valid()) throw new Error('Native output source invalidated');
+    relay.addTrack(track,new MediaStream([track]));
+    await relay.setLocalDescription(await relay.createOffer());
+    if(!state.valid()) throw new Error('Native output source invalidated');
+    await gathered(relay);
+    if(!state.valid()) throw new Error('Native output source invalidated');
+    return relay.localDescription.sdp;
+  } catch(error) {state.close();throw error;}
+}"""
+
+SOURCE_ANSWER_JS = r"""async ({owner,sdp}) => {
+  const state=window.__bNativeTXSource;
+  if(!state || state.owner!==owner || !state.valid()) throw new Error('Native output source invalidated');
+  await state.relay.setRemoteDescription({type:'answer',sdp});
+  if(!state.valid()) {state.close();throw new Error('Native output source invalidated');}
+}"""
+
+SOURCE_CHECK_JS = r"""({owner}) => {
+  const state=window.__bNativeTXSource;
+  if(!state || state.owner!==owner || !state.valid() || state.relay.connectionState!=='connected' ||
+      state.control.readyState!=='open') {
+    if(state?.owner===owner) state.close();
+    throw new Error('Native output source disconnected or invalidated');
+  }
+  return state.decoder.stats().input;
+}"""
+
+SOURCE_STOP_JS = r"""async ({owner}) => {
+  const state=window.__bNativeTXSource;
+  if(state?.owner===owner) {
+    state.close();await state.decoder?.closing;
+    if(window.__bNativeTXSource===state) delete window.__bNativeTXSource;
+  }
+}"""
+
+_HELPERS = r"""
+  const binding=window.__bTXBindings?.get(owner);
+  const identity=()=>!!binding && binding.document===document &&
+    window.__bMeetingId===binding.meetingId && location.href===binding.href &&
+    window.__meeting===binding.capture && binding.capture.peers[binding.peerIndex]===binding.pc &&
+    binding.pc.connectionState!=='closed' && binding.pc.getSenders().includes(binding.sender) &&
+    (binding.original!==null || (binding.pc.getTransceivers().includes(binding.transceiver) &&
+      binding.transceiver.sender===binding.sender));
+  const current=()=>identity() && (binding.original!==null ||
+    (binding.transceiver.stopped===false && binding.transceiver.receiver?.track?.kind==='audio' &&
+      ['sendonly','sendrecv'].includes(binding.transceiver.currentDirection)));
+  const valid=state=>!!state && current() && state.binding===binding && window.__bTX===state &&
+    state.owner===owner && !state.disposed && state.track?.readyState==='live' &&
+    state.receiver?.track===state.inputTrack && state.inputTrack.readyState==='live' &&
+    state.relay.getReceivers().includes(state.receiver) &&
+    state.decoder?.receiver===state.receiver && state.decoder.track===state.track && state.decoder.valid() &&
+    (state.installed?state.sender.track===state.track:state.sender.track===state.original);
+  const connected=state=>valid(state) && state.relay.connectionState==='connected' && state.control?.readyState==='open';
+  const requireReady=state=>{if(!connected(state)) {if(state?.owner===owner) state.revoke('invalidated');
+    throw new Error('Native TX disconnected or ownership/meeting binding mismatch');}};
+"""
+
+TARGET_ANSWER_JS = r"""async ({owner,sdp}) => {""" + _HELPERS + _ICE + NO_PLC_RECEIVER_JS + r"""
+  if(!current()) throw new Error('TX document/meeting/peer binding invalidated');
+  if(window.__bTX) throw new Error('Native TX already owned');
+  if(binding.sender.track!==binding.original || binding.original?.enabled)
+    throw new Error('Select an existing muted meeting audio sender');
+  // The capture closure constructs a bare PC, not CapturePC: no A RX feedback.
+  const relay=binding.capture.createNativeOutputPeer();
+  const state={owner,binding,pc:binding.pc,sender:binding.sender,original:binding.original,relay,
+    track:null,inputTrack:null,receiver:null,decoderReady:null,control:null,muted:true,
+    disposed:false,installed:false,replacing:false,stopping:false,delivery:null};
+  state.mute=reason=>{
+    if(!state.muted)
+      state.delivery={status:'truncated',truncated:true,drained:false,reason};
+    state.muted=true; if(state.track) state.track.enabled=false;
+  };
+  state.revoke=reason=>{state.mute(reason); state.disposed=true; clearInterval(state.guard);
+    state.decoder?.close(); state.control?.close(); relay.close(); if(state.track) state.track.stop();};
+  state.onHide=()=>state.revoke('document_closed');
+  window.__bTXOwnedStates ||= new Map(); window.__bTXOwnedStates.set(owner,state); window.__bTX=state;
+  addEventListener('pagehide',state.onHide,{once:true});
+  relay.ontrack=event=>{
+    if(event.track.kind!=='audio' || state.receiver) {state.receiverMismatch=true;return;}
+    state.inputTrack=event.track; state.receiver=event.receiver;
+  };
+  relay.ondatachannel=event=>{
+    if(state.control || event.channel.label!=='native-output-'+owner) {state.revoke('foreign_control');return;}
+    state.control=event.channel;
+    state.control.onmessage=()=>state.revoke('source_invalidated');
+    state.control.onclose=()=>state.revoke('source_disconnected');
+  };
+  relay.addEventListener('connectionstatechange',()=>{
+    if(['failed','closed','disconnected'].includes(relay.connectionState) && !state.disposed)
+      state.revoke('relay_disconnected');
+  });
+  state.guard=setInterval(()=>{
+    if(!current() || window.__bTX!==state || (!state.replacing &&
+        state.sender.track!==(state.installed?state.track:state.original)) ||
+        (state.decoder && !state.decoder.valid())) state.revoke('invalidated');
+  },25);
+  try {
+    await relay.setRemoteDescription({type:'offer',sdp});
+    if(!state.receiver || state.receiverMismatch) throw new Error('Native TX receiver unavailable');
+    // No RTP can arrive until this local answer is published. Initialize after
+    // setRemoteDescription settles: closing the peer inside its ontrack event
+    // can strand that negotiation promise on a setup failure.
+    state.decoderReady=createNoPlcReceiver(state.receiver,()=>state.revoke('decoder_failed'));
+    const decoder=await state.decoderReady;
+    if(state.disposed) {decoder.close();await decoder.closing;throw new Error('TX revoked during decode setup');}
+    state.decoder=decoder; state.track=decoder.track; state.track.enabled=false;
+    state.track.addEventListener('ended',()=>state.revoke('receiver_ended'),{once:true});
+    state.inputTrack.addEventListener('ended',()=>state.revoke('receiver_ended'),{once:true});
+    if(!valid(state)) throw new Error('Native TX decoder invalidated');
+    const opus=RTCRtpReceiver.getCapabilities('audio').codecs.filter(codec=>
+      codec.mimeType.toLowerCase()==='audio/opus' && codec.clockRate===48000 &&
+      [1,2].includes(codec.channels));
+    if(!opus.length) throw new Error('Native no-PLC Opus decoder unavailable');
+    relay.getTransceivers().find(t=>t.receiver===state.receiver).setCodecPreferences(opus);
+    await relay.setLocalDescription(await relay.createAnswer());
+    if(!valid(state)) throw new Error('Native TX binding invalidated');
+    await gathered(relay);
+    if(!valid(state)) throw new Error('Native TX binding invalidated');
+    return relay.localDescription.sdp;
+  } catch(error) {state.revoke('attach_failed');throw error;}
+}"""
+
+READY_TX_JS = r"""async ({owner}) => {""" + _HELPERS + r"""
+  const state=window.__bTXOwnedStates?.get(owner), deadline=performance.now()+5000;
+  while(!connected(state)) {
+    if(!valid(state) || performance.now()>=deadline) {
+      if(state?.owner===owner) state.revoke('relay_not_ready');
+      throw new Error('Native TX relay not ready');
+    }
+    await new Promise(resolve=>setTimeout(resolve,10));
+  }
+  return {muted:!state.track.enabled,track_id:state.track.id};
+}"""
+
+START_TX_JS = r"""async ({owner}) => {""" + _HELPERS + r"""
+  const state=window.__bTXOwnedStates?.get(owner);
+  requireReady(state);
+  if(!state.muted || state.track.enabled) throw new Error('Native TX is not muted');
+  state.delivery=null;
+  if(!state.installed) {
+    if(state.original?.enabled) throw new Error('Select an existing muted meeting audio sender');
+    state.replacing=true;
+    state.ready=(async()=>{
+      await state.sender.replaceTrack(state.track); state.replacing=false; state.installed=true;
+      requireReady(state);
+    })();
+    await state.ready;
+  }
+  requireReady(state);
+  return {muted:!state.track.enabled,track_id:state.track.id};
+}"""
+
+MUTE_TX_JS = r"""({owner,muted}) => {""" + _HELPERS + r"""
+  const state=window.__bTXOwnedStates?.get(owner);
+  if(muted) {if(state?.owner===owner) state.mute('muted');return;}
+  requireReady(state);
+  if(!state.installed) throw new Error('Native TX sender not installed');
+  state.delivery=null; state.muted=false; state.track.enabled=true;
+}"""
+
+PAUSE_TX_JS = r"""({owner}) => {""" + _HELPERS + r"""
+  const state=window.__bTXOwnedStates?.get(owner);
+  requireReady(state); state.mute('explicit_pause');
+  return state.delivery || {status:'stopped',truncated:false,reason:null,drained:false};
+}"""
+
+OBSERVE_TX_JS = r"""async ({owner}) => {""" + _HELPERS + r"""
+  const state=window.__bTXOwnedStates?.get(owner); requireReady(state);
+  const sample=state.decoder.stats(); requireReady(state);
+  const {frames,energy,duration}=sample.render, packets=sample.input.packets;
+  if(![frames,energy,duration,packets].every(n=>Number.isFinite(n) && n>=0)) {
+    state.revoke('stats_unavailable');throw new Error('No-PLC render statistics unavailable');
+  }
+  return {frames,energy,duration,packets,connected:true};
+}"""
+
+STOP_TX_JS = r"""async ({owner}) => {""" + _HELPERS + r"""
+  const state=window.__bTXOwnedStates?.get(owner);
+  if(!state || state.owner!==owner) return {cleaned:false,status:'idle',truncated:false,reason:null,drained:false};
+  if(state.cleanup) return await state.cleanup;
+  state.cleanup=(async()=>{
+    // The owner map plus exact sender/track identity owns cleanup. A replaced
+    // convenience pointer must be left untouched, not strand our ended track.
+    const senderLive=()=>current() && state.binding===binding &&
+      state.pc.getTransceivers().some(t=>t.sender===state.sender && t.stopped===false) &&
+      (state.original===null || state.original.readyState==='live');
+    state.stopping=!state.disposed && senderLive() &&
+      (state.sender.track===state.track || (!state.installed && state.sender.track===state.original));
+    state.revoke('explicit_stop'); removeEventListener('pagehide',state.onHide);
+    try {
+      try {await state.ready;} catch(_) {}
+      // Stopped transceivers retain their sender/track identity but cannot be
+      // restored. Never resurrect them or overwrite a foreign replacement.
+      if(senderLive() && state.sender.track===state.track) {
+        if(state.original) state.original.enabled=false;
+        await state.sender.replaceTrack(state.original);
+        // Do not touch a different meeting/owner after asynchronous restoration.
+        if(identity() && window.__bTX===state && state.sender.track===state.original && state.original)
+          state.original.enabled=false;
+      }
+    } finally {
+      try {await state.decoderReady;} catch(_) {}
+      await state.decoder?.closing;
+      if(window.__bTX===state) delete window.__bTX;
+      window.__bTXOwnedStates.delete(owner);
+    }
+    return {cleaned:true,...(state.delivery || {status:'idle',truncated:false,reason:null,drained:false})};
+  })();
+  return await state.cleanup;
+}"""
+
+
+class BrowserTXSink:
+    """A persistent native relay with explicit, fail-closed sender authorization."""
+
+    def __init__(self, frame, *, meeting_id, dual_channel_policy=None,
+                 peer_index=0, sender_index=0, cleanup_timeout=3, selection_id=None):
+        if not isinstance(meeting_id, str) or not meeting_id:
+            raise ValueError('An explicit meeting identity is required')
+        if any(type(v) is not int or v < 0 for v in (peer_index, sender_index)):
+            raise ValueError('Explicit nonnegative sender indexes are required')
+        if selection_id is not None and (not isinstance(selection_id, str) or len(selection_id) != 32):
+            raise ValueError('Explicit selection capability required')
+        self.frame, self.meeting_id = frame, meeting_id
+        self.peer_index, self.sender_index, self.selection_id = peer_index, sender_index, selection_id
+        self.policy, self.cleanup_timeout = dual_channel_policy, cleanup_timeout
+        self.owner = uuid.uuid4().hex
+        self.started = False
+        self.binding = None
+        self._pending = False
+        self._starting = None
+        self._attaching = None
+        self._live_page = None
+        self.cleanup_status = 'idle'
+        self.last_delivery = {'status':'idle','truncated':False,'reason':None,'drained':False}
+        self._diagnostics = {'available': False}
+
+    def diagnostics(self):
+        """Cached native receiver counters; no PCM queue or remote audibility claim."""
+        return dict(self._diagnostics)
+
+    async def bind(self):
+        if self.binding or self._pending:
+            raise RuntimeError('Browser TX binding cannot be silently replaced')
+        self.binding = await self.frame.evaluate(BIND_TX_JS, {'owner': self.owner,
+            'meetingId': self.meeting_id, 'peerIndex': self.peer_index,
+            'senderIndex': self.sender_index, 'selectionId':self.selection_id,
+            'documentId': uuid.uuid4().hex, 'peerId':uuid.uuid4().hex, 'senderId':uuid.uuid4().hex})
+        return dict(self.binding)
+
+    async def attach_live(self, page):
+        if not self.binding:
+            raise RuntimeError('Browser TX requires an explicit document binding')
+        if self._pending or self._live_page is not None:
+            raise RuntimeError('Native output source cannot be silently replaced')
+        target_page = getattr(self.frame, 'page', self.frame)
+        if page is target_page or page.context is target_page.context:
+            raise RuntimeError('Native output requires an isolated Live page/context')
+        self._live_page = page
+        self._stats_offset = {key:self._diagnostics.get(key, 0) for key in (
+            'frames','energy','duration','packets',
+            'source_frames','source_energy','source_duration','source_packets')}
+        self._pending = True
+        self.cleanup_status = 'pending'
+
+        async def attach():
+            offer = await page.evaluate(SOURCE_OFFER_JS, {'owner':self.owner})
+            answer = await self.frame.evaluate(TARGET_ANSWER_JS, {'owner':self.owner,'sdp':offer})
+            await page.evaluate(SOURCE_ANSWER_JS, {'owner':self.owner,'sdp':answer})
+            await self.frame.evaluate(READY_TX_JS, {'owner':self.owner})
+            await page.evaluate(SOURCE_CHECK_JS, {'owner':self.owner})
+
+        self._attaching = asyncio.create_task(attach())
+        try:
+            await asyncio.shield(self._attaching)
+        except BaseException:
+            await asyncio.shield(self.stop())
+            raise
+
+    async def _check_source(self):
+        if self._live_page is None:
+            raise RuntimeError('Native output requires attach_live before start')
+        return await self._live_page.evaluate(SOURCE_CHECK_JS, {'owner':self.owner})
+
+    async def start(self):
+        if self._pending and not self.started and self.cleanup_status == 'unknown':
+            raise RuntimeError('Browser TX cleanup pending')
+        if not self.binding:
+            raise RuntimeError('Browser TX requires an explicit document binding')
+        try:
+            await self._check_source()
+            self._starting = asyncio.create_task(self.frame.evaluate(START_TX_JS, {'owner':self.owner}))
+            result = await asyncio.shield(self._starting)
+            await self._check_source()
+            if result.get('muted') is not True or not result.get('track_id'):
+                raise RuntimeError('Browser TX native track or initial mute mismatch')
+            if self.started and result['track_id'] != self.binding.get('track_id'):
+                raise RuntimeError('Browser TX owned track changed')
+            self.binding['track_id'] = result['track_id']
+            self.started = True
+            self.last_delivery = {'status':'idle','truncated':False,'reason':None,'drained':False}
+        except BaseException:
+            await asyncio.shield(self.stop())
+            raise
+
+    async def _authorize(self):
+        try:
+            authorized = self.policy(dict(self.binding)) if self.policy else False
+            if inspect.isawaitable(authorized):
+                authorized = await asyncio.wait_for(authorized, self.cleanup_timeout)
+        except BaseException:
+            await asyncio.shield(self.set_muted(True))
+            raise
+        if authorized is not True:
+            await self.set_muted(True)
+            raise RuntimeError('Explicit dual-channel TX policy authorization required')
+
+    async def set_muted(self, muted):
+        if not self.started:
+            if muted:
+                if self._pending:
+                    await self.frame.evaluate(MUTE_TX_JS, {'owner':self.owner,'muted':True})
+                return
+            raise RuntimeError('Browser TX is not started')
+        try:
+            if not muted:
+                await self._check_source()
+                await self._authorize()
+                await self._check_source()
+            await self.frame.evaluate(MUTE_TX_JS, {'owner':self.owner,'muted':bool(muted)})
+            if not muted:
+                await self._check_source()
+                self.last_delivery = {'status':'truncated','truncated':True,'reason':'not_quiet','drained':False}
+        except BaseException:
+            if not muted:
+                await asyncio.shield(self.frame.evaluate(MUTE_TX_JS, {'owner':self.owner,'muted':True}))
+            raise
+
+    async def observe(self):
+        try:
+            await self._check_source()
+            result = await self.frame.evaluate(OBSERVE_TX_JS, {'owner':self.owner})
+            source = await self._check_source()
+            result.update({f'source_{key}':source[key]
+                           for key in ('frames','energy','duration','packets')})
+            keys = ('frames','energy','duration','packets',
+                    'source_frames','source_energy','source_duration','source_packets')
+            if result.get('connected') is not True or any(
+                    type(result.get(key)) not in (int,float) or not math.isfinite(result[key]) or result[key] < 0
+                    for key in keys):
+                raise RuntimeError('Native receiver statistics unavailable')
+            cumulative = {key:result[key] + self._stats_offset[key] for key in keys}
+            if self._diagnostics.get('available') and any(cumulative[key] < self._diagnostics[key] for key in keys):
+                raise RuntimeError('Native receiver statistics regressed')
+            self._diagnostics = {'available':True,'connected':True,**cumulative}
+            return {**cumulative,'connected':True}
+        except BaseException:
+            self._diagnostics = {**self._diagnostics,'connected':False}
+            await asyncio.shield(self.set_muted(True))
+            raise
+
+    async def pause(self):
+        if not self.started:
+            if self._pending:
+                raise RuntimeError('Browser TX cleanup pending')
+            return dict(self.last_delivery)
+        task = asyncio.create_task(asyncio.wait_for(self.frame.evaluate(
+            PAUSE_TX_JS, {'owner':self.owner}), self.cleanup_timeout))
+        cancelled = False
+        try:
+            while not task.done():
+                try:
+                    await asyncio.shield(task)
+                except asyncio.CancelledError:
+                    cancelled = True
+            self.last_delivery = task.result()
+        except BaseException:
+            self.started = False
+            self.cleanup_status = 'unknown'
+            self.last_delivery = {'status':'truncated','truncated':True,'reason':'cleanup_unknown','drained':False}
+            raise
+        if cancelled:
+            raise asyncio.CancelledError
+        return dict(self.last_delivery)
+
+    async def stop(self):
+        if not self._pending:
+            return dict(self.last_delivery)
+        self.started = False
+
+        async def cleanup():
+            for pending in (self._attaching, self._starting):
+                if pending:
+                    try:
+                        await pending
+                    except Exception:
+                        pass
+            try:
+                closed = getattr(self.frame, 'is_closed', lambda: False)()
+                detached = getattr(self.frame, 'is_detached', lambda: False)()
+                if closed or detached:
+                    return {'cleaned':False}
+                return await self.frame.evaluate(STOP_TX_JS, {'owner':self.owner})
+            finally:
+                if self._live_page is not None and not self._live_page.is_closed():
+                    await self._live_page.evaluate(SOURCE_STOP_JS, {'owner':self.owner})
+
+        task = asyncio.create_task(cleanup())
+        try:
+            result = await asyncio.wait_for(asyncio.shield(task), self.cleanup_timeout)
+        except BaseException:
+            self.cleanup_status = 'unknown'
+            self.last_delivery = {'status':'truncated','truncated':True,'reason':'cleanup_unknown','drained':False}
+            task.add_done_callback(lambda t: t.exception() if not t.cancelled() else None)
+            raise
+        self._pending = False
+        self._starting = self._attaching = None
+        self._live_page = None
+        self.cleanup_status = 'cleaned'
+        if result.get('cleaned'):
+            self.last_delivery = {key:value for key,value in result.items() if key!='cleaned'}
+        elif self.last_delivery.get('status') != 'idle':
+            self.last_delivery = {'status':'truncated','truncated':True,'reason':'binding_lost','drained':False}
+        return dict(self.last_delivery)

@@ -1,0 +1,432 @@
+{
+  "kind": "formal_native_B_five_spoken_questions",
+  "teams_joined": false,
+  "calendar_writes": 0,
+  "physical_input_output": false,
+  "prompt_unchanged": true,
+  "synthetic_text_gate": false,
+  "context_input": "disposable SQLite synthetic sources",
+  "questions": [
+    {
+      "number": 1,
+      "question": "小白小白，這次代號和預算各是多少？",
+      "fact_matches": {
+        "codeword": true,
+        "amount": true
+      },
+      "tool_calls": 1,
+      "reader_calls": 1,
+      "tool_deliveries": [
+        {
+          "question_number": 1,
+          "phase": "delivered",
+          "started_elapsed_ms": 8586,
+          "source_version": 2,
+          "available": true,
+          "selected_ref_count": 4,
+          "selected_record_indexes": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "selected_indexes_truncated": false,
+          "omitted_for_budget": false,
+          "payload_bytes": 4477,
+          "sent_bytes": 4492,
+          "marker_returned": true,
+          "model_consumption_verified": false
+        }
+      ],
+      "marker_sent": true,
+      "bytes_sent": 4492,
+      "state": "sleeping",
+      "runtime_failure": null,
+      "error": false,
+      "output_enabled": false,
+      "speech": {
+        "phase": "closed",
+        "native_state": "sleeping",
+        "done_is_set": true,
+        "speech_task_done": true,
+        "speech_task_cancelled": false,
+        "error_code": null,
+        "output_active": false,
+        "nonzero_frames": 236657,
+        "activity_frames": 237568,
+        "packet_frames": 2048,
+        "packet_nonzero_frames": 0,
+        "packet_peak_abs": 0,
+        "packet_rms": 0.0,
+        "activity_rms_threshold": 8,
+        "last_active_age_seconds": 41.112961386999814,
+        "last_nonzero_age_seconds": 41.112961386999814,
+        "drain_result": {
+          "present": true,
+          "truncated": false,
+          "drained": false,
+          "muted": true
+        }
+      },
+      "elapsed_seconds": 55.08,
+      "passed": true
+    },
+    {
+      "number": 2,
+      "question": "小白小白，本場更正後的預算是多少？",
+      "fact_matches": {
+        "corrected_amount": true
+      },
+      "tool_calls": 1,
+      "reader_calls": 1,
+      "tool_deliveries": [
+        {
+          "question_number": 2,
+          "phase": "delivered",
+          "started_elapsed_ms": 63738,
+          "source_version": 3,
+          "available": true,
+          "selected_ref_count": 4,
+          "selected_record_indexes": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "selected_indexes_truncated": false,
+          "omitted_for_budget": false,
+          "payload_bytes": 3559,
+          "sent_bytes": 3574,
+          "marker_returned": true,
+          "model_consumption_verified": false
+        }
+      ],
+      "marker_sent": true,
+      "bytes_sent": 3574,
+      "state": "sleeping",
+      "runtime_failure": null,
+      "error": false,
+      "output_enabled": false,
+      "speech": {
+        "phase": "closed",
+        "native_state": "sleeping",
+        "done_is_set": true,
+        "speech_task_done": true,
+        "speech_task_cancelled": false,
+        "error_code": null,
+        "output_active": false,
+        "nonzero_frames": 145255,
+        "activity_frames": 139264,
+        "packet_frames": 2048,
+        "packet_nonzero_frames": 12,
+        "packet_peak_abs": 1,
+        "packet_rms": 0.07654655446197431,
+        "activity_rms_threshold": 8,
+        "last_active_age_seconds": 43.52375640500395,
+        "last_nonzero_age_seconds": 42.46606046700617,
+        "drain_result": {
+          "present": true,
+          "truncated": false,
+          "drained": false,
+          "muted": true
+        }
+      },
+      "elapsed_seconds": 55.071,
+      "passed": true
+    }
+  ],
+  "passed": true,
+  "same_thread_all_questions": true,
+  "final_status": {
+    "meeting_id": "85cba9862f3c4695a6e504df25a9c85b",
+    "state": "sleeping",
+    "output_enabled": false,
+    "output_muted": true,
+    "rx_dropped": 0,
+    "tool_calls": 2,
+    "rx_accepted_packets": 0,
+    "rx_peer_push_packets": 0,
+    "transcript_notifications": {
+      "user_delta": 19,
+      "user_done": 2,
+      "assistant_delta": 30,
+      "assistant_done": 2
+    },
+    "input_pending": {
+      "characters": 0,
+      "has_wake": false,
+      "has_question": false
+    },
+    "speech_completion": {
+      "phase": "closed",
+      "native_state": "sleeping",
+      "done_is_set": true,
+      "speech_task_done": true,
+      "speech_task_cancelled": false,
+      "error_code": null,
+      "output_active": false,
+      "nonzero_frames": 145255,
+      "activity_frames": 139264,
+      "packet_frames": 2048,
+      "packet_nonzero_frames": 12,
+      "packet_peak_abs": 1,
+      "packet_rms": 0.07654655446197431,
+      "activity_rms_threshold": 8,
+      "last_active_age_seconds": 43.52400647000468,
+      "last_nonzero_age_seconds": 42.4663105320069,
+      "drain_result": {
+        "present": true,
+        "truncated": false,
+        "drained": false,
+        "muted": true
+      }
+    },
+    "stop_status": "not_started",
+    "drain": {
+      "status": "muted",
+      "truncated": false,
+      "reason": "output_disabled"
+    },
+    "output_delivery": {
+      "status": "muted",
+      "truncated": false,
+      "reason": "output_disabled"
+    },
+    "error": null,
+    "runtime_failure": null,
+    "cleanup_status": "idle",
+    "cleanup_errors": [],
+    "stop_error": null,
+    "stop_ack_received": false,
+    "stop_closed_received": false,
+    "context": {
+      "sent_bytes": 8066,
+      "total_limit_bytes": null,
+      "known_paragraphs": 4,
+      "source_version": 3,
+      "pending": false,
+      "model_consumption_verified": false,
+      "preparing": false,
+      "delivery_scope": "successful_host_send_returns_this_live_thread"
+    },
+    "context_failure_code": null,
+    "handoff_receipts": {
+      "counts": {
+        "received": 2,
+        "admitted": 2,
+        "rejected": 0
+      },
+      "events": [
+        {
+          "outcome": "admitted",
+          "reason": null,
+          "received_seconds": 8.586200503996224,
+          "decision_seconds": 8.586503705999348
+        },
+        {
+          "outcome": "admitted",
+          "reason": null,
+          "received_seconds": 63.73853746299574,
+          "decision_seconds": 63.73860263399547
+        }
+      ],
+      "event_limit": 64,
+      "count_limit": 2147483647,
+      "timing_basis": "host monotonic seconds relative to responder construction"
+    },
+    "tool_deliveries": [
+      {
+        "question_number": 1,
+        "phase": "delivered",
+        "started_elapsed_ms": 8586,
+        "source_version": 2,
+        "available": true,
+        "selected_ref_count": 4,
+        "selected_record_indexes": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "selected_indexes_truncated": false,
+        "omitted_for_budget": false,
+        "payload_bytes": 4477,
+        "sent_bytes": 4492,
+        "marker_returned": true,
+        "model_consumption_verified": false
+      },
+      {
+        "question_number": 2,
+        "phase": "delivered",
+        "started_elapsed_ms": 63738,
+        "source_version": 3,
+        "available": true,
+        "selected_ref_count": 4,
+        "selected_record_indexes": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "selected_indexes_truncated": false,
+        "omitted_for_budget": false,
+        "payload_bytes": 3559,
+        "sent_bytes": 3574,
+        "marker_returned": true,
+        "model_consumption_verified": false
+      }
+    ],
+    "native_contract": "v3-client-delegation",
+    "greeting_completion": null
+  },
+  "connected_seconds": 110.153,
+  "cleanup": {
+    "B": true,
+    "browser": true
+  },
+  "stop_result": "stopped",
+  "stopped_status": {
+    "meeting_id": "85cba9862f3c4695a6e504df25a9c85b",
+    "state": "stopped",
+    "output_enabled": false,
+    "output_muted": true,
+    "rx_dropped": 0,
+    "tool_calls": 2,
+    "rx_accepted_packets": 0,
+    "rx_peer_push_packets": 0,
+    "transcript_notifications": {
+      "user_delta": 19,
+      "user_done": 2,
+      "assistant_delta": 30,
+      "assistant_done": 2
+    },
+    "input_pending": {
+      "characters": 0,
+      "has_wake": false,
+      "has_question": false
+    },
+    "speech_completion": {
+      "phase": "closed",
+      "native_state": "stopped",
+      "done_is_set": true,
+      "speech_task_done": true,
+      "speech_task_cancelled": false,
+      "error_code": null,
+      "output_active": false,
+      "nonzero_frames": 145255,
+      "activity_frames": 139264,
+      "packet_frames": 2048,
+      "packet_nonzero_frames": 12,
+      "packet_peak_abs": 1,
+      "packet_rms": 0.07654655446197431,
+      "activity_rms_threshold": 8,
+      "last_active_age_seconds": 43.574125793995336,
+      "last_nonzero_age_seconds": 42.51642985599756,
+      "drain_result": {
+        "present": true,
+        "truncated": false,
+        "drained": false,
+        "muted": true
+      }
+    },
+    "stop_status": "stopped",
+    "drain": {
+      "status": "muted",
+      "truncated": false,
+      "reason": "output_disabled"
+    },
+    "output_delivery": {
+      "status": "muted",
+      "truncated": false,
+      "reason": "output_disabled"
+    },
+    "error": null,
+    "runtime_failure": null,
+    "cleanup_status": "cleaned",
+    "cleanup_errors": [],
+    "stop_error": null,
+    "stop_ack_received": true,
+    "stop_closed_received": true,
+    "context": {
+      "sent_bytes": 8066,
+      "total_limit_bytes": null,
+      "known_paragraphs": 0,
+      "source_version": 3,
+      "pending": false,
+      "model_consumption_verified": false,
+      "preparing": false,
+      "delivery_scope": "successful_host_send_returns_this_live_thread"
+    },
+    "context_failure_code": null,
+    "handoff_receipts": {
+      "counts": {
+        "received": 2,
+        "admitted": 2,
+        "rejected": 0
+      },
+      "events": [
+        {
+          "outcome": "admitted",
+          "reason": null,
+          "received_seconds": 8.586200503996224,
+          "decision_seconds": 8.586503705999348
+        },
+        {
+          "outcome": "admitted",
+          "reason": null,
+          "received_seconds": 63.73853746299574,
+          "decision_seconds": 63.73860263399547
+        }
+      ],
+      "event_limit": 64,
+      "count_limit": 2147483647,
+      "timing_basis": "host monotonic seconds relative to responder construction"
+    },
+    "tool_deliveries": [
+      {
+        "question_number": 1,
+        "phase": "delivered",
+        "started_elapsed_ms": 8586,
+        "source_version": 2,
+        "available": true,
+        "selected_ref_count": 4,
+        "selected_record_indexes": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "selected_indexes_truncated": false,
+        "omitted_for_budget": false,
+        "payload_bytes": 4477,
+        "sent_bytes": 4492,
+        "marker_returned": true,
+        "model_consumption_verified": false
+      },
+      {
+        "question_number": 2,
+        "phase": "delivered",
+        "started_elapsed_ms": 63738,
+        "source_version": 3,
+        "available": true,
+        "selected_ref_count": 4,
+        "selected_record_indexes": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "selected_indexes_truncated": false,
+        "omitted_for_budget": false,
+        "payload_bytes": 3559,
+        "sent_bytes": 3574,
+        "marker_returned": true,
+        "model_consumption_verified": false
+      }
+    ],
+    "native_contract": "v3-client-delegation",
+    "greeting_completion": null
+  },
+  "model_process_reaped": true,
+  "scope": "actual formal native builder; prompt freshness clarified, no server-force claim"
+}

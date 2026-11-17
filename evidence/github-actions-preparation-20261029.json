@@ -1,0 +1,253 @@
+{
+  "test_id": "github-actions-delivery-preparation",
+  "tested_at": "2026-10-29T07:13:38.612883+00:00",
+  "repository": "paulpai0412/teams-transcription",
+  "baseline": "bf0a108237608e6ee5cea3e93e08e9b3105f38ad",
+  "branch": "ci/oracle-staging-actions-20261029",
+  "scope": "local source preparation; no remote mutations or VM access",
+  "checks": {
+    "offline_contract_subset": {
+      "scope": "controlled offline subset",
+      "suites": [
+        "test_assistant_store",
+        "test_assistant_daemon",
+        "test_calendar_client",
+        "test_glossary_context",
+        "test_admin_web",
+        "test_sqlite_voice_context",
+        "test_sqlite_only_store",
+        "test_rx_contract",
+        "test_prefetch_codex_npm",
+        "test_staging_control",
+        "test_capture_cleanup_review"
+      ],
+      "tests": 153,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "success": true,
+      "teams_or_model_called": false,
+      "audio_e2e_tested": false
+    },
+    "original_compose_render": {
+      "test_id": "standalone-compose-config",
+      "tested_at": "2026-10-29T06:49:55.272046+00:00",
+      "input_kind": "synthetic non-secret configuration",
+      "service_started": false,
+      "registry_accessed": false,
+      "model_or_meeting_called": false,
+      "checks": {
+        "fixture_ignores_ambient_deployment": true,
+        "base_has_no_published_ports": true,
+        "nonroot_explicit_identity": true,
+        "read_only_drop_caps": true,
+        "sandbox_without_privilege_bypass": true,
+        "bounded_resources": true,
+        "background_entrypoint": true,
+        "health_port_matches_runtime": true,
+        "private_data_mount_no_auto_creation": true,
+        "local_management_loopback_only": true,
+        "codex_auth_opt_in": true,
+        "auth_refresh_same_private_directory": true,
+        "environment_overrides_yaml": true,
+        "required_TRANSCRIPTION_IMAGE": true,
+        "required_PUID": true,
+        "required_PGID": true,
+        "required_APPDATA_HOST": true
+      },
+      "success": true
+    },
+    "staging_compose_render": true,
+    "actionlint": {
+      "version": "1.7.7",
+      "official_archive_sha256": "023070a287cd8cccd71515fedc843f1985bf96c436b7effaecce67290e7e0757",
+      "success": true
+    },
+    "dockerfile_arm64_buildx_check": {
+      "success": true,
+      "warnings": 0,
+      "executed_image": false
+    },
+    "arm64_dependencies": {
+      "pinned_python_base_includes_arm64": true,
+      "base_digest": "sha256:7753c33391fc9f01d1984375bf375eb6686d52ba10db6043a86634a5ccf90dcf",
+      "codex_public_package_sha512_and_archive_verified": true,
+      "codex_binary_elf_machine": 183,
+      "expected_aarch64_machine": 183,
+      "python312_aarch64_binary_wheels_downloaded": true,
+      "native_runtime_tested": false
+    },
+    "local_x64_build": {
+      "success": true,
+      "application_source_commit": "389c7054afa851c1acb692295bb73961deb9d292",
+      "image_id": "sha256:14c53745359bc15bcb7e35a9b6e1700af39b6f720ee7508c03654aaf74a9abc5",
+      "uses_existing_proxy_and_CA_only": true,
+      "tls_validation_disabled": false,
+      "secrets_in_build_context": false,
+      "initial_failures": [
+        "build_container_direct_egress_refused",
+        "existing_proxy_CA_not_available_to_apt_until_public_CA_mount_readable"
+      ],
+      "correction": "HTTPS Debian sources; apt update fails on any fetch error; existing public CA mounted readably only during build; pinned Codex/Python installs offline"
+    },
+    "local_x64_compose_smoke": {
+      "test_id": "standalone-production-compose",
+      "tested_at": "2026-10-29T07:08:55.451188+00:00",
+      "image_id": "sha256:14c53745359bc15bcb7e35a9b6e1700af39b6f720ee7508c03654aaf74a9abc5",
+      "input_kind": "controlled private SQLite",
+      "network": "none",
+      "credentials_mounted": false,
+      "model_or_meeting_called": false,
+      "checks": {
+        "actual_default_daemon_healthy": true,
+        "authenticated_admin_http": true,
+        "foreign_origin_rejected": true,
+        "mcp_route_absent": true,
+        "empty_saved_history_distinct_from_missing": true,
+        "bound_context_over_old_32k_limit": true,
+        "nonroot_readonly_dropcaps": true,
+        "network_none_no_published_ports": true,
+        "no_auth_or_docker_socket_mount": true,
+        "effective_cgroup_cpu_memory_pids_limits": true,
+        "container_chroot_still_kernel_denied": true,
+        "actual_sandboxed_chromium_local_page": true,
+        "authenticated_calendar_ui": true,
+        "pinned_codex_installed": true,
+        "graceful_sigterm": true,
+        "sqlite_survives_restart": true,
+        "no_meeting_markdown_or_raw_audio": true
+      },
+      "codex_version": "codex-cli 0.159.0-alpha.3",
+      "stop_seconds": 0.338,
+      "success": true
+    },
+    "red_green_regressions": {
+      "maintenance_claim_guard": "failed before guard, passed after",
+      "maintenance_release_resumed_scheduler": "failed before atomic release validation, passed after",
+      "repeated_failed_rollback": "failed before healthy-history preservation, passed after",
+      "busy_pre_stop_abort": "failed before conditional marker acquisition, passed after"
+    },
+    "additional_regressions": [
+      "cleanup policy parity for interrupted, valid-review and stale-review states",
+      "helper cleanup uncertainty preserves first error",
+      "actual subprocess SIGTERM removes job registry config",
+      "pre-job hook rejects PRs, non-main, other repos and workflows"
+    ],
+    "skill_inventory": {
+      "upstream": "https://github.com/mattpocock/skills",
+      "commit": "59db609eb1e18aaf59b63284d0e52255aff0c63c",
+      "skills": 27,
+      "engineering": 20,
+      "productivity": 7,
+      "skill_files": 79,
+      "MIT_license_preserved": true,
+      "non_metadata_files_byte_identical": true,
+      "metadata_change": "policy.allow_implicit_invocation=false",
+      "upstream_programs_executed": false,
+      "full_security_audit": false,
+      "next_run_discovery_verified": false
+    },
+    "review": {
+      "baseline_review_commit": "389c7054afa851c1acb692295bb73961deb9d292",
+      "standards_findings_resolved": true,
+      "spec_findings_resolved": true,
+      "pre_stop_abort_followup_fixed_and_tested": true
+    }
+  },
+  "source_sha256": {
+    "Dockerfile": "144c40b830a53b24a5feaf0c3ad709d3d8239c851175a5c25218899943513af9",
+    "deploy/stagingctl.py": "1bbd61d6ab322fb5c5f512e5f21475da0fdb9f8436d04eb0fd734bdc5213e7a2",
+    "deploy/runner-job-started.sh": "3da8f4cce9ace3eb008c45944adc3d378d4bf7ba84defc337b65f1dc2ec5539f",
+    "deploy/compose.staging.yml": "cb33f515460de63da7e0b3b7928b1130000e5b334d8c30a97e7c32aeaf634662",
+    "teams_transcription/assistant_store.py": "54b0676ced4d3929fe2f4021f0cabe4ef514224c7f746e9553db72b6ae295a1d",
+    "teams_transcription/daemon.py": "334e3d82703e77e05d9acdfe18e04fe8394facd05abdce85f06254fea70e8660",
+    "tools/ci_contracts.py": "cd9bc5f32e881e17529f290a7e036952c235bd5da3ea5a5976aace65e743d67d",
+    "tools/compose_smoke.py": "408f2b1afda72a448b40969e69d5441e7d6d689ea5627686967cda598476d2bf"
+  },
+  "not_executed": [
+    "GitHub push",
+    "PR/Issue/Project writes",
+    "workflow dispatch",
+    "GHCR publication",
+    "Oracle SSH or provisioning",
+    "Oracle deploy or rollback",
+    "Unraid changes",
+    "native ARM64 image execution",
+    "real Google/Teams/GPT Live/audio E2E"
+  ],
+  "remaining_prerequisites": [
+    "parent review and authorization before branch push",
+    "native GitHub ARM64 build/run and private GHCR package permissions",
+    "VM rootless daemon/runner/hook/cgroup/volume/private config provisioning and verification by separate authorized task",
+    "GitHub environment protections and zero-new-spend limits verified before ENABLE_HOSTED_CI/STAGING_READY",
+    "separate fresh authorization for real Teams/audio acceptance"
+  ],
+  "temporary_resources": "x64 smoke containers and volumes removed; local validation image/build cache retained; no services running",
+  "full_original_discovery": false,
+  "success_at_claimed_scope": true,
+  "tracking_issues_readback": {
+    "repository": "paulpai0412/teams-transcription",
+    "read_via": "GitHub connector; no writes",
+    "issues": [
+      {
+        "number": 1,
+        "state_at_read": "open",
+        "url": "https://github.com/paulpai0412/teams-transcription/issues/1"
+      },
+      {
+        "number": 2,
+        "state_at_read": "open",
+        "url": "https://github.com/paulpai0412/teams-transcription/issues/2"
+      },
+      {
+        "number": 3,
+        "state_at_read": "open",
+        "url": "https://github.com/paulpai0412/teams-transcription/issues/3"
+      },
+      {
+        "number": 4,
+        "state_at_read": "open",
+        "url": "https://github.com/paulpai0412/teams-transcription/issues/4"
+      },
+      {
+        "number": 5,
+        "state_at_read": "open",
+        "url": "https://github.com/paulpai0412/teams-transcription/issues/5"
+      },
+      {
+        "number": 6,
+        "state_at_read": "open",
+        "url": "https://github.com/paulpai0412/teams-transcription/issues/6"
+      }
+    ],
+    "implementation_related": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "separate_acceptance": [
+      5,
+      6
+    ],
+    "automatic_issue_closure": false,
+    "remaining_scope_gaps": {
+      "1": "native ARM64/GitHub publication evidence pending; bounded image scan implemented and tested locally",
+      "2": "machine provenance gate implemented and synthetic-tested; actual successful/failed GitHub run verification pending",
+      "3": "Oracle pull/deploy/rollback acceptance not executed",
+      "4": "bounded safe log projection/resource/source linkage implemented and synthetic-tested; Oracle readback pending",
+      "7": "onboarding/preflight/software inventory implemented, actual fresh grant/refresh/Live RXTX not executed"
+    }
+  },
+  "vm_prerequisites_reported_by_parent": {
+    "independently_verified_by_cloud_task": false,
+    "docker": "29.9.2",
+    "compose": "5.6.1",
+    "account": "teams-staging",
+    "uid": 1002,
+    "socket": "/run/user/1002/docker.sock",
+    "runner_registration": "in progress at report",
+    "deployment_completed": false
+  },
+  "superseded_for_current_followup_by": "github-delivery-onboarding-completion-20261029.json"
+}

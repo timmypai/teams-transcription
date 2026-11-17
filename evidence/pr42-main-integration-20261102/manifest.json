@@ -1,0 +1,17 @@
+{
+  "scope": "offline main integration only; no browser/model/Oracle",
+  "files": {
+    "contracts.log.gz": {
+      "sha256": "9e2fa41f369dd5513a69e514d1202c8646c7432d1d2f6b5cbd9c6d3eb3d1314d",
+      "bytes": 19161
+    },
+    "integration.json": {
+      "sha256": "b0338c3ae5f852d5bf77e6e51ab79a4c156b301730a5bbb25c66f500a1f4c1b4",
+      "bytes": 7030
+    },
+    "postmeeting-focused.log.gz": {
+      "sha256": "5919a19fcf49aad974365a4ab406f1e4d75e64622e6f7110c6aade19b2367046",
+      "bytes": 2181
+    }
+  }
+}

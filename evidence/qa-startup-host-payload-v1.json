@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "status": "verified_release_pinned_not_installed",
+  "implementation_commit": "a2bb51fe0e1662b94a922c7aa12371089ed27aa4",
+  "repository": "paulpai0412/teams-transcription",
+  "files": [
+    {
+      "source": "deploy/qa_cloud_bridge.py",
+      "target": "/opt/teams-staging/bin/qa-cloud-bridge",
+      "owner": "root:root",
+      "mode": "0755",
+      "sha256": "d75be07823ee313c4b862c2fb1fa33f8bf1baf69af1c3657f3333403cb809172",
+      "bytes": 20578
+    },
+    {
+      "source": "deploy/qa_container_entry.py",
+      "target": "/opt/teams-staging/bin/qa_container_entry.py",
+      "owner": "root:root",
+      "mode": "0644",
+      "sha256": "d44db8a4af1fe0f8b6964c8b7e6a225e8c51fb86ab42c8d8f59a676ef404e2b5",
+      "bytes": 9904
+    },
+    {
+      "source": "deploy/qa_cloud_contract.py",
+      "target": "/opt/teams-staging/bin/qa_cloud_contract.py",
+      "owner": "root:root",
+      "mode": "0644",
+      "sha256": "d7cd853d704542ec06de46705b1e8765f3f2af43796b3a4095c5c3e39b9b102e",
+      "bytes": 21854
+    },
+    {
+      "source": "deploy/qa_semantic_candidate/qa_content.py",
+      "target": "/opt/teams-staging/qa-semantic-startup-v1-candidate/qa_content.py",
+      "owner": "root:root",
+      "mode": "0644",
+      "sha256": "55afeac6ec7cf9315f00fafc772261b4e680be835c465e26239467a4cd1734cc",
+      "bytes": 5094
+    },
+    {
+      "source": "deploy/qa_semantic_candidate/qa_probe.py",
+      "target": "/opt/teams-staging/qa-semantic-startup-v1-candidate/qa_probe.py",
+      "owner": "root:root",
+      "mode": "0644",
+      "sha256": "817fa0b7a196831d97c82a0897bd52115017c90953a7c244e661ffab95e7cd56",
+      "bytes": 44363
+    },
+    {
+      "source": "deploy/qa_semantic_candidate/qa_session_isolation.py",
+      "target": "/opt/teams-staging/qa-semantic-startup-v1-candidate/qa_session_isolation.py",
+      "owner": "root:root",
+      "mode": "0644",
+      "sha256": "b6a7152b443abf0ac04809c97766b23193bcb15f6b1ac2d474d49da74f38edb4",
+      "bytes": 9052
+    },
+    {
+      "source": "evidence/semantic-startup-candidate-v1.json",
+      "target": "/opt/teams-staging/qa-semantic-startup-v1-candidate/semantic-startup-candidate-v1.json",
+      "owner": "root:root",
+      "mode": "0644",
+      "sha256": "0e1996c09d73144485b26ff178a9b0b99fe54d3ba5b636698dbc460eb3109292",
+      "bytes": 1498
+    }
+  ],
+  "directories": [
+    {
+      "path": "/opt/teams-staging/qa-semantic-startup-v1-candidate",
+      "owner": "root:root",
+      "mode": "0755"
+    }
+  ],
+  "preserve": [
+    "qa-authority.json",
+    "qa-ledger.json",
+    "qa-global.lock",
+    "controller.lock",
+    "qa-cleanup-interlock.json",
+    "old A/B/semantic bundles",
+    "controller",
+    "hook"
+  ],
+  "hook_change_required": false,
+  "new_sudo_credentials_ports_or_accounts": false,
+  "requires_before_runtime": [
+    "normal approval and merge of exact adapter PR before main-only workflow dispatch",
+    "review and approve exact seven-file installation through original host owner; no installation implied",
+    "fresh exact runtime healthy/maintenance/paused/quiescent with verified release receipt",
+    "new semantic-startup-v1-offline operation succeeds without model or quota mutation",
+    "existing authority/global ledger/both locks/interlock verified before any separately authorized isolated QA"
+  ],
+  "live_or_install_authorization_granted_by_manifest": false,
+  "release": {
+    "source_sha": "c9d54b7f72be1c94318386ce7dab7a61df4396e3",
+    "image": "ghcr.io/paulpai0412/teams-transcription@sha256:57a433bdc059e462100f139466251e4b9670a46770899f6d3b1c9caf9597f657",
+    "build_run_id": 41159965976,
+    "build_run_attempt": 1,
+    "artifact_id": 13026647657,
+    "artifact_sha256": "5737b8ef5ebbd0e52d9c580a90b81dc506aa1a74965c97fc28ba992d4608e8ea"
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "contract_id": "no-plc-startup-runtime-v1",
+  "status": "source_prepared_release_and_host_adapter_pending",
+  "source_base_main_sha": "6a809d03229a8368d1b4f846cd95742a9a793552",
+  "runtime_js_sha256": "d273050cc00037d1d260c12b5728cae08f98b22f1ca47560b7b91a4c9714e718",
+  "physical_runtime_files": {
+    "qa_probe.py": "e40e2de9dc436573e93d04ea2c970ed519244c17c2ea055728deb136b8dbb862",
+    "b_no_plc.py": "5fb5e4322c27d36f74a31fe8cbc740fd232088d58db5e74ba417fff224525384",
+    "b_live.py": "1415852671c4377860511f93df284c12750f88165cbcef8021349c4090304547",
+    "b_media_profile.py": "94f4124b446c2a543f6eaa6b57ff276eb0983cab124826d09e1170f9b56ead01",
+    "b_browser_tx.py": "f523aad40474ea5499ba8cafa3611d457abdb4408260aac63e4b74618c2dc87f",
+    "b_no_plc_startup.py": "9d2067fb66a7450cb4aac265d67f59f4d6894ee5848f8cdf564b19cef00becbe"
+  },
+  "semantic_modules": {
+    "qa_content.py": "55afeac6ec7cf9315f00fafc772261b4e680be835c465e26239467a4cd1734cc",
+    "qa_probe.py": "817fa0b7a196831d97c82a0897bd52115017c90953a7c244e661ffab95e7cd56",
+    "qa_session_isolation.py": "b6a7152b443abf0ac04809c97766b23193bcb15f6b1ac2d474d49da74f38edb4"
+  },
+  "release": {
+    "source_sha": null,
+    "image_digest": null,
+    "build_run_id": null,
+    "build_run_attempt": null
+  },
+  "execution_authorized_by_this_manifest": false,
+  "historical_c409_contracts_unchanged": true,
+  "needs_versioned_adapters": [
+    "deploy/qa_cloud_contract.py",
+    "deploy/qa_container_entry.py",
+    "deploy/qa_cloud_bridge.py",
+    ".github/workflows/oracle-qa.yml"
+  ],
+  "planned_operations": [
+    "semantic-startup-v1-offline",
+    "semantic-startup-v1-isolated"
+  ],
+  "host_payload_after_review": [
+    "root-owned bridge/entry/contract",
+    "new startup-v1 semantic module bundle and manifest"
+  ],
+  "preserve_host_authority_ledger_locks_interlock": true,
+  "note": "This is a source handoff, not an installed/working runtime gate. A successful exact release and reviewed fixed adapters are required; old routes must not float to this base."
+}

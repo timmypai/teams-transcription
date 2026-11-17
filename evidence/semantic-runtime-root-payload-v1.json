@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "kind": "proposed_root_payload_inventory",
+  "install_authorized": false,
+  "model_execution_authorized": false,
+  "source_base_sha": "3c8bb92d6a599b30e8db48f1626968b0fd784e73",
+  "runtime_bundle_source_sha": "1849e60b98e5cc93a5aef7bda5ecaf432dede1fc",
+  "candidate_manifest_sha256": "9432a42aff31b1b75d2e86ede18f921cb1a12496aaa204a9a9dd861254000aa5",
+  "requires_actual_host_hash_reconciliation": true,
+  "directory": {
+    "path": "/opt/teams-staging/qa-semantic-v1-candidate",
+    "owner_uid": 0,
+    "owner_gid": 0,
+    "mode": "0755",
+    "unknown_existing_files": "stop"
+  },
+  "files": [
+    {
+      "source": "deploy/qa_cloud_bridge.py",
+      "target": "/opt/teams-staging/bin/qa-cloud-bridge",
+      "sha256": "fd02f2b9f0c7dc5af29c0accbb8fa29f27285ba801455bb059b5cbe9ee1bc5b7",
+      "owner_uid": 0,
+      "owner_gid": 0,
+      "mode": "0755",
+      "expected_predecessor_source_sha256": "1755f00939121965bc5132e689430991fa03fcd0a4117bdfc05c00c71f925395"
+    },
+    {
+      "source": "deploy/qa_container_entry.py",
+      "target": "/opt/teams-staging/bin/qa_container_entry.py",
+      "sha256": "1b92a204fd77f5f075e54923e8641c4648257d3ce1fa843dfbe687f75e228815",
+      "owner_uid": 0,
+      "owner_gid": 0,
+      "mode": "0644",
+      "expected_predecessor_source_sha256": "15877092550f04be2f79026bcf5e0c09faeea1e178459cdd018134fd2d4bf222"
+    },
+    {
+      "source": "deploy/qa_cloud_contract.py",
+      "target": "/opt/teams-staging/bin/qa_cloud_contract.py",
+      "sha256": "f68473bfaf977736870e7e4235ac57777f0d58721b72d54be2eb840a46fdbdca",
+      "owner_uid": 0,
+      "owner_gid": 0,
+      "mode": "0644",
+      "expected_predecessor_source_sha256": "94ea96dce6c11d31b308acac15f40f0828f8f6ad8d1b1388f3f1ea3868834d78"
+    },
+    {
+      "source": "deploy/qa_semantic_candidate/qa_content.py",
+      "target": "/opt/teams-staging/qa-semantic-v1-candidate/qa_content.py",
+      "sha256": "55afeac6ec7cf9315f00fafc772261b4e680be835c465e26239467a4cd1734cc",
+      "owner_uid": 0,
+      "owner_gid": 0,
+      "mode": "0644"
+    },
+    {
+      "source": "deploy/qa_semantic_candidate/qa_probe.py",
+      "target": "/opt/teams-staging/qa-semantic-v1-candidate/qa_probe.py",
+      "sha256": "817fa0b7a196831d97c82a0897bd52115017c90953a7c244e661ffab95e7cd56",
+      "owner_uid": 0,
+      "owner_gid": 0,
+      "mode": "0644"
+    },
+    {
+      "source": "deploy/qa_semantic_candidate/qa_session_isolation.py",
+      "target": "/opt/teams-staging/qa-semantic-v1-candidate/qa_session_isolation.py",
+      "sha256": "b6a7152b443abf0ac04809c97766b23193bcb15f6b1ac2d474d49da74f38edb4",
+      "owner_uid": 0,
+      "owner_gid": 0,
+      "mode": "0644"
+    },
+    {
+      "source": "evidence/semantic-isolated-candidate-v1.json",
+      "target": "/opt/teams-staging/qa-semantic-v1-candidate/semantic-isolated-candidate-v1.json",
+      "sha256": "9432a42aff31b1b75d2e86ede18f921cb1a12496aaa204a9a9dd861254000aa5",
+      "owner_uid": 0,
+      "owner_gid": 0,
+      "mode": "0644"
+    }
+  ],
+  "hook": {
+    "action": "verify already approved installed exact main oracle-qa case; do not replace in this payload",
+    "source_alignment_sha256": "a2abf6188a5a9a5ed12068cc7f9e19cea286bb19c468469279c44460cc369a5c",
+    "new_case_permission_granted": false
+  },
+  "preserve": [
+    "oldA/Bbundlefiles",
+    "runtimeimage/daemon/auth",
+    "canonicalledger/checkpoint/history",
+    "cleanupinterlock",
+    "maintenance/paused",
+    "existingcontrollerinterlockguard"
+  ],
+  "rollback_precondition": "No active/unknown attempt; settled ledger accepted by previous reader; restore only verified backed-up payload bytes; neverrewind ledger or clear interlock."
+}

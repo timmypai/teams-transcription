@@ -1,0 +1,83 @@
+{
+  "kind": "formal_muted_wake_order_control",
+  "physical_output": false,
+  "real_teams_join": false,
+  "synthetic_zh_tw_input": true,
+  "production_wake_gate": true,
+  "diagnostic_prompt_override": false,
+  "peer_media_profile": "legacy",
+  "expected_task_count": 1,
+  "notifications": [
+    {
+      "kind": "itemAdded",
+      "elapsed_ms": 22351,
+      "state_before": "sleeping",
+      "handoff": true,
+      "characters": 38,
+      "wake_match": true,
+      "own_user_turn_known": true,
+      "state_after": "thinking"
+    },
+    {
+      "kind": "done",
+      "elapsed_ms": 25137,
+      "state_before": "answering",
+      "role": "user",
+      "characters": 38,
+      "wake_match": true,
+      "state_after": "answering"
+    },
+    {
+      "kind": "done",
+      "elapsed_ms": 46767,
+      "state_before": "answering",
+      "role": "assistant",
+      "characters": 96,
+      "wake_match": false,
+      "state_after": "answering"
+    }
+  ],
+  "before_wake": {
+    "state": "sleeping",
+    "tool_calls": 0,
+    "speech_active": false,
+    "failure": null
+  },
+  "state": "sleeping",
+  "first_failure": null,
+  "handoff": {
+    "received": 1,
+    "admitted": 1,
+    "rejected": 0
+  },
+  "tool_calls": 1,
+  "context_sent_bytes": 11947,
+  "speech": {
+    "phase": "closed",
+    "native_state": "sleeping",
+    "done_is_set": true,
+    "speech_task_done": true,
+    "speech_task_cancelled": false,
+    "error_code": null,
+    "output_active": false,
+    "nonzero_frames": 783718,
+    "activity_frames": 774144,
+    "packet_frames": 2048,
+    "packet_nonzero_frames": 12,
+    "packet_peak_abs": 1,
+    "packet_rms": 0.07654655446197431,
+    "activity_rms_threshold": 8,
+    "last_active_age_seconds": 3.494287405999785,
+    "last_nonzero_age_seconds": 2.041186944999936,
+    "drain_result": {
+      "present": true,
+      "truncated": false,
+      "drained": false,
+      "muted": true
+    }
+  },
+  "answer_contains_exact_saved_task": false,
+  "native_error_present": false,
+  "stop_status": "stopped",
+  "cleanup_status": "cleaned"
+}

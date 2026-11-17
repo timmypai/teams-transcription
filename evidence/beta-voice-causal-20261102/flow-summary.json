@@ -1,0 +1,137 @@
+{
+  "scope": "fixed synthetic timer-push pair, not RTC/Oracle/model",
+  "queue_scope": "fixture encoded ReadableStream count sampled after read, not native FIFO peak",
+  "clock_scope": "native AudioContext history coordinate, snapshot quantization; not remote consumption or ear-end latency",
+  "architecture": "x86_64",
+  "chromium": "156.0.8078.47",
+  "source_sha256": "c40d5427d4a2ef7169bbf32f7289fa1a030effa66c7b30e2de1d990b5f1d033b",
+  "fixture_sha256": "896833b3869ba162df25a250c68133d5600631629e626fd62197f869b54a6e2d",
+  "cases": [
+    {
+      "mode": "full_paced",
+      "packets": 500,
+      "offered_packets_per_second": 49.99649323192271,
+      "read_packets_per_second": 49.447554872912846,
+      "native_write_packets_per_second": 50.076268465011765,
+      "render_context_span_ms": 9980.0,
+      "queue_at_read_sampled_peak": 5,
+      "arrival_to_read_ms": {
+        "first": 0.0,
+        "last": 110.79999999701977,
+        "min": 0.0,
+        "max": 122.89999999850988,
+        "mean": 106.54020000016689
+      },
+      "injected_delay_ms": {
+        "first": 0,
+        "last": 0,
+        "min": 0,
+        "max": 0.10000000149011612,
+        "mean": 0.00040000000596046445
+      },
+      "native_write_ms": {
+        "first": 0.19999999552965164,
+        "last": 0.0,
+        "min": 0.0,
+        "max": 0.30000000447034836,
+        "mean": 0.06999999994039535
+      },
+      "write_call_to_native_begin_ms": {
+        "first": 0.10000000149011612,
+        "last": 10.299999997019768,
+        "min": 0.0,
+        "max": 34.0,
+        "mean": 19.40500000011921
+      },
+      "write_end_to_render_observation_ms": {
+        "first": 80.0,
+        "last": 89.0,
+        "min": 66.29999999701977,
+        "max": 117.10000000149012,
+        "mean": 87.63260000005364
+      },
+      "matched_packets": 500,
+      "missing_packets": [],
+      "ambiguous_or_duplicate_packets": [],
+      "whole_payload_contiguous": true,
+      "inter_packet_gaps": 0,
+      "zero_gap_frames": 0,
+      "packet_observation_delay_ms": {
+        "count": 500,
+        "min": 197.39999999850988,
+        "max": 248.20000000298023,
+        "mean": 214.3452000002712
+      },
+      "cleanup": {
+        "input_track_ended": true,
+        "context_closed": true,
+        "decoder_invalid": true,
+        "repeat_close_same_promise": true,
+        "stream_cancelled": true
+      }
+    },
+    {
+      "mode": "full_slow",
+      "packets": 500,
+      "offered_packets_per_second": 50.00350726004319,
+      "read_packets_per_second": 31.988819939493244,
+      "native_write_packets_per_second": 32.286241143929345,
+      "render_context_span_ms": 15460.0,
+      "queue_at_read_sampled_peak": 180,
+      "arrival_to_read_ms": {
+        "first": 0.0,
+        "last": 5619.89999999851,
+        "min": 0.0,
+        "max": 5619.89999999851,
+        "mean": 2877.2868000000717
+      },
+      "injected_delay_ms": {
+        "first": 31.399999998509884,
+        "last": 30.19999999552965,
+        "min": 30,
+        "max": 36.5,
+        "mean": 30.275999999895692
+      },
+      "native_write_ms": {
+        "first": 0.29999999701976776,
+        "last": 0.0,
+        "min": 0.0,
+        "max": 2.0,
+        "mean": 0.09280000008642673
+      },
+      "write_call_to_native_begin_ms": {
+        "first": 0.10000000149011612,
+        "last": 0.0,
+        "min": 0,
+        "max": 1.3999999985098839,
+        "mean": 0.02480000001192093
+      },
+      "write_end_to_render_observation_ms": {
+        "first": 63.20000000298023,
+        "last": 66.60000000149012,
+        "min": 40.19999999552965,
+        "max": 87.60000000149012,
+        "mean": 61.54620000012219
+      },
+      "matched_packets": 500,
+      "missing_packets": [],
+      "ambiguous_or_duplicate_packets": [],
+      "whole_payload_contiguous": false,
+      "inter_packet_gaps": 273,
+      "zero_gap_frames": 263040,
+      "packet_observation_delay_ms": {
+        "count": 500,
+        "min": 238,
+        "max": 5717.30000000447,
+        "mean": 2970.059800000176
+      },
+      "cleanup": {
+        "input_track_ended": true,
+        "context_closed": true,
+        "decoder_invalid": true,
+        "repeat_close_same_promise": true,
+        "stream_cancelled": true
+      }
+    }
+  ]
+}

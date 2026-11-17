@@ -1,0 +1,17 @@
+{
+  "kind": "system_completion_available_regression_suite",
+  "tests": 916,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "unexpected_successes": 0,
+  "discovery_errors": 0,
+  "excluded_transfer_missing_experiments": [
+    "test_bridge_integration",
+    "test_media_bridge"
+  ],
+  "isolated_HOME": true,
+  "credentials_available": false,
+  "elapsed_seconds": 242.737,
+  "passed": true
+}

@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-10-16T05:45:57.155445+00:00",
+  "activity_count": 14,
+  "real_attempt_count": 13,
+  "join_submissions_this_attempt": 1,
+  "operator_observation": "entered_meeting",
+  "same_production_source_as_round12": true,
+  "temporary_observer_active": true,
+  "join_submitted_at_utc": "2026-10-16T05:43:19.291588+00:00",
+  "admission_events": [
+    {
+      "kind": "joined",
+      "created_at": "2026-10-16T05:43:58.439978+00:00"
+    },
+    {
+      "kind": "live_connected",
+      "created_at": "2026-10-16T05:44:05.633107+00:00"
+    },
+    {
+      "kind": "rx_ready",
+      "created_at": "2026-10-16T05:44:05.709474+00:00"
+    },
+    {
+      "kind": "receiving_ready",
+      "created_at": "2026-10-16T05:44:05.775648+00:00"
+    },
+    {
+      "kind": "response_ready",
+      "created_at": "2026-10-16T05:44:09.266612+00:00"
+    },
+    {
+      "kind": "response_output_authorized",
+      "created_at": "2026-10-16T05:44:09.455914+00:00"
+    }
+  ],
+  "worker_state": "recording",
+  "rx_phase": "rx_capture",
+  "native_state": "sleeping",
+  "native_startup_phase": "ready",
+  "native_error_code": null,
+  "startup_error": null,
+  "output_authorized": true,
+  "initial_output_muted": true,
+  "frozen_series_open_tasks": 1,
+  "voice_content_acceptance": "waiting_for_operator_question_and_report",
+  "round12_unique_root_cause_proven": false,
+  "root_cause_fix_claimed": false,
+  "automatic_rejoin": false
+}

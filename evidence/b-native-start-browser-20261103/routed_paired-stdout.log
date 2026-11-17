@@ -1,0 +1,9 @@
+PAIR_LABEL baseline
+ORIGINS {"browser": "/tmp/comparison/baseline/teams_transcription/browser.py", "fixture": "/tmp/comparison/baseline/tests/test_worker_minutes.py"}
+PAIR_RESULT {"tests": 2, "failures": 0, "errors": 0, "skipped": 0, "success": true}
+
+PAIR_LABEL current
+ORIGINS {"browser": "/tmp/comparison/current/teams_transcription/browser.py", "fixture": "/tmp/comparison/current/tests/test_worker_minutes.py"}
+PAIR_RESULT {"tests": 2, "failures": 0, "errors": 0, "skipped": 0, "success": true}
+
+B_NATIVE_BROWSER_RESULT {"paired_results": [{"label": "baseline", "result": {"tests": 2, "failures": 0, "errors": 0, "skipped": 0, "success": true}}, {"label": "current", "result": {"tests": 2, "failures": 0, "errors": 0, "skipped": 0, "success": true}}], "synthetic_only": true, "uid": 10001, "success": true}

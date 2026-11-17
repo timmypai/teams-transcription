@@ -1,0 +1,222 @@
+{
+  "kind": "native_completion_silent_input_first_attempt",
+  "passed": false,
+  "teams_joined": false,
+  "calendar_writes": 0,
+  "physical_input_output": false,
+  "uses_formal_production_prompt": true,
+  "synthetic_text_gate": false,
+  "same_thread_all_questions": true,
+  "input_path": "capture_fanout",
+  "A_media_consumer": "real local native RTC receiver; not an A model or injected transcript",
+  "no_wake": {
+    "tool_calls": 0,
+    "accepted_output_frames": 0,
+    "runtime_error": false
+  },
+  "connected_seconds": 97.723,
+  "exceeded_old_32K": false,
+  "capture_counts": {
+    "offered": 1136,
+    "accepted": 1136,
+    "rejected": 0,
+    "invalid_clock": 0
+  },
+  "raw_event_counts": {
+    "session.started": 1,
+    "input_transcript.added": 29,
+    "turn.created": 4,
+    "turn.delta": 67,
+    "session.usage.updated": 6,
+    "delegation.created": 2,
+    "delegation.context.appended": 18,
+    "output_transcript.added": 42,
+    "turn.done": 4
+  },
+  "cleanup": {
+    "local_A_media": true,
+    "local_receiver": true,
+    "capture": true,
+    "B": true,
+    "browser": true
+  },
+  "stop_result": "stopped",
+  "model_process_reaped": true,
+  "requested_model": "gpt-live-1-codex",
+  "codex_version": "0.159.0-alpha.3",
+  "runtime_failure": {
+    "code": "response_output_backpressure",
+    "phase": "audio_callback",
+    "exception_type": "none",
+    "elapsed_ms": 104085
+  },
+  "probe_failure": {
+    "type": "AssertionError",
+    "code": null,
+    "stage": "ready"
+  },
+  "probe_failure_note": "The existing final over-32K assertion also failed after the earlier runtime failure; it is not the primary runtime cause.",
+  "stop_ack_received": true,
+  "stop_closed_received": true,
+  "questions": [
+    {
+      "number": 1,
+      "fact_matches": {
+        "codeword": true,
+        "amount": true
+      },
+      "tool_calls": 1,
+      "reader_calls": 1,
+      "marker_sent": true,
+      "bytes_sent": 4492,
+      "state": "sleeping",
+      "runtime_failure": null,
+      "error": false,
+      "speech": {
+        "phase": "closed",
+        "native_state": "sleeping",
+        "done_is_set": true,
+        "speech_task_done": true,
+        "speech_task_cancelled": false,
+        "error_code": null,
+        "output_active": false,
+        "nonzero_frames": 352339,
+        "activity_frames": 333824,
+        "packet_frames": 2048,
+        "packet_nonzero_frames": 12,
+        "packet_peak_abs": 1,
+        "packet_rms": 0.07654655446197431,
+        "activity_rms_threshold": 8,
+        "last_active_age_seconds": 44.694069881006726,
+        "last_nonzero_age_seconds": 43.75272559899895,
+        "drain_result": {
+          "present": true,
+          "truncated": false,
+          "drained": false,
+          "muted": true
+        }
+      },
+      "elapsed_seconds": 60.29,
+      "stimulus": {
+        "source_completed": true,
+        "frames": 109286,
+        "audio_seconds": 4.553583333333333,
+        "context_elapsed": 4.757333333333333,
+        "wall_seconds": 5.275
+      },
+      "passed": true,
+      "partial_event_count": 11,
+      "native_events": [
+        {
+          "type": "delegation.created",
+          "role": null,
+          "elapsed_seconds": 5.363,
+          "client_delegation": true
+        },
+        {
+          "type": "turn.done",
+          "role": "user",
+          "elapsed_seconds": 8.076,
+          "client_delegation": false
+        },
+        {
+          "type": "turn.created",
+          "role": "assistant",
+          "elapsed_seconds": 8.076,
+          "client_delegation": false
+        },
+        {
+          "type": "turn.done",
+          "role": "assistant",
+          "elapsed_seconds": 16.556,
+          "client_delegation": false
+        }
+      ]
+    },
+    {
+      "number": 2,
+      "fact_matches": {
+        "delivery_day": true
+      },
+      "tool_calls": 1,
+      "reader_calls": 1,
+      "marker_sent": true,
+      "bytes_sent": 3266,
+      "state": "failed",
+      "runtime_failure": {
+        "code": "response_output_backpressure",
+        "phase": "audio_callback",
+        "exception_type": "none",
+        "elapsed_ms": 104085
+      },
+      "error": true,
+      "speech": {
+        "phase": "closed",
+        "native_state": "failed",
+        "done_is_set": true,
+        "speech_task_done": true,
+        "speech_task_cancelled": false,
+        "error_code": "native_error",
+        "output_active": false,
+        "nonzero_frames": 193293,
+        "activity_frames": 184320,
+        "packet_frames": 2048,
+        "packet_nonzero_frames": 12,
+        "packet_peak_abs": 1,
+        "packet_rms": 0.07654655446197431,
+        "activity_rms_threshold": 8,
+        "last_active_age_seconds": 12.570982524994179,
+        "last_nonzero_age_seconds": 11.454557752993423,
+        "drain_result": {
+          "present": true,
+          "truncated": false,
+          "drained": false,
+          "muted": true
+        }
+      },
+      "elapsed_seconds": 23.726,
+      "stimulus": {
+        "source_completed": true,
+        "frames": 105000,
+        "audio_seconds": 4.375,
+        "context_elapsed": 4.581333333333333,
+        "wall_seconds": 5.085
+      },
+      "passed": false,
+      "partial_event_count": 11,
+      "native_events": [
+        {
+          "type": "turn.created",
+          "role": "user",
+          "elapsed_seconds": 1.631,
+          "client_delegation": false
+        },
+        {
+          "type": "delegation.created",
+          "role": null,
+          "elapsed_seconds": 5.429,
+          "client_delegation": true
+        },
+        {
+          "type": "turn.done",
+          "role": "user",
+          "elapsed_seconds": 6.978,
+          "client_delegation": false
+        },
+        {
+          "type": "turn.created",
+          "role": "assistant",
+          "elapsed_seconds": 6.978,
+          "client_delegation": false
+        },
+        {
+          "type": "turn.done",
+          "role": "assistant",
+          "elapsed_seconds": 12.28,
+          "client_delegation": false
+        }
+      ]
+    }
+  ],
+  "scope": "Both questions received real user turn.done, current delegation, fresh SQLite and assistant turn.done; second answer then hit output callback backpressure. Not a long-session pass or proof that missing-final is resolved."
+}

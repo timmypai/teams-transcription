@@ -1,0 +1,15 @@
+{
+  "actual_app_server_initialized": true,
+  "process_reaped": true,
+  "network": "none",
+  "credentials_mounted": false,
+  "model_calls": 0,
+  "passed": true,
+  "image_id": "sha256:2430a6234a113267022658bb6ce2e31a069b6d1fa992bf27a5dd79c0fb27c11f",
+  "before": {
+    "passed": false,
+    "failure_code": "fixture_CODEX_HOME_directory_missing",
+    "model_calls": 0
+  },
+  "fixture_correction": "Create the private empty explicit CODEX_HOME before start; no auth or permission gate bypass."
+}

@@ -1,0 +1,281 @@
+{
+  "recorded_at": "2026-10-29T11:25:04.864947+00:00",
+  "repository": "paulpai0412/teams-transcription",
+  "branch": "fix/arm64-observer-burst-budget",
+  "main_merge_sha": "2d61d669955b1e318cd0b9c6bab8c5f4cc81577e",
+  "run_url": "https://github.com/paulpai0412/teams-transcription/actions/runs/40863344074",
+  "run_conclusion": "failure",
+  "docker_build_publish_executed": false,
+  "supersedes_local_scope": "arm64-observer-burst-budget-20261029.json: expanded from one behavior test to a reviewed common fixture profile after parent request. Historical receipt remains unchanged.",
+  "before_common_fix_source": "40a32993e1b5c3c78ebc9e77a62faa1a309c79ea",
+  "purpose": "Avoid discovering the same short SQLite cleanup budget issue one test per CI run. Separate bounded behavior checks from dedicated deadline/expiry/repeated-cancellation/hung-cleanup tests.",
+  "change": {
+    "profile": "BEHAVIOR_LIMITS",
+    "cleanup_seconds": 1,
+    "total_seconds": 3,
+    "readiness_seconds": 1,
+    "applies_to_methods": 13,
+    "capture_durations_and_sample_caps": "unchanged per test",
+    "default_LIMITS_config_fixture": "unchanged",
+    "owner_stop": "uses behavior profile but original 500ms wait, zero capture/push, stopped/cleaned assertions remain",
+    "runtime_workflow_permissions_resources": "unchanged"
+  },
+  "initial_method_audit": {
+    "test_slow_final_stats_closes_ingress_before_await": {
+      "before_success": false,
+      "after_success": true,
+      "before_status_codes": [
+        "rx_cleanup_unknown"
+      ]
+    },
+    "test_provider_error_during_media_close_cannot_complete_capture": {
+      "before_success": false,
+      "after_success": true,
+      "before_status_codes": [
+        "rx_cleanup_unknown"
+      ]
+    },
+    "test_confirmed_end_drains_accepted_pcm_and_keeps_reason": {
+      "before_success": true,
+      "after_success": true,
+      "before_status_codes": [
+        "none"
+      ]
+    },
+    "test_native_A_does_not_require_or_push_slow_or_unavailable_observer": {
+      "before_success": false,
+      "after_success": true,
+      "before_status_codes": [
+        "rx_cleanup_unknown"
+      ]
+    },
+    "test_native_observer_burst_cannot_create_A_queue_or_sample_limit": {
+      "before_success": true,
+      "after_success": true,
+      "before_status_codes": [
+        "none"
+      ]
+    },
+    "test_recording_only_overflow_is_a_real_recording_failure_with_drained_tail": {
+      "before_success": true,
+      "after_success": true,
+      "before_status_codes": [
+        "pcm_queue_overflow"
+      ]
+    },
+    "test_unavailable_PCM_stats_do_not_stop_native_A": {
+      "before_success": true,
+      "after_success": true,
+      "before_status_codes": [
+        "none"
+      ]
+    },
+    "test_unavailable_or_transient_native_diagnostics_are_not_source_failure": {
+      "before_success": false,
+      "after_success": true,
+      "before_status_codes": [
+        "rx_cleanup_unknown"
+      ]
+    },
+    "test_native_source_runtime_failure_is_not_observer_success": {
+      "before_success": false,
+      "after_success": true,
+      "before_status_codes": [
+        "rx_cleanup_unknown"
+      ]
+    },
+    "test_native_saved_WAV_uses_finite_recording_adapter_not_live_push": {
+      "before_success": false,
+      "after_success": true,
+      "before_status_codes": [
+        "rx_cleanup_unknown"
+      ]
+    },
+    "test_saved_WAV_failure_still_fails_native_capture": {
+      "before_success": true,
+      "after_success": true,
+      "before_status_codes": [
+        "rx_capture_failed"
+      ]
+    },
+    "test_capture_requires_current_owner_confirmation_and_single_live": {
+      "before_success": false,
+      "after_success": true,
+      "before_status_codes": []
+    },
+    "test_owner_stop_cancels_pending_live_start_without_capture": {
+      "before_success": false,
+      "after_success": true,
+      "before_status_codes": []
+    }
+  },
+  "method_count_failing_before": 8,
+  "before_failure_records_by_method": {
+    "test_slow_final_stats_closes_ingress_before_await": 3,
+    "test_provider_error_during_media_close_cannot_complete_capture": 3,
+    "test_native_A_does_not_require_or_push_slow_or_unavailable_observer": 6,
+    "test_unavailable_or_transient_native_diagnostics_are_not_source_failure": 15,
+    "test_native_source_runtime_failure_is_not_observer_success": 3,
+    "test_native_saved_WAV_uses_finite_recording_adapter_not_live_push": 3,
+    "test_capture_requires_current_owner_confirmation_and_single_live": 3,
+    "test_owner_stop_cancels_pending_live_start_without_capture": 3
+  },
+  "subtest_count_note": "unittest failures includes subtest assertions; 39 failure records does not mean all 39 method runs failed. 8 distinct methods reproduced across 3 repetitions.",
+  "red_stress": {
+    "scope": "controlled offline RX behavior stress",
+    "test_methods": [
+      "test_slow_final_stats_closes_ingress_before_await",
+      "test_provider_error_during_media_close_cannot_complete_capture",
+      "test_confirmed_end_drains_accepted_pcm_and_keeps_reason",
+      "test_native_A_does_not_require_or_push_slow_or_unavailable_observer",
+      "test_native_observer_burst_cannot_create_A_queue_or_sample_limit",
+      "test_recording_only_overflow_is_a_real_recording_failure_with_drained_tail",
+      "test_unavailable_PCM_stats_do_not_stop_native_A",
+      "test_unavailable_or_transient_native_diagnostics_are_not_source_failure",
+      "test_native_source_runtime_failure_is_not_observer_success",
+      "test_native_saved_WAV_uses_finite_recording_adapter_not_live_push",
+      "test_saved_WAV_failure_still_fails_native_capture",
+      "test_capture_requires_current_owner_confirmation_and_single_live",
+      "test_owner_stop_cancels_pending_live_start_without_capture"
+    ],
+    "repeats": 3,
+    "status_write_delay_seconds": 0.03,
+    "tests": 39,
+    "failures": 39,
+    "errors": 0,
+    "skipped": 0,
+    "success": false,
+    "teams_or_model_called": false,
+    "audio_e2e_tested": false,
+    "deadline_tests_included": false
+  },
+  "green_stress": {
+    "scope": "controlled offline RX behavior stress",
+    "test_methods": [
+      "test_slow_final_stats_closes_ingress_before_await",
+      "test_provider_error_during_media_close_cannot_complete_capture",
+      "test_confirmed_end_drains_accepted_pcm_and_keeps_reason",
+      "test_native_A_does_not_require_or_push_slow_or_unavailable_observer",
+      "test_native_observer_burst_cannot_create_A_queue_or_sample_limit",
+      "test_recording_only_overflow_is_a_real_recording_failure_with_drained_tail",
+      "test_unavailable_PCM_stats_do_not_stop_native_A",
+      "test_unavailable_or_transient_native_diagnostics_are_not_source_failure",
+      "test_native_source_runtime_failure_is_not_observer_success",
+      "test_native_saved_WAV_uses_finite_recording_adapter_not_live_push",
+      "test_saved_WAV_failure_still_fails_native_capture",
+      "test_capture_requires_current_owner_confirmation_and_single_live",
+      "test_owner_stop_cancels_pending_live_start_without_capture"
+    ],
+    "repeats": 3,
+    "status_write_delay_seconds": 0.03,
+    "tests": 39,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "success": true,
+    "teams_or_model_called": false,
+    "audio_e2e_tested": false,
+    "deadline_tests_included": false
+  },
+  "source_audit": {
+    "base": "2d61d669955b1e318cd0b9c6bab8c5f4cc81577e",
+    "changed_behavior_methods": [
+      "test_slow_final_stats_closes_ingress_before_await",
+      "test_provider_error_during_media_close_cannot_complete_capture",
+      "test_confirmed_end_drains_accepted_pcm_and_keeps_reason",
+      "test_native_A_does_not_require_or_push_slow_or_unavailable_observer",
+      "test_native_observer_burst_cannot_create_A_queue_or_sample_limit",
+      "test_recording_only_overflow_is_a_real_recording_failure_with_drained_tail",
+      "test_unavailable_PCM_stats_do_not_stop_native_A",
+      "test_unavailable_or_transient_native_diagnostics_are_not_source_failure",
+      "test_native_source_runtime_failure_is_not_observer_success",
+      "test_native_saved_WAV_uses_finite_recording_adapter_not_live_push",
+      "test_saved_WAV_failure_still_fails_native_capture",
+      "test_capture_requires_current_owner_confirmation_and_single_live",
+      "test_owner_stop_cancels_pending_live_start_without_capture"
+    ],
+    "untouched_test_methods": [
+      "test_slow_periodic_stats_cannot_extend_capture_window",
+      "test_slow_periodic_admitted_cannot_extend_capture_window",
+      "test_formal_unlimited_waits_for_owner_then_runs_until_owner_stop",
+      "test_formal_live_disconnect_interrupts_hung_capture_await_and_cleans",
+      "test_meeting_lobby_and_unconfirmed_stop_never_start_live",
+      "test_formal_start_failure_and_lost_admission_do_not_retry",
+      "test_formal_ready_notification_waits_for_actual_rx_handshake",
+      "test_formal_supervisor_preserves_expired_phase_and_safe_fields",
+      "test_source_failure_is_not_replaced_by_session_close_timeout",
+      "test_capture_deadline_drains_accepted_pcm_without_reopening_ingress",
+      "test_new_cancellation_keeps_existing_provider_failure",
+      "test_requested_stop_preserves_a_real_drain_failure",
+      "test_native_A_survives_optional_transport_timeout_with_last_real_snapshot",
+      "test_definite_native_failure_is_not_hidden_by_stop_during_optional_poll",
+      "test_unsafe_observer_packets_do_not_permanently_gate_B_or_native_A",
+      "test_native_observer_continuity_is_independent_per_host_document",
+      "test_file_input_keeps_real_PCM_push_adapter_and_drains",
+      "test_stop_during_ordinary_live_start_never_opens_capture",
+      "test_unconfirmed_native_source_stop_is_cleanup_unknown",
+      "test_public_bounded_contract_still_rejects_recording_and_response_modes",
+      "test_expired_owner_ready_never_starts_capture",
+      "test_delayed_admission_uses_shared_deadline_and_no_second_join",
+      "test_hung_cleanup_kills_and_reaps_only_owned_subprocess",
+      "test_cleanup_does_not_kill_unrelated_process",
+      "test_fifo_confirmation_is_rejected_without_blocking",
+      "test_cancel_twice_is_bounded_and_reaps_owned_process",
+      "test_unprepared_or_replaced_generation_cannot_capture",
+      "test_foreign_meeting_marker_fails_closed",
+      "test_ready_rechecks_prepared_before_capture",
+      "test_browser_prepared_requires_admission_deferred_capture_and_muted_senders"
+    ],
+    "tight_limits_config_and_fixture_unchanged": true,
+    "original_assertion_types_and_expected_values_preserved": true,
+    "untouched_test_count": 30
+  },
+  "offline_aggregate": {
+    "scope": "controlled offline subset",
+    "suites": [
+      "test_assistant_store",
+      "test_assistant_daemon",
+      "test_calendar_client",
+      "test_glossary_context",
+      "test_admin_web",
+      "test_sqlite_voice_context",
+      "test_sqlite_only_store",
+      "test_rx_contract",
+      "test_prefetch_codex_npm",
+      "test_staging_control",
+      "test_capture_cleanup_review",
+      "test_release_gate",
+      "test_diagnostic_projection",
+      "test_codex_auth",
+      "test_provider_state",
+      "test_workflow_triggers"
+    ],
+    "tests": 186,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "success": true,
+    "teams_or_model_called": false,
+    "audio_e2e_tested": false
+  },
+  "reproduction": {
+    "tool": "tools/stress_rx_behavior.py",
+    "command": "python tools/stress_rx_behavior.py /tmp/teams-rx-behavior-stress",
+    "behavior": "Fixed13 methods x3; synchronous30ms delay only around real Session.update; real SQLite and owned worker seam, controlled browser/provider fixtures",
+    "before_reproduction": "Detached local worktree at40a3299, copy the same current stress tool into tools/, run identical command; no installation or external account calls",
+    "workflow": "manual local validation tool only; not added to automatic CI triggers"
+  },
+  "review": {
+    "standards": "0 hard violations/actionable smells; one inaccurate cancellation comment corrected to repeated-cancellation and explicit owner-stop 500ms wait",
+    "spec": "0 confirmed defects; independent owner-stop, source-failure, capture-deadline and hung-cleanup checks passed",
+    "limitation": "Local slow-write red/green supports fixture-budget explanation; original cloud assertion lacked exact cleanup reason. Actual new ARM64 run still required."
+  },
+  "actionlint": "v1.7.7 passed",
+  "remaining": [
+    "Explicit authorization to create Draft PR for updated branch scope",
+    "Reviewed merge before new main build",
+    "Actual ARM64 image/test/GHCR digest/provenance",
+    "Oracle/OAuth/Live/Teams acceptance"
+  ],
+  "external_operations_this_followup": "Only authorized source branch update; no new PR creation retry, merge, dispatch, VM deployment, Billing, credentials, permissions or network changes."
+}

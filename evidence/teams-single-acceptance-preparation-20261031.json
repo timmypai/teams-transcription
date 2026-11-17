@@ -1,0 +1,231 @@
+{
+  "schema_version": 1,
+  "status": "source_prepared_not_installed_or_released",
+  "branch": "feat/teams-single-acceptance",
+  "base_main_sha": "5fc85bf8bb6473f1e9b70d243fd22c73d069e889",
+  "reviewed_implementation_commit": "3117215d552dd220286af0974bcffac6477dd429",
+  "architecture": "one existing daemon + authenticated existing admin actions/API + one bounded host helper",
+  "summary_policy": "server-side auto worker/new outbox/retry disabled globally; transcript/history/jobs preserved; no schema change",
+  "tests": {
+    "focused": {
+      "tests": 16,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 1.329
+    },
+    "controlled_aggregate": {
+      "scope": "controlled offline subset",
+      "suites": [
+        "test_assistant_store",
+        "test_assistant_daemon",
+        "test_calendar_client",
+        "test_glossary_context",
+        "test_admin_web",
+        "test_sqlite_voice_context",
+        "test_sqlite_only_store",
+        "test_b_no_plc_startup",
+        "test_rx_contract",
+        "test_prefetch_codex_npm",
+        "test_staging_control",
+        "test_capture_cleanup_review",
+        "test_release_gate",
+        "test_diagnostic_projection",
+        "test_codex_auth",
+        "test_provider_state",
+        "test_workflow_triggers",
+        "test_pr_policy",
+        "test_pr_policy_github",
+        "test_pr_policy_workflow",
+        "test_staging_docker_diagnostics",
+        "test_staging_compose",
+        "test_first_deploy_recovery",
+        "test_qa_probe.ProbeTests",
+        "test_qa_receiver_projection",
+        "test_qa_audio_observer",
+        "test_qa_content",
+        "test_qa_candidate_versions",
+        "test_cloud_qa_semantic.SemanticRuntimeTests",
+        "test_cloud_qa_startup.StartupRuntimeTests",
+        "test_teams_acceptance",
+        "test_teams_acceptance_host",
+        "test_cloud_qa_contract",
+        "test_cloud_qa_bridge.CloudQABridgeTests",
+        "test_cloud_qa_isolated.CloudQAIsolatedTests",
+        "test_turn_lifecycle_evidence.TurnLifecycleEvidenceTests",
+        "test_speech_completion_snapshot.SpeechCompletionSnapshotTests",
+        "test_incremental_minutes_context.ContextTests.test_wire_instruction_distinguishes_verbatim_quote_and_normal_answers",
+        "test_native_incremental_context.NativeSnapshotContextTests.test_delivery_receipt_hashes_identify_actual_current_payload_without_content",
+        "test_b_native.NativeLiveTests.test_live_prompt_distinguishes_verbatim_format_from_normal_current_fact_answers",
+        "test_b_native.NativeLiveTests.test_three_physical_questions_in_one_provider_turn_query_current_sqlite_each_time"
+      ],
+      "tests": 402,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "success": true,
+      "teams_or_model_called": false,
+      "audio_e2e_tested": false
+    },
+    "summary_subtask": {
+      "tests": 94,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 9.929,
+      "source_commit": "16982276ebefde46e77f6bcdd4e1ca92a2d833bc"
+    },
+    "broader_media_attempt": {
+      "tests": 72,
+      "failures": 7,
+      "errors": 8,
+      "status": "not_passed",
+      "cause": "sandboxed Chromium TargetClosedError at launch/browser_open and downstream missing controller/status assertions",
+      "original_log_sha256": "54fcf29ad4b97b685538855f1888f0e3b7fd8d661292659bd58520a859cc93e9",
+      "representative_baseline_reproduced": true,
+      "baseline_worktree_head": "87f8d21c542c3af8a274719a62a87c9bcae9b3f3",
+      "baseline_log_sha256": "d08a26d93d08ac05ced45c0b32a691a4cdd83b1fd948172ee264d1548cbbdb72",
+      "sandbox_changed": false
+    }
+  },
+  "independent_cloud_codex_review": {
+    "initial_commit": "a81cc2e476139101978553cf8cc20251afd92c27",
+    "original_finding": "authority-approved occurrence revision was not atomic with Join claim; changed room could be accepted",
+    "initial_severity": {
+      "spec": "P2",
+      "standards_security": "P1"
+    },
+    "correction": "expected revision propagated through POST and policy, checked inside claim transaction before lease/events; daemon executes transaction-validated snapshot",
+    "spec_final": {
+      "remaining_confirmed_findings": 0,
+      "changed_room_regression_tests": 1,
+      "seconds": 0.006
+    },
+    "standards_final": {
+      "remaining_confirmed_findings": 0,
+      "focused_tests": 16,
+      "seconds": 1.356
+    },
+    "official_github_review_integration": "pending owner settings/plan; not claimed enabled"
+  },
+  "checks": {
+    "actionlint_example_with_repo_config": true,
+    "diff_check": true,
+    "credential_pattern_scan": true,
+    "historical_runtime_and_candidate_hashes_not_rewritten": true,
+    "legacy_fixture": "exact public c409 b_live bytes added; source-only old startup tests run against isolated pinned bytes, new runtime rejection separately tested"
+  },
+  "release": {
+    "source_sha": null,
+    "image": null,
+    "build_run_id": null,
+    "build_run_attempt": null,
+    "ready": false,
+    "reason": "new image with runtime caps not built; current c9 image must not be treated as capped"
+  },
+  "app_source_files": [
+    {
+      "path": "teams_transcription/admin_web.py",
+      "sha256": "f5e4fb374c30ce9f54af96cb7f0ef5bc7bb7b3e9dd5f878724664a6d33f8f308"
+    },
+    {
+      "path": "teams_transcription/assistant_store.py",
+      "sha256": "0ba1ee9e643ea5da209f06a38b2d9e3b79447b67d4782af04504b4dc0f6bb5d6"
+    },
+    {
+      "path": "teams_transcription/b_live.py",
+      "sha256": "d28ce38412a758b189c9e3108bd02d935bb8cf9b1eb1776b91ea327d4db1b0fd"
+    },
+    {
+      "path": "teams_transcription/b_native.py",
+      "sha256": "addc147310c262bc02432ca07d08c723ba8297ffc847f9d9d670a804df8ae3a2"
+    },
+    {
+      "path": "teams_transcription/calendar_view.py",
+      "sha256": "02db870d8e874874d7b30300de4156572e58ebf0d2f1563821e4d93a8aeda56b"
+    },
+    {
+      "path": "teams_transcription/daemon.py",
+      "sha256": "3e050764423fc278159ef3b66efb27a81e77f28df207adadeee6b02a8883be39"
+    },
+    {
+      "path": "teams_transcription/live.py",
+      "sha256": "82ff2e8c2c7c5275d8d7c10255aaee7db9f25bf20bc5c5ff344c0a6d97276ee3"
+    },
+    {
+      "path": "teams_transcription/response_runtime.py",
+      "sha256": "5e5fd15f133ce630a60e2014e45d90a44385f475f0e4f5331962f8594bb4c648"
+    },
+    {
+      "path": "teams_transcription/teams_acceptance.py",
+      "sha256": "6a776c6472580398d30f497e95d2016abcb45896d653b6d6dd10e69ac7bd58d2"
+    },
+    {
+      "path": "teams_transcription/worker.py",
+      "sha256": "e56707582d369f6444c920bad660f3d6914ddb54d30f9716b026243286cbffde"
+    }
+  ],
+  "future_host_helper": {
+    "source": "deploy/teams_acceptance.py",
+    "source_sha256": "d78e52cdab682bb676c1844f3581a8da5b2c5d08a859cf6507cd802428077f62",
+    "target": "/opt/teams-staging/bin/teams-acceptance",
+    "owner": "root:root",
+    "mode": "0755",
+    "installed": false,
+    "hash_must_be_regenerated_after_release_pinning": true
+  },
+  "pending_authority": {
+    "path": "/opt/teams-staging/qa-candidate/teams-acceptance-authority.json",
+    "owner": "root:root",
+    "mode": "0644",
+    "fields": [
+      "version",
+      "occurrence_id",
+      "occurrence_revision",
+      "maximum_seconds",
+      "participant_confirmed_until",
+      "egress_policy_sha256"
+    ],
+    "source_contains_actual_target": false
+  },
+  "pending_private_admin_session_access": {
+    "path": "/srv/teams-staging/state/teams-admin-session.json",
+    "owner": "runner UID",
+    "mode": "0600",
+    "fields": [
+      "cookie",
+      "csrf"
+    ],
+    "must_already_be_authorized": true,
+    "created_or_read": false,
+    "new_sensitive_access_requires_approval": true
+  },
+  "pending_execution_permission": {
+    "workflow": "oracle-teams.yml",
+    "source_example": "docs/oracle-teams.yml.example",
+    "installed": false,
+    "exact_main_hook_case_change_applied": false,
+    "no_checkout": true,
+    "concurrency": "oracle-staging",
+    "job_timeout_minutes": 5
+  },
+  "host_prerequisites_from_parent_readonly": {
+    "occurrences": 0,
+    "egress": "deny-all",
+    "admin_api": 401,
+    "manual_google_oauth_required": false
+  },
+  "unchanged_real_usage": {
+    "models": "12/50",
+    "hosted_replay": "13/20"
+  },
+  "not_performed": [
+    "Oracle write",
+    "credentials/session access or login",
+    "network/security/hook change",
+    "workflow dispatch",
+    "model request",
+    "real Teams Join",
+    "image build/publish/deploy",
+    "PR creation/merge"
+  ],
+  "installation_or_execution_authorization_granted_by_evidence": false
+}

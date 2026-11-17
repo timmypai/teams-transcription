@@ -1,0 +1,53 @@
+name: Oracle fixed synthetic QA
+
+# Host bridge, candidate bundle and exact hook allowlist must be reviewed/installed
+# before dispatch. This source does not install them or grant execution approval.
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: Offline candidate check first; observe needs valid explicit Live authorization
+        type: choice
+        options: [offline, observe, isolated-offline, isolated, semantic-v1-offline, semantic-v1-isolated, semantic-startup-v1-offline, semantic-startup-v1-isolated]
+        default: offline
+      confirm_live:
+        description: This selected Live operation is explicitly authorized within the existing global 50-start allowance
+        type: boolean
+        default: false
+
+permissions: {}
+
+concurrency:
+  group: oracle-staging
+  cancel-in-progress: false
+
+jobs:
+  qa:
+    if: >-
+      github.repository == 'paulpai0412/teams-transcription' &&
+      github.ref == 'refs/heads/main' && vars.STAGING_READY == 'true'
+    environment: staging
+    runs-on: [self-hosted, Linux, ARM64, teams-transcription-staging]
+    timeout-minutes: 5
+    steps:
+      - name: Fixed installed QA bridge
+        env:
+          STAGING_QA_OPERATION: ${{ inputs.operation }}
+          STAGING_QA_AUTHORIZED: ${{ inputs.confirm_live }}
+        run: |
+          set -euo pipefail
+          /opt/teams-staging/bin/qa-cloud-bridge "$STAGING_QA_OPERATION" | tee "$RUNNER_TEMP/cloud-qa.json"
+      - name: Safe QA summary
+        if: always()
+        run: |
+          printf '%s\n' '### Oracle synthetic QA' 'Job result: ${{ job.status }}' \
+            'Fixed candidate only. Offline does not start a model. No OAuth, raw audio or private QA logs uploaded.' \
+            'A source gate or model/RX success does not prove audio continuity or Teams audibility.' >> "$GITHUB_STEP_SUMMARY"
+      - name: Only projected QA result
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: cloud-qa-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/cloud-qa.json
+          retention-days: 7
+          if-no-files-found: warn

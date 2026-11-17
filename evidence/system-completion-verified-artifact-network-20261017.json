@@ -1,0 +1,35 @@
+{
+  "kind": "same_network_verified_python_official_artifacts",
+  "exit": 0,
+  "records": [
+    {
+      "verified_version": "0.159.0-alpha.3",
+      "bytes": 4911,
+      "sha256": "aa515c2df6faac981a9c5bd0954c5d932dc24fe0282d25962f919d1ec3912980",
+      "integrity": "sha512-K54D+7OWbERb4Xg4uSXvoGxQ53SCxsdX4AB96rFgQTxnynCLweMAssOl27Is7ZMFKMBWf83R5yTNZpZZYYYy0Q==",
+      "file_count": 3,
+      "unpacked_bytes": 13262,
+      "url": "https://registry.npmjs.org/@openai/codex/-/codex-0.159.0-alpha.3.tgz",
+      "metadata_url": "https://registry.npmjs.org/@openai%2Fcodex/0.159.0-alpha.3"
+    },
+    {
+      "verified_version": "0.159.0-alpha.3-linux-x64",
+      "bytes": 162031803,
+      "sha256": "61bcc10c21bef2c7cce7aae343ad7bc9ca7634359cca6fb92960c5536ad7bbe9",
+      "integrity": "sha512-7VdPMTC7OIKF8Mlr8LJrjzM7AKDK3VvslvseFsVsBjvo7Ih8Y0Ju4vh5hzrw9KZMd1Ocorjh6Rhukyp7yxq2QA==",
+      "file_count": 46,
+      "unpacked_bytes": 443611586,
+      "url": "https://registry.npmjs.org/@openai/codex/-/codex-0.159.0-alpha.3-linux-x64.tgz",
+      "metadata_url": "https://registry.npmjs.org/@openai%2Fcodex/0.159.0-alpha.3-linux-x64"
+    },
+    {
+      "bundle": "/tmp/verified-public-bundle",
+      "version": "0.159.0-alpha.3",
+      "platform": "linux-x64",
+      "artifacts": 2
+    }
+  ],
+  "credentials_mounted": false,
+  "TLS_verification_disabled": false,
+  "persistent_artifacts": false
+}

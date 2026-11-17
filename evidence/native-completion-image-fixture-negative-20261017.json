@@ -1,0 +1,23 @@
+{
+  "kind": "native_input_container_fixture_internal_network_negative",
+  "teams_joined": false,
+  "calendar_writes": 0,
+  "model_calls": 0,
+  "checks": [
+    "host_installed_workdir_identity",
+    "installed_cli_entrypoint",
+    "pinned_codex_binary"
+  ],
+  "module_count": 49,
+  "codex_version": "codex-cli 0.159.0-alpha.3",
+  "container_cleanup": true,
+  "network_cleanup": true,
+  "passed": false,
+  "image_id": "sha256:731ed95e512986a33df2543ec0b5c45ba073ea5924a93ed228889ec3cc28cff4",
+  "fixture_network": "owned internal bridge",
+  "failure": {
+    "code": "local_RTC_connection_timeout",
+    "timeout_seconds": 5
+  },
+  "scope": "Source identity, installed CLI and pinned Codex passed; actual RTC case did not connect. Harness negative, not an image or native-model pass."
+}

@@ -1,0 +1,639 @@
+{
+  "kind": "remove_context_serialization_quota_and_review_local_gates",
+  "recorded_at": "2026-10-18T12:29:27.311Z",
+  "source_sha256": {
+    "teams_transcription/b_context.py": "7a053dfe40814e870b8d67b577d482a06ecaa9b710d6fa1ffc146c8246f88781",
+    "teams_transcription/b_native.py": "6a494311536329e740d23837a01f34fa2984975eed7b157c544082675d1db1d6",
+    "teams_transcription/diagnostics.py": "c74c85b6009fdc734439822575a00fc361bb73e83495f015b07710c16c5de8df"
+  },
+  "request_scope": "Remove12KB gate without a replacement number; review other local gates and necessity. Other policy changes are recommendations, not silently implemented.",
+  "implementation": {
+    "removed": [
+      "max_delta_bytes option and validation",
+      "12KB result quota",
+      "artificial JSON pagination and context_batch",
+      "secondary serialized-text slicing",
+      "context_delta_budget_too_small runtime path and active diagnostic label",
+      "obsolete budget-rejection and page-count tests"
+    ],
+    "contract": "ContextPlan.payload is one complete newline-terminated JSON result; all UTF8 chunks then one RESULT_COMPLETE; successful full sends and current scope/output admission before commit",
+    "per_question_serialization_quota": null,
+    "cumulative_context_quota": null,
+    "other_selection_policies_removed": false
+  },
+  "red_green": {
+    "test": "test_incremental_minutes_context.ContextTests.test_large_citation_metadata_does_not_reject_supported_task",
+    "failed_before": true,
+    "before_error": "context_delta_budget_too_small",
+    "passed_after": true,
+    "citations": 1000
+  },
+  "focused_regression": {
+    "tests_run": 134,
+    "failures": 0,
+    "errors": 0,
+    "seconds": 6.531
+  },
+  "final_regression": {
+    "tests_run": 945,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0,
+    "seconds": 237.256,
+    "excluded_historical_missing_suites": [
+      "test_bridge_integration.py",
+      "test_media_bridge.py"
+    ],
+    "failed_cases": [],
+    "error_cases": [],
+    "passed": true
+  },
+  "real_native": {
+    "kind": "no_context_serialization_quota_real_native",
+    "teams_joined": false,
+    "physical_output": false,
+    "application_question_injected": false,
+    "provider_final_injected": false,
+    "initial_history_supplied": false,
+    "failure_type": null,
+    "stimulus": {
+      "pcm_bytes": 234362,
+      "seconds": 4.882541666666667,
+      "nonzero": true
+    },
+    "reader_calls": 1,
+    "tool_calls": 1,
+    "context_payload_bytes": 17418,
+    "source_reference_count": 1000,
+    "first_reference": "source-00000",
+    "last_reference": "source-00999",
+    "all_references_retained": true,
+    "one_complete_json": true,
+    "one_final_marker": true,
+    "max_chunk_bytes": 500,
+    "context": {
+      "sent_bytes": 17433,
+      "total_limit_bytes": null,
+      "known_paragraphs": 1,
+      "source_version": 1,
+      "pending": false,
+      "model_consumption_verified": false,
+      "preparing": false,
+      "delivery_scope": "successful_host_send_returns_this_live_thread"
+    },
+    "delivery": {
+      "question_number": 1,
+      "phase": "delivered",
+      "started_elapsed_ms": 11746,
+      "source_version": 1,
+      "available": true,
+      "selected_ref_count": 1,
+      "selected_record_indexes": [
+        1
+      ],
+      "selected_indexes_truncated": false,
+      "omitted_for_budget": false,
+      "payload_bytes": 17418,
+      "sent_bytes": 17433,
+      "marker_returned": true,
+      "model_consumption_verified": false
+    },
+    "runtime_failure": null,
+    "speech": {
+      "phase": "closed",
+      "native_state": "sleeping",
+      "done_is_set": true,
+      "speech_task_done": true,
+      "speech_task_cancelled": false,
+      "error_code": null,
+      "output_active": false,
+      "nonzero_frames": 476756,
+      "activity_frames": 456704,
+      "packet_frames": 2048,
+      "packet_nonzero_frames": 12,
+      "packet_peak_abs": 1,
+      "packet_rms": 0.07654655446197431,
+      "activity_rms_threshold": 8,
+      "last_active_age_seconds": 0.9278254559994821,
+      "last_nonzero_age_seconds": 0.03147949899903324,
+      "drain_result": {
+        "present": true,
+        "truncated": false,
+        "drained": false,
+        "muted": true
+      }
+    },
+    "facts": {
+      "report": true,
+      "send_to_contact": true
+    },
+    "synthetic_assistant_text": "្រប我在，系列未完成待辦的原文是：「完成驗證報告並寄給窗口。」目前紀錄只提供了這一項延續待辦。",
+    "admitted_assistant_text": "្រប我在，系列未完成待辦的原文是：「完成驗證報告並寄給窗口。」目前紀錄只提供了這一項延續待辦。",
+    "transcript_phases": [
+      {
+        "kind": "delta",
+        "state": "answering",
+        "marker_returned": true,
+        "admitted": true,
+        "text": "្រប"
+      },
+      {
+        "kind": "delta",
+        "state": "answering",
+        "marker_returned": true,
+        "admitted": true,
+        "text": "我在"
+      },
+      {
+        "kind": "delta",
+        "state": "answering",
+        "marker_returned": true,
+        "admitted": true,
+        "text": "，"
+      },
+      {
+        "kind": "delta",
+        "state": "answering",
+        "marker_returned": true,
+        "admitted": true,
+        "text": "系列"
+      },
+      {
+        "kind": "delta",
+        "state": "answering",
+        "marker_returned": true,
+        "admitted": true,
+        "text": "未"
+      },
+      {
+        "kind": "delta",
+        "state": "answering",
+        "marker_returned": true,
+        "admitted": true,
+        "text": "完成"
+      },
+      {
+        "kind": "delta",
+        "state": "answering",
+        "marker_returned": true,
+        "admitted": true,
+        "text": "待"
+      },
+      {
+        "kind": "delta",
+        "state": "answering",
+        "marker_returned": true,
+        "admitted": true,
+        "text": "辦"
+      },
+      {
+        "kind": "delta",
+        "state": "answering",
+        "marker_returned": true,
+        "admitted": true,
+        "text": "的原"
+      },
+      {
+        "kind": "delta",
+        "state": "answering",
+        "marker_returned": true,
+        "admitted": true,
+        "text": "文"
+      },
+      {
+        "kind": "delta",
+        "state": "answering",
+        "marker_returned": true,
+        "admitted": true,
+        "text": "是"
+      },
+      {
+        "kind": "delta",
+        "state": "answering",
+        "marker_returned": true,
+        "admitted": true,
+        "text": "：「"
+      },
+      {
+        "kind": "delta",
+        "state": "answering",
+        "marker_returned": true,
+        "admitted": true,
+        "text": "完成"
+      },
+      {
+        "kind": "delta",
+        "state": "answering",
+        "marker_returned": true,
+        "admitted": true,
+        "text": "驗"
+      },
+      {
+        "kind": "delta",
+        "state": "answering",
+        "marker_returned": true,
+        "admitted": true,
+        "text": "證"
+      },
+      {
+        "kind": "delta",
+        "state": "answering",
+        "marker_returned": true,
+        "admitted": true,
+        "text": "報"
+      },
+      {
+        "kind": "delta",
+        "state": "answering",
+        "marker_returned": true,
+        "admitted": true,
+        "text": "告"
+      },
+      {
+        "kind": "delta",
+        "state": "answering",
+        "marker_returned": true,
+        "admitted": true,
+        "text": "並寄"
+      },
+      {
+        "kind": "delta",
+        "state": "answering",
+        "marker_returned": true,
+        "admitted": true,
+        "text": "給"
+      },
+      {
+        "kind": "delta",
+        "state": "answering",
+        "marker_returned": true,
+        "admitted": true,
+        "text": "窗口"
+      },
+      {
+        "kind": "delta",
+        "state": "answering",
+        "marker_returned": true,
+        "admitted": true,
+        "text": "。」"
+      },
+      {
+        "kind": "delta",
+        "state": "answering",
+        "marker_returned": true,
+        "admitted": true,
+        "text": "目前"
+      },
+      {
+        "kind": "delta",
+        "state": "answering",
+        "marker_returned": true,
+        "admitted": true,
+        "text": "紀"
+      },
+      {
+        "kind": "delta",
+        "state": "answering",
+        "marker_returned": true,
+        "admitted": true,
+        "text": "錄"
+      },
+      {
+        "kind": "delta",
+        "state": "answering",
+        "marker_returned": true,
+        "admitted": true,
+        "text": "只"
+      },
+      {
+        "kind": "delta",
+        "state": "answering",
+        "marker_returned": true,
+        "admitted": true,
+        "text": "提供"
+      },
+      {
+        "kind": "delta",
+        "state": "answering",
+        "marker_returned": true,
+        "admitted": true,
+        "text": "了"
+      },
+      {
+        "kind": "delta",
+        "state": "answering",
+        "marker_returned": true,
+        "admitted": true,
+        "text": "這"
+      },
+      {
+        "kind": "delta",
+        "state": "answering",
+        "marker_returned": true,
+        "admitted": true,
+        "text": "一項"
+      },
+      {
+        "kind": "delta",
+        "state": "answering",
+        "marker_returned": true,
+        "admitted": true,
+        "text": "延"
+      },
+      {
+        "kind": "delta",
+        "state": "answering",
+        "marker_returned": true,
+        "admitted": true,
+        "text": "續"
+      },
+      {
+        "kind": "delta",
+        "state": "answering",
+        "marker_returned": true,
+        "admitted": true,
+        "text": "待"
+      },
+      {
+        "kind": "delta",
+        "state": "answering",
+        "marker_returned": true,
+        "admitted": true,
+        "text": "辦"
+      },
+      {
+        "kind": "delta",
+        "state": "answering",
+        "marker_returned": true,
+        "admitted": true,
+        "text": "。"
+      }
+    ],
+    "transcript_observation": "concatenated observed deltas and done; duplicate text is not proof of repeated audible speech",
+    "cleanup": {
+      "status": "cleaned",
+      "stop_status": "stopped",
+      "stop_ack_received": true,
+      "stop_closed_received": true,
+      "native_cleanup_status": "cleaned",
+      "owned_processes": 2,
+      "live_processes": 0,
+      "reaped": true,
+      "pending_close_tasks": 0,
+      "pending_operation": false
+    },
+    "passed": true,
+    "acceptance_scope": "Full oversized context serialization, all source references retained, fresh scoped SQLite read, supported task phrase observed after marker/output admission. Not complete wording or remote audibility acceptance.",
+    "full_semantic_or_remote_audio_acceptance": false,
+    "observed_prefix_anomaly": true
+  },
+  "initial_unscoped_control": {
+    "kind": "no_context_serialization_quota_real_native",
+    "teams_joined": false,
+    "physical_output": false,
+    "application_question_injected": false,
+    "provider_final_injected": false,
+    "initial_history_supplied": false,
+    "failure_type": null,
+    "stimulus": {
+      "pcm_bytes": 234362,
+      "seconds": 4.882541666666667,
+      "nonzero": true
+    },
+    "reader_calls": 1,
+    "tool_calls": 1,
+    "context_payload_bytes": 17418,
+    "source_reference_count": 1000,
+    "first_reference": "source-00000",
+    "last_reference": "source-00999",
+    "all_references_retained": true,
+    "one_complete_json": true,
+    "one_final_marker": true,
+    "max_chunk_bytes": 500,
+    "context": {
+      "sent_bytes": 17433,
+      "total_limit_bytes": null,
+      "known_paragraphs": 1,
+      "source_version": 1,
+      "pending": false,
+      "model_consumption_verified": false,
+      "preparing": false,
+      "delivery_scope": "successful_host_send_returns_this_live_thread"
+    },
+    "delivery": {
+      "question_number": 1,
+      "phase": "delivered",
+      "started_elapsed_ms": 13129,
+      "source_version": 1,
+      "available": true,
+      "selected_ref_count": 1,
+      "selected_record_indexes": [
+        1
+      ],
+      "selected_indexes_truncated": false,
+      "omitted_for_budget": false,
+      "payload_bytes": 17418,
+      "sent_bytes": 17433,
+      "marker_returned": true,
+      "model_consumption_verified": false
+    },
+    "runtime_failure": null,
+    "speech": {
+      "phase": "closed",
+      "native_state": "sleeping",
+      "done_is_set": true,
+      "speech_task_done": true,
+      "speech_task_cancelled": false,
+      "error_code": null,
+      "output_active": false,
+      "nonzero_frames": 159598,
+      "activity_frames": 149504,
+      "packet_frames": 2048,
+      "packet_nonzero_frames": 15,
+      "packet_peak_abs": 1,
+      "packet_rms": 0.0855816496101822,
+      "activity_rms_threshold": 8,
+      "last_active_age_seconds": 0.8258690489992659,
+      "last_nonzero_age_seconds": 0.024383508999562764,
+      "drain_result": {
+        "present": true,
+        "truncated": false,
+        "drained": false,
+        "muted": true
+      }
+    },
+    "facts": {
+      "report": true,
+      "send_to_contact": true
+    },
+    "synthetic_assistant_text": " જેવાપાય સાઇઝ શી 零件單價兩元,目前數量兩件。 જેવાપાય સાઇઝ શી 零件單價兩元,目前數量兩件。 完成驗證報告並寄給窗口。",
+    "transcript_observation": "concatenated observed deltas and done; duplicate text is not proof of repeated audible speech",
+    "cleanup": {
+      "status": "cleaned",
+      "stop_status": "stopped",
+      "stop_ack_received": true,
+      "stop_closed_received": true,
+      "native_cleanup_status": "cleaned",
+      "owned_processes": 2,
+      "live_processes": 0,
+      "reaped": true,
+      "pending_close_tasks": 0,
+      "pending_operation": false
+    },
+    "passed": true,
+    "acceptance_scope": "Transport/reference smoke only. Assistant text collected since startup includes unsupported content, without phase association; no full-semantic acceptance."
+  },
+  "review": {
+    "document": "docs/B-LIVE-NATIVE.md",
+    "axes_reviewed_independently": [
+      "Spec",
+      "Standards"
+    ],
+    "spec_major_gaps": [
+      "Logical16,000-character selection plus32-row accounting and4,000-character excerpt still crop before serialization",
+      "48KiB freeze omits historical items from the only tool-readable prior copy; fresh reads cannot restore those items",
+      "2,000-character pending utterance overflow emits no request receipt and can look like silence"
+    ],
+    "standards_static_findings": [
+      {
+        "path": "teams_transcription/native_media.py:251-268",
+        "finding": "Late audio document calls startCapture without adding its source clock through initial calibration path",
+        "recommendation": "Calibrate validated document before B callbacks; do not loosen clock/auth checks",
+        "status": "not_modified_or_reproduced",
+        "historical_causality_verified": false
+      },
+      {
+        "path": "teams_transcription/worker.py:313-333",
+        "finding": "Worker-wide expected_frame receives independent per-document offsets",
+        "recommendation": "Track continuity by validated source document/generation",
+        "status": "not_modified_or_reproduced",
+        "effect_is_inference": true,
+        "historical_causality_verified": false
+      },
+      {
+        "path": "teams_transcription/browser.py:1786-1814",
+        "finding": "Slow initial calibration may leave no clock while native readiness returns successfully",
+        "recommendation": "Fix readiness/calibration lifecycle, not merely enlarge RTT threshold",
+        "status": "not_modified_or_reproduced",
+        "historical_causality_verified": false
+      }
+    ],
+    "policy_recommendations_not_implemented": [
+      {
+        "gate": "16,000 selected characters,32 accounting per row,32,000 configuration ceiling",
+        "owner": "b_response.MeetingMinutesTool",
+        "recommendation": "Explicit retrieval/continuation policy rather than arbitrary hard upper bound"
+      },
+      {
+        "gate": "4,000-character partial excerpt",
+        "owner": "b_response.dispatch",
+        "recommendation": "Remove unexplained secondary crop, preserve original coordinates"
+      },
+      {
+        "gate": "48KiB frozen history,64KiB creation envelope",
+        "owner": "history_context and stores",
+        "recommendation": "Keep version/scope binding; allow authorized frozen revision retrieval rather than relying only on shortened copy"
+      },
+      {
+        "gate": "16KiB startup history and glossary",
+        "owner": "history_context and assistant_store",
+        "recommendation": "Explicit bounded startup policy and disclosed omissions, not provider capacity"
+      },
+      {
+        "gate": "2,000-character utterance",
+        "owner": "b_question and question guards",
+        "recommendation": "Bound pending state but make rejection visible and policy explicit; never pretend a truncated question is complete"
+      },
+      {
+        "gate": "45s answer,60s output lease validation",
+        "owner": "b_native and b_audio",
+        "recommendation": "Remove implicit hard answer length or make operator policy; retain revocation and bounded backlog"
+      },
+      {
+        "gate": "15s context preparation permanently failing B",
+        "owner": "b_native._return_tool",
+        "recommendation": "Keep bounded read but isolate safe cancellation to the current question; integrity failures remain fatal"
+      },
+      {
+        "gate": "Default3600s meeting max,configuration ceiling14400s",
+        "owner": "assistant_config and daemon._monitor",
+        "recommendation": "Optional extra max duration; retain authorized occurrence end/stop/revocation"
+      },
+      {
+        "gate": "51s total summary generation",
+        "owner": "summary",
+        "recommendation": "Explicit generation policy coordinated with heartbeat/lease and bounded cleanup"
+      },
+      {
+        "gate": "Summary20KB entries/40KB groups,512KiB response/2MiB publish",
+        "owner": "summary and meeting_store",
+        "recommendation": "Retain bounded grouping/response protection, disclose local values and failure modes"
+      }
+    ],
+    "retained_with_reason": [
+      {
+        "gate": "500-byte UTF8 chunks",
+        "basis": "Pinned official SDK CONTEXT_APPEND_MAX_BYTES/context_append_chunks; every chunk is sent, no total quota",
+        "official_source": "https://github.com/openai/codex/blob/3b01b36fa5eb96ba82a776bd3c2fc57f8969181f/codex-rs/codex-api/src/endpoint/realtime_websocket/methods_frameless_bidi.rs",
+        "server_rejection_threshold_proven": false
+      },
+      {
+        "gate": "256-entry host dedup cache",
+        "basis": "Eviction affects retransmission only, not this question selection or durable source"
+      },
+      {
+        "gate": "Finite RX/FIFO/BrowserTX queues and pacing",
+        "basis": "Finite RAM, stale-audio/revocation latency and explicit overflow; not cumulative answer length"
+      },
+      {
+        "gate": "Actual PCM quiet/activity, source clock and scoped media validation",
+        "basis": "Input/echo/lifecycle integrity; numerical thresholds remain local heuristics requiring evidence"
+      },
+      {
+        "gate": "Recording/speaking consent,meeting/thread/document/sender binding,SQLite fence/version/source validation,unknown-cleanup interlock",
+        "basis": "Necessary authorization/isolation/source integrity, not arbitrary content quota"
+      }
+    ]
+  },
+  "standby": {
+    "service": "calendar-no-context-quota29",
+    "pid": 536689,
+    "previous_service_exit_code": 0,
+    "admin_login_and_settings_exercised": true,
+    "started": true,
+    "active_session_id": null,
+    "capture_interlock": false,
+    "last_error": null,
+    "scheduler_paused": true,
+    "media_flags": [
+      false,
+      false,
+      false,
+      false
+    ],
+    "owned_admin_session_logged_out_and_closed": true,
+    "post_browser_close_healthcheck": {
+      "command": "python -m teams_transcription healthcheck --port 18081",
+      "exit_code": 0
+    },
+    "additional_join_attempts": 0,
+    "private_config_changed": false
+  },
+  "cleanup": {
+    "owned_probe_workspace_removed": true,
+    "synthetic_windows_wavs_removed": true,
+    "models_closed_and_processes_reaped": true
+  },
+  "publication": {
+    "committed": false,
+    "pushed": false,
+    "docker_refreshed": false,
+    "deployed": false
+  },
+  "limits": [
+    "No real Teams or physical output test",
+    "No guarantee that upstream logical selection contains the whole meeting",
+    "No model-consumption acknowledgement inferred from send returns",
+    "Other reviewed gates and static integration findings were not changed in this patch"
+  ]
+}

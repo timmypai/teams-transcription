@@ -1,0 +1,16 @@
+**
+!Dockerfile
+!pyproject.toml
+!runtime.example.yml
+!teams_transcription/
+teams_transcription/**
+!teams_transcription/*.py
+!teams_transcription/static/
+!teams_transcription/static/calendar.css
+!teams_transcription/static/calendar.js
+!docker/
+docker/**
+!docker/entrypoint.py
+!tools/
+tools/**
+!tools/prefetch_codex_npm.py

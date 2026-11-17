@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "base_main_sha": "6a809d03229a8368d1b4f846cd95742a9a793552",
+  "runtime_js_sha256": "d273050cc00037d1d260c12b5728cae08f98b22f1ca47560b7b91a4c9714e718",
+  "runtime_js_byte_identical_to_hosted_candidate": true,
+  "hosted_harness_sha": "a1f34ff74da0f4f7de59ce7c8ad210f3653c3317",
+  "verified_runs": [
+    41140691906,
+    41142351873
+  ],
+  "application_paths": [
+    "b_media_profile.NO_PLC_PEER_JS",
+    "b_browser_tx.TARGET_ANSWER_JS"
+  ],
+  "legacy_literal_unchanged": true,
+  "daemon_current_imports_select_fix": true,
+  "model_or_Oracle_tested": false,
+  "source_integration_focused": {
+    "tests": 17,
+    "failures": 0,
+    "scope": "Node helper/graph and controlled Python tests, not new browser/model"
+  },
+  "pending": "new release profile/image digest and versioned QA host payload; no merge/deploy authorized",
+  "deferred_issues": [
+    20,
+    21
+  ],
+  "validation": {
+    "focused_application": 17,
+    "legacy_candidate_compatibility": 56,
+    "controlled_aggregate": 346,
+    "failures": 0,
+    "errors": 0,
+    "full_discovery": false,
+    "actual_local_browser_executed": false,
+    "source_review_confirmed_findings": 0,
+    "standards_review_confirmed_findings": 0,
+    "historical_cleanup_failure_deferred_issue": 21
+  },
+  "legacy_media_fixtures": {
+    "b_media_profile.py": "1dfac1d3515b40874fe52408b1540660a2c8ae661620e095feb566f207257882",
+    "b_browser_tx.py": "0fac0d1e3d84aa40037ed12f66595fbc87d1b8739f0da7d16f8bc86f2381eda9"
+  },
+  "evidence_logs": {
+    "focused": "315cccde2c7f70a1ea173c95e93db0b54b37eacb5d02abdf65fd38db295d905a",
+    "legacy": "590cbe8d4b2abfeb6eea520fd97322855f893c9474257a2715eba13cdb976070",
+    "aggregate": "a8773a4e0cbe6dcc9b3e8369acdb33dfa69d070d9cb79cde78249bb9b2a04996"
+  },
+  "runtime_js_identity_scope": "core receiver string before documented common QA instrumentation; full instrumented hosted script differs from application context",
+  "actual_integrated_browser_or_new_image_tested": false
+}

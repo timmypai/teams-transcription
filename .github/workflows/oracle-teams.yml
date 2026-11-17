@@ -1,0 +1,53 @@
+# Review-only example. Not an active .github workflow or a hook permission grant.
+name: Oracle single Teams acceptance
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        type: choice
+        options: [prepare, offline, run, stop]
+        default: offline
+      confirm_meeting:
+        description: Confirm this start or stop of the fixed authorized meeting
+        type: boolean
+        default: false
+      participant_confirmed_at:
+        description: Actual user presence confirmation timestamp with timezone (run only; never execution time)
+        type: string
+        default: ''
+      case_id:
+        description: Reviewed installed case identifier; empty retains legacy target (no URL or path)
+        type: string
+        default: ''
+permissions: {}
+concurrency:
+  group: oracle-staging
+  cancel-in-progress: false
+jobs:
+  acceptance:
+    if: github.repository == 'paulpai0412/teams-transcription' && github.ref == 'refs/heads/main' && vars.STAGING_READY == 'true'
+    environment: staging
+    runs-on: [self-hosted, Linux, ARM64, teams-transcription-staging]
+    timeout-minutes: 5
+    # This bounds the control request only. Owner-controlled runs remain daemon-owned
+    # after run hands off; stop finalizes the exact persistent claim without rejoining.
+    steps:
+      - name: Fixed installed authenticated single-meeting helper
+        env:
+          TEAMS_OPERATION: ${{ inputs.operation }}
+          STAGING_TEAMS_AUTHORIZED: ${{ inputs.confirm_meeting }}
+          STAGING_TEAMS_CONFIRMED_AT: ${{ inputs.participant_confirmed_at }}
+          TEAMS_CASE_ID: ${{ inputs.case_id }}
+        run: |
+          set -euo pipefail
+          args=("$TEAMS_OPERATION")
+          if [[ -n "$TEAMS_CASE_ID" ]]; then args+=(--case "$TEAMS_CASE_ID"); fi
+          /opt/teams-staging/bin/teams-acceptance "${args[@]}" | tee "$RUNNER_TEMP/teams-acceptance.json"
+      - name: Only projected scalar result
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: teams-acceptance-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/teams-acceptance.json
+          retention-days: 7
+          if-no-files-found: warn

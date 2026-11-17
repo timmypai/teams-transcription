@@ -1,0 +1,124 @@
+{
+  "recorded_at": "2026-10-30T04:03:57.022919+00:00",
+  "repository": "paulpai0412/teams-transcription",
+  "branch": "fix/qa-probe-language-contract",
+  "base_main": "537e665e05c7cd5c2dc26b1a2ac870cc40cc8ce3",
+  "scope": "Fixed synthetic QA language and exact content acceptance; no production Native prompt, source, RX, cleanup, deployment, model or summary changes",
+  "host_case": {
+    "receipt_name": "gpt-live-rx-case-0002-537e665-20261030.json",
+    "evidence_origin": "Parent supplied safe fields; original host receipt not fetched by this task",
+    "per_answer_audio_rx_verified": [
+      true,
+      true
+    ],
+    "overall_accepted": false,
+    "reported_reason": "English answer translations did not match Chinese expected terms; first answer also had extra prefix",
+    "reported_batch_used": 2,
+    "reported_batch_limit": 50,
+    "new_model_calls_here": 0
+  },
+  "diagnosis": {
+    "confirmed": "Fixed English question/en synthesis mixed with Chinese source/expectations; old substring acceptance also admitted a prefixed correct term",
+    "causal_limit": "Existing Native prompt already requests Traditional Chinese. Mixed language is not a logical impossibility or proven sole cause of the observed model behavior.",
+    "existing_contract": "Native prompt requests verbatim current source when asked to quote; prior question asked only for a budget, not an exact quotation."
+  },
+  "red_green": [
+    {
+      "command": "PYTHONPATH=tests:. python -m unittest test_qa_probe.ProbeTests.test_correct_budget_with_extra_prefix_is_not_accepted -v",
+      "before": "1 failure: prefixed answer accepted despite valid RX/cleanup",
+      "after": "passed with exact current source quote gate"
+    },
+    {
+      "command": "PYTHONPATH=tests:. python -m unittest test_qa_probe.ProbeTests.test_fixed_question_requests_chinese_source_quote_with_mandarin_voice -v",
+      "before": "1 failure: English fixed question",
+      "after": "passed with Chinese quote request and cmn voice adapter"
+    },
+    {
+      "command": "PYTHONPATH=tests:. python -m unittest test_qa_probe.ProbeTests.test_correct_last_utterance_cannot_hide_earlier_prefix_wrong_value_or_duplicate -v",
+      "before": "3 subtest failures: earlier prefix/wrong value/duplicate final hidden by correct last final",
+      "after": "passed; single current-question final required, existing late greeting isolation preserved"
+    }
+  ],
+  "contract": {
+    "question": "請只用繁體中文逐字引用會議預算原文，不加說明。",
+    "question_voice": "cmn",
+    "wake_voice": "en",
+    "acceptance": "Retain all existing gates; exactly one non-isolated-greeting final within this question phase, and its reply.strip() must equal the entire current source sentence including punctuation",
+    "rejected": "English translations, correct term with prefix/suffix, wrong value mixed with correct value, stale revision; earlier wrong/prefix/duplicate assistant finals cannot be hidden by a correct last final",
+    "accepted_format_variation": "outer whitespace only"
+  },
+  "voice_reference": {
+    "upstream_tag": "1.51",
+    "language_definition": "https://raw.githubusercontent.com/espeak-ng/espeak-ng/1.51/espeak-ng-data/lang/sit/cmn",
+    "status": "Official source lists cmn/Mandarin. This does not validate installed image synthesis or speech recognition."
+  },
+  "validation": {
+    "focused": {
+      "tests": 98,
+      "failures": 0,
+      "errors": 0
+    },
+    "aggregate": {
+      "scope": "controlled offline subset",
+      "suites": [
+        "test_assistant_store",
+        "test_assistant_daemon",
+        "test_calendar_client",
+        "test_glossary_context",
+        "test_admin_web",
+        "test_sqlite_voice_context",
+        "test_sqlite_only_store",
+        "test_rx_contract",
+        "test_prefetch_codex_npm",
+        "test_staging_control",
+        "test_capture_cleanup_review",
+        "test_release_gate",
+        "test_diagnostic_projection",
+        "test_codex_auth",
+        "test_provider_state",
+        "test_workflow_triggers",
+        "test_staging_docker_diagnostics",
+        "test_staging_compose",
+        "test_first_deploy_recovery",
+        "test_qa_probe.ProbeTests",
+        "test_qa_receiver_projection"
+      ],
+      "tests": 250,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "success": true,
+      "teams_or_model_called": false,
+      "audio_e2e_tested": false
+    },
+    "actionlint": "v1.7.7 passed",
+    "py_compile": "passed",
+    "diff_check": "passed",
+    "actual_synthesis_executed": false,
+    "synthesis_limit": "No espeak-ng/espeak executable in Cloud executor; no dependency installed. Existing future image preflight will synthesize changed fixed question.",
+    "actual_browser_suite_rerun": false,
+    "actual_model_or_teams_called": false,
+    "known_credential_pattern_scan": "passed",
+    "scope_check": "Only qa_probe/tests/QA contract docs/evidence changed; production Native prompt/RX/cleanup/deploy/workflows/summary unchanged"
+  },
+  "maintenance_behavior": {
+    "path": "deploy/stagingctl.py",
+    "observation": "Normal deploy/rollback calls controller.probe(target, maintenance=disable) after healthy/quiescent verification; it does not preserve a preexisting maintenance marker. Parent reports host re-enabled maintenance.",
+    "changed_here": false
+  },
+  "files_sha256": {
+    "teams_transcription/qa_probe.py": "d035385e486bab6db6704146b4f35d1d2ce831a35dea1aff6e0111425ac54535",
+    "tests/test_qa_probe.py": "821db2a0275e260848c6366cc94ed9d54dc4ae811da7934606b7608e2e650476",
+    "docs/INCREMENTAL-QA-CONTEXT.md": "a57683efc653ed70b5666d39d280d7beed06795362015d02a4069485bab4a76c"
+  },
+  "review": {
+    "spec": "Initial review found one P2: only last final checked. Fixed in05f6bf4; final review0 remaining findings,3 targeted tests passed independently.",
+    "standards": "Initial review independently found same P2; fixed. Final review0 confirmed findings or actionable smells,3 targeted tests passed independently."
+  },
+  "remaining": [
+    "Authorized branch delivery; no PR/merge/dispatch/build/deploy in this task",
+    "Future separately authorized Draft PR, merge, ARM64 build/publish and staging validation",
+    "Actual Mandarin synthesis/recognition and exact spoken answer/RX acceptance remain untested"
+  ],
+  "operations": "Local source/offline tests/review and authorized branch delivery only. No PR/merge/dispatch/build/deploy/security changes."
+}

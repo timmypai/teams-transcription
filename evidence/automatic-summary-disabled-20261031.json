@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "base_sha": "5fc85bf8bb6473f1e9b70d243fd22c73d069e889",
+  "branch": "fix/disable-auto-summary",
+  "scope": "disable canceled automatic server-side summary; local synthetic verification only",
+  "behavior": {
+    "daemon_summary_worker_started": false,
+    "automatic_summary_outbox_enqueue": false,
+    "admin_retry": "summary_service_disabled",
+    "historical_summary_rows_deleted": false,
+    "transcript_and_published_history_retained": true,
+    "schema_migration": false
+  },
+  "red_green": [
+    {
+      "test": "test_finished_capture_preserves_source_without_automatic_summary_job",
+      "before": "normal finish created a pending summary job",
+      "after": "source sealed and preserved; no job; retry refused"
+    },
+    {
+      "test": "test_restart_leaves_unpublished_legacy_job_inert_and_retry_disabled",
+      "before": "restoring original worker startup changed the historical pending job and failed the regression",
+      "after": "restart leaves legacy job untouched and makes no summarizer/capture call"
+    }
+  ],
+  "verification": {
+    "suites": [
+      "test_assistant_store",
+      "test_assistant_daemon",
+      "test_admin_web",
+      "test_calendar_view",
+      "test_capture_cleanup_review",
+      "test_staging_control"
+    ],
+    "tests": 94,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0,
+    "seconds": 9.929,
+    "diff_check": true
+  },
+  "historical_fixture": "tests/summary_history_fixture.py explicitly supplies synthetic legacy jobs for retained publication/lease/provenance coverage; production does not enqueue them",
+  "retained_low_level_methods": "historical publication and fenced legacy lease helpers remain; no daemon startup/admin retry path invokes generation",
+  "not_performed": [
+    "independent review",
+    "full discovery",
+    "hosted Actions",
+    "model requests",
+    "real account login",
+    "Teams Join",
+    "Oracle or Docker operations",
+    "push",
+    "PR",
+    "merge",
+    "deployment"
+  ]
+}

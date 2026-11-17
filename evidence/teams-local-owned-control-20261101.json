@@ -1,0 +1,174 @@
+{
+  "version": "teams-local-owned-control-source-v1",
+  "date_utc": "2026-11-01",
+  "base_sha": "d2848a8d1e36ba62348b410b910b6061349f2ab8",
+  "branch": "fix/teams-local-owned-control",
+  "python": "3.12.14",
+  "problem": "Browser admin cookie expires or is lost on server restart; automation must not require an interactive browser session.",
+  "implemented": [
+    "Default-off same-UID Unix listener in existing daemon lifespan, no public HTTP routes.",
+    "Fixed container exec client replacing AdminHTTP; no password/cookie/CSRF read or login fallback.",
+    "Same authority, canonical50 two-slot reservation, locks, release validation, revision/lease fences, owned Stop and cleanup retained.",
+    "Bounded/redacted protocol, Linux peer UID checks, private paths/lifetime lock, restart and startup cleanup.",
+    "Input/client transport deadlines do not cancel a committed claim before daemon ownership; no fixed meeting lifetime."
+  ],
+  "validation": {
+    "focused": {
+      "tests": 62,
+      "failures": 0,
+      "errors": 0,
+      "skips": 0,
+      "seconds": 16.366,
+      "command": "PYTHONPATH=tests:. python -m unittest test_teams_local_control.LocalControlTests test_teams_acceptance_host test_teams_acceptance test_admin_web -v"
+    },
+    "aggregate": {
+      "scope": "controlled offline subset",
+      "suites": [
+        "test_assistant_store",
+        "test_assistant_daemon",
+        "test_calendar_client",
+        "test_glossary_context",
+        "test_admin_web",
+        "test_sqlite_voice_context",
+        "test_sqlite_only_store",
+        "test_b_no_plc_startup",
+        "test_rx_contract",
+        "test_prefetch_codex_npm",
+        "test_staging_control",
+        "test_capture_cleanup_review",
+        "test_teams_recovery_reader",
+        "test_release_gate",
+        "test_diagnostic_projection",
+        "test_codex_auth",
+        "test_provider_state",
+        "test_workflow_triggers",
+        "test_pr_policy",
+        "test_pr_policy_github",
+        "test_pr_policy_workflow",
+        "test_staging_docker_diagnostics",
+        "test_staging_compose",
+        "test_first_deploy_recovery",
+        "test_qa_probe.ProbeTests",
+        "test_qa_receiver_projection",
+        "test_qa_audio_observer",
+        "test_qa_content",
+        "test_qa_candidate_versions",
+        "test_cloud_qa_semantic.SemanticRuntimeTests",
+        "test_cloud_qa_startup.StartupRuntimeTests",
+        "test_teams_acceptance",
+        "test_teams_acceptance_host",
+        "test_teams_local_control.LocalControlTests",
+        "test_native_output_attach_diagnostics",
+        "test_cloud_qa_contract",
+        "test_cloud_qa_bridge.CloudQABridgeTests",
+        "test_cloud_qa_isolated.CloudQAIsolatedTests",
+        "test_turn_lifecycle_evidence.TurnLifecycleEvidenceTests",
+        "test_speech_completion_snapshot.SpeechCompletionSnapshotTests",
+        "test_incremental_minutes_context.ContextTests.test_wire_instruction_distinguishes_verbatim_quote_and_normal_answers",
+        "test_native_incremental_context.NativeSnapshotContextTests.test_delivery_receipt_hashes_identify_actual_current_payload_without_content",
+        "test_b_native.NativeLiveTests.test_live_prompt_distinguishes_verbatim_format_from_normal_current_fact_answers",
+        "test_b_native.NativeLiveTests.test_three_physical_questions_in_one_provider_turn_query_current_sqlite_each_time"
+      ],
+      "tests": 439,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "success": true,
+      "teams_or_model_called": false,
+      "audio_e2e_tested": false
+    },
+    "aggregate_seconds": 44.288,
+    "diff_check_passed": true,
+    "credential_private_url_scan": {
+      "files": 8,
+      "issues": 0
+    },
+    "review_regressions": {
+      "before": {
+        "tests": 2,
+        "failures": 1,
+        "errors": 1,
+        "seconds": 10.291
+      },
+      "after": {
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "seconds": 10.301
+      },
+      "cases": [
+        "test_post_bind_failure_closes_listener_before_releasing_lifetime_lock",
+        "test_slow_committed_claim_is_owned_after_former_transport_timeout"
+      ]
+    },
+    "log_sha256": {
+      "focused_final": "25a1b2e5d0b07f58ad55907322d451ddd8583ee8fd10797d307ded499ca65e32",
+      "aggregate_final": "45dc81fc9a0e454e37935f9d9c4d08d0d7214f127ed8be656fd401df655a5be3",
+      "review_red": "eadf70b3a32df6e02458b4707937e4b97a53471592875f444a6684b9ca47fc1f",
+      "review_green": "dda5c4f4d413285ef26370a38b132a0b4e5f3a81b55b6cb2bf520079e9c50778"
+    }
+  },
+  "independent_local_codex_review": {
+    "standards": "one confirmed P2 startup listener leak fixed and re-reviewed; no new confirmed defect",
+    "spec": "one confirmed P2 mutation cancellation/claim handoff race fixed and re-reviewed; no new confirmed defect",
+    "official_native_pr_review_completed": false
+  },
+  "activation_pending_explicit_approval": {
+    "image": "new verified ARM release required; none built or published here",
+    "helper_target": "/opt/teams-staging/bin/teams-acceptance",
+    "helper_mode": "root:root 0755",
+    "helper_source_sha256": "cf2d3e7906cd9069b99af1de9bdaac8ad94ce4b0f0343771804299efd220452b",
+    "helper_release_fields": [
+      "RELEASE_SOURCE_SHA",
+      "IMAGE",
+      "BUILD_RUN_ID",
+      "BUILD_RUN_ATTEMPT"
+    ],
+    "release_fields_unset_fail_closed": true,
+    "compose_command_before": [
+      "serve",
+      "--config",
+      "/data/config/runtime.yml"
+    ],
+    "compose_command_after": [
+      "serve",
+      "--config",
+      "/data/config/runtime.yml",
+      "--local-teams-control"
+    ],
+    "created_inside_existing_data_volume": {
+      "/data/.teams-control": "0700 same container UID",
+      "/data/.teams-control/owner.lock": "0600 same container UID",
+      "/data/.teams-control/control.sock": "0600 same container UID"
+    },
+    "capability": "Same-UID local control. Not isolation from that UID; host helper is canonical authority/ledger boundary.",
+    "workflow_hook_permission_network_credential_delta": []
+  },
+  "not_performed": [
+    "merge",
+    "build",
+    "publish",
+    "workflow dispatch",
+    "Oracle modification",
+    "machine authorization enable",
+    "Teams Join",
+    "model call",
+    "audio E2E"
+  ],
+  "historical_failure_records_unchanged": true,
+  "actual_model_ledger_not_accessed": true,
+  "last_parent_reported_model_usage": {
+    "used": 16,
+    "limit": 50
+  },
+  "file_sha256": {
+    "teams_transcription/teams_local_control.py": "1707d09beb0b26509a70c906872fe5475517af59164c06e8e2954562f7d90651",
+    "teams_transcription/cli.py": "3dff99194f2c941bd14985b77cf394cfe8374d9df6ad7b7ee4926b8b0b92740e",
+    "teams_transcription/admin_web.py": "f622d4447b633bce4dd5f54db69d297513f0ea09142f40d4c1cf9c112353cd99",
+    "deploy/teams_acceptance.py": "cf2d3e7906cd9069b99af1de9bdaac8ad94ce4b0f0343771804299efd220452b",
+    "tests/test_teams_local_control.py": "07d2350f23952081ddc94f02666a2dcafa883a44fff123ff8e4dc3f67c8959b8",
+    "tests/test_teams_acceptance_host.py": "2d0e7a1a6029b70b45ebc1351538d75528b1512914b254b569d1b6276070f4c1",
+    "tools/ci_contracts.py": "2977f63e56d40edf1801a4568ae1788528ae7100bbe37aadaac08fff2e0f058f",
+    "docs/TEAMS-SINGLE-ACCEPTANCE.md": "5d98e94669f9196041dbc3e32667ff90e85adb092a3725bd59bad3b65c4055f2"
+  }
+}

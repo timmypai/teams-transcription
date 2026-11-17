@@ -1,0 +1,157 @@
+{
+  "recorded_at": "2026-10-30T11:25:07.819447+00:00",
+  "work_branch": "test/qa-passive-audio-observer",
+  "base_commit": "6fabc22381d8ffc135537152bd744807a60a2228",
+  "fixed_app_source": "c4090edb0e8e5db50d8950515522dba733618c51",
+  "isolated_candidate_source": "836ecbe88d69b14a66326474d08a4c26d15c1e90",
+  "isolated_manifest_sha256": "7102a643472e81407ceefdc693cdc24b58a783886b9cce7046857c204bafce99",
+  "exact_candidate_files": {
+    "qa_probe.py": "6616f75dbf175acc2991cb2b933098d3230adc5e9720c4a64f0ab00cbbf39a29",
+    "qa_session_isolation.py": "5d0befd7fa5af94d33250ba80434e8659071409de78e3a74b02e6f2fd62467fd"
+  },
+  "candidate_bytes_match_fixed_git_objects": true,
+  "operations": {
+    "A": [
+      "offline",
+      "observe"
+    ],
+    "B": [
+      "isolated-offline",
+      "isolated"
+    ]
+  },
+  "budget": {
+    "historical_checkpoint_source": "parent/host handoff, not newly inspected on host",
+    "used": 7,
+    "limit": 50,
+    "remaining": 43,
+    "actual_model_starts_this_task": 0,
+    "B_slots_reserved_upfront": 2,
+    "automatic_refund": false
+  },
+  "settlement": [
+    "bind all reserved rows by run, attempt, candidate and ordered start_index",
+    "two verified clean sessions settle both rows together",
+    "one known clean first-session failure settles unused second as not_started without reducing consumed",
+    "incomplete or contradictory counts, missing session, any unclean child or unknown outcome leave both reserved and interlock"
+  ],
+  "projection": [
+    "B identity is836ecbe; no A observer payload/imports",
+    "first and secondary fixed failure codes preserved; private bodies dropped",
+    "bounded per-session hashes/timings/cleanup and two question/RX summaries",
+    "model consumption, Teams, physical TX and audio continuity remain unverified"
+  ],
+  "tests": {
+    "focused_related": {
+      "tests": 42,
+      "success": true
+    },
+    "controlled_aggregate": {
+      "scope": "controlled offline subset",
+      "suites": [
+        "test_assistant_store",
+        "test_assistant_daemon",
+        "test_calendar_client",
+        "test_glossary_context",
+        "test_admin_web",
+        "test_sqlite_voice_context",
+        "test_sqlite_only_store",
+        "test_rx_contract",
+        "test_prefetch_codex_npm",
+        "test_staging_control",
+        "test_capture_cleanup_review",
+        "test_release_gate",
+        "test_diagnostic_projection",
+        "test_codex_auth",
+        "test_provider_state",
+        "test_workflow_triggers",
+        "test_staging_docker_diagnostics",
+        "test_staging_compose",
+        "test_first_deploy_recovery",
+        "test_qa_probe.ProbeTests",
+        "test_qa_receiver_projection",
+        "test_qa_audio_observer",
+        "test_cloud_qa_contract",
+        "test_cloud_qa_bridge.CloudQABridgeTests",
+        "test_cloud_qa_isolated.CloudQAIsolatedTests",
+        "test_turn_lifecycle_evidence.TurnLifecycleEvidenceTests",
+        "test_speech_completion_snapshot.SpeechCompletionSnapshotTests",
+        "test_incremental_minutes_context.ContextTests.test_wire_instruction_distinguishes_verbatim_quote_and_normal_answers",
+        "test_native_incremental_context.NativeSnapshotContextTests.test_delivery_receipt_hashes_identify_actual_current_payload_without_content",
+        "test_b_native.NativeLiveTests.test_live_prompt_distinguishes_verbatim_format_from_normal_current_fact_answers",
+        "test_b_native.NativeLiveTests.test_three_physical_questions_in_one_provider_turn_query_current_sqlite_each_time"
+      ],
+      "tests": 315,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "success": true,
+      "teams_or_model_called": false,
+      "audio_e2e_tested": false
+    },
+    "fixed_original_B_coordinator_regression": {
+      "tests": 16,
+      "failures": 0,
+      "errors": 0,
+      "skips": 0,
+      "success": true,
+      "model_called": false,
+      "source_sha": "836ecbe88d69b14a66326474d08a4c26d15c1e90",
+      "test_source_sha256": "2b879a0fea3dbc7cefdba285ab25613ea23f919cb80bd8131c9365b6353b0b63"
+    },
+    "all_five_workflows_actionlint": true,
+    "red_green": [
+      "B operation initially qa_operation_rejected; independent operation and settlement now pass",
+      "hostile failure.phase initially TypeError; typed fixed-code projection now passes",
+      "inconsistent observed start count initially settled; now rejects without changing either reservation"
+    ],
+    "new_B_cases_final": 9,
+    "real_Chromium_Docker_ARM64_or_model": false
+  },
+  "reviews": {
+    "spec": {
+      "actionable_findings": 0,
+      "independent_new_B_tests": 8
+    },
+    "standards": {
+      "actionable_findings": 0,
+      "independent_cases": 25
+    },
+    "post_review_addition": "Final no-ledger/auth and count-consistency cases covered by incremental two-axis review",
+    "incremental_spec": {
+      "actionable_findings": 0,
+      "independent_B_tests": 9
+    },
+    "incremental_standards": {
+      "actionable_findings": 0,
+      "independent_B_tests": 9
+    }
+  },
+  "limits": [
+    "source and offline fixtures only; no host install, dispatch or PR",
+    "existing root-owned bridge/code/hook bootstrap still requires explicit approved path",
+    "authoritative persistent ledger/lock paths and case0007 receipt hash remain unresolved",
+    "actual Oracle cloud-only execution, model/RX and QA correctness remain pending"
+  ],
+  "unchanged": [
+    "installed app source/defaults",
+    "passive A candidate bytes",
+    "source runner hook",
+    "OAuth and security settings",
+    "production"
+  ],
+  "files": {
+    ".github/workflows/oracle-qa.yml": "a25ad3ba79d818e24ef5ce2d99736ade251d768d97455b7e68651085a0ad4b5f",
+    "deploy/qa_cloud_bridge.py": "1755f00939121965bc5132e689430991fa03fcd0a4117bdfc05c00c71f925395",
+    "deploy/qa_cloud_contract.py": "94ea96dce6c11d31b308acac15f40f0828f8f6ad8d1b1388f3f1ea3868834d78",
+    "deploy/qa_container_entry.py": "15877092550f04be2f79026bcf5e0c09faeea1e178459cdd018134fd2d4bf222",
+    "deploy/qa_isolated_candidate/qa_probe.py": "6616f75dbf175acc2991cb2b933098d3230adc5e9720c4a64f0ab00cbbf39a29",
+    "deploy/qa_isolated_candidate/qa_session_isolation.py": "5d0befd7fa5af94d33250ba80434e8659071409de78e3a74b02e6f2fd62467fd",
+    "docs/QA-PASSIVE-AUDIO.md": "1a6cb70c76171c1c493788ac949514ef10ae29675e6e60292945fcba236684fd",
+    "evidence/cloud-qa-bridge-installation-manifest-20261030.json": "c1235235fcaa7976203e31670a64cb0009693285b6b3eb726341ddc5bd641c64",
+    "evidence/isolated-qa-candidate-manifest-20261030.json": "7102a643472e81407ceefdc693cdc24b58a783886b9cce7046857c204bafce99",
+    "tests/test_cloud_qa_bridge.py": "a53a39b1514f5cdc5adfc9e5c3f9ae875720b877d3186db830a5fdbd348758c3",
+    "tests/test_cloud_qa_isolated.py": "ba00160561a3550c151cd6037e0e3891fd81db6e721697a89abe449e5319ca86",
+    "tools/ci_contracts.py": "e5a8a58701bf173e425da861639a486728967fb2c1f35710b85b67b181e7098e"
+  }
+}

@@ -1,0 +1,474 @@
+{
+  "schema_version": 1,
+  "kind": "real_A_native_media_and_real_B_muted_control",
+  "teams_joined": false,
+  "calendar_writes": 0,
+  "physical_input_output": false,
+  "synthetic_speech_seconds": 9.805,
+  "synthetic_wave_sha256": "6584e8de2f863e781ef1e26bea3af8b3b713b465ec1a9b0d4709b19315413404",
+  "requested_input_mode": "native_media",
+  "A_pcm_push_path_used": false,
+  "A_prompt_unchanged": true,
+  "B_original_prompt_wake_tool_contract": true,
+  "source_facts_supplied_only_as_audio": true,
+  "real_teams_acceptance": false,
+  "passed": false,
+  "observed_input_mode": "native_media",
+  "capture_wall_seconds": 15.024,
+  "transport_before": {
+    "connection": "connected",
+    "ice_connection": "connected",
+    "ice_diagnostics": {
+      "gathered": {
+        "host": 2,
+        "srflx": 0,
+        "relay": 0,
+        "other": 0
+      },
+      "errors": [],
+      "states": [
+        {
+          "ms": 5,
+          "gathering": "gathering",
+          "connection": "new"
+        },
+        {
+          "ms": 194,
+          "gathering": "complete",
+          "connection": "new"
+        },
+        {
+          "ms": 1777,
+          "gathering": "complete",
+          "connection": "checking"
+        },
+        {
+          "ms": 1943,
+          "gathering": "complete",
+          "connection": "connected"
+        }
+      ],
+      "servers": []
+    },
+    "ice_gathering": "complete",
+    "signaling": "stable",
+    "data_channel": "open",
+    "input_mode": "native_media",
+    "sent_frames": null,
+    "audio_context_state": "running",
+    "audio_context_sample_rate": 24000,
+    "sender_track_sample_rate": 24000,
+    "sender_track_channels": 2,
+    "scheduled_queue_ms": null,
+    "buffer_gap_count": null,
+    "buffer_gap_frames": null,
+    "max_buffer_gap_frames": null,
+    "datachannel_delivery": {
+      "messages": 1,
+      "json_errors": 0,
+      "binding_attempted": 1,
+      "binding_returned": 1,
+      "binding_failed": 0
+    },
+    "local_candidates": {
+      "count": 2,
+      "udp": 2,
+      "tcp": 0,
+      "relay": 0
+    },
+    "remote_candidates": {
+      "count": 6,
+      "udp": 3,
+      "tcp": 3,
+      "relay": 0
+    },
+    "candidate_pairs": [
+      {
+        "state": "waiting",
+        "nominated": false,
+        "bytesSent": 0,
+        "bytesReceived": 0
+      },
+      {
+        "state": "waiting",
+        "nominated": false,
+        "bytesSent": 0,
+        "bytesReceived": 0
+      },
+      {
+        "state": "waiting",
+        "nominated": false,
+        "bytesSent": 0,
+        "bytesReceived": 0
+      },
+      {
+        "state": "succeeded",
+        "nominated": false,
+        "bytesSent": 0,
+        "bytesReceived": 0
+      },
+      {
+        "state": "succeeded",
+        "nominated": true,
+        "bytesSent": 26333,
+        "bytesReceived": 8712
+      },
+      {
+        "state": "succeeded",
+        "nominated": false,
+        "bytesSent": 0,
+        "bytesReceived": 0
+      }
+    ],
+    "reports": [
+      {
+        "bytesSent": 16184,
+        "packetsSent": 210
+      }
+    ],
+    "native_source": {
+      "ready": true,
+      "available": true,
+      "failed": false,
+      "failure_code": "none",
+      "stopped": false,
+      "capture_enabled": true,
+      "frame_count": 1,
+      "connected_frames": 1,
+      "live_tracks": 1,
+      "cleanup_status": "pending",
+      "packets_received": 294,
+      "bytes_received": 10216
+    }
+  },
+  "transport_after": {
+    "connection": "connected",
+    "ice_connection": "connected",
+    "ice_diagnostics": {
+      "gathered": {
+        "host": 2,
+        "srflx": 0,
+        "relay": 0,
+        "other": 0
+      },
+      "errors": [],
+      "states": [
+        {
+          "ms": 5,
+          "gathering": "gathering",
+          "connection": "new"
+        },
+        {
+          "ms": 194,
+          "gathering": "complete",
+          "connection": "new"
+        },
+        {
+          "ms": 1777,
+          "gathering": "complete",
+          "connection": "checking"
+        },
+        {
+          "ms": 1943,
+          "gathering": "complete",
+          "connection": "connected"
+        }
+      ],
+      "servers": []
+    },
+    "ice_gathering": "complete",
+    "signaling": "stable",
+    "data_channel": "open",
+    "input_mode": "native_media",
+    "sent_frames": null,
+    "audio_context_state": "running",
+    "audio_context_sample_rate": 24000,
+    "sender_track_sample_rate": 24000,
+    "sender_track_channels": 2,
+    "scheduled_queue_ms": null,
+    "buffer_gap_count": null,
+    "buffer_gap_frames": null,
+    "max_buffer_gap_frames": null,
+    "datachannel_delivery": {
+      "messages": 40,
+      "json_errors": 0,
+      "binding_attempted": 40,
+      "binding_returned": 40,
+      "binding_failed": 0
+    },
+    "local_candidates": {
+      "count": 2,
+      "udp": 2,
+      "tcp": 0,
+      "relay": 0
+    },
+    "remote_candidates": {
+      "count": 6,
+      "udp": 3,
+      "tcp": 3,
+      "relay": 0
+    },
+    "candidate_pairs": [
+      {
+        "state": "succeeded",
+        "nominated": false,
+        "bytesSent": 0,
+        "bytesReceived": 0
+      },
+      {
+        "state": "succeeded",
+        "nominated": true,
+        "bytesSent": 112142,
+        "bytesReceived": 45873
+      },
+      {
+        "state": "succeeded",
+        "nominated": false,
+        "bytesSent": 0,
+        "bytesReceived": 0
+      }
+    ],
+    "reports": [
+      {
+        "bytesSent": 73023,
+        "packetsSent": 968
+      }
+    ],
+    "native_source": {
+      "ready": true,
+      "available": true,
+      "failed": false,
+      "failure_code": "none",
+      "stopped": false,
+      "capture_enabled": true,
+      "frame_count": 1,
+      "connected_frames": 1,
+      "live_tracks": 1,
+      "cleanup_status": "pending",
+      "packets_received": 1055,
+      "bytes_received": 53052
+    }
+  },
+  "B_state": "sleeping",
+  "B_tool_calls_without_wake": 0,
+  "B_output_enabled": false,
+  "source_after_stop": {
+    "connection": "connected",
+    "ice_connection": "connected",
+    "ice_diagnostics": {
+      "gathered": {
+        "host": 2,
+        "srflx": 0,
+        "relay": 0,
+        "other": 0
+      },
+      "errors": [],
+      "states": [
+        {
+          "ms": 5,
+          "gathering": "gathering",
+          "connection": "new"
+        },
+        {
+          "ms": 194,
+          "gathering": "complete",
+          "connection": "new"
+        },
+        {
+          "ms": 1777,
+          "gathering": "complete",
+          "connection": "checking"
+        },
+        {
+          "ms": 1943,
+          "gathering": "complete",
+          "connection": "connected"
+        }
+      ],
+      "servers": []
+    },
+    "ice_gathering": "complete",
+    "signaling": "stable",
+    "data_channel": "open",
+    "input_mode": "native_media",
+    "sent_frames": null,
+    "audio_context_state": "running",
+    "audio_context_sample_rate": 24000,
+    "sender_track_sample_rate": 24000,
+    "sender_track_channels": 2,
+    "scheduled_queue_ms": null,
+    "buffer_gap_count": null,
+    "buffer_gap_frames": null,
+    "max_buffer_gap_frames": null,
+    "datachannel_delivery": {
+      "messages": 40,
+      "json_errors": 0,
+      "binding_attempted": 40,
+      "binding_returned": 40,
+      "binding_failed": 0
+    },
+    "local_candidates": {
+      "count": 2,
+      "udp": 2,
+      "tcp": 0,
+      "relay": 0
+    },
+    "remote_candidates": {
+      "count": 6,
+      "udp": 3,
+      "tcp": 3,
+      "relay": 0
+    },
+    "candidate_pairs": [
+      {
+        "state": "succeeded",
+        "nominated": false,
+        "bytesSent": 0,
+        "bytesReceived": 0
+      },
+      {
+        "state": "succeeded",
+        "nominated": true,
+        "bytesSent": 112142,
+        "bytesReceived": 45873
+      },
+      {
+        "state": "succeeded",
+        "nominated": false,
+        "bytesSent": 0,
+        "bytesReceived": 0
+      }
+    ],
+    "reports": [
+      {
+        "bytesSent": 73023,
+        "packetsSent": 968
+      }
+    ],
+    "native_source": {
+      "ready": false,
+      "available": true,
+      "failed": false,
+      "failure_code": "none",
+      "stopped": true,
+      "capture_enabled": false,
+      "frame_count": 1,
+      "connected_frames": 0,
+      "live_tracks": 0,
+      "cleanup_status": "cleaned",
+      "packets_received": 1055,
+      "bytes_received": 53052
+    }
+  },
+  "B_stop_status": "stopped",
+  "B_stop_ack": true,
+  "B_stop_closed": true,
+  "close_event_shape": {
+    "reason_present": true,
+    "reason_type": "string",
+    "local_finish_requested": true,
+    "local_finish_sent": true
+  },
+  "close_reason_code": "client_request",
+  "failure": {
+    "phase": "A_drain",
+    "exception_type": "RuntimeError"
+  },
+  "exception_diagnostic": {
+    "phase": "live_drain",
+    "exception_type": "RuntimeError",
+    "error_code": "operation_failed",
+    "source": {
+      "file": "live.py",
+      "line": 562
+    }
+  },
+  "A_failure": {
+    "error_code": "live_session_closed",
+    "channel": "datachannel",
+    "type": "session.closed",
+    "reason": "unknown",
+    "stage": "connected"
+  },
+  "cleanup_failures": [
+    {
+      "owner": "A",
+      "phase": "cleanup",
+      "exception_type": "RuntimeError",
+      "error_code": "operation_failed",
+      "source": {
+        "file": "live.py",
+        "line": 587
+      }
+    }
+  ],
+  "cleanup": {
+    "closed": {
+      "source": true,
+      "A": false,
+      "B": true,
+      "browser": true
+    },
+    "owned_processes": 3,
+    "live_processes": 0,
+    "reaped": true
+  },
+  "observations": {
+    "packets": 176,
+    "frames": 360448,
+    "B_offered": 176,
+    "B_accepted": 176,
+    "B_clock_missing": 0
+  },
+  "A_events": {
+    "rpc_events": 32,
+    "rpc_item_started": 0,
+    "rpc_item_completed": 0,
+    "rpc_transcript_done": 1,
+    "rpc_transcript_delta": 19,
+    "rpc_role_user": 20,
+    "rpc_role_assistant": 0,
+    "rpc_role_unknown": 0,
+    "rpc_error": 0,
+    "rpc_closed": 0,
+    "datachannel_events": 42,
+    "datachannel_transcript_completed": 0,
+    "datachannel_role_user": 1,
+    "datachannel_role_assistant": 0,
+    "datachannel_role_unknown": 41,
+    "datachannel_transcript_filtered": 0,
+    "normalizer_filtered_events": 0,
+    "datachannel_speech_started": 0,
+    "datachannel_speech_stopped": 0,
+    "datachannel_error": 0,
+    "datachannel_closed": 1,
+    "datachannel_input_transcript_delta": 19,
+    "datachannel_output_transcript_delta": 0,
+    "datachannel_turn_done": 1,
+    "datachannel_turn_role_user": 1,
+    "datachannel_turn_role_assistant": 0,
+    "datachannel_turn_role_unknown": 0,
+    "datachannel_session_started": 1,
+    "datachannel_session_updated": 0,
+    "datachannel_output_audio_delta": 0,
+    "datachannel_delegation_created": 0,
+    "datachannel_unrecognized_type": 20,
+    "rpc_notifications_seen": 32,
+    "rpc_done_seen_before_scope": 1,
+    "rpc_completed_seen_before_scope": 0,
+    "rpc_scope_rejected_missing": 0,
+    "rpc_scope_rejected_null": 0,
+    "rpc_scope_rejected_foreign": 0,
+    "rpc_scope_rejected_invalid": 0,
+    "rpc_final_scope_rejected": 0,
+    "rpc_item_added": 0,
+    "rpc_item_transcript_delta": 0,
+    "rpc_unknown_method": 10,
+    "normalizer_unconfirmed_canonical": 0
+  },
+  "observed_source_fact_match": {
+    "codeword": false,
+    "amount": true
+  },
+  "source_entries": 21
+}

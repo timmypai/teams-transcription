@@ -1,0 +1,117 @@
+{
+  "recorded_at": "2026-10-30T10:46:54.307227+00:00",
+  "scope": "cloud QA routing assessment and offline handoff helpers only; not an implemented host bridge",
+  "base_source_sha": "c4090edb0e8e5db50d8950515522dba733618c51",
+  "observer_candidate_sha": "d5f729f6db228cc60b67674a031e99bc0545629b",
+  "candidate_manifest_sha256": "f496f4d9f4df36f8f09129f1f921283ff1b2f6c6c6cab70776b99a6294eaf4ad",
+  "candidate_module_loader_manifest_bytes_unchanged": true,
+  "workflow_assessment": {
+    "meeting-functional-validation.yml": "manual hosted offline source checks at selected ref; cannot validate deployed container",
+    "arm64-image.yml": "main-only build/publish; cannot load unmerged observer into existing image",
+    "oracle-diagnostics.yml": "manual fixed readonly controller; no candidate loader/QA",
+    "oracle-staging.yml": "manual fixed deploy/rollback only; not for QA; normal deploy releases maintenance"
+  },
+  "runner": {
+    "current_list_http_status": 403,
+    "error": "Resource not accessible by integration",
+    "current_online_status": "unknown",
+    "retry_or_token_substitution": false,
+    "historical_success_job_id": 123953550591,
+    "run_id": 41022722084,
+    "completed_at": "2026-10-30T07:53:34Z",
+    "runner_id": 21,
+    "runner_name": "dot-vm-a1-teams-staging"
+  },
+  "tests": {
+    "focused_related": {
+      "tests": 21,
+      "success": true
+    },
+    "final_new_suite": {
+      "tests": 8,
+      "success": true
+    },
+    "final_aggregate": {
+      "scope": "controlled offline subset",
+      "suites": [
+        "test_assistant_store",
+        "test_assistant_daemon",
+        "test_calendar_client",
+        "test_glossary_context",
+        "test_admin_web",
+        "test_sqlite_voice_context",
+        "test_sqlite_only_store",
+        "test_rx_contract",
+        "test_prefetch_codex_npm",
+        "test_staging_control",
+        "test_capture_cleanup_review",
+        "test_release_gate",
+        "test_diagnostic_projection",
+        "test_codex_auth",
+        "test_provider_state",
+        "test_workflow_triggers",
+        "test_staging_docker_diagnostics",
+        "test_staging_compose",
+        "test_first_deploy_recovery",
+        "test_qa_probe.ProbeTests",
+        "test_qa_receiver_projection",
+        "test_qa_audio_observer",
+        "test_cloud_qa_contract",
+        "test_turn_lifecycle_evidence.TurnLifecycleEvidenceTests",
+        "test_speech_completion_snapshot.SpeechCompletionSnapshotTests",
+        "test_incremental_minutes_context.ContextTests.test_wire_instruction_distinguishes_verbatim_quote_and_normal_answers",
+        "test_native_incremental_context.NativeSnapshotContextTests.test_delivery_receipt_hashes_identify_actual_current_payload_without_content",
+        "test_b_native.NativeLiveTests.test_live_prompt_distinguishes_verbatim_format_from_normal_current_fact_answers",
+        "test_b_native.NativeLiveTests.test_three_physical_questions_in_one_provider_turn_query_current_sqlite_each_time"
+      ],
+      "tests": 297,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "success": true,
+      "teams_or_model_called": false,
+      "audio_e2e_tested": false
+    },
+    "red_green": [
+      "new module absent: import error; implemented contract and projection: green",
+      "10**1000 counter: OverflowError; range before isfinite: green"
+    ],
+    "compile_and_diff_check": true
+  },
+  "reviews": {
+    "spec": {
+      "actionable_findings": 0,
+      "independent_new_tests_passed": 8
+    },
+    "standards": {
+      "actionable_findings": 0,
+      "independent_new_tests_passed": 8
+    }
+  },
+  "pending": [
+    "dedicated main-only manual QA workflow",
+    "reviewed root-owned host bridge and explicit hook allowlist configuration",
+    "authoritative existing global ledger/QA lock path and case0007 receipt hash reconciliation",
+    "fresh runner and deployed-image candidate offline verification",
+    "subsequent authorized Live execution and audio quality analysis"
+  ],
+  "no_model_requests": true,
+  "no_dispatch": true,
+  "no_pr": true,
+  "no_merge": true,
+  "no_deploy": true,
+  "no_host_or_security_or_credential_changes": true,
+  "budget": {
+    "used": 7,
+    "limit": 50,
+    "remaining": 43,
+    "source": "parent/host handoff; not re-read on host"
+  },
+  "files": {
+    "AGENTS.md": "1e80d035dd50904201896a89128743dc9bacabb167097790792ea59cc3099bbe",
+    "docs/QA-PASSIVE-AUDIO.md": "95de043ca0e71cbd60c34f99c0a692e5ed1f109d9dff75d4a559f5c67aad5c46",
+    "deploy/qa_cloud_contract.py": "dfd3b13bd69b2f44f2d16ccf19f8eba03ce296a83ac999594797beb0add34bbb",
+    "tests/test_cloud_qa_contract.py": "9fb5bcaafe6c9532f3ef33edc2e952ae17289f8101180efa1b3661bbbaca6de4",
+    "tools/ci_contracts.py": "d789c60740052fd3005a8caf7f190b7ca5c6656be5187fad9891898630d3400a"
+  }
+}

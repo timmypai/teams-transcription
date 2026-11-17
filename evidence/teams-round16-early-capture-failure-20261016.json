@@ -1,0 +1,119 @@
+{
+  "schema_version": 1,
+  "kind": "real_round16_early_capture_failure",
+  "calendar_activities_created_total": 17,
+  "real_attempt": 16,
+  "created_event_count_verified": 1,
+  "calendar_save_interaction_attempts": 2,
+  "original_link_reused": true,
+  "series_explicitly_assigned": true,
+  "join_submitted_once": true,
+  "join_submitted_at_utc": "2026-10-16T14:06:22.159419+00:00",
+  "started_at_utc": "2026-10-16T14:06:25.287716+00:00",
+  "recording_started_at_utc": "2026-10-16T14:07:43.771991+00:00",
+  "B_ready_at_utc": "2026-10-16T14:07:49.035375+00:00",
+  "ended_at_utc": "2026-10-16T14:07:53.355534+00:00",
+  "run_state": "failed",
+  "end_reason": "capture_error",
+  "diagnostic": {
+    "error_code": "operation_failed",
+    "exception_type": "Error",
+    "phase": "rx_capture",
+    "source": {
+      "file": "worker.py",
+      "line": 378
+    }
+  },
+  "audio_seconds": 8.362666666666666,
+  "first_error_fixed_clock_code_available": false,
+  "unique_clock_cause_proven": false,
+  "source": {
+    "version": 3,
+    "source_count": 0,
+    "provider_final_count": 0,
+    "completeness": "unavailable",
+    "transcript_state": {
+      "saved": false,
+      "provider_final_count": 0,
+      "application_segment_count": 0,
+      "unfinalized_segment_count": 0,
+      "meeting_ended": true,
+      "ordering": "receipt_order",
+      "deduplication": "source_identity_only",
+      "quality": "no_text"
+    }
+  },
+  "rx_audio": {
+    "browser": {
+      "attach_error_count": 0,
+      "dropped": 0,
+      "frame_reports": 1,
+      "frames": 157696,
+      "live_tracks": 1,
+      "muted_tracks": 1,
+      "nonzero_samples": 0,
+      "packets": 77,
+      "playout_errors": 0,
+      "tracks": 1
+    },
+    "python": {
+      "all_zero": true,
+      "consumed_frames": 200704,
+      "consumed_nonzero_samples": 0,
+      "consumed_packets": 98,
+      "incoming_frames": 200704,
+      "incoming_nonzero_samples": 0,
+      "incoming_packets": 98,
+      "invalid_packets": 0,
+      "queue_depth": 0,
+      "queue_overflows": 0,
+      "queued_frames": 200704,
+      "queued_nonzero_samples": 0,
+      "queued_packets": 98
+    },
+    "live_push": {
+      "attempted_frames": 200704,
+      "attempted_packets": 98,
+      "returned_frames": 198656,
+      "returned_last_nonzero_frame": 0,
+      "returned_max_exact_zero_frames": 198656,
+      "returned_nonzero_samples": 0,
+      "returned_packets": 97,
+      "returned_trailing_exact_zero_frames": 198656
+    },
+    "live_transport": {
+      "audio_context_sample_rate": 24000,
+      "audio_context_state": "running",
+      "buffer_gap_count": 5,
+      "buffer_gap_frames": 8320,
+      "max_buffer_gap_frames": 3712,
+      "outbound_bytes": 11266,
+      "outbound_packets": 325,
+      "scheduled_frames": 157696,
+      "scheduled_queue_ms": 380,
+      "sender_track_channels": 2,
+      "sender_track_sample_rate": 24000
+    },
+    "server_events": {
+      "available": true,
+      "normalized_finals": 0,
+      "persisted_final_callbacks": 0,
+      "receiver_done": true,
+      "rpc_queue_depth": 2
+    }
+  },
+  "snapshot_limit": "Browser/transport and final Python counters may come from different bounded snapshot times; do not infer dropped packets by subtracting them.",
+  "capture_cleanup": "cleaned",
+  "B_cleanup": "cleaned",
+  "post_terminal_active": false,
+  "post_terminal_interlock": false,
+  "media_revoked": true,
+  "scheduler_resumed": false,
+  "join_retried": false,
+  "user_test_data_requested": false,
+  "content_acceptance": false,
+  "next_join_requires_new_notification_and_fresh_in_meeting_ack": true,
+  "source_candidate_image": "sha256:c8232259378b51ca012a80a125ff35ea8652436d5fc59ea872c51fdebd1929d0",
+  "media_revocation_verified_at_utc": "2026-10-16T14:38:15.582120+00:00",
+  "revocation_note": "Earlier attempts through the merge-overrides helper were ineffective: checkbox presence authorizes regardless of an empty value. Final revocation explicitly omitted both keys, then the real settings page verified checked=0. Scheduler stayed paused and no second Join was submitted."
+}

@@ -1,0 +1,43 @@
+# Standalone assistant. CLI > ASSISTANT_ environment > YAML > safe defaults.
+# Copy into a private /data/config/runtime.yml; credentials are separate 0600 files.
+data_root: /data
+host: 0.0.0.0
+port: 8080
+public_base_url: null
+cookie_secure: false
+admin_password_file: /data/config/admin-password.json
+admin_session_secret_file: /data/config/admin-session.key
+admin_session_seconds: 3600
+google_client_config_file: /data/config/google-client.json
+google_credentials_file: /data/config/google-credentials.json
+calendar_poll_seconds: 60
+lookahead_hours: 48
+lookback_seconds: 300
+join_timeout_seconds: 120
+# Optional operator cap; the authorized occurrence end always still applies.
+max_duration_seconds: null
+audio_timeout_seconds: 30
+drain_seconds: 5
+shutdown_seconds: 30
+lease_seconds: 30
+summary_lease_seconds: 90
+codex_bin: codex
+# Private persistent path for THIS deployment; no credentials in the image.
+# First grant is operator-only `auth-login`, never the admin/Google login page.
+codex_home: /data/codex
+chromium: /usr/bin/chromium
+storage_state: null
+summary_model: null
+display_name: 小白會議助理
+timezone: Asia/Taipei
+live_provider: codex_live
+live_model: gpt-live-1-codex
+live_cost_policy: no_new_cost
+allowed_meeting_hosts:
+  - teams.microsoft.com
+  - teams.cloud.microsoft
+  - teams.live.com
+# Empty denies every browser HTTP/WebSocket destination. Supply only approved
+# actual Teams/auth/CDN/Live hosts; a successful account read is not media proof.
+allowed_egress_hosts: []
+log_level: info

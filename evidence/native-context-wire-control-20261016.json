@@ -1,0 +1,140 @@
+{
+  "kind": "synthetic_native_tool_control",
+  "teams_joined": false,
+  "physical_output": false,
+  "input_contains_expected_facts": false,
+  "production_native_prompt": true,
+  "muted_probe_text_gate": false,
+  "expected_fact_match": {
+    "codeword": true,
+    "amount": true
+  },
+  "accepted": true,
+  "synthetic_input_frames": 144522,
+  "source_version": 39,
+  "synthetic_source_receipts": 38,
+  "output_enabled": false,
+  "tool_deliveries": [
+    {
+      "question_number": 1,
+      "phase": "delivered",
+      "started_elapsed_ms": 13713,
+      "source_version": 39,
+      "available": true,
+      "selected_ref_count": 14,
+      "selected_record_indexes": [
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38
+      ],
+      "selected_indexes_truncated": false,
+      "omitted_for_budget": true,
+      "payload_bytes": 11945,
+      "sent_bytes": 11960,
+      "marker_returned": true,
+      "model_consumption_verified": false
+    }
+  ],
+  "assistant_utterances": 2,
+  "progress_before_stop": {
+    "schema_version": 1,
+    "state": "answering",
+    "rx": {
+      "accepted_packets": 0,
+      "peer_push_packets": 0,
+      "dropped_packets": 0
+    },
+    "fanout": {
+      "clock_missing_packets": 0,
+      "offered_packets": 0,
+      "accepted_packets": 0,
+      "rejected_packets": 0,
+      "error_packets": 0
+    },
+    "transcripts": {
+      "user_delta": 16,
+      "user_done": 1,
+      "assistant_delta": 46,
+      "assistant_done": 2
+    },
+    "pending_input": {
+      "characters": 0,
+      "has_wake": false,
+      "has_question": false
+    },
+    "handoff": {
+      "received": 1,
+      "admitted": 1,
+      "rejected": 0,
+      "last_rejection": null
+    },
+    "tool_calls": 1,
+    "context": {
+      "sent_bytes": 11960,
+      "total_limit_bytes": null,
+      "known_paragraphs": 14,
+      "pending": false,
+      "failure_code": null
+    },
+    "speech": {
+      "phase": "waiting_quiet",
+      "error_code": null,
+      "done_is_set": true,
+      "output_active": true,
+      "drained": false,
+      "truncated": false,
+      "activity_frames": 542720,
+      "nonzero_frames": 558394,
+      "packet_frames": 2048,
+      "packet_nonzero_frames": 12
+    }
+  },
+  "answer_flags": {
+    "insufficient_word_present": false,
+    "no_data_word_present": true
+  },
+  "native_error_present": false,
+  "native_state_before_stop": "answering",
+  "tool_calls": 1,
+  "cleanup": {
+    "status": "cleaned",
+    "stop_status": "stopped",
+    "stop_ack_received": true,
+    "stop_closed_received": true,
+    "native_cleanup_status": "cleaned",
+    "owned_processes": 2,
+    "live_processes": 0,
+    "reaped": true,
+    "pending_close_tasks": 0,
+    "pending_operation": false
+  },
+  "limitations": [
+    "Synthetic current-source SQLite only; no Teams, physical output, A ASR or historical-task content acceptance.",
+    "Stopped after text fact match while speech was waiting_quiet; not a full audio-drain acceptance.",
+    "Marker-return receipt is not provider acknowledgement of model consumption."
+  ],
+  "earlier_controls": [
+    {
+      "control": "credential-free HOME=/tmp",
+      "observed": "native_start RuntimeError; not_started and owned cleanup cleaned",
+      "precise_startup_cause_retained": false
+    },
+    {
+      "control": "first existing-home run",
+      "observed": "fact predicate not observed before deadline; None startup receipt caused harness reporting exception",
+      "answer_and_cleanup_receipt_retained": false,
+      "historical_cause_inferred": false
+    }
+  ]
+}

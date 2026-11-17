@@ -1,0 +1,36 @@
+# Operator-only standalone Compose. Never invoked by deploy/diagnostics workflows.
+# Default is OFFLINE preflight. Device authorization needs explicit CLI arguments
+# in a private unrecorded attached terminal, after the main daemon is stopped.
+services:
+  codex-onboarding:
+    image: ${TRANSCRIPTION_IMAGE:?set_verified_digest}
+    platform: linux/arm64
+    user: "10001:10001"
+    init: true
+    read_only: true
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+      - seccomp:./chromium-seccomp.json
+    logging:
+      driver: none
+    env_file: [./runtime.env]
+    environment:
+      ASSISTANT_DATA_ROOT: /data
+      ASSISTANT_CODEX_HOME: /data/codex
+    command: [auth-preflight, --config, /data/config/runtime.yml]
+    stdin_open: true
+    tty: true
+    volumes:
+      - type: volume
+        source: staging-data
+        target: /data
+    tmpfs: ["/tmp:size=512m,mode=1777"]
+    shm_size: 1gb
+    mem_limit: 1g
+    cpus: 1
+    pids_limit: 128
+volumes:
+  staging-data:
+    external: true
+    name: teams-staging-data

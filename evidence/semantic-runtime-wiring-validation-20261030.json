@@ -1,0 +1,55 @@
+{
+  "observed_at": "2026-10-30T15:42:41.886686+00:00",
+  "branch": "test/qa-semantic-runtime-v1",
+  "base_source_sha": "3c8bb92d6a599b30e8db48f1626968b0fd784e73",
+  "runtime_bundle_source_sha": "1849e60b98e5cc93a5aef7bda5ecaf432dede1fc",
+  "runtime_manifest_sha256": "9432a42aff31b1b75d2e86ede18f921cb1a12496aaa204a9a9dd861254000aa5",
+  "root_payload_inventory_sha256": "b261c6367eca14f9c239f4d1ece79cc6982123ca05d6c261188a65c503b95bce",
+  "runtime_criterion": "synthetic_current_fact_semantic_v1",
+  "qa_receipt_schema": 3,
+  "public_schema": 2,
+  "tests": {
+    "new_runtime_cases": 13,
+    "actual_bundle_loaded_probe_controlled_child_cases": 4,
+    "related_focused": 39,
+    "controlled_aggregate": {
+      "tests": 339,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "success": true
+    },
+    "actionlint": "all5manualworkflows passed",
+    "full_discovery": false,
+    "logs": [
+      "/tmp/semantic-runtime-final-focused.log",
+      "/tmp/semantic-runtime-final-contracts/contracts.log"
+    ]
+  },
+  "review": {
+    "Spec": "0remaining confirmed after source-delivery binding fix",
+    "Standards": "0confirmed; updated working files reviewed and staging refreshed"
+  },
+  "red_green": {
+    "delivery_binding": "fiveversion/marker/byte/hash/missing-receipt counterexamples failed beforefix andpassedafter",
+    "version_and_source_hashes": "mixed receipt/version/candidate/module bytes rejected before execution",
+    "first_aggregate_preserved": {
+      "tests": 337,
+      "failures": 1,
+      "errors": 0,
+      "case": "old hook test expected denial of QA; now aligned to alreadyapprovedhostcase, PR/nonmain/otherworkflow denial retained",
+      "log": "/tmp/semantic-runtime-contracts/contracts.log"
+    }
+  },
+  "legacy": "836ecbe/d5f729f8bundle/manifest/checkerfiles unchanged vs3c8; oldrouteoutputs covered; nohistoricalreceipt rewrite",
+  "privacy": "0knowncredentialpatterns inselectedsource; strict2stageprojection stripsrawtext/tokens/audio, noAobserver imports",
+  "host": "notreadorchanged; inventory7rootownedfiles only, sourcehookalignsalreadyapprovedcase, no installationapproval/newprivileges",
+  "model_requests": 0,
+  "ledger": "nohostledgerI/O; canonicalcheckpoint7+slots8..10 remainhostcheckpoint10/50, fixturesonly",
+  "unverified": [
+    "actualARM/browser/rootless/Oracleload/installation",
+    "semanticLiveacceptance",
+    "actualhistoricalBprefixbytesnotlocalfixtures"
+  ],
+  "next_step": "reviewfixedsource/payload; noPR/merge/deploy/model authorizedbythissource delivery"
+}

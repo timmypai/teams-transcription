@@ -1,0 +1,26 @@
+{
+  "image_id": "sha256:2430a6234a113267022658bb6ce2e31a069b6d1fa992bf27a5dd79c0fb27c11f",
+  "clean_private_fixture": true,
+  "synthetic_native_source_history_cloned": true,
+  "scheduler_paused": true,
+  "credentials_mounted": false,
+  "teams_or_calendar_called": false,
+  "checks": {
+    "rejects_world_readable_admin_directory": true,
+    "actual_browser_login": true,
+    "browser_glossary_draft_saved": true,
+    "browser_glossary_approval_revision": true,
+    "browser_actual_native_source_and_Codex_summary": true,
+    "browser_preserves_unfinalized_source_quality": true,
+    "browser_carried_operator_task_states": true,
+    "browser_task_state_mutation": true,
+    "browser_calendar_settings_without_secrets": true,
+    "browser_manual_schedule_without_join_or_media_consent": true,
+    "daemon_remains_healthy_after_browser_tab_close": true,
+    "browser_glossary_task_and_schedule_survive_restart": true,
+    "actual_browser_status_idle_no_join": true,
+    "actual_browser_screenshot_observed": true
+  },
+  "restart_command_seconds": 1.688,
+  "passed": true
+}

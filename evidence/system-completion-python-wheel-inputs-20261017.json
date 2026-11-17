@@ -1,0 +1,169 @@
+{
+  "kind": "verified_local_app_and_public_python_wheel_inputs",
+  "target_python": "3.12",
+  "target_platform": "linux-x86_64",
+  "wheels": [
+    {
+      "name": "annotated-types",
+      "version": "0.8.0",
+      "filename": "annotated_types-0.8.0-py3-none-any.whl",
+      "sha256": "f072f4d804ea359e4eaf198b1af7a8b0943881a87f31bb764f8bf219bb9419e0",
+      "bytes": 13427,
+      "official_PyPI_digest_matched": true
+    },
+    {
+      "name": "anyio",
+      "version": "4.15.1",
+      "filename": "anyio-4.15.1-py3-none-any.whl",
+      "sha256": "6152fdbbf9a77fdec97731721bebf7c4c44f7c29b424b0065826173efc7ed101",
+      "bytes": 132079,
+      "official_PyPI_digest_matched": true
+    },
+    {
+      "name": "certifi",
+      "version": "2026.7.22",
+      "filename": "certifi-2026.7.22-py3-none-any.whl",
+      "sha256": "62f22742b58a1a33014a2b6b706588a8d7e2a88ae7bd1a6ebe8c992928483775",
+      "bytes": 136983,
+      "official_PyPI_digest_matched": true
+    },
+    {
+      "name": "click",
+      "version": "8.5.0",
+      "filename": "click-8.5.0-py3-none-any.whl",
+      "sha256": "255bc9599cf7748b4b1a446ccc735421bd08a2ae529a8b88597d3de5664ee360",
+      "bytes": 125251,
+      "official_PyPI_digest_matched": true
+    },
+    {
+      "name": "greenlet",
+      "version": "3.5.6",
+      "filename": "greenlet-3.5.6-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl",
+      "sha256": "975736b002ed080d124cf81a79cb7e05cb26d6b3f5c7a7b651c0fcce70353aa1",
+      "bytes": 621404,
+      "official_PyPI_digest_matched": true
+    },
+    {
+      "name": "h11",
+      "version": "0.16.0",
+      "filename": "h11-0.16.0-py3-none-any.whl",
+      "sha256": "63cf8bbe7522de3bf65932fda1d9c2772064ffb3dae62d55932da54b31cb6c86",
+      "bytes": 37515,
+      "official_PyPI_digest_matched": true
+    },
+    {
+      "name": "httpcore",
+      "version": "1.0.9",
+      "filename": "httpcore-1.0.9-py3-none-any.whl",
+      "sha256": "2d400746a40668fc9dec9810239072b40b4484b640a8c38fd654a024c7a1bf55",
+      "bytes": 78784,
+      "official_PyPI_digest_matched": true
+    },
+    {
+      "name": "httpx",
+      "version": "0.28.1",
+      "filename": "httpx-0.28.1-py3-none-any.whl",
+      "sha256": "d909fcccc110f8c7faf814ca82a9a4d816bc5a6dbfea25d6591d6985b8ba59ad",
+      "bytes": 73517,
+      "official_PyPI_digest_matched": true
+    },
+    {
+      "name": "idna",
+      "version": "3.20",
+      "filename": "idna-3.20-py3-none-any.whl",
+      "sha256": "ab7ae7122974553370f0bdb919e1a960b2cd1bc1ef0276416d896db81c14582c",
+      "bytes": 69583,
+      "official_PyPI_digest_matched": true
+    },
+    {
+      "name": "playwright",
+      "version": "1.62.0",
+      "filename": "playwright-1.62.0-py3-none-manylinux1_x86_64.whl",
+      "sha256": "ba33bae6a13b3d9d354c751cb618af357d20fe1d57767cbcce52079bbef17ad3",
+      "bytes": 47748926,
+      "official_PyPI_digest_matched": true
+    },
+    {
+      "name": "pydantic",
+      "version": "2.13.4",
+      "filename": "pydantic-2.13.4-py3-none-any.whl",
+      "sha256": "45a282cde31d808236fd7ea9d919b128653c8b38b393d1c4ab335c62924d9aba",
+      "bytes": 472262,
+      "official_PyPI_digest_matched": true
+    },
+    {
+      "name": "pydantic_core",
+      "version": "2.46.4",
+      "filename": "pydantic_core-2.46.4-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+      "sha256": "926c9541b14b12b1681dca8a0b75feb510b06c6341b70a8e500c2fdcff837cce",
+      "bytes": 2094516,
+      "official_PyPI_digest_matched": true
+    },
+    {
+      "name": "pyee",
+      "version": "13.0.1",
+      "filename": "pyee-13.0.1-py3-none-any.whl",
+      "sha256": "af2f8fede4171ef667dfded53f96e2ed0d6e6bd7ee3bb46437f77e3b57689228",
+      "bytes": 15659,
+      "official_PyPI_digest_matched": true
+    },
+    {
+      "name": "PyYAML",
+      "version": "6.0.3",
+      "filename": "pyyaml-6.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
+      "sha256": "ba1cc08a7ccde2d2ec775841541641e4548226580ab850948cbfda66a1befcdc",
+      "bytes": 807870,
+      "official_PyPI_digest_matched": true
+    },
+    {
+      "name": "setuptools",
+      "version": "84.0.0",
+      "filename": "setuptools-84.0.0-py3-none-any.whl",
+      "sha256": "51a52592b3b99e102b609654876bd65f19f999935166d1352678931132b0c670",
+      "bytes": 818216,
+      "official_PyPI_digest_matched": true
+    },
+    {
+      "name": "starlette",
+      "version": "1.6.0",
+      "filename": "starlette-1.6.0-py3-none-any.whl",
+      "sha256": "a86dd39d14bb45f85a3d18525215a9ef0cfd1f192ac793220e72598c90335f0c",
+      "bytes": 75969,
+      "official_PyPI_digest_matched": true
+    },
+    {
+      "name": "teams-transcription",
+      "version": "0.3.0",
+      "filename": "teams_transcription-0.3.0-py3-none-any.whl",
+      "sha256": "623785580493ab1c285d27218b992feb0970dfbedea3fb1760bf7247571a601a",
+      "origin": "local application source; dependency resolution only"
+    },
+    {
+      "name": "typing_extensions",
+      "version": "4.16.0",
+      "filename": "typing_extensions-4.16.0-py3-none-any.whl",
+      "sha256": "481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8",
+      "bytes": 45571,
+      "official_PyPI_digest_matched": true
+    },
+    {
+      "name": "typing-inspection",
+      "version": "0.4.4",
+      "filename": "typing_inspection-0.4.4-py3-none-any.whl",
+      "sha256": "65b8397ba37ccbce054456aaccddfc91e6e3083c92824df348d96ca832f3f147",
+      "bytes": 14750,
+      "official_PyPI_digest_matched": true
+    },
+    {
+      "name": "uvicorn",
+      "version": "0.52.1",
+      "filename": "uvicorn-0.52.1-py3-none-any.whl",
+      "sha256": "e4403f9d93188cf9d1088e9f40e3acd12630e2df8675316704379a7fc20fff6a",
+      "bytes": 79859,
+      "official_PyPI_digest_matched": true
+    }
+  ],
+  "credentials_included": false,
+  "all_public_wheel_PyPI_hashes_matched": true,
+  "large_wheel_host_download_verified_separately": true
+}

@@ -1,0 +1,300 @@
+{
+  "kind": "idle_native_output_capture_backpressure_repair",
+  "recorded_at": "2026-10-18T04:03:41.975244+00:00",
+  "live_failure_receipt": "teams-native-hostquestions-round18-failure-20261018.json",
+  "live_ready_not_acceptance": "teams-native-hostquestions-round18-ready-20261018.json",
+  "code_files": [
+    "teams_transcription/b_live.py",
+    "teams_transcription/b_media_profile.py",
+    "teams_transcription/b_native.py"
+  ],
+  "local_browser_before": {
+    "idle_output_active": false,
+    "received_callbacks": 30,
+    "callbacks_before_stall": 11,
+    "errors": [
+      "output_backpressure",
+      "output_backpressure",
+      "output_backpressure",
+      "output_backpressure",
+      "output_backpressure",
+      "output_backpressure",
+      "output_backpressure",
+      "output_backpressure"
+    ],
+    "max_python_callback_ms": 0.027,
+    "browser": {
+      "pending": 0,
+      "dropped": 8,
+      "frames": 61440
+    },
+    "physical_writes": 0
+  },
+  "local_browser_after": {
+    "idle_output_active": false,
+    "received_callbacks": 0,
+    "callbacks_before_stall": 0,
+    "errors": [],
+    "max_python_callback_ms": 0,
+    "browser": {
+      "pending": 0,
+      "dropped": 0,
+      "frames": 0
+    },
+    "physical_writes": 0
+  },
+  "permanent_regression": {
+    "name": "test_b_live.IncomingTrackTests.test_idle_decoder_stall_does_not_fail_next_scoped_speech_capture",
+    "failed_before": true,
+    "passed_after": true,
+    "covers": [
+      "real browser idle main-thread stall",
+      "no idle PCM serialization",
+      "subsequent scoped native waveform capture",
+      "ordinary physical-output mute remains intact",
+      "capture closure and stale-generation rejection"
+    ]
+  },
+  "focused_regression": {
+    "tests_run": 112,
+    "failures": 0,
+    "errors": 0,
+    "seconds": 19.829
+  },
+  "first_integration": {
+    "tests_run": 942,
+    "failures": 3,
+    "errors": 11,
+    "skips": 0,
+    "seconds": 219.352,
+    "excluded_historical_missing_suites": [
+      "test_bridge_integration.py",
+      "test_media_bridge.py"
+    ],
+    "failed_cases": [
+      "test_live_summary_diagnostics.LiveSummaryDiagnosticsTests.test_actual_peer_branch_marks_sdp_authorization_without_starting_browser",
+      "test_question_receipts.QuestionReceiptTests.test_probe_receipt_matches_actual_pcm_push_and_survives_question_timeout",
+      "test_speech_completion_snapshot.SpeechCompletionSnapshotTests.test_question_timeout_keeps_pending_done_nonzero_snapshot_before_cleanup"
+    ],
+    "error_cases": [
+      "test_pcm_activity_floor.PCMActivityTests.test_cancel_wait_closes_owned_task_and_timer_without_drain",
+      "test_pcm_activity_floor.PCMActivityTests.test_continuous_effective_activity_times_out_and_closes_existing_lease",
+      "test_pcm_activity_floor.PCMActivityTests.test_done_and_only_zero_or_lsb_tail_never_satisfy_effective_audio_gate",
+      "test_pcm_activity_floor.PCMActivityTests.test_done_effective_audio_and_quiet_do_not_bypass_pending_drain",
+      "test_pcm_activity_floor.PCMActivityTests.test_effective_audio_and_quiet_still_require_provider_done",
+      "test_pcm_activity_floor.PCMActivityTests.test_normal_audio_lsb_tail_new_audio_resets_quiet_then_original_drain",
+      "test_response_progress.RuntimeFailureProgressTests.test_empty_timeout_message_cannot_hide_failure_or_allow_late_revival",
+      "test_response_start_diagnostics.ResponseStartDiagnosticsTests.test_actual_pre_rpc_failures_have_distinct_durable_phases (phase='cli_version_spawn')",
+      "test_response_start_diagnostics.ResponseStartDiagnosticsTests.test_actual_rpc_start_creates_directory_then_fails_without_process",
+      "test_response_start_diagnostics.ResponseStartDiagnosticsTests.test_cli_version_check_and_wait_fail_before_rpc (phase='cli_version_check')",
+      "test_response_start_diagnostics.ResponseStartDiagnosticsTests.test_cli_version_check_and_wait_fail_before_rpc (phase='cli_version_wait')"
+    ],
+    "passed": false
+  },
+  "real_native_smoke": {
+    "kind": "real_native_idle_callback_recovery",
+    "teams_joined": false,
+    "physical_audio": false,
+    "questions": [
+      {
+        "number": 1,
+        "reader_calls": 1,
+        "tool_calls": 1,
+        "facts": {
+          "codeword": true,
+          "budget": true,
+          "day": true
+        },
+        "synthetic_assistant_text": "嗯,本場紀錄寫的是:測試代號海棠,預算二萬七千元,預計週四交付。這是目前本場已提供的全部相關內容。",
+        "runtime_failure": null,
+        "speech": {
+          "phase": "closed",
+          "native_state": "sleeping",
+          "done_is_set": true,
+          "speech_task_done": true,
+          "speech_task_cancelled": false,
+          "error_code": null,
+          "output_active": false,
+          "nonzero_frames": 515798,
+          "activity_frames": 507904,
+          "packet_frames": 2048,
+          "packet_nonzero_frames": 15,
+          "packet_peak_abs": 1,
+          "packet_rms": 0.0855816496101822,
+          "activity_rms_threshold": 8,
+          "last_active_age_seconds": 0.9272573429998374,
+          "last_nonzero_age_seconds": 0.07949202000008881,
+          "drain_result": {
+            "present": true,
+            "truncated": false,
+            "drained": false,
+            "muted": true
+          }
+        },
+        "same_thread": true,
+        "capture": {
+          "enabled": false,
+          "pending": 0,
+          "dropped": 0
+        },
+        "passed": true
+      },
+      {
+        "number": 2,
+        "reader_calls": 1,
+        "tool_calls": 1,
+        "facts": {
+          "revised_budget": true
+        },
+        "synthetic_assistant_text": "好的,已更正為三萬四千元,紀錄中預計週四交付。",
+        "runtime_failure": null,
+        "speech": {
+          "phase": "closed",
+          "native_state": "sleeping",
+          "done_is_set": true,
+          "speech_task_done": true,
+          "speech_task_cancelled": false,
+          "error_code": null,
+          "output_active": false,
+          "nonzero_frames": 267343,
+          "activity_frames": 245760,
+          "packet_frames": 2048,
+          "packet_nonzero_frames": 15,
+          "packet_peak_abs": 1,
+          "packet_rms": 0.0855816496101822,
+          "activity_rms_threshold": 8,
+          "last_active_age_seconds": 0.9690639139998893,
+          "last_nonzero_age_seconds": 0.07353256499982308,
+          "drain_result": {
+            "present": true,
+            "truncated": false,
+            "drained": false,
+            "muted": true
+          }
+        },
+        "same_thread": true,
+        "capture": {
+          "enabled": false,
+          "pending": 0,
+          "dropped": 0
+        },
+        "passed": true
+      },
+      {
+        "number": 3,
+        "reader_calls": 1,
+        "tool_calls": 1,
+        "facts": {
+          "revised_budget": true
+        },
+        "synthetic_assistant_text": "還是三萬四千元,依本場更正後的紀錄內容。",
+        "runtime_failure": null,
+        "speech": {
+          "phase": "closed",
+          "native_state": "sleeping",
+          "done_is_set": true,
+          "speech_task_done": true,
+          "speech_task_cancelled": false,
+          "error_code": null,
+          "output_active": false,
+          "nonzero_frames": 257825,
+          "activity_frames": 212992,
+          "packet_frames": 2048,
+          "packet_nonzero_frames": 1877,
+          "packet_peak_abs": 14,
+          "packet_rms": 4.639914718370371,
+          "activity_rms_threshold": 8,
+          "last_active_age_seconds": 0.8464897999997447,
+          "last_nonzero_age_seconds": 0.03383822399973724,
+          "drain_result": {
+            "present": true,
+            "truncated": false,
+            "drained": false,
+            "muted": true
+          }
+        },
+        "same_thread": true,
+        "capture": {
+          "enabled": false,
+          "pending": 0,
+          "dropped": 0
+        },
+        "passed": true
+      }
+    ],
+    "passed": true,
+    "idle_control": {
+      "wall_seconds": 50.657,
+      "injected_page_stall_ms": 650,
+      "state": "sleeping",
+      "runtime_failure": null,
+      "tool_calls": 0,
+      "output_active": false,
+      "capture": {
+        "enabled": false,
+        "pending": 0,
+        "dropped": 0,
+        "frames": 0
+      }
+    },
+    "status_before_stop": {
+      "state": "sleeping",
+      "context": {
+        "sent_bytes": 6927,
+        "total_limit_bytes": null,
+        "known_paragraphs": 1,
+        "source_version": 3,
+        "pending": false,
+        "model_consumption_verified": false,
+        "preparing": false,
+        "delivery_scope": "successful_host_send_returns_this_live_thread"
+      },
+      "question_receipts": {
+        "counts": {
+          "received": 3,
+          "admitted": 3,
+          "rejected": 0
+        },
+        "events": [
+          {
+            "outcome": "admitted",
+            "reason": null,
+            "received_seconds": 62.4705977980002,
+            "decision_seconds": 62.47199355600014
+          },
+          {
+            "outcome": "admitted",
+            "reason": null,
+            "received_seconds": 81.62545635900005,
+            "decision_seconds": 81.62663868300024
+          },
+          {
+            "outcome": "admitted",
+            "reason": null,
+            "received_seconds": 95.85136380700033,
+            "decision_seconds": 95.85364845200002
+          }
+        ],
+        "event_limit": 64,
+        "count_limit": 2147483647,
+        "timing_basis": "host monotonic seconds relative to responder construction"
+      },
+      "runtime_failure": null
+    },
+    "stop_result": "stopped",
+    "stop_ack_received": true,
+    "stop_closed_received": true,
+    "process_reaped": true
+  },
+  "source_sha256_at_verification": {
+    "teams_transcription/b_live.py": "75aa28573af8c7cf3928f70454f4d761604f5bdb71a77080c5671a2cf6114a98",
+    "teams_transcription/b_media_profile.py": "e8d22aded05fe64bd174e34019a8b53f44344ff6f3570747306074644fab9c47",
+    "teams_transcription/b_native.py": "6c2df934e4b6c5e84f435d0fc7262fe6d7015f4834daa1cd4c31bc7a7d918d24"
+  },
+  "repair": "Keep decoder/track alive; default PCM tap closed. Open only for a logical speech lease. Close on finish/cancel/error/stop, reject stale capture generations, retain the active-audio pending bound.",
+  "causal_limit": "The live round first fault and idle/no-question state are observed. The exact live scheduling stall trigger/duration was not recorded; 650ms is the deterministic local control, not a fabricated live measurement.",
+  "Teams_rejoin_after_failure": false,
+  "production_deployment": false,
+  "GitHub_push_for_this_repair": false,
+  "container_image_rebuilt": false
+}

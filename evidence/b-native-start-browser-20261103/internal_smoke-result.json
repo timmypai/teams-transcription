@@ -1,0 +1,18 @@
+{
+  "tests": 1,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "seconds": 1.82,
+  "success": true,
+  "uid": 10001,
+  "synthetic_only": true,
+  "image": "sha256:c397b661c65a3c689e43b92b1a3656bfd6fa6163182d7f0e117803fdc53928d0",
+  "docker_exit_code": 0,
+  "cleanup_outcome": "cleaned",
+  "network": "isolated internal Docker bridge; no external route",
+  "read_only": true,
+  "cap_drop": "ALL",
+  "sandbox": "repository seccomp; no-new-privileges; Chromium sandbox enabled",
+  "credentials_mounted": false
+}

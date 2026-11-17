@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "kind": "local_cached_dependency_current_candidate",
+  "tag": "teams-assistant:local-native-wake-order-20261016",
+  "image_id": "sha256:e4c628d2e98f2b36af9a15dccd3492c404755e2969718533c8491474381bbde8",
+  "base_image_id": "sha256:3081a86eef9e28a067c64a565fb4104b2da8187c0c5dfda40f54cedab58f4cb9",
+  "base_tag": "teams-assistant:local-native-turns-20261016",
+  "base_tag_identity_verified": true,
+  "requires_cached_base": true,
+  "requires_dist_matches_base": true,
+  "requires_dist_count": 7,
+  "first_build_attempt": {
+    "passed": false,
+    "cause": "BuildKit interpreted FROM sha256:image-id as a registry repository; no candidate produced",
+    "corrected": "Use the existing local tag after verifying its exact image ID"
+  },
+  "candidate_build": {
+    "passed": true,
+    "seconds": 4.175,
+    "run_network": "none",
+    "pull": false,
+    "pip_no_index": true,
+    "pip_no_deps": true,
+    "wheel_sha256": "aa5b503292c6690181ff4bb099f7162e1fe22601750e599f97b9e9951ba6e244"
+  },
+  "host_source_sha256": {
+    "b_native.py": "daaea6806353dd4bb5a85521139bf5180f30da0842d3973b744979aeeb003077",
+    "b_live.py": "8a380866f08a0081d3a10bef29170305870230a8f952f64ea0899910c6b8e8de",
+    "diagnostics.py": "291d40c13a3c9f329c70ee8de753e36ade85bd19b4d7b28398c18ff006034ddd",
+    "response_runtime.py": "158c86174a3797bb0ca602ea54cfed090c426f78081b510876580a853c4cb52c"
+  },
+  "installed_source_sha256": {
+    "b_native.py": "daaea6806353dd4bb5a85521139bf5180f30da0842d3973b744979aeeb003077",
+    "b_live.py": "8a380866f08a0081d3a10bef29170305870230a8f952f64ea0899910c6b8e8de",
+    "diagnostics.py": "291d40c13a3c9f329c70ee8de753e36ade85bd19b4d7b28398c18ff006034ddd",
+    "response_runtime.py": "158c86174a3797bb0ca602ea54cfed090c426f78081b510876580a853c4cb52c"
+  },
+  "workdir_source_sha256": {
+    "b_native.py": "daaea6806353dd4bb5a85521139bf5180f30da0842d3973b744979aeeb003077",
+    "b_live.py": "8a380866f08a0081d3a10bef29170305870230a8f952f64ea0899910c6b8e8de",
+    "diagnostics.py": "291d40c13a3c9f329c70ee8de753e36ade85bd19b4d7b28398c18ff006034ddd",
+    "response_runtime.py": "158c86174a3797bb0ca602ea54cfed090c426f78081b510876580a853c4cb52c"
+  },
+  "stock_cold_build_claimed": false,
+  "prior_stock_build_limit": "Previous standard Dockerfile pip dependency download reached600s deadline; not rerun because dependencies unchanged.",
+  "compose_receipt": "standalone-compose-native-wake-order-20261016.json",
+  "credentials_mounted": false,
+  "published_or_deployed": false,
+  "actual_teams_acceptance": false
+}

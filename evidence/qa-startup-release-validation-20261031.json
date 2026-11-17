@@ -1,0 +1,131 @@
+{
+  "schema_version": 1,
+  "scope": "local offline startup adapter verification; no host or model execution",
+  "base_main_sha": "c9d54b7f72be1c94318386ce7dab7a61df4396e3",
+  "implementation_commit": "a2bb51fe0e1662b94a922c7aa12371089ed27aa4",
+  "branch": "fix/qa-startup-runtime-contract",
+  "release": {
+    "schema_version": 1,
+    "repository": "paulpai0412/teams-transcription",
+    "source_sha": "c9d54b7f72be1c94318386ce7dab7a61df4396e3",
+    "image": "ghcr.io/paulpai0412/teams-transcription@sha256:57a433bdc059e462100f139466251e4b9670a46770899f6d3b1c9caf9597f657",
+    "platform": "linux/arm64",
+    "build_run_id": 41159965976,
+    "build_run_attempt": 1,
+    "validation": {
+      "offline_contracts": true,
+      "compose_config": true,
+      "compose_smoke": true,
+      "image_content_scan": true
+    },
+    "artifact_sha256": "sha256:5737b8ef5ebbd0e52d9c580a90b81dc506aa1a74965c97fc28ba992d4608e8ea"
+  },
+  "release_artifact_id": 13026647657,
+  "release_gate_verified_from_real_api_and_archive": true,
+  "candidate_source_sha": "e82bb30900e90c9559b9c3dcb71e532cad86b72e",
+  "candidate_manifest_sha256": "0e1996c09d73144485b26ff178a9b0b99fe54d3ba5b636698dbc460eb3109292",
+  "payload_manifest_sha256": "c6eb1ccb42048164c77336fb50cfe5d9189460e805bf88fa57142fbdc8379f1f",
+  "red_green": {
+    "before": "new exact-release preflight test raised release_not_ready with four unset pins",
+    "after": "fixed release passes; each wrong image/source/run/attempt and unverified receipt is rejected"
+  },
+  "startup_tests": {
+    "tests": 12,
+    "failures": 0,
+    "errors": 0
+  },
+  "related_tests": {
+    "tests": 51,
+    "failures": 0,
+    "errors": 0,
+    "seconds": 3.308
+  },
+  "aggregate": {
+    "scope": "controlled offline subset",
+    "suites": [
+      "test_assistant_store",
+      "test_assistant_daemon",
+      "test_calendar_client",
+      "test_glossary_context",
+      "test_admin_web",
+      "test_sqlite_voice_context",
+      "test_sqlite_only_store",
+      "test_b_no_plc_startup",
+      "test_rx_contract",
+      "test_prefetch_codex_npm",
+      "test_staging_control",
+      "test_capture_cleanup_review",
+      "test_release_gate",
+      "test_diagnostic_projection",
+      "test_codex_auth",
+      "test_provider_state",
+      "test_workflow_triggers",
+      "test_staging_docker_diagnostics",
+      "test_staging_compose",
+      "test_first_deploy_recovery",
+      "test_qa_probe.ProbeTests",
+      "test_qa_receiver_projection",
+      "test_qa_audio_observer",
+      "test_qa_content",
+      "test_qa_candidate_versions",
+      "test_cloud_qa_semantic.SemanticRuntimeTests",
+      "test_cloud_qa_startup.StartupRuntimeTests",
+      "test_cloud_qa_contract",
+      "test_cloud_qa_bridge.CloudQABridgeTests",
+      "test_cloud_qa_isolated.CloudQAIsolatedTests",
+      "test_turn_lifecycle_evidence.TurnLifecycleEvidenceTests",
+      "test_speech_completion_snapshot.SpeechCompletionSnapshotTests",
+      "test_incremental_minutes_context.ContextTests.test_wire_instruction_distinguishes_verbatim_quote_and_normal_answers",
+      "test_native_incremental_context.NativeSnapshotContextTests.test_delivery_receipt_hashes_identify_actual_current_payload_without_content",
+      "test_b_native.NativeLiveTests.test_live_prompt_distinguishes_verbatim_format_from_normal_current_fact_answers",
+      "test_b_native.NativeLiveTests.test_three_physical_questions_in_one_provider_turn_query_current_sqlite_each_time"
+    ],
+    "tests": 358,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "success": true,
+    "teams_or_model_called": false,
+    "audio_e2e_tested": false
+  },
+  "checks": {
+    "actionlint": true,
+    "diff_check": true,
+    "six_runtime_files_match_verified_release_tree": true,
+    "all_seven_payload_hashes_and_sizes": true,
+    "old_A_B_semantic_constants_unchanged": true,
+    "historical_manifests_and_hook_unchanged": true,
+    "credential_pattern_scan": true
+  },
+  "independent_cloud_codex_reviews": {
+    "spec": {
+      "reviewed_commit": "2cb8efe99fcabfb7198aff92393bbafd8d32010f",
+      "confirmed_defects": 0,
+      "startup_tests": 12,
+      "seconds": 0.391
+    },
+    "standards": {
+      "reviewed_commit": "2cb8efe99fcabfb7198aff92393bbafd8d32010f",
+      "confirmed_violations_or_actionable_smells": 0,
+      "startup_tests": 12,
+      "seconds": 0.375
+    },
+    "followup": "stale pending-release comment corrected; entry hash regenerated; no functional code changed after review",
+    "final_spec_followup": "comment-only delta, regenerated seven hashes/sizes, final manifest checksum and saved test/release evidence independently verified; no new finding"
+  },
+  "official_github_review_integration": "pending separate parent task; not claimed active",
+  "unchanged_usage": {
+    "hosted_replay": "13/20",
+    "model": "10/50"
+  },
+  "not_performed": [
+    "adapter host installation",
+    "workflow dispatch",
+    "model request",
+    "Oracle operation",
+    "new-image seven audio browser tests",
+    "PR merge"
+  ],
+  "historical_validation_preserved": "qa-startup-adapter-validation-20261030.json remains source-only/pending-release history",
+  "installation_authorization_granted_by_evidence": false
+}

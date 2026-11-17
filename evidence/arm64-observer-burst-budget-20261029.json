@@ -1,0 +1,125 @@
+{
+  "recorded_at": "2026-10-29T11:15:51.038569+00:00",
+  "repository": "paulpai0412/teams-transcription",
+  "base_sha": "2d61d669955b1e318cd0b9c6bab8c5f4cc81577e",
+  "previous_pr": {
+    "number": 9,
+    "head_sha": "d51063f661fe032a17cbd9abfd8e7c4d9108d498",
+    "merged": true,
+    "merge_sha": "2d61d669955b1e318cd0b9c6bab8c5f4cc81577e",
+    "merged_at": "2026-10-29T11:10:24Z"
+  },
+  "run": {
+    "id": 40863344074,
+    "url": "https://github.com/paulpai0412/teams-transcription/actions/runs/40863344074",
+    "attempt": 1,
+    "publish_requested": true,
+    "conclusion": "failure",
+    "failed_step": "Prepare public-only native ARM64 build contexts",
+    "actual_runner": "ubuntu-24.04-arm",
+    "tests": {
+      "scope": "controlled offline subset",
+      "suites": [
+        "test_assistant_store",
+        "test_assistant_daemon",
+        "test_calendar_client",
+        "test_glossary_context",
+        "test_admin_web",
+        "test_sqlite_voice_context",
+        "test_sqlite_only_store",
+        "test_rx_contract",
+        "test_prefetch_codex_npm",
+        "test_staging_control",
+        "test_capture_cleanup_review",
+        "test_release_gate",
+        "test_diagnostic_projection",
+        "test_codex_auth",
+        "test_provider_state",
+        "test_workflow_triggers"
+      ],
+      "tests": 186,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "success": false,
+      "teams_or_model_called": false,
+      "audio_e2e_tested": false
+    },
+    "failed_test": "test_rx_contract.RxContractTests.test_native_observer_burst_cannot_create_A_queue_or_sample_limit",
+    "prior_fixed_test": "test_unavailable_PCM_stats_do_not_stop_native_A passed in this ARM run",
+    "docker_build_publish_executed": false,
+    "artifact": {
+      "id": 12891694187,
+      "name": "arm64-image-40863344074-1",
+      "sha256": "b485b25c9b350aac7d1790d2a2f4a59f53b63c0f29af7060e6cde2e95c742a44",
+      "download": "GitHub connector file copy",
+      "byte_hash_verified": true
+    }
+  },
+  "diagnosis": {
+    "status": "Supported local fixture-budget hypothesis; cloud original assertion lacked exact cleanup error.",
+    "local_reproduction": "Same existing test and real SQLite/session seam, Session.update adds synchronous 30ms per write; no production clock or code changes.",
+    "before": {
+      "ordinary_runs": 3,
+      "ordinary_failures": 0,
+      "30ms_write_delay_runs": 3,
+      "30ms_write_delay_failures": 3,
+      "error": "rx_cleanup_unknown",
+      "end_reason": "duration_limit",
+      "cleanup_status": "unknown"
+    },
+    "after": {
+      "ordinary_runs": 3,
+      "ordinary_failures": 0,
+      "30ms_write_delay_runs": 3,
+      "30ms_write_delay_failures": 0
+    },
+    "fix": "Single non-deadline burst test gets cleanup1s/total3s/readiness1s; capture.15 unchanged. Add bounded failure status and completed/cleaned assertions. Preserve all8032 incoming frames, zeroqueue/overflow/push and sample-limit checks. Production runtime and workflow untouched."
+  },
+  "local_aggregate": {
+    "scope": "controlled offline subset",
+    "suites": [
+      "test_assistant_store",
+      "test_assistant_daemon",
+      "test_calendar_client",
+      "test_glossary_context",
+      "test_admin_web",
+      "test_sqlite_voice_context",
+      "test_sqlite_only_store",
+      "test_rx_contract",
+      "test_prefetch_codex_npm",
+      "test_staging_control",
+      "test_capture_cleanup_review",
+      "test_release_gate",
+      "test_diagnostic_projection",
+      "test_codex_auth",
+      "test_provider_state",
+      "test_workflow_triggers"
+    ],
+    "tests": 186,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "success": true,
+    "teams_or_model_called": false,
+    "audio_e2e_tested": false
+  },
+  "actionlint": "v1.7.7 passed",
+  "review": {
+    "standards": "0 confirmed violations/actionable smells; target independently passed",
+    "spec": "0 confirmed defects; target/capture deadline/hung-cleanup independently passed"
+  },
+  "related_issues": [
+    1,
+    2
+  ],
+  "pending": [
+    "Reviewed source merge before meaningful new main build",
+    "Actual ARM64 image build and post-fix test",
+    "GHCR digest and successful release provenance",
+    "Oracle deployment and real OAuth/Live/Teams validation"
+  ],
+  "no_repeat_dispatch": true,
+  "billing_credentials_network_security_changes": false,
+  "vm_deployment": false
+}

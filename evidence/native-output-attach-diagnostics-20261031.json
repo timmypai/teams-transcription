@@ -1,0 +1,114 @@
+{
+  "recorded_at": "2026-10-31T16:39:02.301852+00:00",
+  "base_source_sha": "080ea4e8f8deaa6ec4a5ebbc4f1e29616dbdbe66",
+  "scope": "Diagnostic-only fixed native_output_attach substeps and preservation of first source failure",
+  "historical_run": {
+    "id": 41218254258,
+    "artifact_id": 13048223792,
+    "host_reported_startup_phase": "native_output_attach",
+    "host_reported_exception_type": "Error",
+    "underlying_cause": "unknown; original raw exception was not retained",
+    "original_failure_unchanged": true
+  },
+  "implementation": {
+    "fixed_output_steps": [
+      "output_scope",
+      "relay_scope",
+      "source_offer",
+      "target_answer",
+      "source_answer",
+      "target_ready",
+      "source_check",
+      "sender_install",
+      "initial_mute"
+    ],
+    "durable_path": "BrowserTXSink -> NativeTrackOutput -> NativeLiveResponder -> existing controller response_unavailable receipt",
+    "raw_exception_saved": false,
+    "javascript_changed": false,
+    "audio_algorithm_changed": false,
+    "cleanup_control_flow_changed": false,
+    "permissions_or_network_changed": false
+  },
+  "validation": {
+    "diagnostic_red": {
+      "tests": 1,
+      "failed_subcases": 7,
+      "reason": "Original receipt did not expose fixed attach substep"
+    },
+    "sender_cleanup_red": {
+      "tests": 1,
+      "failed_subcases": 1,
+      "reason": "Sender install Error was overwritten by cleanup OSError"
+    },
+    "focused": {
+      "tests": 13,
+      "passed": true,
+      "seconds": 0.244
+    },
+    "fixture_focused": {
+      "tests": 7,
+      "passed": true,
+      "seconds": 0.842
+    },
+    "first_aggregate": {
+      "tests": 409,
+      "failures": 0,
+      "errors": 2,
+      "reason": "Historical startup fixture copied changed current browser TX source; original hash gate correctly refused"
+    },
+    "historical_fixture": "Restore SHA-verified c409 browser TX text fixture with its one fixed startup receiver import, then verify unchanged startup manifest full SHA; no historical pin updated",
+    "final_aggregate": {
+      "tests": 410,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": true,
+      "seconds": 33.688
+    },
+    "real_browser": {
+      "attempted": true,
+      "tests": 1,
+      "errors": 1,
+      "passed": false,
+      "reason": "Local Chromium sandbox helper configuration rejected launch; no bypass applied"
+    }
+  },
+  "independent_cloud_review": {
+    "standards": {
+      "confirmed_actionable_findings": 0,
+      "focused_tests_passed": 8,
+      "seconds": 0.631
+    },
+    "spec": {
+      "initial_findings": 1,
+      "finding": "Sender install first failure could be overwritten during cleanup",
+      "resolved": true,
+      "retested_methods_passed": 3,
+      "seconds": 0.188,
+      "remaining_confirmed_findings": 0
+    },
+    "native_github_review": "Not requested; no PR created"
+  },
+  "log_sha256": {
+    "diagnostic_red": "3e28ce079cf6eef40e8110b701b4547e1bf0af5461df70388250e5d3b55fd10b",
+    "sender_cleanup_red": "7e282af6f066c90536f59656dc5432a01a2120c9d67e9fddb14e98924879e0b9",
+    "focused": "457e3dc8eb9aa31f0209fe51342b4a9e2344e04690529fc322d72631150fe22c",
+    "first_aggregate": "e94c64d2e352e41333a9b610444c2a1cf3dfe92fc8f1bee03097fd4569459cf0",
+    "final_aggregate": "a08b2a618c3222384608f5f51538718c21721d3235ee5f6a6872e7f017b77d0d",
+    "browser_launch_failure": "564e6cd5d79b31164b6db5534dbabab904b9bdfb95b5765b134316e59431a287"
+  },
+  "unverified": [
+    "Oracle attach underlying cause",
+    "Real browser with this diagnostic patch",
+    "New ARM image",
+    "Real Teams RX/TX and remote audibility"
+  ],
+  "external_effects": {
+    "new_model_or_join_requests": false,
+    "host_changed": false,
+    "ledger_changed": false,
+    "model_budget_unchanged": "16/50",
+    "PR_created": false,
+    "workflow_dispatched": false
+  }
+}

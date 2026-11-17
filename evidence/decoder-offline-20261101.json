@@ -1,0 +1,313 @@
+{
+  "recorded_at_utc": "2026-11-01T23:56:12Z",
+  "base_source_sha": "edf853257445ef6b1e9d16e5e332fd34b0918460",
+  "local_image_id": "sha256:08020a8a9da4dde8e2495cd57868e575dd2ad722de29de910c32c2a3be000076",
+  "execution": {
+    "daemon": "explicit unix:///var/run/docker.sock",
+    "network": "none",
+    "user": "10001:10001",
+    "read_only": true,
+    "cap_drop": "ALL",
+    "no_new_privileges": true,
+    "seccomp_sha256": "ee2429d1426834dfcb8b4b10837df9aecb1bd3e93a518cc0f7324ca87cd3d33c",
+    "memory": "4g",
+    "cpus": 2,
+    "pids_limit": 512,
+    "private_mounts": false,
+    "owned_container_removed": true
+  },
+  "browser_results": {
+    "scope": "synthetic decoder construction only; no ICE/RTP/audio E2E",
+    "chromium_version": "156.0.8078.47",
+    "architecture": "x86_64",
+    "tool_sha256": "9c964c7370cdd7e7f962b8bee21f48a619333fedd4340fc2cec08870106d0ca8",
+    "candidate_helper_sha256": "08c5a5c84ec188418b055121116ebb33063831539d8185067f2bea6d03991426",
+    "candidate_receiver_sha256": "de613d9dbeeb2a4aa9f836e0949a73b440ee7840767d5a6c4937910b5bfdd878",
+    "receiver_sha256": "b6d9129a31001523790f4e5c2f016f3c178159dff68ce054bec3f26e1ab84a9a",
+    "meeting_or_model_called": false,
+    "credentials_loaded": false,
+    "browser_sandbox": true,
+    "microphone_permissions": [],
+    "cases": [
+      {
+        "setup_passed": true,
+        "environment": {
+          "secure_context": true,
+          "cross_origin_isolated": false,
+          "meta_csp_present": false,
+          "receiver_encoded_streams": true,
+          "audio_decoder": true,
+          "encoded_audio_chunk": true,
+          "track_generator": true,
+          "audio_worklet_node": true,
+          "audio_context": true,
+          "context_audio_worklet": true,
+          "context_state": "running",
+          "sample_rate": 48000
+        },
+        "case": "unrestricted",
+        "native_meter_candidate": false,
+        "elapsed_ms": 120,
+        "document_policy": {
+          "available": true,
+          "policy_count": 0,
+          "policies": []
+        },
+        "cleanup": {
+          "receiver_ended": true,
+          "context_closed": true,
+          "decoder_invalid": true
+        },
+        "expected_result_matched": true,
+        "intercepted_requests": 1
+      },
+      {
+        "setup_passed": true,
+        "environment": {
+          "secure_context": true,
+          "cross_origin_isolated": false,
+          "meta_csp_present": false,
+          "receiver_encoded_streams": true,
+          "audio_decoder": true,
+          "encoded_audio_chunk": true,
+          "track_generator": true,
+          "audio_worklet_node": true,
+          "audio_context": true,
+          "context_audio_worklet": true,
+          "context_state": "running",
+          "sample_rate": 48000
+        },
+        "case": "blob_allowed",
+        "native_meter_candidate": false,
+        "elapsed_ms": 87,
+        "document_policy": {
+          "available": true,
+          "policy_count": 1,
+          "policies": [
+            {
+              "directives": {
+                "script-src": {
+                  "blob": true,
+                  "self": true,
+                  "nonce_present": false,
+                  "hash_present": false,
+                  "strict_dynamic": false,
+                  "unsafe_inline": false,
+                  "none": false
+                },
+                "default-src": {
+                  "blob": false,
+                  "self": false,
+                  "nonce_present": false,
+                  "hash_present": false,
+                  "strict_dynamic": false,
+                  "unsafe_inline": false,
+                  "none": true
+                }
+              },
+              "trusted_types_script_required": false,
+              "trusted_types_none": false
+            }
+          ]
+        },
+        "cleanup": {
+          "receiver_ended": true,
+          "context_closed": true,
+          "decoder_invalid": true
+        },
+        "expected_result_matched": true,
+        "intercepted_requests": 1
+      },
+      {
+        "setup_passed": false,
+        "failure": {
+          "stage": "worklet_module",
+          "exception_type": "AbortError",
+          "reason": "unknown",
+          "environment": {
+            "secure_context": true,
+            "cross_origin_isolated": false,
+            "meta_csp_present": false,
+            "receiver_encoded_streams": true,
+            "audio_decoder": true,
+            "encoded_audio_chunk": true,
+            "track_generator": true,
+            "audio_worklet_node": true,
+            "audio_context": true,
+            "context_audio_worklet": true,
+            "context_state": "running",
+            "sample_rate": 48000
+          }
+        },
+        "case": "blob_denied",
+        "native_meter_candidate": false,
+        "elapsed_ms": 89,
+        "document_policy": {
+          "available": true,
+          "policy_count": 1,
+          "policies": [
+            {
+              "directives": {
+                "script-src": {
+                  "blob": false,
+                  "self": true,
+                  "nonce_present": false,
+                  "hash_present": false,
+                  "strict_dynamic": false,
+                  "unsafe_inline": false,
+                  "none": false
+                },
+                "default-src": {
+                  "blob": false,
+                  "self": false,
+                  "nonce_present": false,
+                  "hash_present": false,
+                  "strict_dynamic": false,
+                  "unsafe_inline": false,
+                  "none": true
+                }
+              },
+              "trusted_types_script_required": false,
+              "trusted_types_none": false
+            }
+          ]
+        },
+        "cleanup": {
+          "receiver_ended": true,
+          "context_closed": null,
+          "decoder_invalid": null
+        },
+        "expected_result_matched": true,
+        "intercepted_requests": 1
+      },
+      {
+        "setup_passed": false,
+        "failure": {
+          "stage": "browser_api",
+          "exception_type": "Error",
+          "reason": "api_unsupported",
+          "environment": {
+            "secure_context": true,
+            "cross_origin_isolated": false,
+            "meta_csp_present": false,
+            "receiver_encoded_streams": true,
+            "audio_decoder": false,
+            "encoded_audio_chunk": true,
+            "track_generator": true,
+            "audio_worklet_node": true,
+            "audio_context": true,
+            "context_audio_worklet": null,
+            "context_state": "unknown",
+            "sample_rate": null
+          }
+        },
+        "case": "decoder_api_missing",
+        "native_meter_candidate": false,
+        "elapsed_ms": 23,
+        "document_policy": {
+          "available": true,
+          "policy_count": 0,
+          "policies": []
+        },
+        "cleanup": {
+          "receiver_ended": true,
+          "context_closed": null,
+          "decoder_invalid": null
+        },
+        "expected_result_matched": true,
+        "intercepted_requests": 1
+      },
+      {
+        "setup_passed": true,
+        "environment": {
+          "secure_context": true,
+          "cross_origin_isolated": false,
+          "meta_csp_present": false,
+          "receiver_encoded_streams": true,
+          "audio_decoder": true,
+          "encoded_audio_chunk": true,
+          "track_generator": true,
+          "audio_worklet_node": true,
+          "audio_context": true,
+          "context_audio_worklet": true,
+          "context_state": "running",
+          "sample_rate": 48000
+        },
+        "case": "blob_denied",
+        "native_meter_candidate": true,
+        "elapsed_ms": 82,
+        "document_policy": {
+          "available": true,
+          "policy_count": 1,
+          "policies": [
+            {
+              "directives": {
+                "script-src": {
+                  "blob": false,
+                  "self": true,
+                  "nonce_present": false,
+                  "hash_present": false,
+                  "strict_dynamic": false,
+                  "unsafe_inline": false,
+                  "none": false
+                },
+                "default-src": {
+                  "blob": false,
+                  "self": false,
+                  "nonce_present": false,
+                  "hash_present": false,
+                  "strict_dynamic": false,
+                  "unsafe_inline": false,
+                  "none": true
+                }
+              },
+              "trusted_types_script_required": false,
+              "trusted_types_none": false
+            }
+          ]
+        },
+        "cleanup": {
+          "receiver_ended": true,
+          "context_closed": true,
+          "decoder_invalid": true
+        },
+        "expected_result_matched": true,
+        "intercepted_requests": 1
+      }
+    ],
+    "success": true
+  },
+  "focused_tests": {
+    "count": 33,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0,
+    "log": "decoder-offline-focused-20261101.txt"
+  },
+  "red_before_green": {
+    "scope": "new test-only prototype, not production regressions",
+    "failed_tests": [
+      "test_timeout_preserves_failure_and_closes_primer",
+      "test_close_during_write_prevents_capture_and_late_completion",
+      "test_processor_constructor_failure_has_no_unhandled_rejection_and_stops_clone"
+    ],
+    "actual_failure_count": 3,
+    "cause": [
+      "failed status remained not_started",
+      "processor constructor throw left an unobserved promise"
+    ],
+    "green_after_fix": true
+  },
+  "review": {
+    "spec": "independent Cloud agent; no confirmed defect; 6 tool tests independently passed before final cleanup-gate test added",
+    "standards": "one confirmed P2 cleanup-success gate corrected and independently rechecked"
+  },
+  "limitations": [
+    "amd64 local browser, not Oracle ARM",
+    "construction check does not feed RTP or call experimental afterWritePull",
+    "Node mock tests do not prove real native capture/startup/audio continuity",
+    "failure cases context_closed and decoder_invalid are unknown, context/page cleanup still awaited",
+    "Oracle target document CSP/API snapshot remains unavailable",
+    "No runtime/application source changed; no deployment, Join, model or VM access; ledger last historical value remains 20/50"
+  ]
+}

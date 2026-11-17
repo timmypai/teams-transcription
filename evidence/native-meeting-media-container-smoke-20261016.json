@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "image_id": "sha256:eca77e558d075e3a581e108a88e90de8166a112ce8d227eb50374c9d92f10c05",
+  "kind": "actual_native_media_hardened_container",
+  "network": "disposable_internal_bridge",
+  "external_route": false,
+  "published_ports": false,
+  "credentials_mounted": false,
+  "models_or_meetings_called": false,
+  "physical_devices": false,
+  "nonroot_readonly_dropcaps_no_new_privileges_seccomp": true,
+  "seconds": 197.318,
+  "returncode": 1,
+  "tests": 17,
+  "failures": 0,
+  "errors": 16,
+  "skips": 0,
+  "success": false
+}

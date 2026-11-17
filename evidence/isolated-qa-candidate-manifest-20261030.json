@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "source_commit": "836ecbe88d69b14a66326474d08a4c26d15c1e90",
+  "source_repository": "paulpai0412/teams-transcription",
+  "base_source_sha": "c4090edb0e8e5db50d8950515522dba733618c51",
+  "module_order": [
+    "qa_probe",
+    "qa_session_isolation"
+  ],
+  "files": {
+    "qa_probe.py": "6616f75dbf175acc2991cb2b933098d3230adc5e9720c4a64f0ab00cbbf39a29",
+    "qa_session_isolation.py": "5d0befd7fa5af94d33250ba80434e8659071409de78e3a74b02e6f2fd62467fd"
+  },
+  "purpose": "Exact source bytes for a separate process-local isolated synthetic QA experiment; not daemon imports."
+}

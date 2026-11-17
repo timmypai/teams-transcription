@@ -1,0 +1,255 @@
+{
+  "replay": [
+    {
+      "source_version": 30,
+      "records": 33,
+      "previous_selected_facts": {
+        "codeword": false,
+        "budget": false,
+        "day": false
+      },
+      "new_wire_facts": {
+        "codeword": true,
+        "budget": true,
+        "day": true
+      },
+      "batches": 3,
+      "selected_refs": 33,
+      "payload_bytes": 34373,
+      "max_batch_bytes": 11933,
+      "omitted_for_budget": false,
+      "source_database_read_only": true,
+      "filtered_database_in_memory": true
+    },
+    {
+      "source_version": 52,
+      "records": 55,
+      "previous_selected_facts": {
+        "codeword": false,
+        "budget": false,
+        "day": false
+      },
+      "new_wire_facts": {
+        "codeword": true,
+        "budget": true,
+        "day": true
+      },
+      "batches": 5,
+      "selected_refs": 55,
+      "payload_bytes": 56140,
+      "max_batch_bytes": 11941,
+      "omitted_for_budget": false,
+      "source_database_read_only": true,
+      "filtered_database_in_memory": true
+    }
+  ],
+  "real_native": {
+    "teams_joined": false,
+    "physical_output": false,
+    "input_mode": "paced_synthetic_pcm_native_asr_application_framer",
+    "questions": [
+      {
+        "number": 1,
+        "facts": {
+          "codeword": true,
+          "budget": true,
+          "day": true
+        },
+        "reader_calls": 1,
+        "synthetic_assistant_text": "測試代號是松風,預算二萬八千元,預計週三交付。以上就是本場紀錄裡的資訊。代號松風,預算二萬八測試代號是松風,預算二萬八千元,預計週三交付。以上就是本場紀錄裡的資訊。代號松風,預算二萬八千元,預計週三交付。千元,預計週三交付。",
+        "transcripts": {
+          "user_delta": 17,
+          "user_done": 2,
+          "assistant_delta": 45,
+          "assistant_done": 2
+        },
+        "completion_failure": null,
+        "tool_calls": 1,
+        "same_thread": true,
+        "batches": 4,
+        "max_batch_bytes": 11781,
+        "one_final_marker": true,
+        "sequential_batches": true,
+        "renderer_stall_ms": 650,
+        "runtime_failure": null,
+        "speech": {
+          "phase": "closed",
+          "native_state": "sleeping",
+          "done_is_set": true,
+          "speech_task_done": true,
+          "speech_task_cancelled": false,
+          "error_code": null,
+          "output_active": false,
+          "nonzero_frames": 568444,
+          "activity_frames": 538624,
+          "packet_frames": 2048,
+          "packet_nonzero_frames": 12,
+          "packet_peak_abs": 1,
+          "packet_rms": 0.07654655446197431,
+          "activity_rms_threshold": 8,
+          "last_active_age_seconds": 1.0016913780000323,
+          "last_nonzero_age_seconds": 0.19216110900015337,
+          "drain_result": {
+            "present": true,
+            "truncated": false,
+            "drained": false,
+            "muted": true
+          }
+        },
+        "bridge": {
+          "capture_enabled": false,
+          "failed": false,
+          "queued_bytes": 0,
+          "queued_packets": 0,
+          "max_bytes": 4320000
+        },
+        "delivery": {
+          "question_number": 1,
+          "phase": "delivered",
+          "started_elapsed_ms": 12129,
+          "source_version": 41,
+          "available": true,
+          "selected_ref_count": 42,
+          "selected_record_indexes": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30,
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40,
+            41,
+            42
+          ],
+          "selected_indexes_truncated": false,
+          "omitted_for_budget": false,
+          "payload_bytes": 41578,
+          "sent_bytes": 41593,
+          "marker_returned": true,
+          "model_consumption_verified": false
+        },
+        "passed": true
+      }
+    ],
+    "failure_type": "TimeoutError",
+    "last_question_attempt": 2,
+    "failure_status": {
+      "state": "sleeping",
+      "rx_dropped": 0,
+      "rx_accepted_packets": 2781,
+      "rx_peer_push_packets": 2781,
+      "transcript_notifications": {
+        "user_delta": 17,
+        "user_done": 2,
+        "assistant_delta": 83,
+        "assistant_done": 4
+      },
+      "input_pending": {
+        "characters": 0,
+        "has_wake": false,
+        "has_question": false
+      },
+      "question_framing": {
+        "provenance": "application",
+        "provider_final": false,
+        "boundary": "pcm_quiet_and_stable_delta",
+        "activity_detector": "pcm_rms_heuristic",
+        "source_audio_verified": false,
+        "input_activity_rms_threshold": 256,
+        "silence_seconds": 1.5,
+        "text_settle_seconds": 0.6,
+        "capture_freshness_seconds": 0.25,
+        "capture_gap_tolerance_seconds": 0.02,
+        "capture_recent": true,
+        "observed_quiet_seconds": 1.5,
+        "heard_activity": true,
+        "overflow": false,
+        "followup_active": false,
+        "emitted_requests": 1,
+        "pending": {
+          "characters": 0,
+          "has_wake": false,
+          "has_question": false
+        }
+      },
+      "question_receipts": {
+        "counts": {
+          "received": 1,
+          "admitted": 1,
+          "rejected": 0
+        },
+        "events": [
+          {
+            "outcome": "admitted",
+            "reason": null,
+            "received_seconds": 12.128339595000398,
+            "decision_seconds": 12.129881025999566
+          }
+        ],
+        "event_limit": 64,
+        "count_limit": 2147483647,
+        "timing_basis": "host monotonic seconds relative to responder construction"
+      },
+      "context": {
+        "sent_bytes": 41593,
+        "total_limit_bytes": null,
+        "known_paragraphs": 42,
+        "source_version": 41,
+        "pending": false,
+        "model_consumption_verified": false,
+        "preparing": false,
+        "delivery_scope": "successful_host_send_returns_this_live_thread"
+      },
+      "tool_calls": 1,
+      "runtime_failure": null
+    },
+    "synthetic_user_asr": "小白小白,剛才本場的測試代號、預算和預計交付日是什麼a",
+    "cleanup": {
+      "status": "cleaned",
+      "stop_status": "stopped",
+      "stop_ack_received": true,
+      "stop_closed_received": true,
+      "native_cleanup_status": "cleaned",
+      "owned_processes": 2,
+      "live_processes": 0,
+      "reaped": true,
+      "pending_close_tasks": 0,
+      "pending_operation": false
+    },
+    "passed": false
+  },
+  "observation_limit": "First actual spoken question passed all source facts. Second PCM reached local peer enqueue with zero drops, but no second canonical delta/application request was observed; raw DC and remote RTP delivery were not yet captured. This is not proof of provider-side loss or complete stimulus delivery. Fixed source selection and active bridge remained error-free."
+}

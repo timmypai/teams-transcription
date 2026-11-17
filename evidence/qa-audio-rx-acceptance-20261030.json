@@ -1,0 +1,99 @@
+{
+  "recorded_at": "2026-10-30T00:27:54.423817+00:00",
+  "repository": "paulpai0412/teams-transcription",
+  "branch": "fix/qa-probe-audio-rx-evidence",
+  "base_main": "580a7badaa66c02fbff99ffff312c398f859d0d0",
+  "scope": "Existing synthetic QA probe acceptance correctness; no production media/summary or workflow permission changes",
+  "files_sha256": {
+    "Dockerfile": "18bd21c0bd2e3c9391bb18c80f3019b0992a9e76e23a6fe3b89cd1c3a47d27a6",
+    "docs/INCREMENTAL-QA-CONTEXT.md": "bdf3726e842a000fe7277078a92478b78389fcb75352e7fbc4b7bdd3aca9d4a3",
+    "teams_transcription/qa_probe.py": "80f8d9e3ba50d197c42d24572e25ec2630324778d60a1a24ae4fff9f3ffe6f52",
+    "teams_transcription/qa_rx_evidence.py": "ba416b582e64d83e3f7986b09ec95a643a89fc81b138cd457aacdefc3dda91c3",
+    "tests/test_qa_probe.py": "2117b39cdb0583024837a84eefbb56098e5b668eab12aca400b4cfc00af2205d",
+    "tests/test_qa_receiver_projection.py": "47ae72fdd32e5a4095daea44ab18e41a835fa3b6647f0902b4f22b93c2697561",
+    "tools/ci_contracts.py": "3975c41d1ad52f3d6e9393dd05bcb8396c26c2d40d1648a0c2b0dae3fe1d2d1f",
+    "tools/compose_smoke.py": "855634e714f339b4eeeefe2add680be3451ac901a411523994bde7bc9d5833a2"
+  },
+  "red_green": [
+    "Public run_probe returned accepted=true with text/outbound RTP only before fix; same case now rejected",
+    "Nonfinite derived RMS from tiny finite duration broke private JSON output; now returns fixed unavailable verdict without nonfinite values",
+    "First legitimate inbound SSRC was initially rejected; proven zero inbound/source baseline now permits first packets, existing SSRC changes still reject",
+    "Aggregate244 initially hit existing cleanup harness120ms assertion including synchronous setup I/O; synchronize on existing RPC-entry event, preserve work .03/cleanup .05/120ms bound and all resource assertions; both targeted deadline tests and final aggregate passed"
+  ],
+  "validation": {
+    "focused_tests": 92,
+    "focused_failures": 0,
+    "focused_errors": 0,
+    "aggregate": {
+      "scope": "controlled offline subset",
+      "suites": [
+        "test_assistant_store",
+        "test_assistant_daemon",
+        "test_calendar_client",
+        "test_glossary_context",
+        "test_admin_web",
+        "test_sqlite_voice_context",
+        "test_sqlite_only_store",
+        "test_rx_contract",
+        "test_prefetch_codex_npm",
+        "test_staging_control",
+        "test_capture_cleanup_review",
+        "test_release_gate",
+        "test_diagnostic_projection",
+        "test_codex_auth",
+        "test_provider_state",
+        "test_workflow_triggers",
+        "test_staging_docker_diagnostics",
+        "test_staging_compose",
+        "test_first_deploy_recovery",
+        "test_qa_probe.ProbeTests",
+        "test_qa_receiver_projection"
+      ],
+      "tests": 244,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "success": true,
+      "teams_or_model_called": false,
+      "audio_e2e_tested": false
+    },
+    "node_adapter_tests": 3,
+    "independent_cleanup_receipt_test": 1,
+    "actionlint": "v1.7.7 passed",
+    "py_compile": "passed",
+    "diff_check": "passed",
+    "known_secret_pattern_scan": "passed"
+  },
+  "browser_validation": {
+    "attempted_tests": 3,
+    "errors": 3,
+    "reason": "Executor Chromium launch aborted because /usr/lib/chromium/chrome-sandbox owner65534 (mode4755) is not root. Reconnected environment has same metadata; no sandbox bypass or permission repair attempted.",
+    "actual_webrtc_rx_tested": false,
+    "node_adapter_fixture_is_not_webrtc": true
+  },
+  "acceptance": {
+    "schema_version": 2,
+    "per_answer": "Guarded same receiver output-lease before/after counters. Require inbound packet/byte growth and actual noPLC decoded source packet/frame/duration/energy growth, RMS>=existingPCM16threshold8. Normal quiet completion; no prior-round cumulative reuse.",
+    "unknown_baseline": "Only zero inbound/source permits no SSRC before first packet; afterward require actual positive counters. Known SSRC changes, resets, malformed/nonfinite values reject.",
+    "cleanup": "Require stopped/ACK/closed/nativecleaned/reaped/no pending operation/zero live processes and pending close tasks.",
+    "privacy": "Only typed scalar projection; no raw exception/SDP/trackID/token in diagnostic snapshots. Fixed synthetic source/answers stay in existing0600 private evidence."
+  },
+  "image_dependency": {
+    "package": "espeak-ng declared in Dockerfile apt packages",
+    "ci_preflight": "Existing compose_smoke synthesizes both fixed clips in network-none disposable installed image before provider/account work",
+    "actual_new_image_built": false,
+    "installed_image_synthesis_check_executed_here": false
+  },
+  "reviews": {
+    "spec": "0 remaining actionable findings; source/first-packet contract reviewed,27 ProbeTests passed independently; final RPC-entry synchronization reviewed and2 deadline tests passed independently.",
+    "standards": "0 remaining confirmed findings; source/first-packet contract reviewed; final synchronization/projection/receipt changes independently reviewed and6 targeted tests passed."
+  },
+  "operations": "Local source/tests/review and authorized branch delivery only; no PR/merge/build/dispatch/deploy/real OAuth/model/Teams/security changes",
+  "model_or_meeting_called": false,
+  "service_summary_restored": false,
+  "remaining": [
+    "Push fixed reviewed branch only; no PR currently authorized",
+    "Future approved Draft PR/merge and manual native ARM64 image build with actual synthesis/browser validation",
+    "Future approved new digest staging deployment then actual GPT Live RX/whole assistant audio acceptance; old c70250a image lacks this fix"
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "attempt_number": 15,
+  "activity_number": 16,
+  "test_input_kind": "Operator-spoken synthetic data explicitly labelled not a formal meeting decision",
+  "expected_codeword": "藍天",
+  "expected_amount": 12000,
+  "observed_at_utc": "2026-10-16T08:34:26.625862+00:00",
+  "source_version": 39,
+  "actual_sqlite_codeword_found": true,
+  "actual_sqlite_amount_across_ordered_fragments_found": true,
+  "source_quality": "unfinalized application segments",
+  "provider_final_count": 0,
+  "production_scoped_tool_readonly_probe": {
+    "model_called": false,
+    "available": true,
+    "version": 39,
+    "completeness": "partial",
+    "truncated": true,
+    "selected_ordered_context_contains_codeword": true,
+    "selected_ordered_context_contains_amount": true,
+    "source_locators_preserved": true,
+    "limitation": "The amount spans source fragments. Checking the serialized JSON as one plain sentence gave an initial false-negative; checking the selected text in original record order found the full value. No source concatenation, provenance or production code was changed."
+  },
+  "B_native_tool_calls_before_question": 3,
+  "B_state_before_question": "sleeping",
+  "B_error_code": null,
+  "runtime_failure": null,
+  "real_B_answer": "pending operator question and hearing report",
+  "service_restarted": false,
+  "meeting_stopped_or_rejoined": false
+}

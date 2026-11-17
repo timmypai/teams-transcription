@@ -1,0 +1,219 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-18",
+  "scope": "Remove arbitrary application gates without replacing them with larger quotas",
+  "removed": [
+    "16k selection budget,32k constructor ceiling,32-character row accounting,4k excerpt crop",
+    "48KiB history freeze,64KiB creation envelope,16KiB history initialItems crop",
+    "16KiB approved glossary aggregate crop and aggregate validator quota",
+    "2000-character question and downstream text rejection",
+    "implicit45-second answer deadline and60-second explicit-duration ceiling",
+    "15-second prepare wrapper and permanent B disable for ordinary reader/send I/O failure",
+    "default3600-second meeting duration and14400-second configuration ceiling",
+    "51-second aggregate summary generation timeout",
+    "false rejection of explicit egress deny-all [] in doctor and synthetic QA"
+  ],
+  "preserved": [
+    "recording/speaking authorization and wake contract",
+    "meeting/thread/document/sender/source version and SHA scope, transaction lease fences",
+    "authorized occurrence end, explicit operator duration, cancellation and stop",
+    "finite PCM/RX queues,4,320,000-byte backlog, pacing and overflow failure",
+    "500-byte UTF8 SDK chunks, single RESULT_COMPLETE, atomic commit",
+    "bounded startup/RPC/cleanup, unknown cleanup interlock",
+    "summary512KiB response and2MiB aggregate resource safeguards"
+  ],
+  "media_cutover": {
+    "formal_native_B_source": "single existing mixed A target destination stream",
+    "sample_rate": 24000,
+    "A_python_pcm_push": false,
+    "source_document_generations": "host-issued opaque token with real calibration",
+    "late_source_reuses_mix": true,
+    "observation_ready_separate_from_A_ready": true,
+    "authorization_rechecked_after_scope_await": true,
+    "native_report_ready_uses_A_evidence": true,
+    "admitted_native_document_start_is_idempotent": true,
+    "no_setup_deadline_increased": true
+  },
+  "regression": {
+    "tests_run": 980,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0,
+    "elapsed_seconds": 253.033,
+    "excluded_missing_original_sources": [
+      "test_bridge_integration.py",
+      "test_media_bridge.py"
+    ],
+    "full_original_discovery_verified": false,
+    "framework": "stdlib unittest; discovery excludes only the two known missing-source suites"
+  },
+  "negative_before_positive": {
+    "long_question_before": "question discarded; poll returned None",
+    "duplicate_summary_lifecycle_before": "noise kept stalled turn alive",
+    "recording_revocation_before": "one pending PCM packet delivered after authorization revoked during await",
+    "native_ready_before": "A waveform present but returned report.ready false",
+    "integration_before": "rx_start_failed timeout at browser receiver_scan: B calibration retry re-started already-admitted A source with nearly exhausted setup deadline",
+    "native_first_probe": {
+      "probe_failed": true,
+      "reason": "Observer was replaced on native._pcm after constructor had bound peer.on_pcm; PCM counter was not observing the actual callback",
+      "fresh_sqlite_reads": 1,
+      "successful_context_chunks": 113,
+      "canonical_no_data_then_supported_tail": true,
+      "model_semantic_fix_claimed": false,
+      "canonical_observation_sha256": "565ece800ceb9cd27e7b8bca708faa8d32b9ea7a24e915c80d117fd341540ae3"
+    }
+  },
+  "controlled_media_graph": {
+    "host": "controlled_node_graph_not_browser",
+    "assertions": 8508,
+    "sustained_frames": 5761024,
+    "synthetic_audio_time_exceeds_seconds": 120,
+    "models_called": 0,
+    "backlog_not_increased": true
+  },
+  "mixed_capture_smoke": {
+    "accepted": true,
+    "source_documents": 2,
+    "late_source_mixed": true,
+    "observation_generations": 1,
+    "observed_frames": 96256,
+    "observed_packets": 47,
+    "frame_gaps": 0,
+    "measured_frames_per_wall_second": 23881.45,
+    "tone_amplitudes": [
+      0.20174708519240678,
+      0.1007442981837329
+    ],
+    "one_active_source_prevents_false_quiet": true,
+    "question_after_both_sources_quiet": true,
+    "application_questions": 1,
+    "A_python_pcm_push": false,
+    "observation_ready": true,
+    "ingress_stopped": true,
+    "browser_closed": true,
+    "model_connection": false,
+    "real_teams_verified": false
+  },
+  "native_smoke": {
+    "host_contract_passed": true,
+    "contradictory_no_data_observed": false,
+    "requested_model": "gpt-live-1-codex",
+    "fresh_sqlite_reads": 1,
+    "source_records": 3,
+    "source_characters": 17320,
+    "payload_bytes": 55733,
+    "all_sources_intact": true,
+    "selected_refs": 3,
+    "max_chunk_bytes": 500,
+    "result_complete_count": 1,
+    "valid_activity_frames": 186368,
+    "default_deadline_none_observed": true,
+    "supported_answer_terms_present": true,
+    "scoped_assistant_sha256": "d4db03aa1bd3ec4b8ccb47f6d91437e75416dc1174d26335974aaa17771fb7b8",
+    "muted_drain": {
+      "status": "muted",
+      "truncated": false,
+      "reason": "output_disabled"
+    },
+    "elapsed_seconds": 54.422,
+    "real_teams_verified": false,
+    "remote_audibility_verified": false,
+    "cleanup": {
+      "status": "cleaned",
+      "stop_status": "stopped",
+      "stop_ack_received": true,
+      "stop_closed_received": true,
+      "native_cleanup_status": "cleaned",
+      "owned_processes": 2,
+      "live_processes": 0,
+      "reaped": true,
+      "pending_close_tasks": 0,
+      "pending_operation": false
+    },
+    "probe_predicate_passed": true,
+    "repeated_filler_observed": true,
+    "overall_speech_quality_accepted": false,
+    "model_consumption_ack_verified": false
+  },
+  "summary_smoke": {
+    "accepted": true,
+    "actual_model": "gpt-6.1-sol",
+    "provider": "codex",
+    "injected_pre_generation_delay_seconds": 95,
+    "original_lease_seconds": 90,
+    "heartbeat_count": 4,
+    "elapsed_seconds": 104.665,
+    "published_after_original_lease_expiry": true,
+    "summary_revision": 1,
+    "source_version": 3,
+    "source_sha256": "995ec9fd7f79fa52d1cb7b27d5a50ab91cbfd98723fc35183502de2c0944a699",
+    "source_entries": 1,
+    "source_preserved": true,
+    "active_meeting": false,
+    "scheduler_paused": true,
+    "real_teams_verified": false
+  },
+  "reviews": {
+    "answer_scope": "read-only reviewer: no actionable findings in assigned scope",
+    "content_runtime": "read-only reviewer found duplicate/unknown item lifecycle could renew idle timeout; fixed and failing-before/passing-after regression retained",
+    "audio_integration": "parent reproduced and fixed post-await authorization, ready-report mismatch and repeated native start near setup deadline"
+  },
+  "runtime": {
+    "service": "calendar-no-arbitrary-gates31",
+    "pid": 882051,
+    "started": true,
+    "active_session_id": null,
+    "capture_interlock": false,
+    "last_error": null,
+    "scheduler_paused": true,
+    "media_flags": [
+      false,
+      false,
+      false,
+      false
+    ],
+    "healthcheck_after_browser_close_exit": 0,
+    "doctor_local_ready": true,
+    "doctor_empty_egress_policy_accepted": true,
+    "old_services_normal_exit_0": [
+      29,
+      30
+    ],
+    "private_config_changed": false,
+    "new_real_meeting_joined": false,
+    "source_committed": false,
+    "source_pushed": false,
+    "docker_rebuilt": false
+  },
+  "limitations": [
+    "SQLite source rows in Native smoke are synthetic fixtures, not actual A transcription acceptance",
+    "A quiet/ASR framing is an application heuristic, not provider user-final",
+    "Native final probe returned supported task, but extra preface and repeated fillers remain; first contradictory no-data observation preserved",
+    "send-return and marker do not establish model consumption of every byte",
+    "Muted Native output and local RTC do not establish Teams admission or remote audibility",
+    "Controlled120-second media audio-time is not a120-second real meeting or long-soak model acceptance",
+    "Historical already-truncated frozen snapshots remain truthful and are not silently rewritten"
+  ],
+  "source_sha256": {
+    "teams_transcription/assistant_config.py": "207af5705a8c55a7a57ef82acccfea833ce77722d5de1cd85c9918e81dfd9528",
+    "teams_transcription/assistant_store.py": "457f5a6904b2bb5601c3e195f8c62e0d13cb4b8522437bd0d229e49aba8fe276",
+    "teams_transcription/b_audio.py": "fce361041101d53b58cf0632425f7383b76ba27cf1c5f3c92170aa074af0289f",
+    "teams_transcription/b_context.py": "a44ca30ceb752854f05822449b4bef71278443834ecc535b4c1153e471fe22f0",
+    "teams_transcription/b_live.py": "494035034b63ba3b4d2423d80b172f4c7e9c94ed3f9c4960083f800dad329637",
+    "teams_transcription/b_media_profile.py": "4044e515fedab8d07d93c609f9e25f32268475f0f8f0a318d80432ffe67db519",
+    "teams_transcription/b_native.py": "dfaa1789f628b4044f52be97d3bc974327149d92e1e7d5d1783108d80a6d8a80",
+    "teams_transcription/b_question.py": "12ceb125cd01d7a6a488c8ebbdbfd4daa8125813b524bf1f7e5f1090bf0f2318",
+    "teams_transcription/b_response.py": "b14c699bed2f46c34ca508a2cbfcab306f6b59d33c3f3a5b17c649b90972bfad",
+    "teams_transcription/browser.py": "0ba7624e7f526b0a81a415a3e49e92937754c045340937e302185f5dde047803",
+    "teams_transcription/daemon.py": "ad1b83e2ddf9d877d40ec134ea123cef45f4bec1e2a4a633fa5b8bac2c40eef7",
+    "teams_transcription/diagnostics.py": "096d04fec6e7b937d8ac1f425fd16a0dc4f74ff0edd7dbb0b912c30065b3b153",
+    "teams_transcription/glossary_context.py": "8f483cf892f20a892d951789bde20ae47d66cb216be8fcf82851124bde336190",
+    "teams_transcription/history_context.py": "2d91578ea21faf601dfc3ac0a46b5ed8c6ec3f9adb582c43a9691617a82d5b04",
+    "teams_transcription/meeting_store.py": "d5a1e3a36d9cf343c4c058071cbc2d6b3cd8145b83f4c60bde7ee0815c829ef3",
+    "teams_transcription/native_media.py": "ba6910286dcb98319475ec50a22dc2a9d5cb7816fe855810815f44fe39d840ab",
+    "teams_transcription/qa_probe.py": "89ff7a9f3eb5d97552f24b2498cd89e1b5a9acec894516e65766c528a667de9e",
+    "teams_transcription/rx_audio_stats.py": "35ae98306067f582ea2776d854cff22e2b85ead8853d59771125acbbb0dabcc2",
+    "teams_transcription/summary.py": "5856f5d0c742562c83638648a061f9b3be7ea5aa62b1a4f46f166289ee8419f3",
+    "teams_transcription/worker.py": "a9ff3269c5c6b27b9a4f27cf7a96b83f1a5f746a6fe21896906e876783078f99"
+  }
+}

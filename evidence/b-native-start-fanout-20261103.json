@@ -1,0 +1,136 @@
+{
+  "date": "2026-11-03",
+  "base_source_sha": "45caaed44dbb40be73308e6a00056659223ae6fa",
+  "branch": "fix/b-native-start-20261103",
+  "scope": "Local implementation and synthetic verification; no Oracle access, Join, provider request, deployment, auth or security change",
+  "host_evidence": {
+    "live_run_id": 41646981943,
+    "A_test_utterance_recognized": true,
+    "B_startup_phase": "ready",
+    "B_startup_error": {
+      "phase": "native_start",
+      "exception_type": "RuntimeError"
+    },
+    "B_state": "unavailable",
+    "B_error_code": "response_start_failed",
+    "response_ready_events": 0,
+    "first_policy_reason": "evaluation_timeout",
+    "first_policy_elapsed_ms": 5593,
+    "nominal_policy_timeout_seconds": 2,
+    "output_muted": true,
+    "B_tx_packets": 0,
+    "exception_message_or_stack": "not captured by safe projection"
+  },
+  "confirmed_failure_path": "A policy timeout latched before B initialization completed. After native reached ready, the controller rejected readiness on its faulted policy and mislabelled that failure native_start. Host tuple matches the local actual-controller/native boundary repro.",
+  "not_established": "Why Chromium frame.evaluate timed out; initialization callback pressure is a mitigated risk, not proven sole browser timeout cause.",
+  "changes": [
+    "B-only optional native PCM callbacks wait for initialized controller plus fresh policy check; startup packets are dropped, not queued/replayed",
+    "A native track unchanged; PCM-required/WAV consumers do not get this gate",
+    "Recheck host consumer admission at queued lock and after every await",
+    "Faulted normal checks/authorization return false before and after policy lock; preserve explicit invalid-binding empty-binding revoke",
+    "Track/cancel/await owned startup on Stop; close admission immediately without suppressing running output-revoke path",
+    "Name post-native readiness failure input_policy_check and retain first failure phase in status",
+    "Do not repeat startup cancellation; shield owned startup cleanup from cancellation of an external Stop waiter"
+  ],
+  "red_before_green": [
+    {
+      "test": "post-native policy timeout",
+      "before": "native_start/RuntimeError instead of input_policy_check"
+    },
+    {
+      "test": "faulted queued checks",
+      "before": "7 browser evaluations instead of1"
+    },
+    {
+      "test": "bound startup B fanout",
+      "before": "10 startup offers instead of0"
+    },
+    {
+      "test": "fresh post-init policy barrier",
+      "before": "no second fresh check"
+    },
+    {
+      "test": "Stop during fresh check",
+      "before": "startup resumed after Stop"
+    },
+    {
+      "test": "concurrent Stop and canceled Stop waiter",
+      "before": "startup task cancellation counts 2 and3 rather than1",
+      "after": "single cancellation, uninterrupted owned cleanup, policy released and no response_ready"
+    }
+  ],
+  "validation": {
+    "focused_tests": 47,
+    "focused_success": true,
+    "expanded_offline_tests": 149,
+    "expanded_offline_seconds": 18.371,
+    "expanded_offline_failures": 0,
+    "expanded_offline_errors": 0,
+    "expanded_offline_skips": 0,
+    "browser": {
+      "source_sha": "aafd3953c8faf34dbd5331078b8a537d3abde1c3",
+      "image": "sha256:c397b661c65a3c689e43b92b1a3656bfd6fa6163182d7f0e117803fdc53928d0",
+      "internal_full": {
+        "tests": 15,
+        "passed": 6,
+        "failures": 5,
+        "errors": 4,
+        "skipped": 0,
+        "success": false
+      },
+      "internal_smoke": {
+        "tests": 1,
+        "success": true
+      },
+      "sandbox": "enabled; UID10001; readonly root; cap-drop ALL; no-new-privileges; repository seccomp",
+      "network": "owned Docker bridge with default route; local synthetic peers with no external ICE; configured proxy unchanged; no host network or managed policy changes",
+      "cleanup": "all owned containers and temporary networks cleaned",
+      "paired_baseline": "45caaed44dbb40be73308e6a00056659223ae6fa",
+      "paired_current": "aafd3953c8faf34dbd5331078b8a537d3abde1c3",
+      "paired_result": "Each of the two previously failing cases passes on both baseline45caa and currentaafd using owned routed bridge; same selected cases fail on both with internal-only bridge. Full current suite then passes15/15.",
+      "remaining_browser_unknown": "Local synthetic browser suite passed; original Oracle frame.evaluate timeout cause and actual remote voice recovery remain unverified.",
+      "stop_hardening_delta": "Final aafd395 guard/shield delta covered by149 pure tests and15 actual-browser/runtime tests.",
+      "evidence_directory": "evidence/b-native-start-browser-20261103",
+      "routed_full": {
+        "tests": 15,
+        "passed": 15,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "success": true,
+        "runner_seconds": 44.902,
+        "harness_seconds": 45.129
+      },
+      "prior_internal_network": "6 passed,5 failures,4 errors; full negative receipt retained alongside network-none attempt",
+      "tooling_image_scope": "Cached browser/dependency image with tracked source/tests overlaid through stdin into private tmpfs; not a newly built ARM release image or installed-package acceptance."
+    },
+    "initial_host_browser_attempt": "98 tests,7 errors from existing misconfigured SUID sandbox helper; no sandbox bypass or helper change",
+    "initial_expanded_attempt": "148 tests,6 failures due two mocked controllers missing new capture_ready interface; fixtures updated without weakening assertions",
+    "syntax_and_diff_check": "passed"
+  },
+  "preserved": [
+    "default-muted output; no auto-unmute",
+    "2sec check timeout",
+    "per-packet policy after readiness and per-unmute sink authorization",
+    "ownership/source/document/clock fences",
+    "first-failure latching",
+    "A input and stored history",
+    "canonical budget, cleanup interlocks and canceled summary service"
+  ],
+  "remaining": [
+    "Chromium policy frame.evaluate timeout cause in the actual Oracle run remains unknown; synthetic success does not establish root cause or remote audio recovery",
+    "Native Codex PR review is required before merge; no new remote branch/PR/build/deployment was performed",
+    "New ARM build, Oracle update and real-audio acceptance require corresponding authorization; not performed"
+  ],
+  "oracle_meeting_controls_executed": false,
+  "implementation_source_sha": "aafd3953c8faf34dbd5331078b8a537d3abde1c3",
+  "reviews": {
+    "type": "Independent local advisory source/spec reviews; not native Codex PR approval",
+    "reviewed_initial_source": "085b9bb406339c3ab98988e12580019eeebd6685",
+    "final_delta_source": "aafd3953c8faf34dbd5331078b8a537d3abde1c3",
+    "standards_safety": "0 material findings on initial implementation and final guard/shield regression delta",
+    "spec": "0 confirmed material findings on initial implementation and final delta",
+    "reviewers_ran_live_operations": false
+  },
+  "delivery_status": "Local implementation, independent advisory reviews,149 pure tests and15 sandboxed actual-browser/runtime synthetic tests complete; not released"
+}

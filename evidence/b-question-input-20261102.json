@@ -1,0 +1,227 @@
+{
+  "recorded_at_utc": "2026-11-02T09:16:54.974154+00:00",
+  "base_commit": "5eae43e24fe3b572d2a2d7ca44c2d78298ef59ce",
+  "scope": "canonical B user transcript routing and bounded diagnostics; no wake/PCM threshold changes",
+  "source_file_sha256": {
+    "teams_transcription/b_native.py": "289698a4bca4b9304c3391370c9ccde1888586dcd3ca6e1fb0fb198ab9c0738e",
+    "teams_transcription/b_question.py": "7233f3fc5613d831f98f57f7e2eb2fb8670330f1d75a167a71a155ed32f0c21b",
+    "teams_transcription/b_question_input.py": "c82095b2f02efe865d7a62a8aa2533da2ff995388d0c9ed2e015db147d4ab494",
+    "teams_transcription/diagnostics.py": "4ebe65f1e20746b2fd82c58d2a6bb4ff23bc46cc5f477a816a9e5cf8b32dca90",
+    "tests/test_question_input_diagnostics.py": "31ed520e809026a196770ed1ccce07cb698d4a3a212f0aa7af0f208c13cbc3e9",
+    "tests/test_b_live.py": "83eeed737d4163bf84a576eee09edcffc88572b6ca2265be2e3f3859c73c2e2a",
+    "tools/ci_contracts.py": "850860bc8b60f868f3b6f9ad0351743e5b416da646f5e36a90ef99c2dd11ff7e"
+  },
+  "controlled_offline": {
+    "scope": "controlled offline subset",
+    "suites": [
+      "test_assistant_store",
+      "test_assistant_daemon",
+      "test_calendar_client",
+      "test_glossary_context",
+      "test_admin_web",
+      "test_sqlite_voice_context",
+      "test_sqlite_only_store",
+      "test_b_no_plc_startup",
+      "test_rx_contract",
+      "test_prefetch_codex_npm",
+      "test_no_plc_setup_failure",
+      "test_render_history",
+      "test_history_output_consumers",
+      "test_question_input_diagnostics",
+      "test_b_document_policy",
+      "test_staging_control",
+      "test_capture_cleanup_review",
+      "test_teams_recovery_reader",
+      "test_release_gate",
+      "test_diagnostic_projection",
+      "test_codex_auth",
+      "test_provider_state",
+      "test_workflow_triggers",
+      "test_pr_policy",
+      "test_pr_policy_github",
+      "test_pr_policy_workflow",
+      "test_staging_docker_diagnostics",
+      "test_staging_compose",
+      "test_first_deploy_recovery",
+      "test_qa_probe.ProbeTests",
+      "test_qa_receiver_projection",
+      "test_qa_audio_observer",
+      "test_qa_content",
+      "test_qa_candidate_versions",
+      "test_cloud_qa_semantic.SemanticRuntimeTests",
+      "test_cloud_qa_startup.StartupRuntimeTests",
+      "test_teams_acceptance",
+      "test_teams_acceptance_host",
+      "test_teams_local_control.LocalControlTests",
+      "test_teams_target_prepare.TargetPrepareTests",
+      "test_teams_preparation_host.HostPreparationTests",
+      "test_teams_immediate_recovery.ImmediateRecoveryTests",
+      "test_teams_immediate_chain.ImmediateChainTests",
+      "test_native_output_attach_diagnostics",
+      "test_cloud_qa_contract",
+      "test_cloud_qa_bridge.CloudQABridgeTests",
+      "test_cloud_qa_isolated.CloudQAIsolatedTests",
+      "test_turn_lifecycle_evidence.TurnLifecycleEvidenceTests",
+      "test_speech_completion_snapshot.SpeechCompletionSnapshotTests",
+      "test_incremental_minutes_context.ContextTests.test_wire_instruction_distinguishes_verbatim_quote_and_normal_answers",
+      "test_native_incremental_context.NativeSnapshotContextTests.test_delivery_receipt_hashes_identify_actual_current_payload_without_content",
+      "test_b_native.NativeLiveTests.test_live_prompt_distinguishes_verbatim_format_from_normal_current_fact_answers",
+      "test_b_native.NativeLiveTests.test_three_physical_questions_in_one_provider_turn_query_current_sqlite_each_time"
+    ],
+    "tests": 528,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "success": true,
+    "teams_or_model_called": false,
+    "audio_e2e_tested": false
+  },
+  "targeted_tests": {
+    "tests": 21,
+    "failures": 0,
+    "errors": 0
+  },
+  "expanded_regression": {
+    "tests": 142,
+    "passed": 134,
+    "failures": 7,
+    "errors": 1,
+    "blocked_suite": "test_response_runtime",
+    "failure_phase": "outer browser_open / TargetClosedError; no candidate router reached; not claimed passed"
+  },
+  "installed_schema_validation": {
+    "version": "codex-cli 0.159.0-alpha.3",
+    "validated_shape_count": 11,
+    "validated_shapes": [
+      "ThreadRealtimeStartParams",
+      "ThreadRealtimeAppendSpeechParams",
+      "ThreadRealtimeOutputAudioDeltaNotification",
+      "ThreadRealtimeStopParams",
+      "ThreadRealtimeTranscriptDeltaNotification",
+      "ThreadRealtimeTranscriptDoneNotification",
+      "ThreadRealtimeStartedNotification",
+      "ThreadRealtimeItemStartedNotification",
+      "ThreadRealtimeItemTranscriptDeltaNotification",
+      "ThreadRealtimeItemCompletedNotification",
+      "ThreadRealtimeItemAddedNotification"
+    ],
+    "schema_bundle_sha256": "cc6b74b0597a5b7e6839a4518a6382533e30f538f97f01c27b6e06628fb52be7",
+    "model_called": false,
+    "sandbox_relaxed": false,
+    "architecture": "amd64",
+    "schema_source_image": "sha256:08020a8a9da4dde8e2495cd57868e575dd2ad722de29de910c32c2a3be000076"
+  },
+  "reviews": {
+    "spec": "two P2 findings fixed with regressions; final independent review no confirmed defect",
+    "standards": "final independent review no confirmed defect; not native GitHub review"
+  },
+  "retained_failures": [
+    {
+      "kind": "original PR37 baseline",
+      "tests": 2,
+      "failures": 1,
+      "errors": 1,
+      "meaning": "missing framing projection and missing canonical admission"
+    },
+    {
+      "kind": "intermediate review regressions",
+      "failures": 2,
+      "meaning": "stale-first session accepted; invalid flat delta selected fallback; both fixed"
+    },
+    {
+      "kind": "test synchronization",
+      "test": "test_official_final_only_canonical_delta_waits_for_pcm_quiet_then_queries",
+      "assertion": "reads [] vs expected one after admitted count",
+      "fix": "wait for answering consumer state instead of admission counter; no time limit/assertion weakened"
+    },
+    {
+      "kind": "schema fixture",
+      "error": "Started notification example missing required version",
+      "fix": "fixture and runtime require v3; all11 installed shapes validated"
+    }
+  ],
+  "WSL_comparison": {
+    "human_success": [
+      {
+        "reference": "docs/HANDOFF.md:61; evidence/RESULTS.md:138",
+        "observed": "operator confirmed wake response and no response without wake",
+        "controller_evidence": "provider handoff admission; not a direct proof of current host-question path",
+        "exact_source_commit": null
+      },
+      {
+        "reference": "docs/HANDOFF.md:110; evidence/RESULTS.md:671",
+        "observed": "Oct28 positive hearing report and normal operator Stop/cleanup",
+        "image_parent_verified": "a22d154c...3252",
+        "revision_label_present_parent_verified": false,
+        "exact_source_commit": null
+      }
+    ],
+    "newer_wsl_no_plc": {
+      "reference": "evidence/no-plc-deployment-20261029.json",
+      "image": "sha256:5577e099484d6d01fb85551f571d69cc39cc596a2c4de1d198c6db71d7d64a07",
+      "source_match_commit": "bf0a108237608e6ee5cea3e93e08e9b3105f38ad",
+      "installed_fixture_tests": 11,
+      "human_remote_hearing_verified": false,
+      "chromium": "155.0.8059.79",
+      "network": "host (same as existing deployment)",
+      "architecture": "amd64 (parent-relayed host readback)",
+      "startup_parent_verified": "python /opt/meeting/entrypoint.py serve --config /data/config/runtime.yml"
+    },
+    "controlled_native_success": {
+      "reference": "evidence/native-host-questions-final-20261017.json",
+      "model": "gpt-live-1-codex",
+      "codex_version": "0.159.0-alpha.3",
+      "questions_completed": 13,
+      "input_transcript_added": 197,
+      "teams_joined": false,
+      "physical_input_output": false
+    },
+    "code_comparison": {
+      "same_methods_across_three_refs": {
+        "push_rx": true,
+        "_pump_rx": true,
+        "_poll_questions": true,
+        "start": true
+      },
+      "b_question_oct29_hash": "12ceb125cd01d7a6a488c8ebbdbfd4daa8125813b524bf1f7e5f1090bf0f2318",
+      "b_question_pr37_hash": "12ceb125cd01d7a6a488c8ebbdbfd4daa8125813b524bf1f7e5f1090bf0f2318",
+      "ASR_handler": "both Oct29 and PR37 accept only flat user delta; canonical user item delta omitted",
+      "wake_aliases": "runtime passes 小白小白 / xiaobai xiaobai; unchanged",
+      "quiet_seconds": 1.5,
+      "text_settle_seconds": 0.6
+    },
+    "oracle_pr37": {
+      "source_sha": "5eae43e24fe3b572d2a2d7ca44c2d78298ef59ce",
+      "build_run_id": 41395530685,
+      "image_digest": "sha256:6362a81ad465f846220ca624e5d142569d6bac07d2c618b157ff595a2fbf2f20",
+      "architecture": "ARM64",
+      "chromium": "156.0.8078.47",
+      "live_module_hash_readback": "not obtained; parent host transport disconnected before process creation; release identity verified separately"
+    },
+    "limits": [
+      "environment differences are not established causes",
+      "human-success image source hashes and same-run B event/framing timing still needed",
+      "do not equate Oct29 synthetic no-PLC tests with Oct28 human acceptance"
+    ]
+  },
+  "live_evidence_limits": {
+    "canonical_item_trace_from_actual_case": false,
+    "model_requests_added": 0,
+    "host_or_live_run_changed": false,
+    "last_parent_budget_used": 24,
+    "remaining": 26,
+    "new_ARM_image_built": false,
+    "native_github_review_completed": false
+  },
+  "primary_sources": [
+    "https://github.com/openai/codex/blob/3b01b36fa5eb96ba82a776bd3c2fc57f8969181f/codex-rs/core/src/session/mod.rs#L2522",
+    "https://github.com/openai/codex/blob/3b01b36fa5eb96ba82a776bd3c2fc57f8969181f/codex-rs/core/src/realtime_history.rs#L372",
+    "https://github.com/openai/codex/blob/3b01b36fa5eb96ba82a776bd3c2fc57f8969181f/codex-rs/app-server-protocol/src/protocol/common.rs#L2012",
+    "https://github.com/openai/codex/blob/3b01b36fa5eb96ba82a776bd3c2fc57f8969181f/codex-rs/core/src/realtime_conversation.rs#L1587"
+  ],
+  "raw_archive": {
+    "path": "evidence/b-question-input-raw-20261102.json.gz",
+    "sha256": "ea29457ffb9afc2af6d7f6430a72dd6fd3e043280b8017ed92bf4d8947876950",
+    "bytes": 22456
+  }
+}

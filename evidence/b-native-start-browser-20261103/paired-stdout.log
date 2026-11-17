@@ -1,0 +1,11 @@
+PAIR_LABEL baseline
+ORIGINS {"browser": "/tmp/comparison/baseline/teams_transcription/browser.py", "fixture": "/tmp/comparison/baseline/tests/test_worker_minutes.py"}
+NATIVE_CONNECT_FAILURE {"type": "RuntimeError", "fixed_reason": "native_media_setup_failed"}
+PAIR_RESULT {"tests": 2, "failures": 1, "errors": 1, "skipped": 0, "success": false}
+
+PAIR_LABEL current
+ORIGINS {"browser": "/tmp/comparison/current/teams_transcription/browser.py", "fixture": "/tmp/comparison/current/tests/test_worker_minutes.py"}
+NATIVE_CONNECT_FAILURE {"type": "RuntimeError", "fixed_reason": "native_media_setup_failed"}
+PAIR_RESULT {"tests": 2, "failures": 1, "errors": 1, "skipped": 0, "success": false}
+
+B_NATIVE_BROWSER_RESULT {"paired_results": [{"label": "baseline", "result": {"tests": 2, "failures": 1, "errors": 1, "skipped": 0, "success": false}}, {"label": "current", "result": {"tests": 2, "failures": 1, "errors": 1, "skipped": 0, "success": false}}], "synthetic_only": true, "uid": 10001, "success": false}

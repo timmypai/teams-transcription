@@ -1,0 +1,921 @@
+{
+  "kind": "application_owned_native_questions",
+  "recorded_at": "2026-10-17T12:07:06.164902+00:00",
+  "diagnosis": "native-completion-contract-isolation-20261017.json",
+  "authorization": "User explicitly chose application-owned question framing and fresh SQLite reads instead of Native-final/new-delegation prerequisites.",
+  "requested_model": "gpt-live-1-codex",
+  "codex_version": "0.159.0-alpha.3",
+  "same_approved_oauth_only": true,
+  "teams_joined": false,
+  "calendar_writes": 0,
+  "physical_input_output": false,
+  "production_daemon_restarted": false,
+  "container_image_rebuilt": false,
+  "transport_control": {
+    "passed": true,
+    "questions": 11,
+    "connected_seconds": 303.072,
+    "framing_source": "fixture completion plus real provider ASR deltas; transport-only control, not application-framing proof",
+    "stop_result": "stopped",
+    "cleanup": {
+      "local_A_media": true,
+      "local_receiver": true,
+      "capture": true,
+      "B": true,
+      "browser": true
+    }
+  },
+  "production_framing_smoke": {
+    "passed": true,
+    "same_thread_all_questions": true,
+    "input_path": "capture_fanout",
+    "A_media_consumer": "real local native RTC receiver; not an A model or injected transcript",
+    "connected_seconds": 274.527,
+    "no_wake": {
+      "tool_calls": 0,
+      "accepted_output_frames": 0,
+      "runtime_error": false
+    },
+    "context": {
+      "sent_bytes": 39057,
+      "total_limit_bytes": null,
+      "known_paragraphs": 4,
+      "source_version": 3,
+      "pending": false,
+      "model_consumption_verified": false,
+      "preparing": false,
+      "delivery_scope": "successful_host_send_returns_this_live_thread"
+    },
+    "question_receipts": {
+      "counts": {
+        "received": 11,
+        "admitted": 11,
+        "rejected": 0
+      },
+      "events": [
+        {
+          "outcome": "admitted",
+          "reason": null,
+          "received_seconds": 24.253174298995873,
+          "decision_seconds": 24.253229868001654
+        },
+        {
+          "outcome": "admitted",
+          "reason": null,
+          "received_seconds": 42.00936234499386,
+          "decision_seconds": 42.00943151199317
+        },
+        {
+          "outcome": "admitted",
+          "reason": null,
+          "received_seconds": 61.059964649990434,
+          "decision_seconds": 61.06000293699617
+        },
+        {
+          "outcome": "admitted",
+          "reason": null,
+          "received_seconds": 91.98951107799076,
+          "decision_seconds": 91.98956356299459
+        },
+        {
+          "outcome": "admitted",
+          "reason": null,
+          "received_seconds": 110.46520903399505,
+          "decision_seconds": 110.46524784699432
+        },
+        {
+          "outcome": "admitted",
+          "reason": null,
+          "received_seconds": 144.424881576997,
+          "decision_seconds": 144.42492349998793
+        },
+        {
+          "outcome": "admitted",
+          "reason": null,
+          "received_seconds": 174.33387112698983,
+          "decision_seconds": 174.33391988599033
+        },
+        {
+          "outcome": "admitted",
+          "reason": null,
+          "received_seconds": 192.40989612099656,
+          "decision_seconds": 192.40993623199756
+        },
+        {
+          "outcome": "admitted",
+          "reason": null,
+          "received_seconds": 222.4163224340009,
+          "decision_seconds": 222.41638201499882
+        },
+        {
+          "outcome": "admitted",
+          "reason": null,
+          "received_seconds": 237.19419370999094,
+          "decision_seconds": 237.1942366759904
+        },
+        {
+          "outcome": "admitted",
+          "reason": null,
+          "received_seconds": 255.3742502219975,
+          "decision_seconds": 255.3743098369887
+        }
+      ],
+      "event_limit": 64,
+      "count_limit": 2147483647,
+      "timing_basis": "host monotonic seconds relative to responder construction"
+    },
+    "raw_event_counts": {
+      "session.started": 1,
+      "input_transcript.added": 169,
+      "turn.created": 22,
+      "turn.delta": 635,
+      "session.usage.updated": 18,
+      "session.context.appended": 92,
+      "output_transcript.added": 488,
+      "turn.done": 22
+    },
+    "provider_delegation_events": 0,
+    "runtime_error": null,
+    "stop_result": "stopped",
+    "stop_ack_received": true,
+    "stop_closed_received": true,
+    "model_process_reaped": true,
+    "cleanup": {
+      "local_A_media": true,
+      "local_receiver": true,
+      "capture": true,
+      "B": true,
+      "browser": true
+    },
+    "questions": [
+      {
+        "number": 1,
+        "passed": true,
+        "keyword_fact_matches": {
+          "codeword": true,
+          "amount": true
+        },
+        "synthetic_assistant_text": "，我看本場紀錄。本場有說本次代號是「藍天」，預算一萬兩千元。",
+        "tool_calls": 1,
+        "reader_calls": 1,
+        "marker_sent": true,
+        "sent_bytes": 4618,
+        "source_stimulus": {
+          "source_completed": true,
+          "frames": 109286,
+          "audio_seconds": 4.553583333333333,
+          "context_elapsed": 4.767999999999999,
+          "wall_seconds": 5.288
+        },
+        "framing": {
+          "provenance": "application",
+          "provider_final": false,
+          "boundary": "pcm_quiet_and_stable_delta",
+          "activity_detector": "pcm_rms_heuristic",
+          "source_audio_verified": false,
+          "input_activity_rms_threshold": 256,
+          "silence_seconds": 1.5,
+          "text_settle_seconds": 0.6,
+          "capture_freshness_seconds": 0.25,
+          "capture_gap_tolerance_seconds": 0.02,
+          "capture_recent": true,
+          "observed_quiet_seconds": 1.5,
+          "heard_activity": false,
+          "overflow": false,
+          "followup_active": false,
+          "emitted_requests": 1,
+          "pending": {
+            "characters": 0,
+            "has_wake": false,
+            "has_question": false
+          }
+        },
+        "state": "sleeping",
+        "runtime_error": false,
+        "tool_deliveries": [
+          {
+            "question_number": 1,
+            "phase": "delivered",
+            "started_elapsed_ms": 24253,
+            "source_version": 2,
+            "available": true,
+            "selected_ref_count": 4,
+            "selected_record_indexes": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "selected_indexes_truncated": false,
+            "omitted_for_budget": false,
+            "payload_bytes": 4603,
+            "sent_bytes": 4618,
+            "marker_returned": true,
+            "model_consumption_verified": false
+          }
+        ]
+      },
+      {
+        "number": 2,
+        "passed": true,
+        "keyword_fact_matches": {
+          "delivery_day": true
+        },
+        "synthetic_assistant_text": "好，我確認上次的紀錄。上次會議決定週五交付。",
+        "tool_calls": 1,
+        "reader_calls": 1,
+        "marker_sent": true,
+        "sent_bytes": 3389,
+        "source_stimulus": {
+          "source_completed": true,
+          "frames": 105000,
+          "audio_seconds": 4.375,
+          "context_elapsed": 4.575999999999993,
+          "wall_seconds": 5.098
+        },
+        "framing": {
+          "provenance": "application",
+          "provider_final": false,
+          "boundary": "pcm_quiet_and_stable_delta",
+          "activity_detector": "pcm_rms_heuristic",
+          "source_audio_verified": false,
+          "input_activity_rms_threshold": 256,
+          "silence_seconds": 1.5,
+          "text_settle_seconds": 0.6,
+          "capture_freshness_seconds": 0.25,
+          "capture_gap_tolerance_seconds": 0.02,
+          "capture_recent": true,
+          "observed_quiet_seconds": 1.5,
+          "heard_activity": false,
+          "overflow": false,
+          "followup_active": false,
+          "emitted_requests": 2,
+          "pending": {
+            "characters": 0,
+            "has_wake": false,
+            "has_question": false
+          }
+        },
+        "state": "sleeping",
+        "runtime_error": false,
+        "tool_deliveries": [
+          {
+            "question_number": 2,
+            "phase": "delivered",
+            "started_elapsed_ms": 42009,
+            "source_version": 2,
+            "available": true,
+            "selected_ref_count": 4,
+            "selected_record_indexes": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "selected_indexes_truncated": false,
+            "omitted_for_budget": false,
+            "payload_bytes": 3374,
+            "sent_bytes": 3389,
+            "marker_returned": true,
+            "model_consumption_verified": false
+          }
+        ]
+      },
+      {
+        "number": 3,
+        "passed": true,
+        "keyword_fact_matches": {
+          "task_one": true,
+          "task_two": true,
+          "owner_one": true,
+          "owner_two": true,
+          "date_one": true,
+          "date_two": true
+        },
+        "synthetic_assistant_text": "好的，我照紀錄逐字唸出來：負責人測試負責人甲，日期是二零二六年十月二十二日，原文「核對星橋方案，並回覆測試窗口。」負責人測試負責人乙，日期是二零二六年十月二十三日，原文「整理測試清單，交由測試窗口複核。」",
+        "tool_calls": 1,
+        "reader_calls": 1,
+        "marker_sent": true,
+        "sent_bytes": 3432,
+        "source_stimulus": {
+          "source_completed": true,
+          "frames": 185263,
+          "audio_seconds": 7.719291666666667,
+          "context_elapsed": 7.9253333333333345,
+          "wall_seconds": 8.46
+        },
+        "framing": {
+          "provenance": "application",
+          "provider_final": false,
+          "boundary": "pcm_quiet_and_stable_delta",
+          "activity_detector": "pcm_rms_heuristic",
+          "source_audio_verified": false,
+          "input_activity_rms_threshold": 256,
+          "silence_seconds": 1.5,
+          "text_settle_seconds": 0.6,
+          "capture_freshness_seconds": 0.25,
+          "capture_gap_tolerance_seconds": 0.02,
+          "capture_recent": true,
+          "observed_quiet_seconds": 1.5,
+          "heard_activity": false,
+          "overflow": false,
+          "followup_active": false,
+          "emitted_requests": 3,
+          "pending": {
+            "characters": 0,
+            "has_wake": false,
+            "has_question": false
+          }
+        },
+        "state": "sleeping",
+        "runtime_error": false,
+        "tool_deliveries": [
+          {
+            "question_number": 3,
+            "phase": "delivered",
+            "started_elapsed_ms": 61060,
+            "source_version": 2,
+            "available": true,
+            "selected_ref_count": 4,
+            "selected_record_indexes": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "selected_indexes_truncated": false,
+            "omitted_for_budget": false,
+            "payload_bytes": 3417,
+            "sent_bytes": 3432,
+            "marker_returned": true,
+            "model_consumption_verified": false
+          }
+        ]
+      },
+      {
+        "number": 4,
+        "passed": true,
+        "keyword_fact_matches": {
+          "corrected_amount": true
+        },
+        "synthetic_assistant_text": "我看本場紀錄，更正後預算是一萬五千元。",
+        "tool_calls": 1,
+        "reader_calls": 1,
+        "marker_sent": true,
+        "sent_bytes": 3700,
+        "source_stimulus": {
+          "source_completed": true,
+          "frames": 108495,
+          "audio_seconds": 4.520625,
+          "context_elapsed": 4.730666666666664,
+          "wall_seconds": 5.251
+        },
+        "framing": {
+          "provenance": "application",
+          "provider_final": false,
+          "boundary": "pcm_quiet_and_stable_delta",
+          "activity_detector": "pcm_rms_heuristic",
+          "source_audio_verified": false,
+          "input_activity_rms_threshold": 256,
+          "silence_seconds": 1.5,
+          "text_settle_seconds": 0.6,
+          "capture_freshness_seconds": 0.25,
+          "capture_gap_tolerance_seconds": 0.02,
+          "capture_recent": true,
+          "observed_quiet_seconds": 1.5,
+          "heard_activity": false,
+          "overflow": false,
+          "followup_active": false,
+          "emitted_requests": 4,
+          "pending": {
+            "characters": 0,
+            "has_wake": false,
+            "has_question": false
+          }
+        },
+        "state": "sleeping",
+        "runtime_error": false,
+        "tool_deliveries": [
+          {
+            "question_number": 4,
+            "phase": "delivered",
+            "started_elapsed_ms": 91989,
+            "source_version": 3,
+            "available": true,
+            "selected_ref_count": 4,
+            "selected_record_indexes": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "selected_indexes_truncated": false,
+            "omitted_for_budget": false,
+            "payload_bytes": 3685,
+            "sent_bytes": 3700,
+            "marker_returned": true,
+            "model_consumption_verified": false
+          }
+        ]
+      },
+      {
+        "number": 5,
+        "passed": true,
+        "keyword_fact_matches": {
+          "task_one": true,
+          "task_two": true,
+          "owner_one": true,
+          "owner_two": true,
+          "date_one": true,
+          "date_two": true
+        },
+        "synthetic_assistant_text": "好的，我再照紀錄逐字唸出來：負責人測試負責人甲，日期是二零二六年十月二十二日，原文「核對星橋方案，並回覆測試窗口。」負責人測試負責人乙，日期是二零二六年十月二十三日，原文「整理測試清單，交由測試窗口複核。」",
+        "tool_calls": 1,
+        "reader_calls": 1,
+        "marker_sent": true,
+        "sent_bytes": 3435,
+        "source_stimulus": {
+          "source_completed": true,
+          "frames": 191418,
+          "audio_seconds": 7.97575,
+          "context_elapsed": 8.181333333333328,
+          "wall_seconds": 8.717
+        },
+        "framing": {
+          "provenance": "application",
+          "provider_final": false,
+          "boundary": "pcm_quiet_and_stable_delta",
+          "activity_detector": "pcm_rms_heuristic",
+          "source_audio_verified": false,
+          "input_activity_rms_threshold": 256,
+          "silence_seconds": 1.5,
+          "text_settle_seconds": 0.6,
+          "capture_freshness_seconds": 0.25,
+          "capture_gap_tolerance_seconds": 0.02,
+          "capture_recent": true,
+          "observed_quiet_seconds": 1.5,
+          "heard_activity": false,
+          "overflow": false,
+          "followup_active": false,
+          "emitted_requests": 5,
+          "pending": {
+            "characters": 0,
+            "has_wake": false,
+            "has_question": false
+          }
+        },
+        "state": "sleeping",
+        "runtime_error": false,
+        "tool_deliveries": [
+          {
+            "question_number": 5,
+            "phase": "delivered",
+            "started_elapsed_ms": 110465,
+            "source_version": 3,
+            "available": true,
+            "selected_ref_count": 4,
+            "selected_record_indexes": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "selected_indexes_truncated": false,
+            "omitted_for_budget": false,
+            "payload_bytes": 3420,
+            "sent_bytes": 3435,
+            "marker_returned": true,
+            "model_consumption_verified": false
+          }
+        ]
+      },
+      {
+        "number": 6,
+        "passed": true,
+        "keyword_fact_matches": {
+          "task_one": true,
+          "task_two": true,
+          "owner_one": true,
+          "owner_two": true,
+          "date_one": true,
+          "date_two": true
+        },
+        "synthetic_assistant_text": "好的，我再照紀錄逐字唸出來：負責人測試負責人甲，日期是二零二六年十月二十二日，原文「核對星橋方案，並回覆測試窗口。」負責人測試負責人乙，日期是二零二六年十月二十三日，原文「整理測試清單，交由測試窗口複核。」",
+        "tool_calls": 1,
+        "reader_calls": 1,
+        "marker_sent": true,
+        "sent_bytes": 3435,
+        "source_stimulus": {
+          "source_completed": true,
+          "frames": 191418,
+          "audio_seconds": 7.97575,
+          "context_elapsed": 8.181333333333328,
+          "wall_seconds": 8.713
+        },
+        "framing": {
+          "provenance": "application",
+          "provider_final": false,
+          "boundary": "pcm_quiet_and_stable_delta",
+          "activity_detector": "pcm_rms_heuristic",
+          "source_audio_verified": false,
+          "input_activity_rms_threshold": 256,
+          "silence_seconds": 1.5,
+          "text_settle_seconds": 0.6,
+          "capture_freshness_seconds": 0.25,
+          "capture_gap_tolerance_seconds": 0.02,
+          "capture_recent": true,
+          "observed_quiet_seconds": 1.5,
+          "heard_activity": false,
+          "overflow": false,
+          "followup_active": false,
+          "emitted_requests": 6,
+          "pending": {
+            "characters": 0,
+            "has_wake": false,
+            "has_question": false
+          }
+        },
+        "state": "sleeping",
+        "runtime_error": false,
+        "tool_deliveries": [
+          {
+            "question_number": 6,
+            "phase": "delivered",
+            "started_elapsed_ms": 144424,
+            "source_version": 3,
+            "available": true,
+            "selected_ref_count": 4,
+            "selected_record_indexes": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "selected_indexes_truncated": false,
+            "omitted_for_budget": false,
+            "payload_bytes": 3420,
+            "sent_bytes": 3435,
+            "marker_returned": true,
+            "model_consumption_verified": false
+          }
+        ]
+      },
+      {
+        "number": 7,
+        "passed": true,
+        "keyword_fact_matches": {
+          "corrected_amount": true
+        },
+        "synthetic_assistant_text": "我看本場紀錄，更正後預算是一萬五千元。",
+        "tool_calls": 1,
+        "reader_calls": 1,
+        "marker_sent": true,
+        "sent_bytes": 3392,
+        "source_stimulus": {
+          "source_completed": true,
+          "frames": 108495,
+          "audio_seconds": 4.520625,
+          "context_elapsed": 4.73066666666665,
+          "wall_seconds": 5.25
+        },
+        "framing": {
+          "provenance": "application",
+          "provider_final": false,
+          "boundary": "pcm_quiet_and_stable_delta",
+          "activity_detector": "pcm_rms_heuristic",
+          "source_audio_verified": false,
+          "input_activity_rms_threshold": 256,
+          "silence_seconds": 1.5,
+          "text_settle_seconds": 0.6,
+          "capture_freshness_seconds": 0.25,
+          "capture_gap_tolerance_seconds": 0.02,
+          "capture_recent": true,
+          "observed_quiet_seconds": 1.5,
+          "heard_activity": false,
+          "overflow": false,
+          "followup_active": false,
+          "emitted_requests": 7,
+          "pending": {
+            "characters": 0,
+            "has_wake": false,
+            "has_question": false
+          }
+        },
+        "state": "sleeping",
+        "runtime_error": false,
+        "tool_deliveries": [
+          {
+            "question_number": 7,
+            "phase": "delivered",
+            "started_elapsed_ms": 174333,
+            "source_version": 3,
+            "available": true,
+            "selected_ref_count": 4,
+            "selected_record_indexes": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "selected_indexes_truncated": false,
+            "omitted_for_budget": false,
+            "payload_bytes": 3377,
+            "sent_bytes": 3392,
+            "marker_returned": true,
+            "model_consumption_verified": false
+          }
+        ]
+      },
+      {
+        "number": 8,
+        "passed": true,
+        "keyword_fact_matches": {
+          "task_one": true,
+          "task_two": true,
+          "owner_one": true,
+          "owner_two": true,
+          "date_one": true,
+          "date_two": true
+        },
+        "synthetic_assistant_text": "好的，我再照紀錄逐字唸出來：負責人測試負責人甲，日期是二零二六年十月二十二日，原文「核對星橋方案，並回覆測試窗口。」負責人測試負責人乙，日期是二零二六年十月二十三日，原文「整理測試清單，交由測試窗口複核。」",
+        "tool_calls": 1,
+        "reader_calls": 1,
+        "marker_sent": true,
+        "sent_bytes": 3435,
+        "source_stimulus": {
+          "source_completed": true,
+          "frames": 191418,
+          "audio_seconds": 7.97575,
+          "context_elapsed": 8.175999999999988,
+          "wall_seconds": 8.702
+        },
+        "framing": {
+          "provenance": "application",
+          "provider_final": false,
+          "boundary": "pcm_quiet_and_stable_delta",
+          "activity_detector": "pcm_rms_heuristic",
+          "source_audio_verified": false,
+          "input_activity_rms_threshold": 256,
+          "silence_seconds": 1.5,
+          "text_settle_seconds": 0.6,
+          "capture_freshness_seconds": 0.25,
+          "capture_gap_tolerance_seconds": 0.02,
+          "capture_recent": true,
+          "observed_quiet_seconds": 1.5,
+          "heard_activity": false,
+          "overflow": false,
+          "followup_active": false,
+          "emitted_requests": 8,
+          "pending": {
+            "characters": 0,
+            "has_wake": false,
+            "has_question": false
+          }
+        },
+        "state": "sleeping",
+        "runtime_error": false,
+        "tool_deliveries": [
+          {
+            "question_number": 8,
+            "phase": "delivered",
+            "started_elapsed_ms": 192409,
+            "source_version": 3,
+            "available": true,
+            "selected_ref_count": 4,
+            "selected_record_indexes": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "selected_indexes_truncated": false,
+            "omitted_for_budget": false,
+            "payload_bytes": 3420,
+            "sent_bytes": 3435,
+            "marker_returned": true,
+            "model_consumption_verified": false
+          }
+        ]
+      },
+      {
+        "number": 9,
+        "passed": true,
+        "keyword_fact_matches": {
+          "corrected_amount": true
+        },
+        "synthetic_assistant_text": "我看本場紀錄，更正後預算是一萬五千元。",
+        "tool_calls": 1,
+        "reader_calls": 1,
+        "marker_sent": true,
+        "sent_bytes": 3392,
+        "source_stimulus": {
+          "source_completed": true,
+          "frames": 108495,
+          "audio_seconds": 4.520625,
+          "context_elapsed": 4.74133333333333,
+          "wall_seconds": 5.256
+        },
+        "framing": {
+          "provenance": "application",
+          "provider_final": false,
+          "boundary": "pcm_quiet_and_stable_delta",
+          "activity_detector": "pcm_rms_heuristic",
+          "source_audio_verified": false,
+          "input_activity_rms_threshold": 256,
+          "silence_seconds": 1.5,
+          "text_settle_seconds": 0.6,
+          "capture_freshness_seconds": 0.25,
+          "capture_gap_tolerance_seconds": 0.02,
+          "capture_recent": true,
+          "observed_quiet_seconds": 1.5,
+          "heard_activity": false,
+          "overflow": false,
+          "followup_active": false,
+          "emitted_requests": 9,
+          "pending": {
+            "characters": 0,
+            "has_wake": false,
+            "has_question": false
+          }
+        },
+        "state": "sleeping",
+        "runtime_error": false,
+        "tool_deliveries": [
+          {
+            "question_number": 9,
+            "phase": "delivered",
+            "started_elapsed_ms": 222416,
+            "source_version": 3,
+            "available": true,
+            "selected_ref_count": 4,
+            "selected_record_indexes": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "selected_indexes_truncated": false,
+            "omitted_for_budget": false,
+            "payload_bytes": 3377,
+            "sent_bytes": 3392,
+            "marker_returned": true,
+            "model_consumption_verified": false
+          }
+        ]
+      },
+      {
+        "number": 10,
+        "passed": true,
+        "keyword_fact_matches": {
+          "corrected_amount": true
+        },
+        "synthetic_assistant_text": "我看本場紀錄，更正後預算是一萬五千元。",
+        "tool_calls": 1,
+        "reader_calls": 1,
+        "marker_sent": true,
+        "sent_bytes": 3393,
+        "source_stimulus": {
+          "source_completed": true,
+          "frames": 108495,
+          "audio_seconds": 4.520625,
+          "context_elapsed": 4.73066666666665,
+          "wall_seconds": 5.226
+        },
+        "framing": {
+          "provenance": "application",
+          "provider_final": false,
+          "boundary": "pcm_quiet_and_stable_delta",
+          "activity_detector": "pcm_rms_heuristic",
+          "source_audio_verified": false,
+          "input_activity_rms_threshold": 256,
+          "silence_seconds": 1.5,
+          "text_settle_seconds": 0.6,
+          "capture_freshness_seconds": 0.25,
+          "capture_gap_tolerance_seconds": 0.02,
+          "capture_recent": true,
+          "observed_quiet_seconds": 1.5,
+          "heard_activity": false,
+          "overflow": false,
+          "followup_active": false,
+          "emitted_requests": 10,
+          "pending": {
+            "characters": 0,
+            "has_wake": false,
+            "has_question": false
+          }
+        },
+        "state": "sleeping",
+        "runtime_error": false,
+        "tool_deliveries": [
+          {
+            "question_number": 10,
+            "phase": "delivered",
+            "started_elapsed_ms": 237194,
+            "source_version": 3,
+            "available": true,
+            "selected_ref_count": 4,
+            "selected_record_indexes": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "selected_indexes_truncated": false,
+            "omitted_for_budget": false,
+            "payload_bytes": 3378,
+            "sent_bytes": 3393,
+            "marker_returned": true,
+            "model_consumption_verified": false
+          }
+        ]
+      },
+      {
+        "number": 11,
+        "passed": true,
+        "keyword_fact_matches": {
+          "task_one": true,
+          "task_two": true,
+          "owner_one": true,
+          "owner_two": true,
+          "date_one": true,
+          "date_two": true
+        },
+        "synthetic_assistant_text": "好的，我再照紀錄逐字唸出來：負責人測試負責人甲，日期是二零二六年十月二十二日，原文「核對星橋方案，並回覆測試窗口。」負責人測試負責人乙，日期是二零二六年十月二十三日，原文「整理測試清單，交由測試窗口複核。」",
+        "tool_calls": 1,
+        "reader_calls": 1,
+        "marker_sent": true,
+        "sent_bytes": 3436,
+        "source_stimulus": {
+          "source_completed": true,
+          "frames": 191418,
+          "audio_seconds": 7.97575,
+          "context_elapsed": 8.175999999999988,
+          "wall_seconds": 8.691
+        },
+        "framing": {
+          "provenance": "application",
+          "provider_final": false,
+          "boundary": "pcm_quiet_and_stable_delta",
+          "activity_detector": "pcm_rms_heuristic",
+          "source_audio_verified": false,
+          "input_activity_rms_threshold": 256,
+          "silence_seconds": 1.5,
+          "text_settle_seconds": 0.6,
+          "capture_freshness_seconds": 0.25,
+          "capture_gap_tolerance_seconds": 0.02,
+          "capture_recent": true,
+          "observed_quiet_seconds": 1.5,
+          "heard_activity": false,
+          "overflow": false,
+          "followup_active": false,
+          "emitted_requests": 11,
+          "pending": {
+            "characters": 0,
+            "has_wake": false,
+            "has_question": false
+          }
+        },
+        "state": "sleeping",
+        "runtime_error": false,
+        "tool_deliveries": [
+          {
+            "question_number": 11,
+            "phase": "delivered",
+            "started_elapsed_ms": 255374,
+            "source_version": 3,
+            "available": true,
+            "selected_ref_count": 4,
+            "selected_record_indexes": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "selected_indexes_truncated": false,
+            "omitted_for_budget": false,
+            "payload_bytes": 3421,
+            "sent_bytes": 3436,
+            "marker_returned": true,
+            "model_consumption_verified": false
+          }
+        ]
+      }
+    ]
+  },
+  "source_sha256_at_first_receipt": {
+    "teams_transcription/b_native.py": "51bd7f28707b9280c9817db9276fc65006d76ba04adda3db83b5ea0126a7448b",
+    "teams_transcription/b_question.py": "9fba7f5b6e844666ecb52ec13dae3d8975bf25d19ddd55f3967adb5c5348b364",
+    "teams_transcription/b_context.py": "0cea94c40640681f58367973e4fef071c795a8e5361ccc0de29558f17aa81876",
+    "teams_transcription/diagnostics.py": "4a5da469b6ff15250870bc9bbd9ce0282ffd6b73bf452e253d7b26442cfc4e2d",
+    "teams_transcription/qa_probe.py": "be077d50421f7fd1b5f054ef78dcf67b8e165e8b2736f2f62c0b3b52d24dec11",
+    "teams_transcription/response_runtime.py": "a3599446b3e194ba556cff205fc8cd2bf1798acb8b757df8d09ec3d5046945c1"
+  },
+  "limits": [
+    "First-smoke hashes were collected when writing its receipt, not captured as loaded module snapshots. Final-run launch hashes are recorded separately.",
+    "Application request boundaries are an acoustic activity/quiet and stable-ASR heuristic, not semantic certainty, speaker identification or provider final.",
+    "Source A provenance and SQLite source authority are unchanged.",
+    "Context send-return and marker receipt are not model-consumption acknowledgment.",
+    "No physical Teams output or real-meeting audibility was exercised.",
+    "Existing standby daemon and container image have not been promoted by this source verification."
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "activity_number": 16,
+  "attempt_number": 15,
+  "service": "calendar-live-player19",
+  "operator_report": "已正常，可聽到完整句子",
+  "remote_audio_heard": true,
+  "reported_sentence_continuity_passed": true,
+  "repeat_question_requested_to_confirm_report": false,
+  "unique_historical_failure_cause_claimed": false,
+  "verbatim_saved_task_content_verified": false,
+  "observation": {
+    "observed_at_utc": "2026-10-16T08:28:02.607441+00:00",
+    "active": true,
+    "run_state": "running",
+    "capture_state": "recording",
+    "B_state": "sleeping",
+    "B_error_code": null,
+    "runtime_failure": null,
+    "output_enabled": true,
+    "output_muted": true,
+    "handoff": {
+      "received": 3,
+      "admitted": 3,
+      "rejected": 0,
+      "last_rejection": null
+    },
+    "tool_calls": 3,
+    "context": {
+      "sent_bytes": 34388,
+      "total_limit_bytes": null,
+      "known_paragraphs": 13,
+      "pending": false,
+      "failure_code": null
+    },
+    "speech": {
+      "phase": "closed",
+      "error_code": null,
+      "done_is_set": true,
+      "output_active": false,
+      "drained": true,
+      "truncated": false,
+      "activity_frames": 647168,
+      "nonzero_frames": 658190,
+      "packet_frames": 2048,
+      "packet_nonzero_frames": 12
+    }
+  },
+  "source_verification_receipt": "persistent-player-verification-20261016.json",
+  "ready_receipt": "teams-player-round15-ready-20261016.json",
+  "source_changed_since_local_and_container_verification": false,
+  "meeting_stopped_by_assistant": false,
+  "service_restarted_after_join": false,
+  "new_join_submitted_after_this_run": false,
+  "scope": "Operator acceptance covers complete audible sentences in this run. It is not word-for-word source verification, all three cumulative tool calls being three human questions, or whole lifecycle acceptance."
+}

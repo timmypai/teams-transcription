@@ -1,0 +1,36 @@
+{
+  "B_late_literal": {
+    "before_failure_count": 1,
+    "before_seconds": 0.103,
+    "after_related_tests": 127,
+    "after_seconds": 14.087,
+    "source_files": [
+      "teams_transcription/b_context.py",
+      "teams_transcription/b_response.py"
+    ],
+    "new_regression": "test_incremental_minutes_context.ContextTests.test_wire_budget_shrink_keeps_late_literal_and_exact_source_range"
+  },
+  "compose_ambient_interpolation": {
+    "original_failed": true,
+    "after_checks": 17,
+    "source_file": "tools/check_compose.py"
+  },
+  "reviews": {
+    "B": "No findings",
+    "compose": "No patch-introduced findings"
+  },
+  "initial_targeted_suite_tooling_error": {
+    "errors": 56,
+    "cause": "project activation omitted; global Codex version did not satisfy pinned preflight",
+    "code_gate_relaxed": false
+  },
+  "cold_build_negative": {
+    "default_online_npm_failed": "ERR_SOCKET_TIMEOUT",
+    "artifact": "1150"
+  },
+  "npm_boundary_control": {
+    "same_hardened_bridge_online_npm": "ECONNRESET",
+    "same_hardened_bridge_verified_python_artifacts": true,
+    "TLS_or_network_bypass": false
+  }
+}

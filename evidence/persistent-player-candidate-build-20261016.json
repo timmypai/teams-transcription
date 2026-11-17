@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "kind": "offline_cached_dependency_playback_candidate",
+  "tag": "teams-assistant:local-persistent-player-20261016",
+  "image_id": "sha256:337206e3b1d184cc069f965a4fabda844ad87c6d57e079334370f25f3c12fff8",
+  "base_tag": "teams-assistant:local-native-wake-order-20261016",
+  "base_image_id": "sha256:e4c628d2e98f2b36af9a15dccd3492c404755e2969718533c8491474381bbde8",
+  "requires_dist_matches_base": true,
+  "requires_dist_count": 7,
+  "build_seconds": 3.138,
+  "network": "none",
+  "pull": false,
+  "pip_no_index": true,
+  "pip_no_deps": true,
+  "wheel_sha256": "7fbf202a048ba13704a89cfb0d282e9842b1cf7709942959c67565822fcd522e",
+  "host_source_sha256": {
+    "b_native.py": "6ebafb03f922e1abfee006d8b1ef8f80017d33a027743a2c8ee4e2099221a4a5",
+    "b_audio.py": "d8873b873790e15b443fe2b2400eed7d1abbdb6946cfe2736516e4fe266ce5cd",
+    "b_browser_tx.py": "2fed22bb33fd47e5b057f52543e9668d3c96f93684ebe0bb6d56135d9b35503a",
+    "qa_probe.py": "087cb5498cff7738ee72882348a2df5220abff8f9d610db065d8e352b301a184"
+  },
+  "installed_source_sha256": {
+    "b_native.py": "6ebafb03f922e1abfee006d8b1ef8f80017d33a027743a2c8ee4e2099221a4a5",
+    "b_audio.py": "d8873b873790e15b443fe2b2400eed7d1abbdb6946cfe2736516e4fe266ce5cd",
+    "b_browser_tx.py": "2fed22bb33fd47e5b057f52543e9668d3c96f93684ebe0bb6d56135d9b35503a",
+    "qa_probe.py": "087cb5498cff7738ee72882348a2df5220abff8f9d610db065d8e352b301a184"
+  },
+  "workdir_source_sha256": {
+    "b_native.py": "6ebafb03f922e1abfee006d8b1ef8f80017d33a027743a2c8ee4e2099221a4a5",
+    "b_audio.py": "d8873b873790e15b443fe2b2400eed7d1abbdb6946cfe2736516e4fe266ce5cd",
+    "b_browser_tx.py": "2fed22bb33fd47e5b057f52543e9668d3c96f93684ebe0bb6d56135d9b35503a",
+    "qa_probe.py": "087cb5498cff7738ee72882348a2df5220abff8f9d610db065d8e352b301a184"
+  },
+  "stock_cold_build_claimed": false,
+  "credentials_mounted": false,
+  "published_or_deployed": false,
+  "actual_teams_acceptance": false
+}

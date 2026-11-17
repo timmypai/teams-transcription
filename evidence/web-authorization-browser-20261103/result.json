@@ -1,0 +1,25 @@
+{
+  "source_manifest_sha256": "9830b266c375910975908f1b8f118a96d937d36e7f99d7d687e993712d8a18cd",
+  "uid": 10001,
+  "gid": 10001,
+  "versions": {
+    "chromium": "Chromium 156.0.8078.73 built on Debian GNU/Linux 12 (bookworm)",
+    "cjk_font": "Noto Sans CJK TC",
+    "python": "Python 3.12.15"
+  },
+  "sandbox_helper": {
+    "uid": 0,
+    "mode": "0o4755"
+  },
+  "tests": 3,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "successful": true,
+  "test_log": "test_google_native_web_flow_saves_private_tokens_rejects_replay_and_handles_denial (test_web_authorization_browser.WebAuthorizationBrowserTests.test_google_native_web_flow_saves_private_tokens_rejects_replay_and_handles_denial) ... ok\ntest_private_device_form_survives_tab_close_and_native_cancel_clears_code (test_web_authorization_browser.WebAuthorizationBrowserTests.test_private_device_form_survives_tab_close_and_native_cancel_clears_code) ... ok\ntest_native_login_and_csrf_form_keep_browser_origin_without_exposing_query_referrer (test_admin_browser.AdminBrowserTests.test_native_login_and_csrf_form_keep_browser_origin_without_exposing_query_referrer) ... ok\n\n----------------------------------------------------------------------\nRan 3 tests in 9.935s\n\nOK\n",
+  "proxy_bypass": "loopback only; remaining proxy preserved; kernel network=none",
+  "image": "sha256:c397b661c65a3c689e43b92b1a3656bfd6fa6163182d7f0e117803fdc53928d0",
+  "docker_exit_code": 0,
+  "synthetic_only": true,
+  "cleanup_outcome": "cleaned"
+}

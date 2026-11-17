@@ -1,0 +1,735 @@
+"""Explicit synthetic native QA probe; no Teams, physical sink or audio files.
+
+Without --authorize-live this exits before config, DNS, synthesis or model start.
+Run only in an already authorized runtime; offline tests inject all live I/O.
+"""
+import argparse
+import asyncio
+import json
+import hashlib
+import os
+import re
+import time
+import subprocess
+import tempfile
+import uuid
+from pathlib import Path
+
+from .b_native import NativeLiveResponder
+from .b_response import GREETING, MeetingMinutesTool, MeetingStoreMinutesReader
+from .browser import Browser
+from .assistant_config import load_assistant_settings
+from .media import load_ice_servers
+from .meeting_store import MeetingStore
+from .runtime_guard import RuntimeLiveGuard
+from .owned_processes import OwnedProcesses
+from .qa_rx_evidence import ProbeTrackOutput, answer_rx, owned_cleanup_verified
+from .qa_content import assess_content, CRITERION_VERSION
+
+WORK_SECONDS = 120
+CLEANUP_SECONDS = 10
+
+WAKE = 'xiaobai xiaobai'
+QUESTION = '請只用繁體中文逐字引用會議預算原文，不加說明。'
+QUESTION_VOICE = 'cmn-latn-pinyin'
+
+
+class WorkDeadlineExceeded(TimeoutError):
+    pass
+
+
+class PhaseWaitTimeout(TimeoutError):
+    def __init__(self, seconds):
+        self.seconds = seconds
+        super().__init__('phase_wait_timeout')
+
+
+class NoPhysicalSink:
+    """Observe the owned no-PLC graph without connecting a physical audio sink."""
+
+    def __init__(self):
+        self.page = None
+        self.owner = uuid.uuid4().hex
+
+    async def attach_live(self, page):
+        if self.page is not None:
+            raise RuntimeError('probe_output_already_attached')
+        self.page = page
+        await page.evaluate("""owner => {
+          const live=window.__live, noPlc=live?.noPlc;
+          const receivers=live?.pc?.getReceivers().filter(r=>r.track?.kind==='audio') || [];
+          if(receivers.length!==1 || live.qaOutput || !noPlc?.valid() ||
+             noPlc.receiver!==receivers[0] || noPlc.inputTrack!==receivers[0].track)
+            throw new Error('probe_receiver_unavailable');
+          noPlc.track.enabled=false;
+          const out=live.qaOutput={owner,live,receiver:receivers[0],noPlc};
+          out.valid=()=>window.__live===live && live.qaOutput===out && live.noPlc===noPlc &&
+            noPlc.valid() && noPlc.receiver===out.receiver && noPlc.inputTrack===out.receiver.track &&
+            live.pc.getReceivers().includes(out.receiver);
+        }""", self.owner)
+
+    async def start(self):
+        await self.set_muted(True)
+
+    async def set_muted(self, muted):
+        if muted is not True:
+            raise RuntimeError('physical_output_forbidden')
+        await self.page.evaluate("""owner => {
+          const live=window.__live, out=live?.qaOutput;
+          if(out?.owner!==owner || !out.valid()) throw new Error('probe_receiver_unavailable');
+          out.noPlc.track.enabled=false;
+        }""", self.owner)
+
+    async def observe(self):
+        return await self.page.evaluate("""owner => {
+          const live=window.__live, out=live?.qaOutput;
+          if(out?.owner!==owner || !out.valid() || out.noPlc.track.enabled)
+            throw new Error('probe_receiver_unavailable');
+          const {input,render}=out.noPlc.stats();
+          return {connected:live.pc.connectionState==='connected',
+            packets:input.packets,frames:render.frames,duration:render.duration,energy:render.energy,
+            source_packets:input.packets,source_frames:input.frames,
+            source_duration:input.duration,source_energy:input.energy};
+        }""", self.owner)
+
+    async def rx_snapshot(self):
+        return await self.page.evaluate("""async owner => {
+          const live=window.__live, out=live?.qaOutput;
+          if(out?.owner!==owner || !out.valid() || out.noPlc.track.enabled)
+            throw new Error('probe_receiver_unavailable');
+          const report=await out.receiver.getStats();
+          if(!out.valid() || out.noPlc.track.enabled) throw new Error('probe_receiver_unavailable');
+          const rows=[...report.values()].filter(r=>r.type==='inbound-rtp' &&
+            (r.kind==='audio'||r.mediaType==='audio') && r.isRemote!==true);
+          if(rows.length>1) throw new Error('probe_receiver_ambiguous');
+          const r=rows[0], {input,render}=out.noPlc.stats();
+          if(!r && (input.packets!==0||input.frames!==0||input.duration!==0||input.energy!==0))
+            throw new Error('probe_receiver_stats_missing');
+          return {connected:live.pc.connectionState==='connected',
+            inbound:r ? {ssrc:r.ssrc,packets_received:r.packetsReceived,bytes_received:r.bytesReceived} :
+              {ssrc:null,packets_received:0,bytes_received:0},
+            source:{packets:input.packets,frames:input.frames,duration:input.duration,energy:input.energy},
+            render:{frames:render.frames,duration:render.duration,energy:render.energy}};
+        }""", self.owner)
+
+    async def pause(self):
+        await self.set_muted(True)
+        return {"status":"muted","truncated":False,"reason":"output_disabled"}
+
+    async def stop(self):
+        if self.page is None or self.page.is_closed():
+            return
+        await self.page.evaluate("""async owner => {
+          const out=window.__live?.qaOutput;
+          if(out?.owner===owner) {
+            out.noPlc.track.enabled=false;
+            out.noPlc.close();
+            await out.noPlc.closing;
+            if(out.live.qaOutput===out) delete out.live.qaOutput;
+          }
+        }""", self.owner)
+
+
+def synthetic_phoneme_preflight():
+    for text in ('請', QUESTION):
+        raw = subprocess.run(['espeak-ng', '-q', '--ipa', '-v', QUESTION_VOICE, text],
+            capture_output=True, timeout=10, check=True).stdout
+        if not isinstance(raw, bytes) or not 0 < len(raw) <= 4096:
+            raise ValueError('synthetic_mandarin_phonemes_invalid')
+        try:
+            phonemes = raw.decode('utf-8').strip()
+        except UnicodeDecodeError:
+            raise ValueError('synthetic_mandarin_phonemes_invalid') from None
+        if (not phonemes or re.search(r'\((?!cmn\))[A-Za-z][A-Za-z0-9-]*\)', phonemes)
+                or (text == '請' and re.sub(r'[\s0-9ˈˌ\u200c\u200d]', '', phonemes) != 'tɕhiŋ')):
+            raise ValueError('synthetic_mandarin_phonemes_invalid')
+    return True
+
+
+def synthetic_pcm(text):
+    if text not in (WAKE, QUESTION):
+        raise ValueError('fixed_synthetic_input_required')
+    if text == QUESTION:
+        synthetic_phoneme_preflight()
+    voice = subprocess.run(['espeak-ng', '--stdout', '-v', 'en' if text == WAKE else QUESTION_VOICE, text],
+        capture_output=True, timeout=10, check=True).stdout
+    pcm = subprocess.run(['ffmpeg', '-nostdin', '-hide_banner', '-loglevel', 'error',
+        '-i', 'pipe:0', '-t', '12', '-ar', '24000', '-ac', '1', '-f', 's16le', 'pipe:1'],
+        input=voice, capture_output=True, timeout=10, check=True).stdout
+    if not pcm or len(pcm) % 2 or len(pcm) > 576000 or not any(pcm):
+        raise ValueError('synthetic_pcm_invalid')
+    return pcm
+
+
+async def wait_until(native, condition, timeout=45):
+    try:
+        async with asyncio.timeout(timeout):
+            while not condition():
+                if native.error or native.state in {'failed', 'stop_unknown'}:
+                    raise RuntimeError('qa_branch_failed')
+                await asyncio.sleep(.02)
+                if native.state not in {'sleeping', 'listening'}:
+                    continue
+                # Probe-only synthetic quiet; this is not physical captured input.
+                ended_at = time.monotonic()
+                if native.intervals.overlaps(ended_at - .02, ended_at):
+                    continue
+                if not native.push_rx(native.meeting_id, b'\0' * 960,
+                        started_at=ended_at - .02, ended_at=ended_at):
+                    raise RuntimeError('qa_pcm_rejected')
+
+    except TimeoutError as error:
+        raise PhaseWaitTimeout(timeout) from error
+
+
+async def send_pcm(native, pcm):
+    for offset in range(0, len(pcm), 2048):
+        if native.error:
+            raise RuntimeError('qa_branch_failed')
+        chunk = pcm[offset:offset + 2048]
+        ended_at = time.monotonic()
+        if not native.push_rx(native.meeting_id, chunk,
+                started_at=ended_at - len(chunk) / 48000, ended_at=ended_at):
+            raise RuntimeError('qa_pcm_rejected')
+        await asyncio.sleep(len(chunk) / 48000)
+
+
+async def probe_rtp_snapshot(native, label, started, *, limit_seconds=.25):
+    """One existing peer.stats read; fixed points, counts only, no polling."""
+    row = {'point':label, 'received_seconds':time.monotonic() - started, 'read_status':'unavailable'}
+    stats = getattr(getattr(native, 'peer', None), 'stats', None)
+    if not callable(stats):
+        return row
+    try:
+        async with asyncio.timeout(limit_seconds):
+            raw = await stats()
+        if not isinstance(raw, dict):
+            row['read_status'] = 'failed'; return row
+        row['read_status'] = 'returned'
+        for key, allowed in {
+            'connection':{'new','connecting','connected','disconnected','failed','closed'},
+            'data_channel':{'connecting','open','closing','closed'},
+            'audio_context_state':{'running','suspended','interrupted','closed','unknown'}}.items():
+            row[key] = raw.get(key) if raw.get(key) in allowed else 'unknown'
+        for key in ('sent_frames','buffer_gap_count','buffer_gap_frames','scheduled_queue_ms'):
+            value = raw.get(key)
+            row[key] = value if type(value) in (int, float) and 0 <= value <= 10**15 else None
+        delivery = raw.get('datachannel_delivery')
+        row['datachannel_delivery'] = {key:value if type(value := delivery.get(key)) is int
+            and 0 <= value <= 10**15 else None for key in
+            ('messages','json_errors','binding_attempted','binding_returned','binding_failed')} if isinstance(delivery, dict) else None
+        row['outbound_audio'] = [{key:value if type(value := item.get(key)) is int and 0 <= value <= 10**15 else None
+            for key in ('bytesSent','packetsSent')} for item in raw.get('reports', [])[:4] if isinstance(item, dict)]
+    except TimeoutError:
+        row['read_status'] = 'timeout'
+    except Exception:
+        row['read_status'] = 'failed'
+    return row
+
+
+def capture_owned(owned, browser, native):
+    owned.add(getattr(getattr(native, 'rpc', None), 'process', None))
+    for owner in (getattr(browser, 'playwright', None), getattr(browser, '_starter', None)):
+        impl = getattr(owner, '_impl_obj', owner)
+        connection = getattr(impl, '_connection', None)
+        owned.add(getattr(getattr(connection, '_transport', None), '_proc', None))
+    owned.snapshot()
+
+
+def capture_owned_tasks(tasks, native):
+    rpc = getattr(native, 'rpc', None)
+    extras = [getattr(native, name, None) for name in (
+        '_close_task', 'receiver', '_rx_task', '_question_task', '_tool_task',
+        '_speech_task', '_phase_timeout')]
+    extras += [getattr(rpc, '_close_task', None), *getattr(rpc, 'tasks', ())]
+    for task in extras:
+        if isinstance(task, asyncio.Task) and task not in tasks:
+            tasks.append(task)
+
+
+async def cleanup_probe(native, browser, owned, *, tasks, deadline=None, operation_task=None, before_stop=None):
+    """One bounded cleanup window, preserving unknown protocol/close outcomes."""
+    loop = asyncio.get_running_loop()
+    deadline = loop.time() + CLEANUP_SECONDS if deadline is None else deadline
+    soft_end = min(deadline, loop.time() + .8 * CLEANUP_SECONDS)
+    unknown = False
+    stop_result = 'not_started' if native is None else 'unknown'
+    async def step(operation):
+        nonlocal unknown
+        task = asyncio.create_task(operation)
+        tasks.append(task)
+        try:
+            done, _ = await asyncio.wait({task}, timeout=max(0, soft_end - loop.time()))
+            if task in done and not task.cancelled():
+                return task.result()
+        except BaseException:
+            pass
+        unknown = True; task.cancel()
+        return None
+    capture_owned(owned, browser, native)
+    if before_stop is not None:
+        await step(before_stop())  # Diagnostic shares this owned cleanup deadline.
+    if native is not None:
+        stop_result = await step(native.stop())
+        if stop_result not in {'stopped', 'not_started'}:
+            unknown = True
+    if browser is not None:
+        await step(browser.__aexit__(None, None, None))
+    capture_owned(owned, browser, native)
+    # Cancellation-finally may create further shielded RPC close work. Recheck
+    # owned references on each loop; a single pre-cancel snapshot is insufficient.
+    def collect():
+        capture_owned_tasks(tasks, native)
+        capture_owned(owned, browser, native)
+    reaped, quiet = False, 0
+    while loop.time() < deadline:
+        collect()
+        for task in tasks:
+            if not task.done():
+                unknown = True; task.cancel()
+        if owned.live():
+            unknown = True; owned.kill()
+        await asyncio.sleep(0)
+        collect()
+        reaped = (not owned.live()) if all(p.returncode is not None for p in owned.processes) else \
+            await owned.reap(min(deadline, loop.time() + .002))
+        pending = sum(not task.done() for task in tasks)
+        quiet = quiet + 1 if reaped and not pending and not owned.live() else 0
+        if quiet >= 2: break
+        await asyncio.sleep(min(.001, max(0, deadline - loop.time())))
+    collect()
+    pending = sum(not task.done() for task in tasks)
+    for task in tasks:
+        if not task.done(): task.cancel()
+        elif not task.cancelled(): task.exception()
+    if owned.live(): owned.kill()
+    unknown = unknown or not reaped or bool(pending) or bool(owned.live())
+    return {'status':'unknown' if unknown else 'cleaned',
+        'stop_status':stop_result or 'unknown',
+        'stop_ack_received':getattr(native, 'stop_ack_received', None),
+        'stop_closed_received':getattr(native, 'stop_closed_received', None),
+        'native_cleanup_status':getattr(native, 'cleanup_status', None),
+        'owned_processes':len(owned.processes), 'live_processes':len(owned.live()),
+        'reaped':reaped, 'pending_close_tasks':pending,
+        'pending_operation':operation_task is not None and not operation_task.done()}
+
+
+def write_private_result(path, evidence, *, create=False):
+    """Private text only, no audio/IDs; reserve exclusively, then atomic replace."""
+    raw = (json.dumps(evidence, ensure_ascii=False, indent=2, allow_nan=False) + '\n').encode()
+    if create:
+        fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
+        with os.fdopen(fd, 'wb') as stream:
+            stream.write(raw); stream.flush(); os.fsync(stream.fileno())
+    else:
+        fd, temporary = tempfile.mkstemp(prefix='.qa-private-', dir=path.parent)
+        try:
+            with os.fdopen(fd, 'wb') as stream:
+                stream.write(raw); stream.flush(); os.fsync(stream.fileno())
+            os.replace(temporary, path)
+        finally:
+            Path(temporary).unlink(missing_ok=True)
+    return hashlib.sha256(raw).hexdigest()
+
+
+async def run_probe(args):
+    if not args.authorize_live:
+        raise ValueError('explicit_live_authorization_required')
+    private_path = getattr(args, 'private_result', None)
+    if private_path is None:
+        raise ValueError('private_result_path_required')
+    private_path = Path(private_path)
+    media_profile = getattr(args, 'peer_media_profile', 'legacy')
+    if media_profile not in {'legacy','trusted-none'}:
+        raise ValueError('unknown_peer_media_profile')
+    qa_start_stage = getattr(args, 'qa_start_stage', 'wake')
+    if qa_start_stage not in {'wake','question'}:
+        raise ValueError('unknown_qa_start_stage')
+    rtp_snapshots = []
+    evidence = {'schema_version':1, 'kind':'private_synthetic_qa_evidence', 'rounds':[],
+        'context_plans':[], 'context_plans_truncated':False,
+        'timing_basis':'host monotonic seconds relative to probe start; send completion is not question end',
+        'useful_text_criterion':'first assistant delta/final containing this round source budget term after question send begins',
+        'audio_timing_unavailable':'scalar receiver energy does not identify useful speech or remote audibility',
+        'control_receipt':None}
+    write_private_result(private_path, evidence, create=True)  # Before any model/config I/O.
+    started = time.monotonic()
+    active_round = None
+    assistant_delta = ''
+    native = browser = None
+    phase, checks, failure = 'config', [], None
+    owned = OwnedProcesses()
+    cleanup = None
+    def capture_turn_lifecycle():
+        try:
+            getter = getattr(native, 'turn_lifecycle_snapshot', None)
+            return getter() if callable(getter) else None
+        except Exception:
+            return None  # Missing optional evidence never replaces the real failure.
+    def capture_speech_completion():
+        try:
+            getter = getattr(native, 'speech_completion_snapshot', None)
+            return getter() if callable(getter) else None
+        except Exception:
+            return None
+    async def capture_rtp_snapshot(label):
+        if len(rtp_snapshots) < 5:
+            rtp_snapshots.append(await probe_rtp_snapshot(native, label, started))
+    with tempfile.TemporaryDirectory(prefix='native-qa-') as root:
+        async def operation():
+            nonlocal native, browser, phase, active_round, assistant_delta
+            settings = load_assistant_settings(args.config)
+            ice = load_ice_servers(args.ice_servers_file)
+            phase = 'synthetic_input'
+            wake = await asyncio.to_thread(synthetic_pcm, WAKE) if qa_start_stage == 'wake' else None
+            question = await asyncio.to_thread(synthetic_pcm, QUESTION)
+            store = MeetingStore(root)
+            ident = 'synthetic-qa'
+            store.create(ident)
+            event = {'event_id': 'qa-source', 'revision': 1, 'text': '預算十萬元。',
+                     'timestamp': '2026-10-11T00:00:00Z', 'sequence': 1}
+            store.append_final(ident, event)
+            class Source:
+                async def read(self, meeting_id):
+                    return await asyncio.to_thread(store.read,meeting_id)
+            tool = MeetingMinutesTool(ident, MeetingStoreMinutesReader(Source()))
+            phase = 'egress_guard'
+            guard = RuntimeLiveGuard(ident, settings.allowed_egress_hosts, ice_servers=ice)
+            await guard.prepare()
+            phase = 'browser_open'
+            browser = Browser(args.chromium)
+            await browser.__aenter__()
+            native = NativeLiveResponder(browser.browser, Path(root) / 'native-runtime', ident,
+                ProbeTrackOutput(ident, NoPhysicalSink(), lambda: active_round
+                    if phase.startswith('question_revision_') and native.state=='answering' else None), tool,
+                executable=settings.codex_bin, guard=guard.adapter(), ice_servers=ice,
+                wake_words=('小白小白', WAKE), question_timeout=30, muted_probe_text_gate=True, peer_media_profile=media_profile)
+            prepare_context = native.context.prepare
+            async def record_context(*args, **kwargs):
+                plan = await prepare_context(*args, **kwargs)
+                if len(evidence['context_plans']) < 8:
+                    readings = plan.result['selected_source_reading']
+                    evidence['context_plans'].append({'source_version':plan.result.get('version'),
+                        'snapshot_sha256':plan.result['snapshot_sha256'],
+                        'payload_sha256':hashlib.sha256(plan.payload.encode()).hexdigest(),
+                        'reading_count':len(readings), 'readings_truncated':len(readings)>64,
+                        'readings':[{'text_sha256':hashlib.sha256(row['text'].encode()).hexdigest(),
+                            **{key:row[key] for key in ('revision','source_revision') if type(row.get(key)) is int}}
+                            for row in readings[:64]],
+                        'constructed_only':True, 'model_consumption_verified':False})
+                else:
+                    evidence['context_plans_truncated'] = True
+                return plan
+            native.context.prepare = record_context
+            actual_start_params = getattr(native, 'live_start_params', None)
+            if callable(actual_start_params):
+                def record_start_params(offer):
+                    params = actual_start_params(offer)
+                    evidence['request'] = {'prompt':params['prompt'],
+                        'prompt_sha256':hashlib.sha256(params['prompt'].encode()).hexdigest(),
+                        'initialItems':params.get('initialItems', []),
+                        'model':params['model'], 'version':params['version'],
+                        'includeStartupContext':params['includeStartupContext'],
+                        'transport_type':params['transport']['type'],
+                        'diagnostic_mode':'synthetic_question_only' if qa_start_stage == 'question' else None,
+                        'provider_wake_skipped':False,
+                        'local_wake_skipped':qa_start_stage == 'question'}
+                    return params
+                native.live_start_params = record_start_params
+            answers = []
+            original = native.handle_notification
+            async def capture(method, params):
+                nonlocal assistant_delta
+                received = time.monotonic() - started
+                user_row = None
+                if (active_round is not None and params.get('role') == 'user'
+                        and method in {'thread/realtime/transcript/delta','thread/realtime/transcript/done'}):
+                    text = params.get('delta' if method.endswith('/delta') else 'text', '')
+                    if len(active_round['user_transcripts']) < 32:
+                        user_row = {'kind':'delta' if method.endswith('/delta') else 'done',
+                            'text':text[:2048], 'truncated':len(text) > 2048,
+                            'received_seconds':received, 'phase':phase,
+                            'state_before':native.state, 'state_after':None,
+                            'wake_match':None,
+                            'greeting_entered':False}
+                        active_round['user_transcripts'].append(user_row)
+                    else:
+                        active_round['dropped_user_transcripts'] += 1
+                late_greeting = (getattr(native, 'muted_probe_text_gate', False)
+                    and method == 'thread/realtime/transcript/done'
+                    and params.get('role') == 'assistant' and params.get('text', '').strip() == GREETING
+                    and native.state != 'greeting')
+                if active_round is not None and params.get('role') == 'assistant':
+                    if method == 'thread/realtime/transcript/delta':
+                        active_round['assistant_deltas'].append(
+                            {'text':params.get('delta', ''), 'received_seconds':received, 'phase':phase})
+                        assistant_delta += params.get('delta', '')
+                        text = assistant_delta
+                    elif method == 'thread/realtime/transcript/done':
+                        text = params.get('text', '')
+                        active_round['assistant_utterances'].append(
+                            {'text':text, 'received_seconds':received, 'phase':phase,
+                             'isolated_late_greeting':late_greeting})
+                        if not late_greeting and active_round['timing']['question_send_begin_seconds'] is not None:
+                            active_round['answer_text'] = text
+                        assistant_delta = ''
+                    else:
+                        text = ''
+                    timing = active_round['timing']
+                    if (timing['question_send_begin_seconds'] is not None
+                            and timing['first_useful_text_seconds'] is None
+                            and active_round['expected_source_term'] in text):
+                        timing['first_useful_text_seconds'] = received
+                        active_round['first_useful_text_method'] = method
+                await original(method, params)
+                if user_row is not None:
+                    user_row['state_after'] = native.state
+                    user_row['wake_match'] = (
+                        native.question_framer.pending_status()['has_wake']
+                        if method.endswith('/delta') else None)
+                    user_row['greeting_entered'] = user_row['state_before'] != 'greeting' and native.state == 'greeting'
+                if not late_greeting and method == 'thread/realtime/transcript/done' and params.get('role') == 'assistant':
+                    answers.append(params.get('text', ''))
+            native.handle_notification = capture
+            phase = 'qa_start'
+            await native.start(enable_output=False)
+            capture_owned(owned, browser, native)
+            for revision, expected in ((1, '十萬元'), (2, '十二萬元')):
+                if revision == 2:
+                    store.append_final(ident, {**event, 'revision': 2, 'text': '預算十二萬元。'})
+                snapshot=store.read(ident)
+                source_text = '預算十萬元。' if revision == 1 else '預算十二萬元。'
+                paragraph=next(record['text'] for record in snapshot['sources'] if record['text']==source_text)
+                active_round = {'source_event_revision':revision, 'source_version':snapshot['version'],
+                    'source_paragraph':paragraph,
+                    'source_paragraph_sha256':hashlib.sha256(paragraph.encode()).hexdigest(),
+                    'expected_source_term':expected, 'question':QUESTION,
+                    'assistant_utterances':[], 'assistant_deltas':[], 'answer_text':None,
+                    'user_transcripts':[], 'dropped_user_transcripts':0,
+                    'first_useful_text_method':None,
+                    'timing':{key:None for key in ('question_send_begin_seconds',
+                        'question_send_complete_seconds', 'question_end_seconds',
+                        'first_useful_text_seconds', 'first_nonzero_audio_seconds',
+                        'first_useful_audio_seconds',
+                        'first_useful_text_from_question_send_begin_seconds',
+                        'first_useful_text_from_question_send_complete_seconds',
+                        'first_useful_text_from_question_end_seconds',
+                        'first_nonzero_audio_from_question_send_begin_seconds',
+                        'first_nonzero_audio_from_question_send_complete_seconds',
+                        'first_nonzero_audio_from_question_end_seconds')}}
+                evidence['rounds'].append(active_round)
+                assistant_delta = ''
+                count, calls = len(answers), native.tool_calls
+                if qa_start_stage == 'wake':
+                    phase = 'wake_revision_' + str(revision)
+                    await capture_rtp_snapshot('wake_before_send_' + str(revision))
+                    await send_pcm(native, wake)
+                    await capture_rtp_snapshot('wake_after_send_' + str(revision))
+                    await wait_until(native, lambda: native.state == 'listening')
+                    greeting = getattr(native, 'greeting_completion', None)
+                else:
+                    phase = 'question_admission_revision_' + str(revision)
+                    active_round['question_admission'] = native.admit_synthetic_question_stage()
+                    greeting = None
+                active_round['greeting_completion'] = dict(greeting) if greeting else None
+                phase = 'question_revision_' + str(revision)
+                if qa_start_stage == 'question':
+                    await capture_rtp_snapshot('question_before_send_' + str(revision))
+                active_round['question_pcm'] = {'sha256':hashlib.sha256(question).hexdigest(),
+                    'bytes':len(question), 'frames':len(question) // 2,
+                    'sample_rate':24000, 'channels':1, 'format':'s16le'}
+                active_round['timing']['question_send_begin_seconds'] = time.monotonic() - started
+                await send_pcm(native, question)
+                active_round['timing']['question_send_complete_seconds'] = time.monotonic() - started
+                if qa_start_stage == 'question':
+                    await capture_rtp_snapshot('question_after_send_' + str(revision))
+                try:
+                    await wait_until(native, lambda: native.state == 'sleeping' and native.tool_calls > calls)
+                except PhaseWaitTimeout:
+                    snapshot = getattr(native, 'speech_completion_snapshot', None)
+                    active_round['question_timeout_snapshot'] = snapshot() if callable(snapshot) else None
+                    raise
+                utterances = answers[count:]
+                active_round['turn_lifecycle'] = capture_turn_lifecycle()
+                reply = utterances[-1] if utterances else ''
+                question_utterances = [row['text'] for row in active_round['assistant_utterances']
+                    if row['phase'] == phase and not row['isolated_late_greeting']]
+                rx=answer_rx(active_round.get('audio_rx'))
+                active_round['audio_rx_verdict']=rx
+                semantic = assess_content(question_utterances, paragraph,
+                    expected_version=snapshot['version'],
+                    delivered_version=native.context.status()['source_version'])
+                checks.append({'source_revision': revision,
+                    'audio_rx_verified':rx['verified'],'audio_rx':rx,
+                    'exact_greeting': (bool(greeting and greeting['text_complete'] and greeting['local_lease_closed'])
+                        or bool(utterances) and utterances[0].strip() == GREETING) if qa_start_stage == 'wake' else None,
+                    'wake_validation':'attempted_unverified' if qa_start_stage == 'wake' else 'skipped_unverified',
+                    'greeting_completion':dict(greeting) if greeting else None,
+                    'scoped_tool_called': native.tool_calls > calls,
+                    'semantic_content':semantic,
+                    'semantic_content_verified':semantic['status']=='pass',
+                    'expected_fact':semantic['status']=='pass',
+                    'exact_source_quote': (len(question_utterances) == 1
+                        and question_utterances[0].strip() == paragraph),
+                    'no_stale_fact':semantic['status']=='pass',
+                    'output_muted': not native.output.enabled,
+                    'source_version': native.context.status()['source_version']})
+            phase = 'checks_complete'
+        operation_task = asyncio.create_task(operation())
+        operation_task.add_done_callback(
+            lambda task: None if task.cancelled() else task.exception())
+        try:
+            # asyncio.timeout/wait_for waits for cancellation to unwind. Native
+            # start shields its own close, so supervise the task without awaiting
+            # that unwind; cleanup owns it under the same bounded window.
+            done, _ = await asyncio.wait({operation_task}, timeout=WORK_SECONDS)
+            if operation_task not in done:
+                raise WorkDeadlineExceeded()
+            operation_task.result()
+        except BaseException as error:
+            failure = {'phase':phase, 'error_code':
+                'work_deadline_exceeded' if isinstance(error, WorkDeadlineExceeded) else
+                'phase_wait_timeout' if isinstance(error, PhaseWaitTimeout) else
+                'probe_operation_timeout' if isinstance(error, TimeoutError) else 'probe_operation_failed',
+                'exception_type':type(error).__name__}
+            if isinstance(error, (WorkDeadlineExceeded, PhaseWaitTimeout)):
+                failure['timeout_seconds'] = WORK_SECONDS if isinstance(error, WorkDeadlineExceeded) else error.seconds
+                failure['timeout_layer'] = 'whole_work' if isinstance(error, WorkDeadlineExceeded) else 'phase_wait'
+        finally:
+            # Synchronous snapshot BEFORE cancellation/stop can erase live state,
+            # including when the whole-work supervisor wins the question wait.
+            speech_completion_before_stop = capture_speech_completion()
+            if not operation_task.done():
+                operation_task.cancel()
+            # Context/greeting receipts survive start/wake/question failures and stop.
+            greeting_before_stop = getattr(native, 'greeting_completion', None)
+            greeting_before_stop = dict(greeting_before_stop) if greeting_before_stop else None
+            if active_round is not None:
+                active_round['greeting_completion'] = greeting_before_stop
+            context_before_stop = native.context.status() if native is not None else None
+            question_reader = getattr(native, 'question_receipts', None)
+            question_before_stop = question_reader() if callable(question_reader) else None
+            cleanup_deadline = asyncio.get_running_loop().time() + CLEANUP_SECONDS
+            cleanup_tasks = [operation_task]
+            cleanup_task = asyncio.create_task(cleanup_probe(native, browser, owned, tasks=cleanup_tasks,
+                deadline=cleanup_deadline, operation_task=operation_task,
+                before_stop=(lambda:capture_rtp_snapshot('failure_before_stop')) if failure else None))
+            while not cleanup_task.done() and asyncio.get_running_loop().time() < cleanup_deadline:
+                try:
+                    await asyncio.wait({cleanup_task}, timeout=max(0,
+                        cleanup_deadline - asyncio.get_running_loop().time()))
+                except asyncio.CancelledError:
+                    failure = failure or {'phase':'qa_cleanup', 'error_code':'cleanup_cancelled',
+                                          'exception_type':'CancelledError'}
+            if cleanup_task.done() and not cleanup_task.cancelled():
+                try:
+                    cleanup = cleanup_task.result()
+                except BaseException:
+                    pass
+            if cleanup is None:
+                cleanup_task.cancel()
+                capture_owned_tasks(cleanup_tasks, native)
+                for task in cleanup_tasks:
+                    if not task.done(): task.cancel()
+                capture_owned(owned, browser, native)
+                owned.kill()
+                live = owned.live()
+                reaped = not live and all(p.returncode is not None for p in owned.processes)
+                cleanup = {'status':'unknown', 'stop_status':getattr(native, 'stop_status', 'unknown'),
+                    'stop_ack_received':getattr(native, 'stop_ack_received', None),
+                    'stop_closed_received':getattr(native, 'stop_closed_received', None),
+                    'native_cleanup_status':getattr(native, 'cleanup_status', None),
+                    'owned_processes':len(owned.processes), 'live_processes':len(live),
+                    'reaped':reaped, 'pending_close_tasks':sum(not task.done() for task in cleanup_tasks),
+                    'pending_operation':not operation_task.done()}
+        try:
+            status_reader = getattr(native, 'status', None)
+            rows = status_reader().get('tool_deliveries', []) if callable(status_reader) else []
+        except Exception:
+            rows = []
+        evidence['context_deliveries'] = []
+        for row in rows[-8:] if isinstance(rows, list) else []:
+            if not isinstance(row, dict):
+                continue
+            phase_value = row.get('phase')
+            receipt = {'phase':phase_value if isinstance(phase_value, str) and phase_value in
+                {'preparing','sending','delivered','failed','cancelled'} else 'unavailable'}
+            for key in ('snapshot_sha256','payload_sha256'):
+                value = row.get(key)
+                receipt[key] = value if isinstance(value, str) and re.fullmatch(r'[0-9a-f]{64}', value) else None
+            for key in ('question_number','source_version','payload_bytes','sent_bytes','selected_ref_count'):
+                value = row.get(key)
+                receipt[key] = value if type(value) is int and 0 <= value <= 10**15 else None
+            receipt['marker_returned'] = row.get('marker_returned') is True
+            receipt['model_consumption_verified'] = False
+            evidence['context_deliveries'].append(receipt)
+        criteria = ['scoped_tool_called', 'expected_fact', 'semantic_content_verified', 'no_stale_fact', 'output_muted','audio_rx_verified']
+        if qa_start_stage == 'wake': criteria.append('exact_greeting')
+        accepted = failure is None and len(checks) == 2 and all(
+            all(c[key] for key in criteria) for c in checks)
+        result = {'schema_version':3, 'kind':'synthetic_native_qa', 'checks':checks,
+            'content_criterion_version':CRITERION_VERSION,
+            'turn_lifecycle':capture_turn_lifecycle(),
+            'speech_completion_before_stop':speech_completion_before_stop,
+            'accepted':accepted and owned_cleanup_verified(cleanup),
+            'owned_cleanup_verified':owned_cleanup_verified(cleanup),
+            'failure':failure, 'last_phase':phase, 'work_limit_seconds':WORK_SECONDS,
+            'qa_start_stage':qa_start_stage, 'acceptance_criteria':criteria,
+            'wake_validation':'attempted_unverified' if qa_start_stage == 'wake' else 'skipped_unverified',
+            'cleanup_limit_seconds':CLEANUP_SECONDS, 'stop_status':cleanup['stop_status'],
+            'owned_cleanup':cleanup, 'greeting_completion':greeting_before_stop,
+            'context_before_stop':context_before_stop,
+            'question_receipts':question_before_stop,
+            'question_timeout_snapshot':active_round.get('question_timeout_snapshot') if active_round is not None else None,
+            'context':native.context.status() if native is not None else None,
+            'teams_verified':False, 'physical_tx_verified':False,
+            'media_diagnostics':{'profile':media_profile, 'rtp_snapshots':rtp_snapshots,
+                'snapshot_limit':5, 'user_event_limit_per_round':32, 'user_text_limit_chars':2048,
+                'user_transcript_events':sum(len(r['user_transcripts']) for r in evidence['rounds']),
+                'wake_matches':sum(e['wake_match'] is True for r in evidence['rounds'] for e in r['user_transcripts']),
+                'greeting_entries':sum(e['greeting_entered'] for r in evidence['rounds'] for e in r['user_transcripts']),
+                'dropped_user_events':sum(r['dropped_user_transcripts'] for r in evidence['rounds']),
+                'graph_prepare_status':(value if isinstance(value := getattr(getattr(native, 'peer', None), 'graph_prepare_status', None), str) and value in {'not_started','trusted_origin_entered','trusted_origin_failed','entered','failed','returned'} else None)}}
+        for round_evidence in evidence['rounds']:
+            timing = round_evidence['timing']
+            text_time = timing['first_useful_text_seconds']
+            for label in ('question_send_begin', 'question_send_complete'):
+                origin = timing[label + '_seconds']
+                if text_time is not None and origin is not None:
+                    timing['first_useful_text_from_' + label + '_seconds'] = text_time - origin
+        evidence['control_receipt'] = result.copy()
+        digest = write_private_result(private_path, evidence)
+        result['private_evidence'] = {'schema_version':1, 'written':True,
+            'sha256':digest, 'round_count':len(evidence['rounds'])}
+        return result
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--authorize-live', action='store_true')
+    parser.add_argument('--config', required=True, help='Existing authorized service YAML')
+    parser.add_argument('--private-result', type=Path, help='New private JSON file (required before Live start)')
+    parser.add_argument('--peer-media-profile', choices=('legacy','trusted-none'), default='legacy',
+        help='Explicit media candidate; default preserves the existing graph')
+    parser.add_argument('--qa-start-stage', choices=('wake','question'), default='wake',
+        help='Explicit synthetic question diagnostic skips wake synthesis/validation; production gates unchanged')
+    parser.add_argument('--chromium')
+    parser.add_argument('--ice-servers-file')
+    args = parser.parse_args(argv)
+    try:
+        result = asyncio.run(run_probe(args))
+    except Exception as error:
+        # No provider error body, config, URL, SDP, token or original PCM output.
+        print(json.dumps({'accepted': False, 'error_code':
+            'authorization_required' if not args.authorize_live else 'synthetic_qa_probe_failed',
+            'exception_type': type(error).__name__,
+            'failure':{'phase':'authorization' if not args.authorize_live else 'probe_receipt_failed'},
+            'context':None, 'stop_status':'not_started' if not args.authorize_live else 'unknown',
+            'owned_cleanup':{'status':'not_started' if not args.authorize_live else 'unknown'}}))
+        return 1
+    print(json.dumps(result, ensure_ascii=False, indent=2))
+    return 0 if result['accepted'] else 1
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())

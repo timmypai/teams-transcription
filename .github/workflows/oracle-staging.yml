@@ -1,0 +1,77 @@
+name: Oracle staging deploy or rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: Explicit staging action
+        type: choice
+        options: [deploy, rollback]
+        default: deploy
+      digest:
+        description: Deploy requires sha256 plus 64 lowercase hex characters; rollback leaves empty
+        type: string
+        default: ''
+      source_sha:
+        description: Deploy requires the exact tested 40-character source SHA; rollback leaves empty
+        type: string
+        default: ''
+      build_run_id:
+        description: Deploy requires the successful ARM64 publish Actions run ID; rollback leaves empty
+        type: string
+        default: ''
+
+permissions:
+  packages: read
+  actions: read
+
+concurrency:
+  group: oracle-staging
+  cancel-in-progress: false
+
+jobs:
+  staging:
+    if: >-
+      github.repository == 'paulpai0412/teams-transcription' &&
+      github.ref == 'refs/heads/main' && vars.STAGING_READY == 'true'
+    environment: staging
+    runs-on: [self-hosted, Linux, ARM64, teams-transcription-staging]
+    timeout-minutes: 12
+    steps:
+      # No checkout, repository scripts, sudo or root Docker socket in this job.
+      # Operator installs and reviews this host-owned command out of band.
+      - name: Run installed staging controller
+        env:
+          STAGING_OPERATION: ${{ inputs.operation }}
+          STAGING_DIGEST: ${{ inputs.digest }}
+          STAGING_SOURCE_SHA: ${{ inputs.source_sha }}
+          STAGING_BUILD_RUN_ID: ${{ inputs.build_run_id }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          printf '%s' "$GHCR_TOKEN" | /opt/teams-staging/bin/stagingctl "$STAGING_OPERATION" "$STAGING_DIGEST" | tee "$RUNNER_TEMP/staging-report.json"
+      - name: Remove this job's registry credential even after interruption
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import os, pathlib, re, shutil
+          run, attempt = os.environ['GITHUB_RUN_ID'], os.environ['GITHUB_RUN_ATTEMPT']
+          assert re.fullmatch(r'[0-9]{1,20}', run) and re.fullmatch(r'[0-9]{1,10}', attempt)
+          path = pathlib.Path('/srv/teams-staging/state/registry') / (run + '-' + attempt)
+          shutil.rmtree(path, ignore_errors=True)
+          if path.exists():
+              raise RuntimeError('registry_credential_cleanup_failed')
+          PY
+      - name: Deployment summary
+        if: always()
+        run: |
+          printf '%s\n' '### Oracle staging' 'Job result: ${{ job.status }}' \
+            'Fixed digest only; no production changes. Health checks do not prove Teams/audio E2E.' >> "$GITHUB_STEP_SUMMARY"
+      - name: Retain allowlisted deployment report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: staging-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/staging-report.json
+          retention-days: 7
+          if-no-files-found: warn

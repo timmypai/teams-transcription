@@ -1,0 +1,120 @@
+{
+  "recorded_at": "2026-10-30T04:48:02.891162+00:00",
+  "repository": "paulpai0412/teams-transcription",
+  "branch": "fix/qa-mandarin-phoneme-preflight",
+  "base_main": "00ba60768dc347fe41d64e3887f4e3bd748e2a79",
+  "scope": "Fixed synthetic QA voice and offline phoneme preflight. No text/expected/acceptance, production Native prompt, RX, cleanup, deployment or model changes.",
+  "host_evidence": {
+    "source": "Parent supplied bounded results; no original host private receipt fetched",
+    "case0003": "No transcript/question/context/assistant answer; failed, not retrospectively accepted",
+    "pcm": {
+      "frames": 183095,
+      "sample_rate": 24000,
+      "rms": 2985,
+      "peak": 30334,
+      "fully_sent": true,
+      "clipped_or_truncated": false
+    },
+    "old_cmn_hanzi_qing": "(en)kɪ5ŋθɹˈiː5(cmn)",
+    "candidate_cmn_latn_pinyin_hanzi_qing": "tɕhˈi2ŋ",
+    "old_full_question_en_switches": 7,
+    "candidate_full_question_en_switches": 0,
+    "case2_case3_prompt_sha256": "8b8096bd1362fa089c34cea3b73088bd6331394f677a7f0ac30eb8050ebd048d",
+    "qa_start_stage": "question",
+    "media_profile": "legacy",
+    "wake_skipped": true,
+    "causal_limit": "Confirms local voice defect, not sole cause of provider no-transcript result. Provider ingress/VAD observations still missing.",
+    "reported_batch_used": 3,
+    "reported_batch_limit": 50
+  },
+  "implementation": {
+    "voice": "cmn-latn-pinyin",
+    "fixed_question_changed": false,
+    "wake_voice": "en",
+    "preflight": "Same voice, espeak-ng -q --ipa for fixed Hanzi 請 and full QUESTION. Require normalized Hanzi tɕhiŋ and no foreign-language switch markers. Empty/over4096bytes/invalid UTF8/mismatched phonemes fail closed before wave/browser/model.",
+    "error_code": "synthetic_mandarin_phonemes_invalid",
+    "raw_phonemes_in_control_receipt": false,
+    "ci": "Existing installed-image network-none fixed synthesis now executes preflight and records fixed_qa_mandarin_phonemes_verified."
+  },
+  "official_voice_reference": "https://raw.githubusercontent.com/espeak-ng/espeak-ng/1.51/espeak-ng-data/lang/sit/cmn-Latn-pinyin",
+  "red_green": {
+    "test": "test_qa_probe.ProbeTests.test_mandarin_english_phoneme_fallback_fails_before_wave_synthesis",
+    "before": "Failed: old code accepted nonzero PCM despite the reported fallback fixture",
+    "after": "Passed: fixed error before waveform generation; legitimate candidate IPA fixture and unchanged English wake pass"
+  },
+  "validation": {
+    "focused": {
+      "tests": 101,
+      "failures": 0,
+      "errors": 0
+    },
+    "aggregate": {
+      "scope": "controlled offline subset",
+      "suites": [
+        "test_assistant_store",
+        "test_assistant_daemon",
+        "test_calendar_client",
+        "test_glossary_context",
+        "test_admin_web",
+        "test_sqlite_voice_context",
+        "test_sqlite_only_store",
+        "test_rx_contract",
+        "test_prefetch_codex_npm",
+        "test_staging_control",
+        "test_capture_cleanup_review",
+        "test_release_gate",
+        "test_diagnostic_projection",
+        "test_codex_auth",
+        "test_provider_state",
+        "test_workflow_triggers",
+        "test_staging_docker_diagnostics",
+        "test_staging_compose",
+        "test_first_deploy_recovery",
+        "test_qa_probe.ProbeTests",
+        "test_qa_receiver_projection"
+      ],
+      "tests": 253,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "success": true,
+      "teams_or_model_called": false,
+      "audio_e2e_tested": false
+    },
+    "probe_suite_tests": 36,
+    "actionlint": "v1.7.7 passed",
+    "py_compile": "passed",
+    "diff_check": "passed",
+    "actual_synthesis_or_phonemes_executed_here": false,
+    "limitation": "Cloud executor has no espeak-ng/espeak; phoneme adapter tests are fixtures. Host candidate observations are parent-supplied. New installed-image preflight awaits future authorized ARM64 build.",
+    "browser_suite_rerun": false,
+    "models_called": 0,
+    "meetings_joined": 0,
+    "known_credential_pattern_scan": "passed",
+    "scope_check": "Question text, expected, acceptance, production Native, RX, cleanup, deploy/workflows and summary unchanged"
+  },
+  "ab_proposal": {
+    "status": "Documented only; not executed",
+    "baseline_source": "00ba60768dc347fe41d64e3887f4e3bd748e2a79",
+    "baseline_qa_module_sha256": "d035385e486bab6db6704146b4f35d1d2ce831a35dea1aff6e0111425ac54535",
+    "mechanism": "Temporary QA-process-only qa_probe.subprocess adapter replaces exact fixed QUESTION voice argument; all other calls forwarded; no global subprocess monkeypatch or runtime app/image edits.",
+    "invariants": "Baseline source/module/image pinned, same question/prompt/profile/stage/native/RX/cleanup/strict acceptance. Host records wrapper and before/after PCM hashes and distinguishes wrapped QA evidence from fixed-image validation.",
+    "quota": "Host owner one authorized case at a time in same50 allowance; no auto retry/loop. No grant or authority from wrapper."
+  },
+  "files_sha256": {
+    "teams_transcription/qa_probe.py": "00ed36a833e6c360962d01ad8fe129d244d9015c2939457a32d133fbc296c4f3",
+    "tests/test_qa_probe.py": "0cbf1b35399417c7cb5adb873152e00a39c6aa9bc7f69660b7a202de151c9df9",
+    "tools/compose_smoke.py": "7d808d59ad874172eb9721481f84dd55cac13122427a4962a5fa53dac0e0b899",
+    "docs/INCREMENTAL-QA-CONTEXT.md": "9f01325e6d2fda11ee854f744c27ec0fac8a2524134a3951084394a28aec8f8a"
+  },
+  "reviews": {
+    "spec": "0 confirmed findings;5 targeted offline tests passed independently; baseline QA module SHA verified.",
+    "standards": "0 confirmed violations or actionable heuristic smells;5 targeted offline tests passed independently; baseline SHA verified."
+  },
+  "remaining": [
+    "Authorized branch delivery only; no PR/merge/dispatch/build/deploy/model in this task",
+    "Future separately authorized Draft PR/merge/ARM64 build/publish/deploy",
+    "Host-reviewed voice-only QA candidate, then actual transcript/content/RX acceptance; case0003 stays failed"
+  ],
+  "operations": "Local source/offline tests/review and authorized branch delivery only; no PR/merge/dispatch/build/deploy/model/security changes."
+}

@@ -1,0 +1,62 @@
+{
+  "recorded_at": "2026-11-02T17:53:48.771232+00:00",
+  "before_head": "4805d5ae65b0a5301fc183f4c46569aceddfac17",
+  "unchanged_pr41_head": "c37192bd10c3d5eb568813fb1d9c3a6b7b0e9a04",
+  "source_manifest_sha256": "e7cd7fecf9aa0467c4e0b55a686e3fc3d672d96b3686d1eae1f6f5c374a04a30",
+  "tests": {
+    "focused": 212,
+    "focused_failures": 0,
+    "focused_errors": 0,
+    "existing_offline_subset": 549,
+    "ci_failures": 0,
+    "ci_errors": 0,
+    "overlap": true
+  },
+  "browser": {
+    "interim-interactions.jsonl": {
+      "operations": 20,
+      "checks": 6,
+      "tool_selector_errors": 0,
+      "js_errors": 0,
+      "document_horizontal_overflow": 0
+    },
+    "review-ui-interactions.jsonl": {
+      "operations": 48,
+      "checks": 15,
+      "tool_selector_errors": 1,
+      "js_errors": 0,
+      "document_horizontal_overflow": 0
+    },
+    "fixed-source-ui-interactions.jsonl": {
+      "operations": 34,
+      "checks": 9,
+      "tool_selector_errors": 0,
+      "js_errors": 0,
+      "document_horizontal_overflow": 0
+    }
+  },
+  "source_phases": {
+    "interim": "902f8311f526db727041dbd284b738fe7556449efd4127e3d8dba3499c70a2e4",
+    "review": "be5f1f07966f1880748096fad96aee2e46c6d1063c4536cb03f83354561c67e4",
+    "fixed": "e7cd7fecf9aa0467c4e0b55a686e3fc3d672d96b3686d1eae1f6f5c374a04a30"
+  },
+  "wheel": {
+    "sha256": "e92025d293888012860914c0ef4adb1efd6b75ab90c136b63657a612a09cba56",
+    "all_73_package_files_match": true
+  },
+  "screenshot_sha256": {
+    "F1-fixed-source-conflict-and-evidence.png": "9a1be427d96acd860d8c2188e4222119033da882b940a692065feaa24fc9264d",
+    "F2-fixed-source-multiline-completion.png": "9fc015f1ea7e078b301d771115cf19b1e4f658835497148a60f3d8e222714118",
+    "R01-concurrent-form-conflict.png": "ee56a86ab8043fb0e2fc7ba4dc28d92d00b5d6f3dfc7901198b807c9a2263a31",
+    "R02-corrected-acceptance-mobile.png": "f179effffbbbce4e20d0530d6a7dfdb4c4f8fc8ceccf1b498b1891e380ccd3dd",
+    "R03-final-corrected-source-evidence.png": "3340f441c0f5fae027ececf2f26bf198872463d2a2d1affe24e7fd937f2ee2bd",
+    "R04-final-human-confirmation-priority.png": "527159fbd5385ea9467abef245fe1d41c22c8beaada0ad074e1827977c3cc18c",
+    "R05-final-multiline-control-error.png": "fa750f1c89a557dfdfc11174323b28d91a286145c464c77c711b6e3bf4a9fe9f",
+    "R06-final-multiline-completion-proof.png": "2f4df867454eea683676ee0a67b2e8d636a6060e1dd0cf9beb2c13cea4fc3211",
+    "R07-final-consistent-series-closed-state.png": "14182eb68e223b02f8e0e6929c63e6e513e8593fee98e4fd641c8b12f2698c80"
+  },
+  "independent_recheck": "pending parent reviewer",
+  "real_google_codex_teams_oracle": false,
+  "merged": false,
+  "deployed": false
+}

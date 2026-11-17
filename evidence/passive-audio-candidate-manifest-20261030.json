@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "base_source_sha": "c4090edb0e8e5db50d8950515522dba733618c51",
+  "implementation_commit": "f346ef4b2d864a8e9c4364817e5c98c01d704d30",
+  "module_order": [
+    "qa_audio_observation",
+    "qa_audio_tap",
+    "qa_audio_probe"
+  ],
+  "files": {
+    "qa_audio_observation.py": "582203b817ca7e96fd4d7c6baf36f800b3781580da0bac9ffb20546cb11c2bd3",
+    "qa_audio_tap.py": "84eeec403097d73e17f5a01a8be7da0200dfd9c0a501598be858e136e49e007c",
+    "qa_audio_probe.py": "78da4e0bcfd35b96f51cd7e8c09253aba5d77c0a46f05800020bf534d9001323"
+  },
+  "runtime": "Only fixed shared synthetic QA; same existing authorized image/home. No production default change."
+}

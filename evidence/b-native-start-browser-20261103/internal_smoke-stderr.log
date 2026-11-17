@@ -1,0 +1,6 @@
+test_native_peer_installs_no_pcm_tap_or_callback (test_b_live.IncomingTrackTests.test_native_peer_installs_no_pcm_tap_or_callback) ... ok
+
+----------------------------------------------------------------------
+Ran 1 test in 1.656s
+
+OK

@@ -1,0 +1,15 @@
+test_tied_alignment_cannot_attribute_forbidden_ordinary_substitution (test_glossary_asr_eval.GlossaryAsrEvaluationTests.test_tied_alignment_cannot_attribute_forbidden_ordinary_substitution) ... FAIL
+test_alignment_ties_outside_ordinary_span_do_not_hide_a_definite_substitution (test_glossary_asr_eval.GlossaryAsrEvaluationTests.test_alignment_ties_outside_ordinary_span_do_not_hide_a_definite_substitution) ... ok
+
+======================================================================
+FAIL: test_tied_alignment_cannot_attribute_forbidden_ordinary_substitution (test_glossary_asr_eval.GlossaryAsrEvaluationTests.test_tied_alignment_cannot_attribute_forbidden_ordinary_substitution)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/beta-audio-validation/tests/test_glossary_asr_eval.py", line 197, in test_tied_alignment_cannot_attribute_forbidden_ordinary_substitution
+    self.assertEqual(result['categories']['ordinary_negative']['ordinary_false_substitutions'], 0)
+AssertionError: 1 != 0
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.002s
+
+FAILED (failures=1)

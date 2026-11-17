@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "kind": "local_cached_dependency_candidate_build",
+  "tag": "teams-assistant:local-native-turns-20261016",
+  "image_id": "sha256:3081a86eef9e28a067c64a565fb4104b2da8187c0c5dfda40f54cedab58f4cb9",
+  "standard_dockerfile_build": {
+    "passed": false,
+    "timeout_seconds": 600,
+    "stage": "pip dependency downloads",
+    "download_reported": "47.7 MB",
+    "transfer_rate_reported": "84.9 kB/s"
+  },
+  "candidate_build": {
+    "passed": true,
+    "seconds": 4.22,
+    "network": "none",
+    "method": "Current no-isolation wheel and complete current package source, force-reinstalled offline over verified existing dependency image",
+    "base_image_id": "sha256:e0da0a4840c1135494da5a61f065d3f3d6771597cfe37a608c441bf20cce38a1",
+    "requires_cached_base": true,
+    "requires_dist_matches_base": true,
+    "wheel_sha256": "7fe55ea13d9da41d3292e2124fc06197d0ebb1ddf4ab754d077507ad1794ed3f",
+    "host_native_sha256": "b6159f7910bbb8e4942f41027ff1a06429ba4ee4585d9f92e8d51389b5290a6a",
+    "installed_native_sha256": "b6159f7910bbb8e4942f41027ff1a06429ba4ee4585d9f92e8d51389b5290a6a",
+    "workdir_native_sha256": "b6159f7910bbb8e4942f41027ff1a06429ba4ee4585d9f92e8d51389b5290a6a"
+  },
+  "published_or_deployed": false,
+  "credentials_mounted": false,
+  "actual_teams_acceptance": false,
+  "compose_receipt": "standalone-compose-current-native-turns-20261016.json"
+}

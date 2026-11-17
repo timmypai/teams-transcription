@@ -1,0 +1,600 @@
+"""Independent OAuth Live speech channel using the installed app-server schema.
+
+No public Realtime session.update/response.create/tool messages are fabricated.
+Speech uses thread/realtime/appendSpeech; media is the WebRTC incoming track.
+"""
+import asyncio
+import base64
+import contextlib
+import time
+import uuid
+
+from .browser import LivePeer
+from .rpc import CodexRPC, safe_error
+from .b_guard import LiveBinding, OfficialSDPEnvelope
+from .b_media_profile import PCM_OUTPUT_BRIDGE_JS, SILENT_PEER_JS, NO_PLC_PEER_JS
+
+from .diagnostics import response_runtime_failure_receipt
+
+CAPTURE_OUTPUT_JS = r"""async () => {
+  const state = window.__live;
+  const ctx = new AudioContext({sampleRate:48000}); await ctx.resume();
+  const tracks = new Set(), nodes = new Set();
+  state.output = {ctx, tracks, nodes, dropped:0, frames:0, closing:false,
+    captureEnabled:false, captureGeneration:0};
+  (""" + PCM_OUTPUT_BRIDGE_JS + r""")(state.output);
+  state.pc.ontrack = async e => {
+    const track = e.track, out = state.output;
+    if (track.kind !== 'audio' || tracks.has(track)) return;
+    tracks.add(track);
+    const stream = new MediaStream([track]);
+    // Trigger Chromium's remote decoder without audible local playout.
+    const player = document.createElement('audio'); player.muted = true;
+    player.srcObject = stream;
+    try { await player.play(); }
+    catch (_) { await window.responseAudioError('remote_decoder_failed'); return; }
+    const source = ctx.createMediaStreamSource(stream);
+    const processor = ctx.createScriptProcessor(2048, 1, 1);
+    const mute = ctx.createGain(); mute.gain.value = 0;
+    source.connect(processor); processor.connect(mute); mute.connect(ctx.destination);
+    nodes.add({source, processor, mute, player});
+    processor.onaudioprocess = event => out.pcmBridge.capture(event);
+    track.onended = () => {
+      processor.onaudioprocess = null;
+      source.disconnect(); processor.disconnect(); mute.disconnect();
+      player.pause(); player.srcObject = null; tracks.delete(track);
+    };
+  };
+}"""
+
+
+class ResponseLivePeer(LivePeer):
+    """Incoming GPT audio stays native unless an explicit PCM probe is selected."""
+    def __init__(self, browser, callback, on_pcm, on_error, ice_servers=None, *, guard=None, meeting_id=None, media_profile="legacy", output_mode="pcm"):
+        if media_profile not in {"legacy", "trusted-none"}:
+            raise ValueError("Unknown response peer media profile")
+        if output_mode not in {"native", "pcm"}:
+            raise ValueError("Unknown response output mode")
+        if output_mode == "native" and on_pcm is not None:
+            raise ValueError("Native output forbids a PCM callback")
+        self.output_mode = output_mode
+        super().__init__(browser, callback, ice_servers)
+        self.media_profile = media_profile
+        self.graph_prepare_status, self.graph_prepare_failure = "not_started", None
+        self.on_pcm, self.on_error = on_pcm, on_error
+        self.guard, self.meeting_id, self.binding = guard, meeting_id, None
+        self._document_valid = False
+        self._intentional_close = False
+        self._capture_enabled = False
+        self._capture_generation = 0
+
+    async def bind_session(self, thread_id):
+        if self.binding is not None:
+            raise RuntimeError("Peer session is already bound")
+        self.binding = LiveBinding(self.meeting_id, thread_id)
+
+    async def set_output_capture(self, enabled):
+        """Gate only the PCM tap; keep the native decoder, track and player alive."""
+        if self.output_mode != "pcm":
+            raise RuntimeError("Native output has no PCM capture gate")
+        if type(enabled) is not bool:
+            raise ValueError("Explicit capture admission required")
+        if enabled and self._capture_enabled:
+            self._assert_document()
+            return
+        self._capture_generation += 1
+        self._capture_enabled = enabled
+        if not enabled and not self._document_valid:
+            return
+        self._assert_document()
+        await self.page.evaluate("""({enabled, generation}) => {
+          const out = window.__live.output;
+          out.pcmBridge.setCapture(enabled,generation);
+        }""", {"enabled": enabled, "generation": self._capture_generation})
+
+    async def offer(self):
+        if self.guard is None or self.binding is None:
+            raise RuntimeError("A existing context egress/SDP guards must be injected before Live start")
+        self.context = await self.browser.new_context()
+        await self.guard.install(self.context, self.binding)
+        async def bound(source, callback, value):
+            self._assert_document()
+            if source.get("page") is not self.page or source.get("frame") is not self.page.main_frame:
+                raise RuntimeError("Foreign Live callback source")
+            return await callback(value)
+        async def received_audio(source, packet):
+            self._assert_document()
+            if source.get("page") is not self.page or source.get("frame") is not self.page.main_frame:
+                raise RuntimeError("Foreign Live callback source")
+            if (not self._capture_enabled or not isinstance(packet, dict)
+                    or type(packet.get("capture_generation")) is not int
+                    or packet["capture_generation"] != self._capture_generation):
+                return
+            return await self.on_pcm(packet)
+        await self.context.expose_binding("liveEvent", lambda source, event: bound(source, self.callback, event))
+        if self.output_mode == "pcm":
+            await self.context.expose_binding("responseAudio", received_audio)
+        await self.context.expose_binding("responseAudioError", lambda source, error: bound(source, self.on_error, error))
+        self.page = await self.context.new_page()
+        if self.media_profile == "trusted-none" or self.output_mode == "native":
+            from .b_media_profile import prepare_trusted_audio_page, RENDER_OUTPUT_JS, local_audio_failure
+            self.graph_prepare_status = "trusted_origin_entered"
+            try:
+                await prepare_trusted_audio_page(self.page)
+            except BaseException as error:
+                self.graph_prepare_status = "trusted_origin_failed"
+                self.graph_prepare_failure = local_audio_failure(error)
+                raise
+        self._document_valid = True
+        self.page.on("framenavigated", self._navigated)
+        if self.output_mode == "native":
+            offer = await self.page.evaluate(NO_PLC_PEER_JS, self.ice_servers)
+        elif self.media_profile == "trusted-none":
+            offer = await self.page.evaluate(SILENT_PEER_JS, self.ice_servers)
+            self.graph_prepare_status = "entered"
+            try:
+                await self.page.evaluate(RENDER_OUTPUT_JS)
+            except BaseException as error:
+                self.graph_prepare_status = "failed"
+                self.graph_prepare_failure = local_audio_failure(error)
+                raise
+            self.graph_prepare_status = "returned"
+        else:
+            offer = await self.page.evaluate(SILENT_PEER_JS, self.ice_servers)
+            await self.page.evaluate(CAPTURE_OUTPUT_JS)
+        await self.guard.validate(self.context, self.binding, offer, "offer")
+        return offer
+
+    def _assert_document(self):
+        if not self._document_valid or self.page.is_closed():
+            raise RuntimeError("Live response document was invalidated")
+
+    def _navigated(self, frame):
+        if frame is self.page.main_frame and not self._intentional_close:
+            self._document_valid = False
+            task = asyncio.create_task(self.on_error("Live response document navigated"))
+            task.add_done_callback(lambda t: t.exception() if not t.cancelled() else None)
+
+    async def push(self, data):
+        self._assert_document()
+        return await super().push(data)
+
+    async def answer(self, sdp):
+        self._assert_document()
+        await self.guard.validate(self.context, self.binding, sdp, "answer")
+        await super().answer(sdp)
+
+    def begin_official_start(self, source, account_type, attempt_id, params):
+        self._assert_document()
+        self.guard.begin_official_start(self.context, self.binding, source, account_type, attempt_id, params)
+
+    async def accept_official_answer(self, source, attempt_id, envelope):
+        self._assert_document()
+        self.guard.acknowledge_official_start(self.context, self.binding, source, attempt_id)
+        return await self.guard.authorize_official_answer(self.context, self.binding, envelope)
+
+    async def send_event(self, event, *, capture_output=False):
+        """Optionally start a fresh PCM epoch in the same JS turn as dispatch."""
+        if type(capture_output) is not bool:
+            raise ValueError("Explicit capture admission required")
+        self._assert_document()
+        if self.output_mode == "native":
+            if capture_output:
+                raise ValueError("Native output has no PCM capture epoch")
+            await self.page.evaluate("""event => {
+              if (__live.dc.readyState !== 'open') throw new Error('Live data channel closed');
+              __live.dc.send(JSON.stringify(event));
+            }""", event)
+            self._assert_document()
+            return
+        generation = None
+        if capture_output:
+            self._capture_generation += 1
+            generation = self._capture_generation
+            self._capture_enabled = True
+        try:
+            await self.page.evaluate("""({event, captureGeneration}) => {
+              if (__live.dc.readyState !== 'open') throw new Error('Live data channel closed');
+              if (captureGeneration !== null)
+                __live.output.pcmBridge.setCapture(true, captureGeneration);
+              __live.dc.send(JSON.stringify(event));
+            }""", {"event": event, "captureGeneration": generation})
+            self._assert_document()
+        except BaseException:
+            if capture_output:
+                await self.set_output_capture(False)
+            raise
+
+    async def close(self):
+        self._intentional_close = True
+        self._capture_enabled = False
+        self._capture_generation += 1
+        self._document_valid = False
+        if self.output_mode == "native":
+            try:
+                if hasattr(self, "page") and not self.page.is_closed():
+                    await self.page.evaluate("""async () => {
+                      const live=window.__live, decoder=live?.noPlc;
+                      live?.noPlcInputAbort?.abort(); decoder?.close();
+                      await Promise.all([live?.noPlcForwarding,decoder?.closing]);
+                    }""")
+            finally:
+                await super().close()
+        elif self.media_profile == "trusted-none":
+            from .b_media_profile import FULL_CLOSE_JS
+            try:
+                if hasattr(self, "page") and not self.page.is_closed():
+                    await self.page.evaluate(FULL_CLOSE_JS)
+            finally:
+                await super().close()
+        else:
+            if hasattr(self, "page") and not self.page.is_closed():
+                with contextlib.suppress(Exception):
+                    await self.page.evaluate("""async () => {
+                      const out = __live.output; out.closing = true;
+                      out.pcmBridge.setCapture(false,out.captureGeneration+1);
+                      __live.pc.close(); await out.ctx.close(); await __live.ctx.close();
+                    }""")
+            await super().close()
+
+
+class LiveSpeechChannel:
+    """Explicit start/stop, serial appendSpeech, strict separate thread scope.
+
+    Completion combines canonical assistant text with a quiet media tail. Real
+    Live timing, voice quality and acoustic echo still require daytime testing.
+    """
+    def __init__(self, browser, state_dir, meeting_id, output, *, executable="codex", ice_servers=None, guard=None, stop_timeout=3, peer_media_profile="legacy", output_mode="pcm"):
+        self.meeting_id, self.output = meeting_id, output
+        self.output_mode = output_mode
+        self.rpc = CodexRPC(state_dir, executable)
+        self.peer = ResponseLivePeer(browser, self._data_event,
+            self._pcm if output_mode == "pcm" else None, self._audio_error, ice_servers,
+            guard=guard, meeting_id=meeting_id, media_profile=peer_media_profile,
+            output_mode=output_mode)
+        self.thread_id = None
+        self.receiver = None
+        self.error = None
+        self.started = False
+        self._speech = None
+        self._speech_text = None
+        self._lock = asyncio.Lock()
+        self.stop_timeout = stop_timeout
+        self.stop_status = "not_started"
+        self._closed_event = asyncio.Event()
+        self._closing = False
+        self._cleanup_done = False
+        self._close_task = None
+        self.cleanup_timeout = 5
+        self.cleanup_status = "idle"
+        self.cleanup_errors = []
+        self.stop_error = None
+        self.stop_ack_received = False
+        self.stop_closed_received = False
+        self._stop_issued_at = None
+        self.drain_result = None
+        self._start_attempt = None
+        self._start_issued = False
+        self._runtime_failure = None
+        self._runtime_failure_origin = time.monotonic()
+
+    def _record_runtime_failure(self, phase, exc=None, *, code='response_failed'):
+        if self._runtime_failure is None:
+            self._runtime_failure = response_runtime_failure_receipt({
+                'code': code, 'phase': phase,
+                'exception_type': type(exc).__name__ if exc is not None else 'none',
+                'elapsed_ms': max(0, int((time.monotonic()-self._runtime_failure_origin)*1000))})
+
+    def runtime_failure_snapshot(self):
+        return response_runtime_failure_receipt(self._runtime_failure)
+
+    async def _audio_error(self, reason):
+        labels = {
+            'output_backpressure': ('audio_callback', 'response_output_backpressure'),
+            'remote_decoder_failed': ('audio_callback', 'response_decoder_failed'),
+            'output_delivery_failed': ('audio_callback', 'response_output_delivery_failed'),
+            'Live response document navigated': ('document', 'response_document_invalidated'),
+            'GPT response data channel error': ('datachannel', 'response_datachannel_error'),
+            'Response Live RPC error': ('rpc', 'response_rpc_error'),
+            'Response Live connection closed': ('rpc', 'response_transport_closed'),
+            'Response Live app-server exited': ('rpc', 'response_app_server_exit')}
+        phase, code = labels.get(reason, ('unknown', 'response_failed')) if isinstance(reason, str) else ('unknown', 'response_failed')
+        self._record_runtime_failure(phase, code=code)
+        if self.error is None:
+            self.error = safe_error(reason) or "response_failed"
+        try:
+            await self.output.stop_output()
+        except Exception:
+            self.error += "; TX mute control failed"
+        try:
+            if self.output_mode == "pcm":
+                await self.peer.set_output_capture(False)
+        except Exception:
+            self.error += "; PCM capture gate closure failed"
+        finally:
+            if self._speech and not self._speech.done():
+                self._speech.set_exception(RuntimeError(self.error))
+
+    async def _pcm(self, packet):
+        try:
+            data = base64.b64decode(packet["data"], validate=True)
+            sample_rate, channels = packet["sample_rate"], packet["channels"]
+        except Exception as exc:
+            self._record_runtime_failure('audio_callback', exc, code='response_pcm_invalid')
+            await self._audio_error("Invalid or undeliverable GPT output audio")
+            return
+        try:
+            await self.output.write(self.meeting_id, data,
+                sample_rate=sample_rate, channels=channels)
+        except Exception as exc:
+            self._record_runtime_failure('audio_callback', exc, code='response_pcm_delivery_failed')
+            await self._audio_error("Invalid or undeliverable GPT output audio")
+
+    async def _data_event(self, event):
+        if event.get("type") == "error":
+            await self._audio_error("GPT response data channel error")
+
+    def observe_stage(self, name, state, failure_kind=None):
+        """Optional fixed-label diagnostics; the ordinary speech route is unchanged."""
+        pass
+
+    def observe_notification(self, method, params):
+        pass
+
+    def observe_closed(self, reason, before_stop):
+        pass
+
+    async def _stage(self, name, operation, *args, **kwargs):
+        self.observe_stage(name, "entered")
+        try:
+            result = await operation(*args, **kwargs)
+        except asyncio.CancelledError:
+            self.observe_stage(name, "cancelled", "cancelled")
+            raise
+        except TimeoutError:
+            self.observe_stage(name, "failed", "timeout")
+            raise
+        except BaseException:
+            self.observe_stage(name, "failed", "exception")
+            raise
+        self.observe_stage(name, "returned")
+        return result
+
+    async def start(self):
+        if self.started or self.receiver or self._cleanup_done or self._closing:
+            raise RuntimeError("Response Live channel already started")
+        if isinstance(self.peer, ResponseLivePeer) and self.peer.guard is None:
+            raise RuntimeError("Existing host egress/SDP guards are required")
+        try:
+            await self._stage("rpc_initialize", self.rpc.start)
+            account = await self._stage("account_read", self.rpc.request, "account/read", {"refreshToken": False})
+            if (account.get("account") or {}).get("type") != "chatgpt":
+                raise RuntimeError("Response Live requires existing Codex ChatGPT OAuth")
+            self.thread_id = await self._stage("thread_start", self.rpc.thread)
+            await self._stage("peer_bind", self.peer.bind_session, self.thread_id)
+            self._answer = asyncio.get_running_loop().create_future()
+            self.receiver = asyncio.create_task(self._receive())
+            offer = await self._stage("ice_offer", self.peer.offer)
+            params = self.live_start_params(offer)
+            self._start_attempt = uuid.uuid4().hex
+            if isinstance(self.peer, ResponseLivePeer):
+                self.peer.begin_official_start(self.rpc, "chatgpt", self._start_attempt, params)
+            self._start_issued = True
+            await self._stage("realtime_start_ack", self.rpc.request, "thread/realtime/start", params)
+            envelope = await self._stage("sdp_answer", asyncio.wait_for, self._answer, 35)
+            if isinstance(self.peer, ResponseLivePeer):
+                answer = await self._stage("sdp_authorize", self.peer.accept_official_answer, self.rpc, self._start_attempt, envelope)
+            else:
+                # Injected local test peers retain their existing string API.
+                answer = envelope.sdp
+            await self._stage("sdp_apply", self.peer.answer, answer)
+            await self._stage("media_connected", self.peer.wait_connected, timeout=20)
+            if self.output_mode == "native":
+                await self._stage("native_output_attach", self.output.attach_live, self.peer.page)
+            self.started = True
+        except BaseException:
+            await self.close()
+            raise
+
+    def live_start_params(self, offer):
+        """Own-thread official start fields; shared by muted summary probes."""
+        return {
+            "threadId": self.thread_id, "model": "gpt-live-1-codex", "version": "v3",
+            "outputModality": "audio", "includeStartupContext": False,
+            "clientManagedHandoffs": True, "delegationAckFiller": False,
+            "prompt": self.live_prompt(),
+            "transport": {"type": "webrtc", "sdp": offer}}
+
+    def live_prompt(self):
+        return "Remain silent except when explicitly given speakable text. Speak that text exactly, in Traditional Chinese. Do not answer, delegate, or invoke tools on your own."
+
+    async def handle_notification(self, method, params):
+        pass
+
+    def observe_notification_receipt(self, message):
+        """Optional ingress metadata observer; never modifies provider JSON."""
+        pass
+
+    async def _receive(self):
+        try:
+            while True:
+                msg = await self.rpc.notifications.get()
+                method, p = msg.get("method"), msg.get("params", {})
+                self.observe_notification_receipt(msg)
+                self.observe_notification(method, p)
+                if method != "client/exit" and p.get("threadId") != self.thread_id:
+                    continue
+                if method == "thread/realtime/sdp":
+                    if (self._start_issued and not self._closing and not self._answer.done()
+                            and isinstance(p.get("sdp"), str) and p["sdp"]):
+                        self._answer.set_result(OfficialSDPEnvelope(self.rpc, self._start_attempt,
+                            self.thread_id, p["sdp"]))
+                elif method == "thread/realtime/closed":
+                    # Receipt at RPC ingress prevents a queued pre-stop close
+                    # from being relabelled when the receiver later drains it.
+                    received = getattr(msg, "received_monotonic", time.monotonic())
+                    before_stop = self._stop_issued_at is None or received <= self._stop_issued_at
+                    self.observe_closed(p.get("reason"), before_stop)
+                    if not before_stop:
+                        self._closed_event.set()
+                    else:
+                        await self._audio_error("Response Live connection closed")
+                        if not self._answer.done():
+                            self._answer.set_exception(RuntimeError(self.error))
+                    # Preserve the receiver for a new post-stop receipt. The
+                    # previous terminal event does not prove stop confirmation.
+                    continue
+                elif method in {"client/exit", "thread/realtime/error"}:
+                    await self._audio_error("Response Live app-server exited" if method == "client/exit"
+                                            else "Response Live RPC error")
+                    if not self._answer.done():
+                        self._answer.set_exception(RuntimeError(self.error))
+                    if method == "client/exit":
+                        return
+                    continue
+                elif method == "thread/realtime/item/completed":
+                    item = p.get("item", {})
+                    if (item.get("type") == "transcriptSegment" and item.get("role") == "assistant"
+                            and item.get("text", "").strip() == self._speech_text
+                            and self._speech and not self._speech.done()):
+                        self._speech.set_result(None)
+                await self.handle_notification(method, p)
+                # WebRTC output is captured once from incoming media. Never also
+                # play outputAudio/delta (would duplicate sideband + RTP).
+        except Exception as exc:
+            self._record_runtime_failure('notification', exc, code='response_notification_failed')
+            await self._audio_error(safe_error(exc))
+            if not self._answer.done():
+                self._answer.set_exception(RuntimeError(self.error))
+
+    async def _begin_output_speech(self, *, max_seconds=None):
+        if self.output_mode == "native":
+            await self.output.begin_speech(self.meeting_id)
+            return
+        await self.output.begin_speech(self.meeting_id, max_seconds=max_seconds)
+        try:
+            await self.peer.set_output_capture(True)
+        except BaseException:
+            try:
+                await self.peer.set_output_capture(False)
+            finally:
+                await self.output.end_speech()
+            raise
+
+    async def _end_output_speech(self):
+        try:
+            if self.output_mode == "pcm":
+                await self.peer.set_output_capture(False)
+        finally:
+            await self.output.end_speech()
+
+    async def speak(self, text):
+        async with self._lock:
+            if not self.started or self.error or not isinstance(text, str) or not text.strip():
+                raise RuntimeError("Response Live speech unavailable")
+            self._speech = asyncio.get_running_loop().create_future()
+            self._speech_text = text.strip()
+            await self._begin_output_speech()
+            try:
+                await self.rpc.request("thread/realtime/appendSpeech", {"threadId": self.thread_id, "text": text})
+                await self._speech
+                # Canonical text alone does not prove that audio arrived.
+                while self.output.activity_frames == 0 or self.output.clock() - self.output.last_active < .8:
+                    if self.error or not self.output.active:
+                        raise RuntimeError("Response output failed or speech lease expired")
+                    await asyncio.sleep(.05)
+                self.drain_result = await self.output.drain(timeout=3)
+                if self.drain_result["truncated"]:
+                    raise RuntimeError("Response output drain truncated")
+            finally:
+                await self._end_output_speech()
+                self._speech_text = None
+                if not self._speech.done():
+                    self._speech.cancel()
+                elif not self._speech.cancelled():
+                    self._speech.exception()
+                self._speech = None
+
+    async def close(self):
+        """One shielded shutdown operation, even with concurrent/repeated cancel.
+
+        Cancellation is delivered to the caller AFTER owned cleanup finishes.
+        It cannot cancel the receiver/peer/RPC cleanup task halfway through.
+        Stop evidence remains bounded and independent of local cleanup evidence.
+        """
+        self._closing = True
+        self.started = False
+        if self._close_task is None:
+            self._close_task = asyncio.create_task(self._close_impl())
+        cancelled = False
+        while not self._close_task.done():
+            try:
+                await asyncio.shield(self._close_task)
+            except asyncio.CancelledError:
+                cancelled = True
+            except Exception:
+                break  # task.result below propagates the recorded cleanup error
+        if cancelled:
+            # Retrieve an exception so it cannot become an unobserved task error;
+            # cleanup_errors/cleanup_status retain failure rather than success.
+            error = self._close_task.exception() if not self._close_task.cancelled() else None
+            raise asyncio.CancelledError() from error
+        return self._close_task.result()
+
+    async def _close_impl(self):
+        self.cleanup_status = "cleaning"
+        if self.thread_id:
+            self.stop_status = "unknown"
+        if self._speech and not self._speech.done():
+            self._speech.cancel()
+        async def cleanup(label, operation):
+            try:
+                await self._stage("cleanup_" + label, asyncio.wait_for, operation, self.cleanup_timeout)
+            except Exception as exc:
+                self.cleanup_errors.append(label + ": " + ("cleanup timed out" if isinstance(exc, TimeoutError) else safe_error(exc)))
+        try:
+            await cleanup("output", self.output.close())
+            if self.output_mode == "pcm":
+                await cleanup("capture", self.peer.set_output_capture(False))
+            # Keep receiver alive until bounded stop ACK AND own-thread closed.
+            if self.thread_id:
+                self.stop_status = "unknown"
+            if self.thread_id and self.rpc.process and self.rpc.process.returncode is None:
+                try:
+                    async with asyncio.timeout(self.stop_timeout):
+                        self._closed_event.clear()
+                        self._stop_issued_at = time.monotonic()
+                        await self._stage("stop_ack", self.rpc.request, "thread/realtime/stop", {"threadId": self.thread_id})
+                        self.stop_ack_received = True
+                        await self._stage("stop_closed", self._closed_event.wait)
+                    self.stop_status = "stopped"
+                except TimeoutError:
+                    self.stop_status = "timeout"
+                    self.stop_error = "Stop ACK/closed confirmation timed out"
+                except Exception as exc:
+                    self.stop_status = "unknown"
+                    self.stop_error = safe_error(exc)
+                finally:
+                    self.stop_closed_received = self._closed_event.is_set()
+        finally:
+            try:
+                if self.receiver:
+                    self.receiver.cancel()
+                    await asyncio.gather(self.receiver, return_exceptions=True)
+                    self.receiver = None
+            finally:
+                try:
+                    await cleanup("peer", self.peer.close())
+                finally:
+                    await cleanup("rpc", self.rpc.close())
+                if hasattr(self, "_answer"):
+                    if not self._answer.done():
+                        self._answer.cancel()
+                    elif not self._answer.cancelled():
+                        self._answer.exception()
+                self._cleanup_done = not self.cleanup_errors
+                self.cleanup_status = "unknown" if self.cleanup_errors else "cleaned"
+        if self.cleanup_errors:
+            self.error = "Owned response cleanup failed: " + "; ".join(self.cleanup_errors)
+            raise RuntimeError(self.error)
+        return self.stop_status

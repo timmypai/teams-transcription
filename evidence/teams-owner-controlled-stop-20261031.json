@@ -1,0 +1,159 @@
+{
+  "recorded_at": "2026-10-31T16:43:13.202110+00:00",
+  "scope": "Cancel fixed meeting lifetime; retain original stop, meeting-end, authorization, lease and cleanup controls",
+  "base_sha": "080ea4e8f8deaa6ec4a5ebbc4f1e29616dbdbe66",
+  "branch": "fix/teams-owner-controlled-stop",
+  "historical_run": {
+    "id": 41218254258,
+    "source": "Parent relayed host readback plus existing verified artifact",
+    "stop_codes": [
+      "teams_acceptance_deadline",
+      "operator_stop"
+    ],
+    "work_started_at": "2026-10-31T16:09:08Z",
+    "joined_at": "2026-10-31T16:10:09Z",
+    "deadline_at_approximately": "2026-10-31T16:11:08Z",
+    "cleanup_completed_at": "2026-10-31T16:11:13Z",
+    "source_rx_packets": 2687,
+    "model_starts": 2,
+    "ledger_consumed": 16,
+    "historical_receipt_modified": false
+  },
+  "red_green": {
+    "owner_policy_rejected_before_fix": {
+      "tests": 1,
+      "errors": 1,
+      "log_sha256": "ec0c4b70974fc1a8fc0191e32f8b20de3c02438b0222f3b5ebb3ef6b2a471fa7"
+    },
+    "cleanup_primary_error_red": {
+      "tests": 1,
+      "failures": 1,
+      "errors": 1,
+      "log_sha256": "88125836f2ff0242cb270756f357b6908bc637b16ef5ec3a5aa25f9d363a6d90"
+    },
+    "cleanup_primary_error_green": {
+      "tests": 1,
+      "subcases": 2,
+      "seconds": 0.004
+    },
+    "test_fixture_note": "Initial targeted lock-release assertion used a nonexistent hardcoded fixture lock path; corrected to read the existing fixture authority lock_path; no runtime limit relaxed"
+  },
+  "verification": {
+    "focused_command": "PYTHONPATH=tests:. python -m unittest test_teams_acceptance test_teams_acceptance_host test_workflow_triggers -v",
+    "focused_tests": 34,
+    "focused_seconds": 1.262,
+    "focused_failures": 0,
+    "focused_errors": 0,
+    "initial_aggregate_tests": 418,
+    "initial_aggregate_success": true,
+    "final_aggregate": {
+      "scope": "controlled offline subset",
+      "suites": [
+        "test_assistant_store",
+        "test_assistant_daemon",
+        "test_calendar_client",
+        "test_glossary_context",
+        "test_admin_web",
+        "test_sqlite_voice_context",
+        "test_sqlite_only_store",
+        "test_b_no_plc_startup",
+        "test_rx_contract",
+        "test_prefetch_codex_npm",
+        "test_staging_control",
+        "test_capture_cleanup_review",
+        "test_release_gate",
+        "test_diagnostic_projection",
+        "test_codex_auth",
+        "test_provider_state",
+        "test_workflow_triggers",
+        "test_pr_policy",
+        "test_pr_policy_github",
+        "test_pr_policy_workflow",
+        "test_staging_docker_diagnostics",
+        "test_staging_compose",
+        "test_first_deploy_recovery",
+        "test_qa_probe.ProbeTests",
+        "test_qa_receiver_projection",
+        "test_qa_audio_observer",
+        "test_qa_content",
+        "test_qa_candidate_versions",
+        "test_cloud_qa_semantic.SemanticRuntimeTests",
+        "test_cloud_qa_startup.StartupRuntimeTests",
+        "test_teams_acceptance",
+        "test_teams_acceptance_host",
+        "test_cloud_qa_contract",
+        "test_cloud_qa_bridge.CloudQABridgeTests",
+        "test_cloud_qa_isolated.CloudQAIsolatedTests",
+        "test_turn_lifecycle_evidence.TurnLifecycleEvidenceTests",
+        "test_speech_completion_snapshot.SpeechCompletionSnapshotTests",
+        "test_incremental_minutes_context.ContextTests.test_wire_instruction_distinguishes_verbatim_quote_and_normal_answers",
+        "test_native_incremental_context.NativeSnapshotContextTests.test_delivery_receipt_hashes_identify_actual_current_payload_without_content",
+        "test_b_native.NativeLiveTests.test_live_prompt_distinguishes_verbatim_format_from_normal_current_fact_answers",
+        "test_b_native.NativeLiveTests.test_three_physical_questions_in_one_provider_turn_query_current_sqlite_each_time"
+      ],
+      "tests": 419,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "success": true,
+      "teams_or_model_called": false,
+      "audio_e2e_tested": false
+    },
+    "final_aggregate_seconds": 33.587,
+    "final_aggregate_log_sha256": "cfb8e5246d7f23c100d4e8520f90753f9e3d406d7609362eceb9b069c9075e22",
+    "actionlint": "Passed existing pinned local actionlint on oracle-teams.yml",
+    "diff_whitespace_check": "Passed"
+  },
+  "independent_cloud_reviews": {
+    "spec": {
+      "unresolved_findings": 0,
+      "directed_tests_passed": 4,
+      "seconds": 0.137
+    },
+    "standards": {
+      "initial_confirmed_findings": 1,
+      "severity": "P2",
+      "finding": "Maintenance cleanup could replace primary failure",
+      "resolved_with_red_green": true,
+      "directed_subcases_passed": 2,
+      "seconds": 0.003,
+      "unresolved_findings": 0
+    },
+    "native_github_review": "Not requested; no PR created"
+  },
+  "lifecycle": {
+    "new_admission_duration": null,
+    "new_admission_stop_policy": "owner_or_meeting_end",
+    "legacy_finite_policy": "Readable in historical evidence; refused for new Join",
+    "configured_max_duration": "Must be null for owner-controlled admission; refused rather than replaced by another cap",
+    "start": "Single Join; existing daemon owns meeting after exact durable handoff; Actions command exits",
+    "active_interlock": "Preserves original two reservations/request/run/source/release; prevents other QA starts",
+    "stop": "Binds original owned claim; mute/stop once; cleanup proof; maintenance restore; settles original two slots; no refund",
+    "natural_end": "Existing actual authorized occurrence/confirmed meeting end still stops; stop command finalizes original reservation",
+    "network_and_cleanup_timeouts": "Per-operation HTTP/join/ICE/cleanup limits retained; not meeting lifetime",
+    "actions_timeout": "Unchanged five-minute control-command bound, not a meeting timer"
+  },
+  "source_preparation_hashes": {
+    "deploy/teams_acceptance.py": "a706731da4d78d6d2680dcf7fcd469adad50267bdee5f30dc53a97a4e58032f0",
+    ".github/workflows/oracle-teams.yml": "b8a29f23a0f1f7f674976e6172a60222110f6b31491d2b1fe5dfdfb762831ee9"
+  },
+  "installation_required_but_not_applied": [
+    "New reviewed ARM image and fixed release pins",
+    "Reviewed root-owned helper supporting stop",
+    "Explicit null-duration authority for actual approved occurrence/revision",
+    "Existing manual workflow stop operation; same main-only hook, no new hook case"
+  ],
+  "cost_boundary": "Two starts are not a model-minutes budget; longer authorized meetings can consume additional existing account resources. No purchases or billing changes. Future real meeting scope/cost approval must cover actual usage.",
+  "not_executed": [
+    "PR creation",
+    "merge",
+    "ARM workflow",
+    "GHCR publication",
+    "Oracle installation or deployment",
+    "helper/authority/hook changes",
+    "meeting Join",
+    "model request"
+  ],
+  "model_usage_unchanged": "16/50",
+  "real_end_to_end": "Unverified for this candidate"
+}

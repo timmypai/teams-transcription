@@ -1,0 +1,120 @@
+{
+  "recorded_at": "2026-10-29T10:02:20.358208+00:00",
+  "repository": "paulpai0412/teams-transcription",
+  "base_sha": "d60c20383289798773b6b4d9bcde29ace23ca6ea",
+  "run_url": "https://github.com/paulpai0412/teams-transcription/actions/runs/40853500933",
+  "run_id": 40853500933,
+  "attempt": 1,
+  "requested_publish": true,
+  "remote_conclusion": "failure",
+  "failed_step": "Prepare public-only native ARM64 build contexts",
+  "actual_runner": "ubuntu-24.04-arm",
+  "remote_contracts": {
+    "scope": "controlled offline subset",
+    "suites": [
+      "test_assistant_store",
+      "test_assistant_daemon",
+      "test_calendar_client",
+      "test_glossary_context",
+      "test_admin_web",
+      "test_sqlite_voice_context",
+      "test_sqlite_only_store",
+      "test_rx_contract",
+      "test_prefetch_codex_npm",
+      "test_staging_control",
+      "test_capture_cleanup_review",
+      "test_release_gate",
+      "test_diagnostic_projection",
+      "test_codex_auth",
+      "test_provider_state",
+      "test_workflow_triggers"
+    ],
+    "tests": 186,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0,
+    "success": false,
+    "teams_or_model_called": false,
+    "audio_e2e_tested": false
+  },
+  "failing_test": "test_rx_contract.RxContractTests.test_unavailable_PCM_stats_do_not_stop_native_A",
+  "failure": "Expected run_confirmed return 0, got 1; original cloud assertion omitted error/cleanup status.",
+  "artifact": {
+    "id": 12888297367,
+    "name": "arm64-image-40853500933-1",
+    "sha256": "4583c1f0d1db1e2ec088ab0d8d49e360608091cb2bc95801e2abeea3d5ef96e4",
+    "verified_bytes": true,
+    "source": "GitHub connector download file copy; direct gh artifact storage redirect returned Forbidden and was not retried."
+  },
+  "diagnosis": {
+    "status": "Supported hypothesis; cloud exact error was not recorded.",
+    "local_stress": "Wrap existing Session.update with a synchronous 30ms sleep per call, run same existing test through real run_session/SQLite and fixture browser/provider. No production code or clock changed.",
+    "before": {
+      "ordinary_test": "passes",
+      "30ms_write_delay": {
+        "runs": 3,
+        "failures": 3,
+        "error": "rx_cleanup_unknown",
+        "end_reason": "duration_limit",
+        "cleanup_status": "unknown"
+      }
+    },
+    "after": {
+      "ordinary_test": {
+        "runs": 3,
+        "failures": 0
+      },
+      "30ms_write_delay": {
+        "runs": 3,
+        "failures": 0
+      }
+    },
+    "change": "Only this optional-stats test: cleanup .2→1s, total .8→3s, readiness .3→1s; capture remains .15s. Add observer.assert_awaited and bounded status fields to failure assertion. Dedicated deadline tests and production runtime unchanged."
+  },
+  "local_aggregate": {
+    "scope": "controlled offline subset",
+    "suites": [
+      "test_assistant_store",
+      "test_assistant_daemon",
+      "test_calendar_client",
+      "test_glossary_context",
+      "test_admin_web",
+      "test_sqlite_voice_context",
+      "test_sqlite_only_store",
+      "test_rx_contract",
+      "test_prefetch_codex_npm",
+      "test_staging_control",
+      "test_capture_cleanup_review",
+      "test_release_gate",
+      "test_diagnostic_projection",
+      "test_codex_auth",
+      "test_provider_state",
+      "test_workflow_triggers"
+    ],
+    "tests": 186,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "success": true,
+    "teams_or_model_called": false,
+    "audio_e2e_tested": false
+  },
+  "actionlint": "v1.7.7 passed",
+  "validation_limits": [
+    "Controlled offline subset, not full original discovery",
+    "No new ARM run after fix yet",
+    "Docker build was skipped after offline failure",
+    "No published image, digest, or successful release provenance for this run",
+    "No Oracle/OAuth/Live/Teams execution"
+  ],
+  "related_issues": [
+    1,
+    2
+  ],
+  "safe_next_step": "Review source fix through Draft PR; main gate requires reviewed merge before a meaningful new ARM64 build. Do not blindly rerun unchanged source.",
+  "independent_review": {
+    "standards": "0 confirmed violations or actionable smells; target test independently passed",
+    "spec": "0 confirmed defects; target/capture-deadline/hung-cleanup tests independently passed",
+    "limitation": "Both reviewers require actual ARM validation; local slowdown is supporting evidence, not conclusive cloud root cause."
+  }
+}

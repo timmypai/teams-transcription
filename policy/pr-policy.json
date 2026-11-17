@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "mode": "shadow",
+  "repository": "paulpai0412/teams-transcription",
+  "native_review_adapter": "unverified",
+  "codex_app_id": null,
+  "codex_bot_user_id": null,
+  "manual_paths": [
+    ".github/*", ".agents/*", "AGENTS.md", "policy/*", "tools/*",
+    "deploy/*", "docker/*", "Dockerfile", ".dockerignore", "*compose*",
+    "pyproject.toml", "*requirements*", "*.lock", "*runtime*.yml", ".env*",
+    "teams_transcription/*auth*", "teams_transcription/*config*",
+    "teams_transcription/admin*", "teams_transcription/calendar_client.py",
+    "teams_transcription/cli.py", "teams_transcription/daemon.py",
+    "teams_transcription/rpc.py", "teams_transcription/live.py",
+    "teams_transcription/runtime_guard.py", "teams_transcription/provider*",
+    "teams_transcription/b_context.py", "teams_transcription/b_native.py",
+    "teams_transcription/assistant_store.py", "teams_transcription/meeting_store.py",
+    "teams_transcription/storage.py", "docs/QA*", "docs/*CONTRACT*",
+    "docs/*PREREQUISITES*", "docs/*DELIVERY*", "docs/pr-automation/*",
+    "docs/agents/*", "evidence/*", "TRANSFER*"
+  ],
+  "core_paths": ["teams_transcription/*.py", "teams_transcription/static/*"],
+  "ordinary_paths": ["docs/*.md", "README.md"],
+  "required_checks": {
+    "ordinary": ["pr-contracts"],
+    "core": ["pr-contracts", "pr-full-regression"]
+  }
+}

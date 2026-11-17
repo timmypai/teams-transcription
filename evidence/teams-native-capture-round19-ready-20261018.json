@@ -1,0 +1,90 @@
+{
+  "kind": "real_teams_round19_repaired_capture_admission_ready",
+  "recorded_at": "2026-10-18T10:48:27.922874+00:00",
+  "round": 19,
+  "service": "calendar-native-retest27",
+  "service_pid": 134350,
+  "session_id": "74787e81ca3f4f03bea563f6d8e8c34c",
+  "verified_source_receipt": "native-idle-output-capture-final-20261018.json",
+  "source_sha256_matches_verified_receipt": true,
+  "operator_fresh_ack": true,
+  "target": "operator-confirmed original link; not included",
+  "advance_notice_given": true,
+  "join_submissions_this_round": 1,
+  "google_calendar_writes": 0,
+  "stored_counts": {
+    "local_occurrences": 20,
+    "real_attempts": 19
+  },
+  "capture_state": "recording",
+  "A_live_state": "connected",
+  "A_input_mode": "native_media",
+  "A_transport_connection": "connected",
+  "B": {
+    "state": "sleeping",
+    "startup_phase": "ready",
+    "error_code": null,
+    "runtime_failure": null,
+    "native_contract": "v3-host-question",
+    "output_enabled": true,
+    "output_muted": true,
+    "progress": {
+      "context": {
+        "failure_code": null,
+        "known_paragraphs": 0,
+        "pending": false,
+        "sent_bytes": 0,
+        "total_limit_bytes": null
+      },
+      "fanout": {
+        "accepted_packets": 854,
+        "clock_missing_packets": 0,
+        "error_packets": 0,
+        "offered_packets": 893,
+        "rejected_packets": 39
+      },
+      "pending_input": {
+        "characters": 0,
+        "has_question": false,
+        "has_wake": false
+      },
+      "question_receipts": {
+        "admitted": 0,
+        "last_rejection": null,
+        "received": 0,
+        "rejected": 0
+      },
+      "rx": {
+        "accepted_packets": 854,
+        "dropped_packets": 0,
+        "peer_push_packets": 854
+      },
+      "schema_version": 2,
+      "speech": {
+        "activity_frames": 0,
+        "done_is_set": false,
+        "drained": false,
+        "error_code": null,
+        "nonzero_frames": 0,
+        "output_active": false,
+        "packet_frames": 0,
+        "packet_nonzero_frames": 0,
+        "phase": "not_started",
+        "truncated": false
+      },
+      "state": "sleeping",
+      "tool_calls": 0,
+      "tool_deliveries": [],
+      "transcripts": {
+        "assistant_delta": 0,
+        "assistant_done": 0,
+        "user_delta": 0,
+        "user_done": 0
+      }
+    }
+  },
+  "ready_only_not_acceptance": true,
+  "human_speech_result": "awaiting_operator",
+  "remote_audibility": "unverified",
+  "no_real_meeting_content_or_credentials_in_receipt": true
+}

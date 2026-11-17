@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "kind": "offline_semantic_qa_candidate_preparation",
+  "criterion_version": "synthetic_current_fact_semantic_v1",
+  "qa_receipt_schema_version": 3,
+  "base_repository_sha": "8dd156ab287b653fd3553de21b9a9592e81f22f4",
+  "runtime_authorized": false,
+  "legacy_candidates_compatible": false,
+  "legacy_candidates_unchanged": [
+    "d5f729f6db228cc60b67674a031e99bc0545629b",
+    "836ecbe88d69b14a66326474d08a4c26d15c1e90"
+  ],
+  "files": {
+    "teams_transcription/qa_content.py": "55afeac6ec7cf9315f00fafc772261b4e680be835c465e26239467a4cd1734cc",
+    "teams_transcription/qa_probe.py": "e40e2de9dc436573e93d04ea2c970ed519244c17c2ea055728deb136b8dbb862"
+  }
+}

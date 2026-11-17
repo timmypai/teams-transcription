@@ -1,0 +1,81 @@
+{
+  "recorded_at": "2026-10-29T08:41:07.788088+00:00",
+  "previous_commit": "389727211a09f4d27e334e6ffd703ed290e33bf9",
+  "policy": "All four branch workflows and all existing main workflows are workflow_dispatch only; no push/PR runner triggers. Future automatic triggers require separate cost approval.",
+  "remote_main_inspected": "bf0a108237608e6ee5cea3e93e08e9b3105f38ad",
+  "main_workflows": {
+    ".github/workflows/meeting-functional-validation.yml": [
+      "workflow_dispatch"
+    ]
+  },
+  "branch_workflows": {
+    "meeting-functional-validation.yml": [
+      "workflow_dispatch"
+    ],
+    "arm64-image.yml": [
+      "workflow_dispatch"
+    ],
+    "oracle-diagnostics.yml": [
+      "workflow_dispatch"
+    ],
+    "oracle-staging.yml": [
+      "workflow_dispatch"
+    ]
+  },
+  "trigger_test_red": "failed on pull_request and push before removal",
+  "trigger_test_green": true,
+  "actionlint": "v1.7.7 passed",
+  "offline_aggregate": {
+    "scope": "controlled offline subset",
+    "suites": [
+      "test_assistant_store",
+      "test_assistant_daemon",
+      "test_calendar_client",
+      "test_glossary_context",
+      "test_admin_web",
+      "test_sqlite_voice_context",
+      "test_sqlite_only_store",
+      "test_rx_contract",
+      "test_prefetch_codex_npm",
+      "test_staging_control",
+      "test_capture_cleanup_review",
+      "test_release_gate",
+      "test_diagnostic_projection",
+      "test_codex_auth",
+      "test_provider_state",
+      "test_workflow_triggers"
+    ],
+    "tests": 186,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "success": true,
+    "teams_or_model_called": false,
+    "audio_e2e_tested": false
+  },
+  "skills_inventory": "27 skills, hashes and routes passed",
+  "pre_push_scan": {
+    "changed_paths": 125,
+    "sensitive_paths": [],
+    "unexpected_credentials": [],
+    "exact_known_synthetic_test_matches": [
+      {
+        "path": "tests/test_diagnostic_projection.py",
+        "kind": "google_token"
+      }
+    ]
+  },
+  "variables_read": "Previously denied HTTP403. Not retried; values unknown. Manual triggers do not depend on them.",
+  "prior_image_evidence": "github-delivery-onboarding-completion-20261029.json; x64 21 smoke and 7 content checks, no new image build for workflow/docs/test-only changes.",
+  "pending": [
+    "Native ARM64 build",
+    "Actions API real provenance gate",
+    "GHCR publish",
+    "Oracle runtime/deploy/rollback/diagnostics",
+    "Actual runner hook rejection",
+    "Effective VM log rotation and disk availability; 64KiB is projection read cap, not temporary disk cap",
+    "Personal OAuth grant/refresh/revocation",
+    "Live RX/TX and real Teams E2E"
+  ],
+  "remote_actions_this_followup": "Branch push and Draft PR authorized, not yet performed when receipt recorded; no dispatch/merge/approve/publish/deploy."
+}

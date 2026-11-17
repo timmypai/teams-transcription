@@ -1,0 +1,16 @@
+{
+  "seed_head": "a683fe4c379595787fcd0882a35d8cd76a2bd436",
+  "public_sqlite_upgrade": true,
+  "before_pending_snapshot_revisions": [
+    2,
+    3
+  ],
+  "after_pending_snapshot_revisions": [
+    3,
+    3
+  ],
+  "old_revision": 4,
+  "new_revision": 5,
+  "replay_unchanged": true,
+  "no_reaccept_or_close": true
+}

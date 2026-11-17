@@ -1,0 +1,267 @@
+{
+  "passed": false,
+  "teams_joined": false,
+  "calendar_writes": 0,
+  "physical_input_output": false,
+  "uses_formal_production_prompt": true,
+  "synthetic_text_gate": false,
+  "same_thread_all_questions": true,
+  "no_wake": {
+    "tool_calls": 0,
+    "accepted_output_frames": 0,
+    "runtime_error": false
+  },
+  "connected_seconds": 509.424,
+  "cleanup": {
+    "local_A_media": true,
+    "local_receiver": true,
+    "capture": true,
+    "B": true,
+    "browser": true
+  },
+  "stop_result": "stopped",
+  "model_process_reaped": true,
+  "kind": "native_speakable_completion_cue_negative",
+  "requested_model": "gpt-live-1-codex",
+  "codex_version": "0.159.0-alpha.3",
+  "production_changed": false,
+  "protocol_diagnostic": {
+    "kind": "supported_speakable_marker_routing_prototype",
+    "production_changed": false,
+    "source_chunks_channel": "commentary",
+    "marker_channel": "speakable",
+    "speakable_cues_sent": 7,
+    "wire_marker_spoken": false,
+    "usage_field_shapes": [
+      {
+        "usage": [
+          "audio_duration_ms",
+          "backend_model_usage"
+        ],
+        "usage_limit": [
+          "reset_seconds",
+          "status"
+        ]
+      }
+    ],
+    "usage_numbers": [
+      {
+        "usage.audio_duration_ms": 14200
+      },
+      {
+        "usage.audio_duration_ms": 29000
+      },
+      {
+        "usage.audio_duration_ms": 44000
+      },
+      {
+        "usage.audio_duration_ms": 59000
+      },
+      {
+        "usage.audio_duration_ms": 74000
+      },
+      {
+        "usage.audio_duration_ms": 89000
+      },
+      {
+        "usage.audio_duration_ms": 104200
+      },
+      {
+        "usage.audio_duration_ms": 119200
+      },
+      {
+        "usage.audio_duration_ms": 134200
+      },
+      {
+        "usage.audio_duration_ms": 149000
+      },
+      {
+        "usage.audio_duration_ms": 164200
+      },
+      {
+        "usage.audio_duration_ms": 179200
+      },
+      {
+        "usage.audio_duration_ms": 194200
+      },
+      {
+        "usage.audio_duration_ms": 208400
+      },
+      {
+        "usage.audio_duration_ms": 223600
+      },
+      {
+        "usage.audio_duration_ms": 238600
+      },
+      {
+        "usage.audio_duration_ms": 253600
+      },
+      {
+        "usage.audio_duration_ms": 268200
+      },
+      {
+        "usage.audio_duration_ms": 283000
+      },
+      {
+        "usage.audio_duration_ms": 298000
+      },
+      {
+        "usage.audio_duration_ms": 313200
+      },
+      {
+        "usage.audio_duration_ms": 328200
+      },
+      {
+        "usage.audio_duration_ms": 342600
+      },
+      {
+        "usage.audio_duration_ms": 357800
+      },
+      {
+        "usage.audio_duration_ms": 373000
+      },
+      {
+        "usage.audio_duration_ms": 388000
+      },
+      {
+        "usage.audio_duration_ms": 402400
+      },
+      {
+        "usage.audio_duration_ms": 417600
+      },
+      {
+        "usage.audio_duration_ms": 432600
+      },
+      {
+        "usage.audio_duration_ms": 447400
+      },
+      {
+        "usage.audio_duration_ms": 462600
+      },
+      {
+        "usage.audio_duration_ms": 477600
+      },
+      {
+        "usage.audio_duration_ms": 492600
+      },
+      {
+        "usage.audio_duration_ms": 507600
+      }
+    ],
+    "turn_delta_shapes": [
+      {
+        "top_keys": [
+          "delta",
+          "end_ms",
+          "start_ms",
+          "turn_id",
+          "type"
+        ]
+      }
+    ]
+  },
+  "passed_questions": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ],
+  "context": {
+    "sent_bytes": 24396,
+    "total_limit_bytes": null,
+    "known_paragraphs": 4,
+    "source_version": 3,
+    "pending": false,
+    "model_consumption_verified": false,
+    "preparing": false,
+    "delivery_scope": "successful_host_send_returns_this_live_thread"
+  },
+  "last_question": {
+    "number": 8,
+    "stimulus": {
+      "source_completed": true,
+      "frames": 191418,
+      "audio_seconds": 7.97575,
+      "context_elapsed": 8.186666666666667,
+      "wall_seconds": 8.755
+    },
+    "input_pending": {
+      "characters": 31,
+      "has_wake": true,
+      "has_question": true
+    },
+    "runtime_failure": null,
+    "error": false,
+    "state": "sleeping",
+    "elapsed_seconds": 63.777,
+    "sender_before": {
+      "point": "question_before",
+      "received_seconds": 445.6360732100002,
+      "read_status": "returned",
+      "connection": "connected",
+      "data_channel": "open",
+      "audio_context_state": "running",
+      "sent_frames": 10672128,
+      "buffer_gap_count": 176,
+      "buffer_gap_frames": 26368,
+      "scheduled_queue_ms": 103,
+      "outbound_audio": [
+        {
+          "bytesSent": 811261,
+          "packetsSent": 22595
+        }
+      ]
+    },
+    "sender_after": {
+      "point": "question_after",
+      "received_seconds": 509.41299332100607,
+      "read_status": "returned",
+      "connection": "connected",
+      "data_channel": "open",
+      "audio_context_state": "running",
+      "sent_frames": 12199936,
+      "buffer_gap_count": 201,
+      "buffer_gap_frames": 30464,
+      "scheduled_queue_ms": 135,
+      "outbound_audio": [
+        {
+          "bytesSent": 930989,
+          "packetsSent": 25821
+        }
+      ]
+    },
+    "capture_counts": {
+      "offered": 5957,
+      "accepted": 5957,
+      "rejected": 0,
+      "invalid_clock": 0
+    },
+    "A_native_media": {
+      "ready": true,
+      "available": true,
+      "failed": false,
+      "failure_code": "none",
+      "stopped": false,
+      "capture_enabled": true,
+      "frame_count": 1,
+      "connected_frames": 1,
+      "live_tracks": 1,
+      "cleanup_status": "pending",
+      "packets_received": 25783,
+      "bytes_received": 929320
+    },
+    "tool_calls": 0,
+    "reader_calls": 0,
+    "passed": false,
+    "raw_event_type_counts": {
+      "input_transcript.added": 19,
+      "turn.created": 1
+    }
+  },
+  "stop_ack_received": true,
+  "stop_closed_received": true,
+  "conclusion": "Seven valid speakable completion cues did not restore native final/delegation for the eighth fully transmitted question. No native completion was synthesized. This prototype is not promoted. Usage-limit field names were seen, but their status and nested model usage were not captured by this observer; no quota diagnosis is claimed."
+}

@@ -1,0 +1,27 @@
+{
+  "repository": "https://github.com/paulpai0412/teams-transcription",
+  "commit": "c4090edb0e8e5db50d8950515522dba733618c51",
+  "path": "teams_transcription/qa_probe.py",
+  "sha256": "c718c7e08600b383a9916be3684393dcd531fb86007be8811b60a2431be39197",
+  "scope": "Exact historical source bytes, test-only isolated package; no model/config/browser invocation by loading this fixture.",
+  "additional_exact_runtime_fixtures": {
+    "b_media_profile.py": {
+      "source_commit": "c4090edb0e8e5db50d8950515522dba733618c51",
+      "source_path": "teams_transcription/b_media_profile.py",
+      "fixture_path": "b_media_profile.py.txt",
+      "sha256": "1dfac1d3515b40874fe52408b1540660a2c8ae661620e095feb566f207257882"
+    },
+    "b_browser_tx.py": {
+      "source_commit": "c4090edb0e8e5db50d8950515522dba733618c51",
+      "source_path": "teams_transcription/b_browser_tx.py",
+      "fixture_path": "b_browser_tx.py.txt",
+      "sha256": "0fac0d1e3d84aa40037ed12f66595fbc87d1b8739f0da7d16f8bc86f2381eda9"
+    },
+    "b_live.py": {
+      "source_commit": "c4090edb0e8e5db50d8950515522dba733618c51",
+      "source_path": "teams_transcription/b_live.py",
+      "fixture_path": "b_live.py.txt",
+      "sha256": "1415852671c4377860511f93df284c12750f88165cbcef8021349c4090304547"
+    }
+  }
+}

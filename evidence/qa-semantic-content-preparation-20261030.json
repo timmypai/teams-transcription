@@ -1,0 +1,101 @@
+{
+  "observed_at": "2026-10-30T15:15:35.087437+00:00",
+  "branch": "test/qa-semantic-content-v1",
+  "baseline": "8dd156ab287b653fd3553de21b9a9592e81f22f4",
+  "state": "local reviewed source preparation only; no push/PR/model/deployment",
+  "criterion": "synthetic_current_fact_semantic_v1",
+  "files": {
+    "docs/QA-CONTENT-CRITERION.md": "b38a315fa8fb933ac919b6be30847c4a124ac5877352f09224bea278cea0f0fa",
+    "evidence/qa-semantic-candidate-v1.json": "9036aaf645faecb5a92bf78b81d23daaccc8535542de92c054ff9f8dd52bd8eb",
+    "teams_transcription/qa_content.py": "55afeac6ec7cf9315f00fafc772261b4e680be835c465e26239467a4cd1734cc",
+    "teams_transcription/qa_probe.py": "e40e2de9dc436573e93d04ea2c970ed519244c17c2ea055728deb136b8dbb862",
+    "tests/fixtures/qa-c4090ed/PROVENANCE.json": "4e17843f5482297c79479654234bf7b83b7aefcc6700631c09a771f5bfb7b8fe",
+    "tests/fixtures/qa-c4090ed/qa_probe.py.txt": "c718c7e08600b383a9916be3684393dcd531fb86007be8811b60a2431be39197",
+    "tests/qa_c409_fixture.py": "2383545f2ff09b8146dad391c90025ac998059ad347f52700d158fd7f38608fb",
+    "tests/test_cloud_qa_bridge.py": "bd0c8e2aae4e214c92f3d05bbdd622043e906791fcc2e44383518e09e0b3ca59",
+    "tests/test_cloud_qa_isolated.py": "c9701f387751892d4575ef5e11e3ac7267d9aee10fe3bdc324a4d89e01383db8",
+    "tests/test_qa_audio_observer.py": "621d8205bba83c2584636b641ec386287a08d6e122c952d2bb1026accc6d3950",
+    "tests/test_qa_candidate_versions.py": "7c35c77b83623311b8b379540563d65558dfab867304de11112c6026a704243b",
+    "tests/test_qa_content.py": "42940472b4acd661b335a3b2936257cda165a4bce6945be2dbedd1157397577a",
+    "tests/test_qa_probe.py": "de905c1907d62b2d700d9f17c2ca4951b6d3bb7dffbce51525dbd2cd44e08bd1",
+    "tools/check_qa_semantic_candidate.py": "2f9368c0ef5b9fdc8ec69e6ba308c3c1eed90ef83ce723a968dc258258ff21d2",
+    "tools/ci_contracts.py": "6b4c45485cb285a1be6dfafd3b2a0d67a19149537242f26fe96e07967ae7d23b"
+  },
+  "focused_final": {
+    "tests": 46,
+    "failures": 0,
+    "errors": 0,
+    "log": "/tmp/qa-semantic-focused-final-bounded.log"
+  },
+  "aggregate_before_last_normalization_guard": {
+    "tests": 321,
+    "failures": 3,
+    "errors": 2,
+    "skipped": 0,
+    "success": false,
+    "failed_cases": [
+      "ERROR: test_observer_preserves_base_qa_result_and_stops_before_owned_cleanup (test_qa_audio_observer.ObservedProbeTests.test_observer_preserves_base_qa_result_and_stops_before_owned_cleanup)",
+      "ERROR: test_uncertain_browser_read_is_not_retried_and_does_not_replace_qa_outcome (test_qa_audio_observer.ObservedProbeTests.test_uncertain_browser_read_is_not_retried_and_does_not_replace_qa_outcome)",
+      "FAIL: test_real_candidate_offline_container_protocol_checks_hashes_and_never_runs_live (test_cloud_qa_bridge.CloudQABridgeTests.test_real_candidate_offline_container_protocol_checks_hashes_and_never_runs_live)",
+      "FAIL: test_fixed_b_offline_loader_and_live_route_never_import_a_observation (test_cloud_qa_isolated.CloudQAIsolatedTests.test_fixed_b_offline_loader_and_live_route_never_import_a_observation) (mode='isolated-offline')",
+      "FAIL: test_fixed_b_offline_loader_and_live_route_never_import_a_observation (test_cloud_qa_isolated.CloudQAIsolatedTests.test_fixed_b_offline_loader_and_live_route_never_import_a_observation) (mode='isolated')"
+    ],
+    "cause": "fixed reviewed c409 QA source hashes reject changed qa_probe; all fixed candidate files/manifests retained unchanged",
+    "log": "/tmp/qa-semantic-contracts-final/contracts.log",
+    "release_ready": false
+  },
+  "first_failure_preserved": {
+    "test": "test_qa_probe.ProbeTests.test_cancellation_finally_spawned_rpc_close_is_counted_and_closed",
+    "assertion": "self.assertTrue(instances[0].rpc._close_task.done()) before fallback; actualFalse",
+    "fixture": "WORK_SECONDS.03/CLEANUP_SECONDS.15, syntheticrpc child sleep; no model. Cleanup code/deadlines/assertion unchanged by semantic change.",
+    "log": "/tmp/qa-semantic-focused-first.log",
+    "bounded_new_branch": {
+      "tests": 1,
+      "passed": true,
+      "log": "/tmp/qa-semantic-cleanup-directed.log"
+    },
+    "bounded_baseline": {
+      "tests": 1,
+      "passed": true,
+      "log": "/tmp/qa-semantic-baseline-cleanup.log"
+    },
+    "root_cause": "unconfirmed; passing reruns do not erase first failure"
+  },
+  "review": {
+    "Spec": "0confirmed final fixture isolation review;4versiontests passed; exacthostprefixbytes still missing",
+    "Standards": "0confirmed final fixture/checker review;4versiontests passed"
+  },
+  "immutable_candidates": "Legacy A d5f729f/B836ecbe and11 loader/candidate/manifest files byte-identical to8dd156a. Oldtestpositivefixtures isolated; oldloaders still rejectnewbytes. Newsemanticmanifest/runtime_authorizedfalse is separate.",
+  "historical_evidence": "old receipts/runs not rewritten; hostmanualBsemanticpass is not automatic verification by this parser; exactsyntheticprefixbytes missing",
+  "source_scan": "0knowncredentialpatterns; no runtimeprivatecontent",
+  "model_requests": 0,
+  "quota": "10/50 checkpoint unchanged; no host ledger I/O",
+  "focused_isolated_final": {
+    "tests": 80,
+    "failures": 0,
+    "errors": 0,
+    "log": "/tmp/qa-semantic-isolated-focused.log"
+  },
+  "aggregate_isolated_final": {
+    "tests": 326,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "success": true,
+    "scope": "controlled offline subset, not full discovery/actualbrowser",
+    "log": "/tmp/qa-semantic-isolated-contracts/contracts.log"
+  },
+  "fixture_isolation": {
+    "historical_commit": "c4090edb0e8e5db50d8950515522dba733618c51",
+    "qa_source_sha256": "c718c7e08600b383a9916be3684393dcd531fb86007be8811b60a2431be39197",
+    "fixture_bytes": 41376,
+    "separate_child_physical_package": true,
+    "four_base_hashes_verified_before_subprocess": true,
+    "legacy_files_unchanged": 11,
+    "legacy_loaders_reject_new_semantic_source_test_passed": true
+  },
+  "semantic_manifest_sha256": "9036aaf645faecb5a92bf78b81d23daaccc8535542de92c054ff9f8dd52bd8eb",
+  "source_preparation_checks_passed": true,
+  "runtime_release_ready": false,
+  "cleanup_cause_assessment": "Failuremode waits forever before question completion, so new assess_content call after completed question is not reached. Cleanup implementation/budgets unchanged. Shared scheduler/resource effects remain possible but were not measured;1targetnew+1baseline passes do not establishcause/resolution. Firstfailure retained; no additional directedreruns."
+}

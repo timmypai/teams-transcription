@@ -1,0 +1,69 @@
+{
+  "kind": "native_session_age_usage_isolation_not_long_acceptance",
+  "passed": false,
+  "investigation_only": true,
+  "not_full_system_acceptance": true,
+  "teams_joined": false,
+  "calendar_writes": 0,
+  "physical_input_output": false,
+  "failure": {
+    "type": "TimeoutError",
+    "code": null,
+    "stage": "ready"
+  },
+  "capture_counts": {
+    "offered": 3568,
+    "accepted": 3568,
+    "rejected": 0,
+    "invalid_clock": 0
+  },
+  "raw_event_counts": {
+    "session.started": 1,
+    "input_transcript.added": 6,
+    "turn.created": 1,
+    "turn.delta": 5,
+    "session.usage.updated": 44
+  },
+  "cleanup": {
+    "local_A_media": true,
+    "local_receiver": true,
+    "capture": true,
+    "B": true,
+    "browser": true
+  },
+  "stop_result": "stopped",
+  "model_process_reaped": true,
+  "requested_model": "gpt-live-1-codex",
+  "codex_version": "0.159.0-alpha.3",
+  "scheduled_first_question_seconds": 480,
+  "question_stimuli_completed": 0,
+  "source_completion_timeout_seconds": 180,
+  "usage_event_count": 44,
+  "first_usage": {
+    "elapsed_seconds": 18.419,
+    "tool_calls": 0,
+    "usage": {
+      "audio_duration_ms": 14200,
+      "backend_model_usage": []
+    },
+    "usage_limit": {
+      "status": null,
+      "reset_seconds": null
+    }
+  },
+  "last_usage": {
+    "elapsed_seconds": 663.456,
+    "tool_calls": 0,
+    "usage": {
+      "audio_duration_ms": 659200,
+      "backend_model_usage": []
+    },
+    "usage_limit": {
+      "status": null,
+      "reset_seconds": null
+    }
+  },
+  "all_observed_usage_limit_statuses_null": true,
+  "all_observed_backend_usage_empty": true,
+  "conclusion": "Invalid delayed-question stimulus: no source onended before the existing 180-second probe bound. This does not prove native failure after idle, quota exhaustion, or a session-duration limit. Usage-limit status/reset were null and backend_model_usage empty; provider capacity remains unknown. No production timeout, permission, or model was changed."
+}

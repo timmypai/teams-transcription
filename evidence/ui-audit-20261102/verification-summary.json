@@ -1,0 +1,107 @@
+{
+  "recorded_at": "2026-11-02T17:04:39.762926+00:00",
+  "branch": "feat/beta-meeting-workspace",
+  "reviewed_baseline": {
+    "pr": 41,
+    "head": "c37192bd10c3d5eb568813fb1d9c3a6b7b0e9a04",
+    "receipt": "https://github.com/paulpai0412/teams-transcription/pull/41#issuecomment-6581530842"
+  },
+  "package_source_manifest_sha256": "b451d8ff13475e9a1e7c50254b43aeb274d13a7431c5187a4ef12ca8b1878d15",
+  "browser_image": "sha256:d923c0ed6762413ebda9440cba934432c51a231d32c83e53b67f2a58716c57a7",
+  "runtime_source": "current source injected into container tmpfs and hash-verified; not final production image",
+  "focused_tests": {
+    "tests": 201,
+    "failures": 0,
+    "errors": 0,
+    "includes_existing_and_new_public_seams": true
+  },
+  "existing_offline_subset": {
+    "tests": 549,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "overlaps_focused_suite": true
+  },
+  "browser_phases": {
+    "1": {
+      "operations": 64,
+      "functional_checks": 24,
+      "failed_functional_checks": 1,
+      "observation_errors": 2,
+      "js_errors": 0,
+      "document_horizontal_overflow": 1
+    },
+    "2": {
+      "operations": 91,
+      "functional_checks": 30,
+      "failed_functional_checks": 0,
+      "observation_errors": 2,
+      "js_errors": 0,
+      "document_horizontal_overflow": 0
+    },
+    "3": {
+      "operations": 14,
+      "functional_checks": 4,
+      "failed_functional_checks": 0,
+      "observation_errors": 0,
+      "js_errors": 0,
+      "document_horizontal_overflow": 0
+    }
+  },
+  "phase3_observation_retries": [
+    1,
+    1
+  ],
+  "notification_inbox_before_after": [
+    2,
+    1
+  ],
+  "packaging": {
+    "wheel": "teams_transcription-0.3.0-py3-none-any.whl",
+    "sha256": "1aa21789e0eacef08184e6ce0187184ef4288c9121318b283ec6be3d7563b686",
+    "all_package_files_match_source": true
+  },
+  "screenshot_sha256": {
+    "00-rejected-login-missing-cjk-fonts.png": "66aad3408a8a35e4091f9a21ba0343c9c515c996e3b083bc1394d671bfed4d88",
+    "01-desktop-login.png": "6281e9190cbd2ede9a49a3d6102f2c8a53672efdabb5ab27cc397d2fcb0923b4",
+    "02-before-desktop-workspace.png": "414d3cc8df5b07352bcb6a5f2be636f337bbab70ffb206b04ac49c4fcc005dd8",
+    "03-before-mobile-workspace.png": "071ac64b5ea800eb4e506c7e078c9cb126721c8a54bfc26d999d0f87992687c7",
+    "04-before-mobile-expanded.png": "7cc1478a1c4fbbca794ccb77d4f51d86957cf00544f029512d63a6552145efee",
+    "05-after-desktop-workspace.png": "9eb7a9719dbe2436be4fb743db09d7651f025a55f263bd5ebfbf1fdbb89c3cd1",
+    "06-after-mobile-expanded.png": "28b36b2b108d9203b8f2abbf0e2080afd6ed61154aecb073feb706c08b1e7eca",
+    "07-after-mobile-summary-keyboard.png": "7a363923fb3cc87f0416385ffab464c8c3ed23a77cce92a22b7d4cd8ce8e3035",
+    "08-mobile-task-form.png": "2883ba355869cc196968f416ebed7752b528279d4ca6cd31c3eef6778342b3f4",
+    "09-mobile-confirmation-error.png": "c2f233083fc2b0ed1bad26c37b99e016f9fbbb184b42874cc51aab8f004baa9c",
+    "10-mobile-error-form-settled.png": "c69c3d06377865db607911573c999905d75f57e10827b9b101d20ab7bdc6a82b",
+    "11-mobile-completion-evidence.png": "9f9e9fa2dcdfacbb5475cc74c9c7b66daa81cf34d9c3406015286ee0aea13052",
+    "12-mobile-history-and-completed-task.png": "7a650cf4e9ae224b1a940cd9fa26b1cc3e5bb77c765bdd09dc44dfede68c705e",
+    "13-desktop-original-source-history.png": "290f4f3966db9795b6e68b705ba9510bee2a32aae1f913e4a1880bbdc11ca0d8",
+    "14-final-desktop-latest.png": "38b90a5e1f925dc7b3a4504e17e1eaf552e9b6dd55c7872379eb5602f0dc1cc3",
+    "15-final-mobile-summary-keyboard.png": "bfa98d7a87612898bbebf3ebfcc9e5f5400a74c0b4909aa33ee52410dac2e4ff",
+    "16-final-mobile-task-form.png": "562f111385f946634494212a8d29372babe3410180f2e79ec2ab83bfa4ec8f32",
+    "17-final-mobile-recoverable-error.png": "ab223ae0f70a12fe3fad694e1d4bb5fecc08c45996200c72105a81d1de0f562a",
+    "18-final-mobile-completion-proof.png": "303ea489f582865ed1231930e34896edffe32506e188b52c483fb346a1d94589",
+    "19-final-desktop-human-change.png": "c5653075004c49bf8c85ade2363847bd56cfe04a004c6c48315b7784bd76e5c2",
+    "20-final-settings-google-unconnected.png": "d124546e3ffda8b2626975d7705d3fd19999868408f3945418522342c2f49e7e",
+    "21-final-mobile-empty-meeting.png": "6abfb0b03e86e015c150b6ce54267dd100e9b249252dae3b0968527e2b06bf11",
+    "22-final-desktop-pending-handoff.png": "6c0ca745716ad4600f8b47e9d6ec9efe695ed4ed4a9b49f72b062b5a4ad4245f",
+    "23-final-desktop-original-history.png": "e7f2cc432406f3fda332e813a96597032982e27788ca5d80e174c668db1dfba2",
+    "24-final-mobile-original-history.png": "d17d4e86262b01ef7c06f9f55262d75a8c397749f159f3f97d99855947edb16c",
+    "25-final-mobile-series-latest.png": "dff8af48de4cffdfe9a0871e6b6e2dccb3536c52d8590d196dab9b5dc5b9dbc1"
+  },
+  "rejected_or_partial_screenshots": [
+    "00-rejected-login-missing-cjk-fonts.png",
+    "08-mobile-task-form.png",
+    "09-mobile-confirmation-error.png"
+  ],
+  "limitations": {
+    "real_google": false,
+    "real_codex": false,
+    "real_teams": false,
+    "oracle_e2e": false,
+    "final_production_image": false,
+    "beta_native_review": "not started; parent requested no new PR/notifications yet",
+    "merged": false,
+    "deployed": false
+  }
+}

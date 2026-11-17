@@ -1,0 +1,21 @@
+name: Development task
+description: Scope a change and its acceptance evidence
+body:
+  - type: textarea
+    id: result
+    attributes:
+      label: Problem and intended result
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance and public test boundaries
+      description: Define observable behavior and required staging/E2E evidence; list any explicit authorization needed.
+    validations:
+      required: true
+  - type: textarea
+    id: deployment
+    attributes:
+      label: Deployment and recovery impact
+      description: Include SQLite schema changes, migration needs and affected environment. Production remains separate.
