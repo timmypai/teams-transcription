@@ -29,6 +29,17 @@ def main():
         shard = int(os.environ.get('TEST_SHARD','0'))
         shards = int(os.environ.get('TEST_SHARDS','1'))
         assert 0 <= shard < shards <= 4
+        if shard == 0 and os.environ.get('RUNNER_ENVIRONMENT') == 'github-hosted':
+            import asyncio
+            from rtc_diagnostic import diagnose
+            async def bounded_diagnostic():
+                async with asyncio.timeout(30):
+                    await diagnose(output/'rtc-diagnostic.json')
+            try:
+                asyncio.run(bounded_diagnostic())
+            except Exception as exc:
+                (output/'rtc-diagnostic.json').write_text(json.dumps({'failure_type':type(exc).__name__}))
+                (output/'rtc-diagnostic.json').chmod(0o644)
         suite = unittest.TestSuite(list(suite)[shard::shards])
         class ProgressResult(unittest.TextTestResult):
             def startTest(self, test):
@@ -43,6 +54,10 @@ def main():
                    success=result.wasSuccessful() and not result.skipped,
                    real_accounts_or_meetings=False)
     (output/'regression.json').write_text(json.dumps(receipt, indent=2)+'\n')
+    # Some legacy tests change process umask. Evidence is synthetic/public-only;
+    # the hosted uploader has a different UID from the nonroot app container.
+    for name in ('regression.json','regression.log','progress.json'):
+        (output/name).chmod(0o644)
     print(json.dumps(receipt))
     return 0 if receipt['success'] else 1
 

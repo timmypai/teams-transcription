@@ -123,7 +123,11 @@ class Harness:
         assert self.docker('volume', 'inspect', self.volume, check=False).returncode != 0
         import sqlite3
         self.write(self.scratch/'foreign-file', 'disposable non-project file sentinel\n')
-        self.mutate('write', 'directory', str(self.scratch), lambda: sqlite3.connect(self.scratch/'foreign.sqlite3').close())
+        def seed_foreign_database():
+            with sqlite3.connect(self.scratch/'foreign.sqlite3') as connection:
+                connection.execute('CREATE TABLE sentinel (value TEXT NOT NULL)')
+                connection.execute('INSERT INTO sentinel VALUES (?)', ('synthetic unrelated data',))
+        self.mutate('write', 'directory', str(self.scratch), seed_foreign_database)
         self.mutate('create', 'container', self.foreign, lambda: self.docker(
             'run', '-d', '--name', self.foreign, '--label', 'io.teams-transcription.fixture='+self.project,
             '--network', 'none', '--read-only', '--cap-drop', 'ALL', '--security-opt', 'no-new-privileges',
