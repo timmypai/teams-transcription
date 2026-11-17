@@ -1,4 +1,4 @@
-"""Run regressions inside the real image on an owned internal-only ICE network."""
+"""Run regressions inside the real image on an owned routed ICE fixture network."""
 import json
 import os
 from pathlib import Path
@@ -20,7 +20,9 @@ def main():
     def docker(*args, **kwargs):
         return subprocess.run(prefix+list(args),text=True,timeout=1200,**kwargs)
     network=name+'-network'
-    docker('network','create','--internal',network,check=True)
+    # A private named bridge provides a normal route for Chromium ICE/mDNS.
+    # No ports or credentials are exposed; tests use only synthetic local peers.
+    docker('network','create',network,check=True)
     try:
         docker('create','--name',name,'--network',network,'--read-only','--user','10001:10001',
                '--cap-drop','ALL','--security-opt','no-new-privileges',
@@ -29,7 +31,7 @@ def main():
                '--mount',f'type=bind,src={ROOT},dst=/workspace,readonly',
                '--mount',f'type=bind,src={output},dst=/evidence',
                '--env','PYTHONPATH=/workspace/tests:/workspace','--env','ASSISTANT_CHROMIUM=/usr/bin/chromium',
-               '--env','RUNNER_ENVIRONMENT=github-hosted',
+               '--env','RUNNER_ENVIRONMENT=github-hosted','--env','TEST_NETWORK_PROFILE=routed-bridge',
                '--env','TEST_SHARD='+os.environ.get('TEST_SHARD','0'),
                '--env','TEST_SHARDS='+os.environ.get('TEST_SHARDS','1'),
                '--entrypoint','python',image,'/workspace/.devflow/regression.py','/evidence',check=True)

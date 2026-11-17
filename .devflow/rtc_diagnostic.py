@@ -1,6 +1,7 @@
 """Bounded local-only WebRTC transport diagnostic; scalar enums/counts, no SDP/IP."""
 import asyncio
 import json
+import os
 from pathlib import Path
 from teams_transcription.browser import Browser
 
@@ -47,7 +48,7 @@ async def diagnose(output):
             content_type='text/html',body='<!doctype html><title>Local transport diagnostic</title>'))
         page=await context.new_page()
         await page.goto('https://native-output.invalid/')
-        result={'scope':'synthetic-local-internal-network','browser':runtime.browser.version,'cases':[]}
+        result={'scope':'synthetic-local-peer-transport','network_profile':os.environ.get('TEST_NETWORK_PROFILE','unknown'),'browser':runtime.browser.version,'cases':[]}
         for track in [False,True]:
             try:
                 result['cases'].append(await page.evaluate(JS,track))
