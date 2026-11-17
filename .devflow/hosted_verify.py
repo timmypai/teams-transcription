@@ -238,9 +238,14 @@ initialize_admin_credentials(load_assistant_settings(f),sys.stdin.read().strip()
         # Fixture files must be world-readable, never the private password.
         self.mutate('write','container',self.app,lambda: self.docker('exec',self.app,'mkdir','-p','/tmp/devflow-evidence'))
         results = []
+        node = self.docker('exec',self.app,'python','-c',
+                           "import pathlib,playwright;print(pathlib.Path(playwright.__file__).parent/'driver/node')").stdout.strip()
+        self.write(self.evidence/'browser-runtime.json',json.dumps({
+            'system_node':self.docker('exec',self.app,'node','--version').stdout.strip(),
+            'playwright_node':self.docker('exec',self.app,node,'--version').stdout.strip()}))
         def browser_run():
             results.append(self.docker('exec','--env','DEVFLOW_EVENTS=/tmp/devflow-evidence/scenario-events.jsonl',
-                             self.app,'node','/tmp/devflow-ui/node_modules/@playwright/test/cli.js','test',
+                             self.app,node,'/tmp/devflow-ui/node_modules/@playwright/test/cli.js','test',
                              '--config=/tmp/devflow-ui/playwright.config.ts',check=False,timeout=180))
         self.mutate('write','container',self.app,browser_run)
         result = results[0]

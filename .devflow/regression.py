@@ -23,7 +23,7 @@ def main():
         if os.environ.get('RUNNER_ENVIRONMENT') == 'github-hosted' and Path('/workspace/.devflow/fixture-wheels').is_dir():
             import subprocess
             subprocess.run([sys.executable,'-m','pip','install','--no-index','--target','/tmp/testlibs',
-                            '--find-links','/workspace/.devflow/fixture-wheels','websockets>=16,<17'],check=True)
+                            '--find-links','/workspace/.devflow/fixture-wheels','websockets>=16,<17','jsonschema==4.26.0'],check=True)
             sys.path.insert(0,'/tmp/testlibs')
         suite = AvailableLoader().discover(str(ROOT/'tests'))
         shard = int(os.environ.get('TEST_SHARD','0'))

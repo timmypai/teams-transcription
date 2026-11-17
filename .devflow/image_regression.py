@@ -1,4 +1,4 @@
-"""Run the available source regressions inside the real installed image, no network."""
+"""Run regressions inside the real image on an owned internal-only ICE network."""
 import json
 import os
 from pathlib import Path
@@ -19,11 +19,13 @@ def main():
     output.chmod(0o777)
     def docker(*args, **kwargs):
         return subprocess.run(prefix+list(args),text=True,timeout=1200,**kwargs)
+    network=name+'-network'
+    docker('network','create','--internal',network,check=True)
     try:
-        docker('create','--name',name,'--network','none','--read-only','--user','10001:10001',
+        docker('create','--name',name,'--network',network,'--read-only','--user','10001:10001',
                '--cap-drop','ALL','--security-opt','no-new-privileges',
                '--security-opt','seccomp='+str(ROOT/'docker/chromium-seccomp.json'),
-               '--tmpfs','/tmp:size=1g,mode=1777','--shm-size','1g',
+               '--tmpfs','/tmp:rw,exec,size=1g,mode=1777','--shm-size','1g',
                '--mount',f'type=bind,src={ROOT},dst=/workspace,readonly',
                '--mount',f'type=bind,src={output},dst=/evidence',
                '--env','PYTHONPATH=/workspace/tests:/workspace','--env','ASSISTANT_CHROMIUM=/usr/bin/chromium',
@@ -52,6 +54,7 @@ def main():
         return 0 if state['ExitCode']==0 and receipt['success'] else 1
     finally:
         docker('rm','-f',name,check=True)
+        docker('network','rm',network,check=True)
 
 if __name__=='__main__':
     raise SystemExit(main())
