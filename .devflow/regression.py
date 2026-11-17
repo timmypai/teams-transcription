@@ -9,10 +9,11 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT/'tests'), str(ROOT)]
 EXCLUDED = {'test_bridge_integration.py', 'test_media_bridge.py'}
+HOST_ROUTED = {'test_staging_compose.py'} if os.environ.get('RUNNER_ENVIRONMENT')=='github-hosted' else set()
 
 class AvailableLoader(unittest.TestLoader):
     def _match_path(self, path, full_path, pattern):
-        return path not in EXCLUDED and super()._match_path(path, full_path, pattern)
+        return path not in EXCLUDED | HOST_ROUTED and super()._match_path(path, full_path, pattern)
 
 
 def main():
@@ -50,7 +51,7 @@ def main():
     receipt = dict(scope='available-regression-not-original-full-discovery',
                    python=sys.version, shard=shard, shards=shards, tests=result.testsRun, failures=len(result.failures),
                    errors=len(result.errors), skipped=len(result.skipped),
-                   excluded_missing_source=sorted(EXCLUDED),
+                   excluded_missing_source=sorted(EXCLUDED), routed_to_host_check=sorted(HOST_ROUTED),
                    success=result.wasSuccessful() and not result.skipped,
                    real_accounts_or_meetings=False)
     (output/'regression.json').write_text(json.dumps(receipt, indent=2)+'\n')
