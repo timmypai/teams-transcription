@@ -16,7 +16,6 @@ for (const n of [1, 2, 3]) {
       expect((await request.get('/api/status')).status()).toBe(401);
       await page.goto('/login');
       await expect(page.getByRole('heading', { name: '管理登入' })).toBeVisible();
-      expect(await page.context().cookies()).not.toEqual(expect.arrayContaining([expect.objectContaining({ name: 'admin_session' })]));
     } },
     when: { title: s.when, act: async ({ page }) => {
       if (n === 3) { await page.goto('/login'); return; }

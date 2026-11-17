@@ -246,7 +246,15 @@ initialize_admin_credentials(load_assistant_settings(f),sys.stdin.read().strip()
         result = results[0]
         ui_output = self.scratch/'ui-output'
         self.mutate('write','directory',str(self.scratch),lambda: ui_output.mkdir())
-        self.mutate('write','directory',str(self.scratch),lambda: self.docker('cp',self.app+':/tmp/devflow-evidence/.',str(ui_output)))
+        def export_ui():
+            exported = subprocess.run(['docker','--host=unix:///var/run/docker.sock','exec',
+                                       self.app,'tar','-cf','-','-C','/tmp/devflow-evidence','.'],
+                                      capture_output=True,timeout=60)
+            if exported.returncode:
+                raise RuntimeError('fixture_evidence_stream_failed')
+            with tarfile.open(fileobj=io.BytesIO(exported.stdout)) as bundle:
+                bundle.extractall(ui_output,filter='data')
+        self.mutate('write','directory',str(self.scratch),export_ui)
         for p in ui_output.iterdir():
             if p.name == 'scenario-events.jsonl':
                 events = p.read_text()
@@ -309,8 +317,11 @@ def main():
                 h.ui()
                 h.compare()
                 h.write(evidence/'isolation.json',json.dumps(h.isolation,indent=2))
-        except Exception:
+        except Exception as exc:
             h.problems.append('hosted_verification_failed')
+            import re
+            code = str(exc) if re.fullmatch(r'[a-z_]{1,100}',str(exc)) else type(exc).__name__
+            h.write(evidence/'failure.json',json.dumps({'code':code,'last_operation':h.audit.events[-1] if h.audit.events else None}))
         finally:
             h.problems.extend(h.cleanup())
             h.write(evidence/'operations.json',json.dumps(h.audit.events,indent=2))

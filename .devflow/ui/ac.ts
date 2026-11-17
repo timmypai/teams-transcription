@@ -97,9 +97,9 @@ export function scenario<K extends Kind>(id: string, description: string, spec: 
           await test.step(`${label[phase]} ${text}`, () => fn(f));
           record(id, smoke, phase, text, 'passed');
         } catch (e) {
-          record(id, smoke, phase, text, 'failed', message(e));
+          record(id, smoke, phase, text, 'failed', 'scenario_phase_failed');
           failed = true;
-          failure = e;
+          failure = new Error('scenario_phase_failed');
         }
       }
     } finally {

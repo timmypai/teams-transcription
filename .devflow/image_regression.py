@@ -14,6 +14,9 @@ def main():
     prefix=['docker','--host=unix:///var/run/docker.sock']
     output=ROOT/'.devflow/evidence-test'
     output.mkdir(parents=True,exist_ok=True)
+    # Public synthetic test evidence only, on a disposable hosted runner.
+    # UID10001 writes directly here; stopped container tmpfs cannot retain logs.
+    output.chmod(0o777)
     def docker(*args, **kwargs):
         return subprocess.run(prefix+list(args),text=True,timeout=1200,**kwargs)
     try:
@@ -22,11 +25,12 @@ def main():
                '--security-opt','seccomp='+str(ROOT/'docker/chromium-seccomp.json'),
                '--tmpfs','/tmp:size=1g,mode=1777','--shm-size','1g',
                '--mount',f'type=bind,src={ROOT},dst=/workspace,readonly',
+               '--mount',f'type=bind,src={output},dst=/evidence',
                '--env','PYTHONPATH=/workspace/tests:/workspace','--env','ASSISTANT_CHROMIUM=/usr/bin/chromium',
                '--env','RUNNER_ENVIRONMENT=github-hosted',
                '--env','TEST_SHARD='+os.environ.get('TEST_SHARD','0'),
                '--env','TEST_SHARDS='+os.environ.get('TEST_SHARDS','1'),
-               '--entrypoint','python',image,'/workspace/.devflow/regression.py','/tmp/regression',check=True)
+               '--entrypoint','python',image,'/workspace/.devflow/regression.py','/evidence',check=True)
         import time
         docker('start',name,check=True)
         deadline=time.monotonic()+1200
@@ -34,14 +38,16 @@ def main():
             state=json.loads(docker('inspect',name,capture_output=True,check=True).stdout)[0]['State']
             if not state['Running']: break
             if time.monotonic()>deadline: raise RuntimeError('regression_deadline_exceeded')
-            progress=docker('exec',name,'cat','/tmp/regression/progress.json',capture_output=True)
-            if progress.returncode==0:
-                p=json.loads(progress.stdout)
-                print('regression progress:',p['started'],p['test'],flush=True)
+            progress=output/'progress.json'
+            if progress.exists():
+                try:
+                    p=json.loads(progress.read_text())
+                    print('regression progress:',p['started'],p['test'],flush=True)
+                except json.JSONDecodeError:
+                    pass  # producer may be replacing its single bounded record
             time.sleep(20)
         with (output/'execution.log').open('w') as log:
             docker('logs',name,stdout=log,stderr=log)
-        docker('cp',name+':/tmp/regression/.',str(output),check=True)
         receipt=json.loads((output/'regression.json').read_text())
         return 0 if state['ExitCode']==0 and receipt['success'] else 1
     finally:
