@@ -13,6 +13,9 @@ CLASSES=frozenset({'buildx_unavailable','build_option_unsupported','named_contex
     'public_dependency_fetch_failed','build_step_failed','unknown'})
 MAX_CLASSIFICATIONS=8
 MISSING="docker: 'buildx' is not a docker command."
+# docker/buildx v0.30.0 commands/root.go additionalHelp. This exact footer
+# conveys no capability itself and does not enable experimental behavior.
+HELP_FOOTER='Experimental commands and flags are hidden. Set BUILDX_EXPERIMENTAL=1 to show them.'
 FIXED={
  MISSING:('buildx_unavailable','unknown'),
  'ERROR: Cannot connect to the Docker daemon. Is the docker daemon running?':('daemon_unreachable','unknown'),
@@ -42,7 +45,7 @@ def classify(line):
 class Projection:
     def __init__(self,probe=None):
         self.probe=probe;self.rows=[];self.incomplete=False
-        self.version=False;self.missing=False;self.valid=True;self.count=0
+        self.version=False;self.missing=False;self.missing_only=True;self.valid=True;self.count=0
         self.section='usage';self.flags=set();self.previous_flag=False
 
     def line(self,raw,stream):
@@ -58,6 +61,7 @@ class Projection:
             else:self.incomplete=True
         if self.probe is None:return
         if line==MISSING:self.missing=True
+        if line not in {MISSING,'',"Run 'docker --help' for more information"}:self.missing_only=False
         self.count+=1
         if self.probe=='buildx_version':
             self.version=(self.count==1 and stream==0 and re.fullmatch(
@@ -85,7 +89,8 @@ class Projection:
             if line!='Options:':self.valid=False
             self.section='options'
         elif self.section=='options':
-            if re.fullmatch(r'  (?:    |-[A-Za-z], )--[a-z][a-z0-9-]*(?: [A-Za-z][A-Za-z0-9]*)? {2,}[^\x00-\x1f\x7f]+',line):
+            if line==HELP_FOOTER:self.section='done'
+            elif re.fullmatch(r'  (?:    |-[A-Za-z], )--[a-z][a-z0-9-]*(?: [A-Za-z][A-Za-z0-9]*)? {2,}[^\x00-\x1f\x7f]+',line):
                 self.previous_flag=True
                 for option,pattern in REQUIRED.items():
                     if re.fullmatch(pattern,line):
@@ -93,14 +98,15 @@ class Projection:
                         self.flags.add(option)
             elif self.previous_flag and re.fullmatch(r' {10,}[^\x00-\x1f\x7f]+',line):pass
             else:self.valid=False
+        else:self.valid=False
 
     def result(self,exit_status,stats):
         state='unknown';options={key:'unknown' for key in OPTIONS}
         complete=not self.incomplete and not stats['truncated']
-        if complete and self.missing and exit_status not in (None,0):state='unavailable'
+        if complete and self.missing and self.missing_only and exit_status not in (None,0):state='unavailable'
         elif complete and exit_status==0 and self.valid:
             if self.probe=='buildx_version' and self.version:state='available'
-            elif self.probe=='buildx_build_help' and self.section=='options' and self.flags==set(OPTIONS):
+            elif self.probe=='buildx_build_help' and self.section in {'options','done'} and self.flags==set(OPTIONS):
                 state='available';options={key:'supported' for key in OPTIONS}
         return dict(command=self.probe,state=state,exit_status=exit_status,output=stats),options
 

@@ -41,7 +41,7 @@ Options:
 VERSION='github.com/docker/buildx v0.30.0 abc1234\n'
 WITNESSES=0
 SIGNATURES=[
- ("docker: 'buildx' is not a docker command.\n",'buildx_unavailable','unknown','host_capability_review'),
+ ("docker: 'buildx' is not a docker command.\n",'buildx_unavailable','unknown','unknown_stop'),
  ('unknown flag: --provenance\n','build_option_unsupported','provenance','source_compatibility_review'),
  ('unknown flag: --build-context\n','named_context_unsupported','build_context','source_compatibility_review'),
  ('ERROR: Cannot connect to the Docker daemon. Is the docker daemon running?\n','daemon_unreachable','unknown','host_capability_review'),
@@ -53,7 +53,7 @@ SIGNATURES=[
 ]
 
 
-def exercise(case,*,capability='supported',status=125,secondary=None,mode='normal'):
+def exercise(case,*,capability='supported',status=125,secondary=None,mode='normal',phase='image_build'):
     """Whole main/artifact/stdout path with the controller's original command DI."""
     with tempfile.TemporaryDirectory() as directory:
         folder=Path(directory);source=folder/'source';source.mkdir()
@@ -83,9 +83,20 @@ def exercise(case,*,capability='supported',status=125,secondary=None,mode='norma
                 if capability=='missing':payload="docker: 'buildx' is not a docker command.\n";exit_status=1
                 if capability=='unknown':payload=PRIVATE+'\n'
                 if capability=='partial':payload=HELP.replace('      --provenance string           Shorthand for "--attest=type=provenance"\n','') if help_probe else VERSION
-                probe=folder/'probe.py';probe.write_text(f'import os,sys\nos.write(1,{payload.encode()!r})\nsys.exit({exit_status})\n')
+                if capability=='version_bad' and not help_probe:payload='buildx version '+PRIVATE+'\n'
+                if capability=='missing_contradiction':payload=VERSION+"docker: 'buildx' is not a docker command.\n";exit_status=125
+                if capability=='help_bad' and help_probe:payload=HELP+'unexpected footer\n'
+                if capability=='help_tail' and help_probe:payload=HELP.rstrip('\n')
+                if capability=='help_control' and help_probe:payload=HELP+'\x1b[31m\n'
+                if capability=='help_overlong' and help_probe:payload=HELP+' '*2049+'\n'
+                if capability=='help_chunked' and help_probe:payload=HELP+('      --synthetic string    Public fixture option\n'*200)
+                if capability=='official_footer' and help_probe:
+                    payload=HELP+'\nExperimental commands and flags are hidden. Set BUILDX_EXPERIMENTAL=1 to show them.\n'
+                raw=payload.encode()
+                if capability=='help_nonutf8' and help_probe:raw+=b'\xff\n'
+                probe=folder/'probe.py';probe.write_text(f'import os,sys\nos.write(1,{raw!r})\nsys.exit({exit_status})\n')
                 return td.execute([sys.executable,str(probe)],**kw)
-            if 'buildx' in args:
+            if ('run' in args if phase=='prepare_contexts' else 'buildx' in args):
                 kw['timeout']=.5 if mode=='timeout' else 10
                 result=td.execute([sys.executable,str(script),str(witness)],**kw)
                 (folder/'.devflow-live/timmypai-teams-transcription/contexts-123-2/image-id').write_text('sha256:'+'b'*64)
@@ -106,9 +117,14 @@ def exercise(case,*,capability='supported',status=125,secondary=None,mode='norma
             controller.write=checked_write
             return controller
         out=io.StringIO();err=io.StringIO()
+        write_text=Path.write_text
+        def evidence_write(path,*args,**kw):
+            if secondary=='diagnostic_write' and path.name=='failure.json':raise OSError(PRIVATE)
+            return write_text(path,*args,**kw)
         with patch.object(td,'ROOT',source),patch.object(td,'manual_environment',return_value=SHA),\
              patch.object(td,'GitHub',return_value=object()),patch.object(td,'collect',return_value=dict(source_sha=SHA)),\
              patch.object(td.Path,'home',return_value=folder),patch.object(td,'Controller',side_effect=factory),\
+             patch.object(Path,'write_text',evidence_write),\
              patch.dict(os.environ,dict(GITHUB_RUN_ID='123',GITHUB_RUN_ATTEMPT='2',DEVFLOW_APP_ENV=PRIVATE)),\
              patch.object(sys,'argv',['target_deploy.py','deploy']),\
              contextlib.redirect_stdout(out),contextlib.redirect_stderr(err):
@@ -119,14 +135,15 @@ def exercise(case,*,capability='supported',status=125,secondary=None,mode='norma
             if marker in combined:raise AssertionError('private marker escaped complete artifact/stdout/stderr')
         global WITNESSES
         if witness.exists():WITNESSES+=1
-        return result,json.loads(files['failure.json']),calls,witness.exists(),files
+        return result,json.loads(files.get('failure.json',out.getvalue().encode())),calls,witness.exists(),files
 
 
 class BuildEvidenceRedTests(unittest.TestCase):
     def test_distinct_failures_reach_real_child_and_publish_fixed_consumer_routes(self):
         for text,classification,option,action in SIGNATURES:
             with self.subTest(classification=classification):
-                status,report,calls,started,files=exercise(text.encode())
+                phase='prepare_contexts' if classification in {'build_option_unsupported','named_context_unsupported'} else 'image_build'
+                status,report,calls,started,files=exercise(text.encode(),phase=phase)
                 self.assertTrue(started,'child-start witness required before RED assertion')
                 self.assertEqual(status,1)
                 self.assertEqual(report['schema_version'],2,'schema_version_uncollected')
@@ -139,6 +156,15 @@ class BuildEvidenceRedTests(unittest.TestCase):
 
 
 class BuildEvidenceBoundaryTests(unittest.TestCase):
+    def test_official_buildx_additional_help_footer_is_complete_known_grammar(self):
+        # docker/buildx v0.30.0 commands/root.go experimentalCommandHint; no
+        # runner raw help captured. The exact official sentence is grammar, not
+        # an instruction to enable experimental flags.
+        status,doc,_,started,_=exercise(b'',capability='official_footer',status=0)
+        self.assertTrue(started,'official_help_grammar_rejected')
+        self.assertEqual(status,0)
+        self.assertEqual(doc['build_diagnostics']['capabilities'][1]['state'],'available')
+
     def test_capabilities_missing_unknown_and_partial_stop_before_any_context_or_build(self):
         from deploy.build_consumer import consume
         for capability,code,action in [('missing','capability_missing','host_capability_review'),
@@ -163,10 +189,34 @@ class BuildEvidenceBoundaryTests(unittest.TestCase):
         self.assertEqual([row['state'] for row in doc['build_diagnostics']['capabilities']],['available','available'])
         self.assertTrue(consume(doc)['valid']);self.assertEqual(consume(doc)['next_action'],'unknown_stop')
 
+    def test_probe_grammar_invalid_incomplete_contradictory_never_claims_missing_or_supported(self):
+        from deploy.build_consumer import consume
+        for capability in ('version_bad','missing_contradiction','help_bad','help_tail','help_control','help_overlong','help_nonutf8'):
+            status,doc,calls,started,_=exercise(b'',capability=capability)
+            self.assertEqual(status,1);self.assertFalse(started);self.assertEqual(len(calls),2)
+            self.assertEqual(doc['primary_failure']['code'],'capability_unknown')
+            self.assertEqual(consume(doc)['next_action'],'unknown_stop')
+        status,doc,_,started,_=exercise(b'',capability='help_chunked',status=0)
+        self.assertTrue(started);self.assertEqual(status,0)
+        self.assertEqual(doc['build_diagnostics']['capabilities'][1]['state'],'available')
+
+    def test_successful_help_then_incompatible_same_image_command_is_contradiction_stop(self):
+        from deploy.build_consumer import consume
+        for option in ('load','provenance','build-context','iidfile'):
+            _,doc,_,started,_=exercise(('unknown flag: --'+option+'\n').encode())
+            self.assertTrue(started);self.assertEqual(consume(doc)['next_action'],'unknown_stop')
+
+    def test_success_diagnostic_write_failure_cannot_leave_healthy_receipt(self):
+        status,doc,_,started,files=exercise(b'',status=0,secondary='diagnostic_write')
+        self.assertTrue(started);self.assertEqual(status,1)
+        self.assertNotIn('receipt.json',files)
+        self.assertEqual(doc['primary_failure']['code'],'unknown')
+        self.assertEqual(doc['secondary_failures'][0]['code'],'evidence_write_failed')
+
     def test_complete_lines_cross_chunks_but_never_cross_streams(self):
         from deploy.build_consumer import consume
         for mode,expected in [('split','source_compatibility_review'),('streams','unknown_stop')]:
-            _,doc,_,started,_=exercise(b'unknown flag: --provenance\n',mode=mode)
+            _,doc,_,started,_=exercise(b'unknown flag: --provenance\n',mode=mode,phase='prepare_contexts')
             self.assertTrue(started);self.assertEqual(consume(doc)['next_action'],expected)
 
     def test_invalid_utf8_control_tail_overlong_and_line_budget_are_unknown(self):

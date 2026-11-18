@@ -123,6 +123,10 @@ def consume(doc):
     routes=set()
     for row in diag['classifications']:
         kind=row['classification']
+        # Same buildx command cannot simultaneously have all required options
+        # proven and claim the plugin/flag is absent. Do not choose a cause.
+        if primary['phase']=='image_build' and kind in {'buildx_unavailable','build_option_unsupported','named_context_unsupported'}:
+            return result
         if kind in {'build_option_unsupported','named_context_unsupported'}:routes.add('source_compatibility_review')
         elif kind in {'buildx_unavailable','daemon_unreachable','daemon_permission_denied','storage_exhausted','resource_exhausted'}:routes.add('host_capability_review')
         elif kind in {'public_dependency_fetch_failed','build_step_failed'}:routes.add('public_build_review')

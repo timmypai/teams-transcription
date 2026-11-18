@@ -439,13 +439,13 @@ def main():
                     failures.record(exc,'audit','audit_failed')
                     raise
             require(report['foreign_unchanged'],'foreign_snapshot_changed')
+            # Publish diagnostic evidence before the success receipt. A failed
+            # diagnostic write must not leave a healthy receipt for this run.
+            (evidence/'failure.json').write_text(json.dumps(failures.document(REPO,sha,run,attempt,args.action),indent=2)+'\n')
             (evidence/'receipt.json').write_text(json.dumps({**receipt,'operation':args.action,'result':result,
                 'deploy_run_url':f'https://github.com/{REPO}/actions/runs/{run}',
                 'scope':'oracle-manual' if args.action=='deploy' else 'same-deployment-local-control',
                 'audit':report},indent=2)+'\n')
-        # Same bounded capability evidence on success, not just failures. A probe
-        # success is not an image/health success; original receipt remains separate.
-        (evidence/'failure.json').write_text(json.dumps(failures.document(REPO,sha,run,attempt,args.action),indent=2)+'\n')
         return 0
     except Exception as exc:
         failures.record(exc)

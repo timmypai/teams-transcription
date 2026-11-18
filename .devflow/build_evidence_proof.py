@@ -52,7 +52,7 @@ def main():
             reds.append(dict(source_sha=sha,source_sha256=hashes,result=run(Path(folder))))
     green=run()
     success=all(row['result']==dict(tests=1,failures=9,errors=0,skipped=0,real_build_children=9,expected_red=True) for row in reds)
-    success=success and green['tests']>=10 and green['real_build_children']>=9 and green['failures']==green['errors']==green['skipped']==0
+    success=success and green['tests']==14 and green['real_build_children']>=9 and green['failures']==green['errors']==green['skipped']==0
     report=dict(schema_version=1,scope='disposable-CLI-schema2-consumer-not-Oracle-not-EPIC-AC',
         repository='timmypai/teams-transcription',
         candidate_sha=os.environ.get('SOURCE_SHA') or subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),

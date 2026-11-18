@@ -162,6 +162,7 @@ with sqlite3.connect('file:/data/.meeting-store.sqlite3?mode=ro',uri=True) as db
             if c.probe('network',PROJECT):c.docker('network','rm',PROJECT)
             if c.probe('volume',VOLUME):c.docker('volume','rm',VOLUME)
             report['cleanup']=cleanup
+            report['build_evidence']=c.failures.document(REPO,sha,run,attempt,'deploy')
             (evidence/'probe.json').write_text(json.dumps(report,indent=2)+'\n')
     return 0
 
