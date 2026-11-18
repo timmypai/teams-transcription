@@ -64,7 +64,7 @@ def collect(source,api):
     require(isinstance(source,str) and SHA.fullmatch(source),'sha_invalid')
     prefix=f'/repos/{REPO}'
     def read(path):return api.request(prefix+path)[0]
-    repo=read('/')
+    repo=read('')  # GitHub GET /repos/OWNER/REPO/ is 404, not the canonical route.
     branch=repo['default_branch']
     require(branch=='main','default_branch_mismatch')
     before=read('/branches/main')['commit']['sha']

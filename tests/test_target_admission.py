@@ -2,7 +2,7 @@
 import copy
 import unittest
 
-from tools.target_admission import validate_release
+from tools.target_admission import validate_release, collect
 
 SHA='a'*40
 HEAD='b'*40
@@ -22,6 +22,32 @@ def evidence():
 
 
 class TargetAdmissionTests(unittest.TestCase):
+    def test_collector_uses_canonical_repo_endpoint_and_rechecks_identity(self):
+        e=evidence();repo=e['repository']
+        pr=dict(number=1,merged=True,merged_at='2026-11-18T00:00:00Z',merge_commit_sha=SHA,
+            head=dict(sha=HEAD,repo=dict(full_name=repo)),base=dict(ref='main'),
+            user=dict(login='writer'),updated_at='2026-11-18T00:00:00Z')
+        calls=[]
+        class API:
+            def request(self,path,payload=None):
+                calls.append(path)
+                prefix='/repos/'+repo
+                if path==prefix:return dict(full_name=repo,default_branch='main'),{}
+                if path==prefix+'/branches/main':return dict(commit=dict(sha=SHA)),{}
+                if '/commits/'+SHA+'/pulls?' in path:return [pr],{}
+                if path==prefix+'/pulls/1':return pr,{}
+                if '/pulls/1/reviews?' in path:return e['reviews'],{}
+                if '/workflows/ci.yml/runs?' in path:return dict(total_count=1,workflow_runs=[e['run']]),{}
+                if path==prefix+'/actions/runs/3':return e['run'],{}
+                if path==prefix+'/actions/workflows/ci.yml':return dict(id=4),{}
+                if '/git/commits/' in path:return dict(tree=dict(sha='c'*40)),{}
+                if path=='/graphql':return dict(data=dict(repository=dict(pullRequest=dict(reviewThreads=dict(
+                    nodes=[],pageInfo=dict(hasNextPage=False,endCursor=None)))))),{}
+                raise AssertionError('noncanonical or unknown API endpoint: '+path)
+        self.assertEqual(collect(SHA,API())['reviewed_head_sha'],HEAD)
+        self.assertEqual(calls.count('/repos/'+repo+'/branches/main'),2)
+        self.assertNotIn('/repos/'+repo+'/',calls)
+
     def test_reviewed_exact_tree_and_ci_are_admitted(self):
         result=validate_release(evidence())
         self.assertEqual(result['reviewed_head_sha'],HEAD)

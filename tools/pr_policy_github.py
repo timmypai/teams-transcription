@@ -50,7 +50,7 @@ class GitHub:
         self.opener = urllib.request.build_opener(NoRedirect())
 
     def request(self, path, payload=None):
-        if not (path.startswith(f'/repos/{REPOSITORY}/') or path == '/graphql'):
+        if not (path == f'/repos/{REPOSITORY}' or path.startswith(f'/repos/{REPOSITORY}/') or path == '/graphql'):
             raise EvidenceError('api_target_rejected')
         if '..' in path or '#' in path or '\\' in path:
             raise EvidenceError('api_target_rejected')
