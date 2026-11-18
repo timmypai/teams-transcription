@@ -1,8 +1,8 @@
 """Admission and bounded audit for the hosted, disposable deployment harness.
 
 This is NOT a VM isolation boundary. No host identities or sockets are guessed.
-The Oracle entry point deliberately has no enable flag: the target-specific
-manual deploy adapter is not implemented/reviewed. The operator has accepted
+This hosted harness has no Oracle enable flag: the real manual adapter is
+deploy/target_deploy.py, only after independent review. The operator has accepted
 the shared devflow user/rootless daemon; no dedicated execution gate is required.
 """
 import argparse
@@ -74,7 +74,7 @@ def main():
     parser.parse_args()
     print(json.dumps(dict(enabled=False, repository=REPOSITORY,
                           vm_mutation_allowlist=[],
-                          error='target_deploy_adapter_and_native_review_unverified')))
+                          error='target_manual_workflow_required')))
     return 1
 
 

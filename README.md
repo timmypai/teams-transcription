@@ -13,8 +13,8 @@ Google Calendar → Teams 自主入會 → GPT Live A 保存逐字稿 → GPT Li
 - A 經 sandboxed Chromium 的原生音軌／本機 WebRTC relay 送入隔離 Live peer，不走 Python PCM 送音 queue 或自訂時鐘估速。PCM 回呼只供 B／音訊觀測及明確啟用的 WAV；SQLite 分別保留 provider final、application segments 與未定稿來源。
 - 核准的全域／系列人名及術語在入會時凍結，透過 A `initialItems` 提供參考；不改寫 provider 原文。
 - B 有獨立 native Live 通道，每題讀本場 SQLite 與凍結的前次摘要／待辦。同一句「小白小白＋問題」不要求重問。兩個本機接收段只解碼實際收到的 Opus，不使用 PLC 延續舊音；缺樣由持續原生音軌輸出靜音，再經本機 WebRTC relay 接 owned Teams sender。沒有 Python PCM 或分塊播放器。完整來源交付後、marker dispatch 前核對授權並開通；正常完成需真實來源 quiet 與播放 quiet 都成立。缺樣靜音不是來源 quiet，遠端 Teams 的 PLC／drain 不在本機保證範圍內。
-- 停止、drain、清理後封存來源，與 summary outbox 同一交易提交。獨立摘要 worker 使用既有 OAuth 的一般 Codex，驗證引用與 source SHA 後發布至 SQLite；省略舊待辦不代表完成。
-- 重啟恢復摘要，不自動重入中斷場次。清理不明或中斷 capture 留下持久 interlock；可透過歷史頁的[人工清理審查](docs/CALENDAR-RUNTIME.md#中斷後的人工清理審查)確認舊資源停止／助理離會，不改寫原失敗，也不自動入會。
+- 停止、drain、清理後封存來源；依取消決定，不排 summary outbox、不啟動摘要 worker／重試。保留既有歷史摘要／待辦可讀；省略舊待辦不代表完成。
+- 重啟不恢復已取消摘要服務、不自動重入中斷場次。清理不明或中斷 capture 留下持久 interlock；可透過歷史頁的[人工清理審查](docs/CALENDAR-RUNTIME.md#中斷後的人工清理審查)確認舊資源停止／助理離會，不改寫原失敗，也不自動入會。
 
 詳見 [執行契約](docs/ABC-RUNTIME.md)、[SQLite](docs/MEETING-STORE.md)、[Calendar](docs/CALENDAR-RUNTIME.md)、[詞庫](docs/GLOSSARY-RUNTIME.md)、[B](docs/B-LIVE-NATIVE.md)、[摘要](docs/SUMMARY-RUNTIME.md)。
 
@@ -115,4 +115,4 @@ Chromium seccomp 依 [Playwright Docker 指南](https://playwright.dev/python/do
 
 ## GitHub 開發與 staging
 
-CI、原生 ARM64 image validation／手動 GHCR publish、Oracle staging deploy／rollback／bounded diagnostics 的配置與安全邊界見 [GitHub 交付契約](docs/GITHUB-DELIVERY.md)。Oracle 是測試環境；production 仍保留 Unraid，本次不變更。workflow source 與本地測試完成不代表已 dispatch／publish／部署；原生 Projects 看板與 repo-local Matt Pocock 27 個技能的使用方式也記錄於該契約與 `AGENTS.md`。
+本 target `timmypai/teams-transcription` 採 [Hermes 非作者獨立 exact-head review + GitHub Actions](docs/PR-AUTOMATION.md)；2026-11-18 決策已取代上游 Cloud-only 審查要求，無 Cloud grant／額度前提。PR CI 只跑 hosted；merge 不部署。新 `deploy.yml`／`control.yml` 僅手動、main 最新且已審 commit，走既有 devflow rootless runner；產品適配／私有初始化／精確回滾／固定 same-UID Unix 控制與驗收界線見 [GitHub 交付契約](docs/GITHUB-DELIVERY.md)。source／hosted fixture 不代表 Oracle health、使用者實際登入、OAuth 或真人 Teams 成功；歷史 paulpai0412/GHCR/staging 不可借用。未新增公開入口或變更 Unraid。

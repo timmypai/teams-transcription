@@ -1,5 +1,7 @@
 # 會後整理與系列最新狀態（2026-11-02）
 
+> 本頁為原上游規劃／實作歷史，不授權本 target 的摘要派工或部署；`timmypai/teams-transcription` 的 Cloud-only 審查條款已由 2026-11-18 Hermes reviewer + GitHub Actions 決策取代，見 [有效審查政策](PR-AUTOMATION.md)。歷史待辦不作當前出貨 gate。
+
 本輪授權：既有 teams-transcription 的獨立工作分支；不建立產品、不改音訊、Oracle、VM、lobby 或組織政策，不 merge/deploy。來源為本輪委派及其 trusted transcript。Google identity 尚非 dot，真測 pending；不可用家庭帳戶、新 OAuth 或舊驗收代替。
 
 ## 需求與逐項驗收

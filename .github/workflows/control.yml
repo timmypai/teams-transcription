@@ -1,0 +1,56 @@
+name: Manual same-deployment control
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: Read authorized occurrence view or stop an already bound run; no Join/grant
+        type: choice
+        options: [view, stop]
+        default: view
+        required: true
+      id:
+        description: Existing authorized occurrence (view) or session (stop), 32 lowercase hex
+        type: string
+        required: true
+      request_sha:
+        description: Existing acceptance request binding for stop; not an authorization grant
+        type: string
+        default: ''
+permissions:
+  contents: read
+  actions: read
+  pull-requests: read
+  checks: read
+concurrency:
+  group: manual-target-teams-transcription
+  cancel-in-progress: false
+jobs:
+  control:
+    if: github.repository == 'timmypai/teams-transcription' && github.ref == 'refs/heads/main'
+    runs-on: [self-hosted, devflow]
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+          clean: false
+      - name: Reviewed default tip only
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 tools/target_admission.py --output "$RUNNER_TEMP/teams-control-admission.json"
+      - name: Fixed helper to same-UID Unix control
+        env:
+          GH_TOKEN: ${{ github.token }}
+          OPERATION: ${{ inputs.operation }}
+          TARGET_ID: ${{ inputs.id }}
+          REQUEST_SHA: ${{ inputs.request_sha }}
+        run: python3 deploy/target_deploy.py "$OPERATION" --id "$TARGET_ID" --request-sha "$REQUEST_SHA"
+      - if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: devflow-evidence-control-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .devflow/evidence-deploy-${{ github.run_id }}-${{ github.run_attempt }}/
+          retention-days: 7
+          if-no-files-found: warn

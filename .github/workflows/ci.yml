@@ -68,7 +68,7 @@ jobs:
           if-no-files-found: error
   verify:
     runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
@@ -84,6 +84,8 @@ jobs:
       - run: bash .devflow/verify.sh
         env:
           DEVFLOW_EVIDENCE: .devflow/evidence
+      - name: Disposable hosted target adapter build, collision and exact rollback
+        run: python .devflow/target_adapter_probe.py
       - if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:

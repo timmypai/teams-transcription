@@ -4,7 +4,7 @@ from tools.pr_policy_github import collect_pr, EvidenceError
 
 SHA = 'a' * 40
 BASE = 'b' * 40
-REPO = 'paulpai0412/teams-transcription'
+REPO = 'timmypai/teams-transcription'
 
 
 def pr():
@@ -31,7 +31,9 @@ class FakeGitHub:
         if '/check-runs?' in path:
             return {'total_count': 0, 'check_runs': []}, {}
         if '/reviews?' in path:
-            return [{'id': 4, 'user': {'id': 99, 'type': 'Bot'},
+            return [{'id': 4, 'user': {'id': 99, 'type': 'User', 'login': 'independent-reviewer'},
+                     'html_url': 'https://github.com/timmypai/teams-transcription/pull/23#pullrequestreview-4',
+                     'submitted_at': '2026-11-18T00:00:00Z',
                      'state': 'COMMENTED', 'commit_id': SHA,
                      'body': 'PRIVATE REVIEW MUST NOT LEAK'}], {}
         if path == '/graphql':

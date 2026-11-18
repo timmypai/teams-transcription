@@ -17,11 +17,11 @@ try:
 except ModuleNotFoundError:  # direct invocation from tools/
     from pr_policy import evaluate
 
-REPOSITORY = 'paulpai0412/teams-transcription'
+REPOSITORY = 'timmypai/teams-transcription'
 MAX_PAGES = 30
 MAX_BYTES = 4 * 1024 * 1024
 THREAD_QUERY = '''query($number:Int!, $cursor:String) {
-  repository(owner:"paulpai0412", name:"teams-transcription") {
+  repository(owner:"timmypai", name:"teams-transcription") {
     pullRequest(number:$number) {
       reviewThreads(first:100, after:$cursor) {
         nodes { isResolved }
@@ -169,7 +169,10 @@ def collect_pr(number, api):
         'checks': [{k: c[k] for k in ('id', 'name', 'head_sha', 'status', 'conclusion')}
                    | {'app_id': c['app']['id']} for c in checks],
         'reviews': [{k: r[k] for k in ('id', 'commit_id', 'state')}
-                    | {'user_id': r['user']['id']} for r in reviews],
+                    | {'user_id': r['user']['id'], 'login': r['user']['login'],
+                       'html_url': r['html_url'], 'submitted_at': r['submitted_at'],
+                       'body_present': isinstance(r.get('body'), str) and bool(r['body'].strip())}
+                   for r in reviews],
         'unresolved_threads': threads,
     }
 
