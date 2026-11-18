@@ -19,7 +19,9 @@ class SmokeRuntimeTests(unittest.TestCase):
     def test_missing_and_loopback_safe_access_refuse_before_any_browser_or_network(self):
         runtime=self.root/'config/runtime.yml'
         original=json.loads(runtime.read_text())
-        for url in (None,'http://127.0.0.1:8080','https://localhost','https://127.0.0.1'):
+        for url in (None,'http://127.0.0.1:8080','https://localhost','https://127.0.0.1',
+                    'https://127.0.1.2','https://[::1]','https://[::ffff:127.0.0.1]',
+                    'https://alias.localhost','https://2130706433'):
             value={**original,'public_base_url':url,'cookie_secure':bool(url and url.startswith('https'))}
             runtime.write_text(json.dumps(value))
             with patch('playwright.async_api.async_playwright',side_effect=AssertionError('no browser on unverified entry')):
@@ -46,6 +48,10 @@ class SmokeRuntimeTests(unittest.TestCase):
         with patch.object(Path,'open',guarded),patch.object(Path,'iterdir',side_effect=AssertionError('must not list home')):
             value=runtime_metadata(self.root)
         self.assertEqual(value['runtime_uid'],os.getuid())
+        self.assertEqual(value['runtime_gid'],os.getgid())
+        self.assertEqual(value['codex_home_gid'],os.getgid())
+        self.assertTrue(value['runtime_writable'])
+        self.assertTrue(value['codex_home_writable'])
         self.assertEqual(value['runtime_mode'],0o600)
         self.assertEqual(value['codex_home_mode'],0o700)
         self.assertFalse(value['credentials_read'])
@@ -82,7 +88,7 @@ class AnonymousBindingTests(unittest.IsolatedAsyncioTestCase):
                         local=await client.get(url,headers=kwargs['headers'],follow_redirects=False)
                         class Response:
                             status=local.status_code
-                            async def header_value(self,name):return local.headers.get(name)
+                            headers_array=[dict(name=k,value=v) for k,v in local.headers.multi_items()]
                         return Response()
                 await same_deployment_session(InstalledClient(),cookie)
                 with self.assertRaisesRegex(ValueError,'anonymous_deployment_mismatch'):
@@ -95,7 +101,7 @@ class AnonymousBindingTests(unittest.IsolatedAsyncioTestCase):
                             local=await fresh.get(url,headers=kwargs['headers'],follow_redirects=False)
                             class Response:
                                 status=local.status_code
-                                async def header_value(self,name):return local.headers.get(name)
+                                headers_array=[dict(name=k,value=v) for k,v in local.headers.multi_items()]
                             return Response()
                     with self.assertRaisesRegex(ValueError,'anonymous_deployment_mismatch'):
                         await same_deployment_session(FreshClient(),cookie)

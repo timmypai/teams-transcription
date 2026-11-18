@@ -129,6 +129,15 @@ class SmokeCLITests(unittest.TestCase):
 
 
 class SmokeIdentityBoundaryTests(unittest.TestCase):
+    def test_error_projection_keeps_only_fixed_codes(self):
+        from deploy.target_smoke import step_error
+        self.assertEqual(step_error(ValueError('approved_safe_entrypoint_unverified')),'approved_safe_entrypoint_unverified')
+        self.assertEqual(step_error(ValueError('target_runtime_rejected:approved_safe_entrypoint_unverified')),
+            'approved_safe_entrypoint_unverified')
+        for error in (ValueError('SYNTHETIC-PRIVATE-cookie-token'),RuntimeError('approved_safe_entrypoint_unverified'),
+            ValueError('target_runtime_rejected:SYNTHETIC-PRIVATE')):
+            self.assertEqual(step_error(error),'current_live_assertion_unverified')
+
     def test_missing_wrong_attempt_repository_workflow_and_stale_run_refuse(self):
         from deploy.target_smoke import current_run
         valid=dict(id=RUN,run_attempt=ATTEMPT,workflow_id=WORKFLOW,path='.github/workflows/deploy.yml',

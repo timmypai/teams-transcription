@@ -403,6 +403,9 @@ def main():
                         require(ident==state['container_id'],'deployed_container_mismatch')
                         result=c.runtime('verify',input=os.environ.get('DEVFLOW_APP_ENV',''))
                         result['runtime_metadata']=c.runtime('metadata')
+                        result['runtime_metadata']['data_volume_rw']=any(
+                            m.get('Type')=='volume' and m.get('Name')==VOLUME and m.get('Destination')=='/data'
+                            and m.get('RW') is True for m in info['Mounts'])
                         after=json.loads(c.docker('inspect',APP))[0]
                         require(after['Id']==ident and after['State']['StartedAt']==info['State']['StartedAt'],
                             'deployed_container_changed')

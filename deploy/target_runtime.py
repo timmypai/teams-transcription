@@ -339,14 +339,18 @@ def runtime_metadata(root):
     runtime=root/'config/runtime.yml';private(runtime)
     settings=load_assistant_settings(runtime)
     require(settings.data_root==str(root),'runtime_root_mismatch')
+    require(isinstance(settings.codex_home,str),'codex_home_scope_unverified')
     codex=Path(settings.codex_home)
     require(codex.is_relative_to(root) and codex.absolute()==codex.resolve(),'codex_home_scope_unverified')
     home_exists=codex.exists()
     if home_exists:private(codex,True)
-    return dict(runtime_private=True,runtime_uid=os.getuid(),runtime_mode=stat.S_IMODE(runtime.stat().st_mode),
+    return dict(runtime_private=True,runtime_uid=os.getuid(),runtime_gid=runtime.stat().st_gid,
+        runtime_mode=stat.S_IMODE(runtime.stat().st_mode),runtime_writable=os.access(runtime,os.W_OK,effective_ids=True),
         codex_home_in_same_data_root=True,codex_home_exists=home_exists,
         codex_home_private=True if home_exists else None,
         codex_home_uid=codex.stat().st_uid if home_exists else None,
+        codex_home_gid=codex.stat().st_gid if home_exists else None,
+        codex_home_writable=os.access(codex,os.W_OK|os.X_OK,effective_ids=True) if home_exists else None,
         codex_home_mode=stat.S_IMODE(codex.stat().st_mode) if home_exists else None,
         credentials_read=False,provider_authorization='NOT VERIFIED')
 
@@ -363,7 +367,15 @@ def configured_entrypoint(root):
     runtime=root/'config/runtime.yml';private(runtime)
     settings=load_assistant_settings(runtime)
     value=urlsplit(settings.public_base_url or '')
-    require(settings.data_root==str(root) and value.scheme=='https' and settings.cookie_secure is True
+    import ipaddress
+    host=value.hostname or ''
+    try:
+        address=ipaddress.ip_address(host)
+        mapped=address.ipv4_mapped if isinstance(address,ipaddress.IPv6Address) else None
+        loopback=address.is_loopback or address.is_unspecified or bool(mapped is not None and mapped.is_loopback)
+    except ValueError:
+        loopback=host=='localhost' or host.endswith('.localhost') or bool(re.fullmatch('[0-9.]+',host))
+    require(not loopback and settings.data_root==str(root) and value.scheme=='https' and settings.cookie_secure is True
         and bool(value.hostname) and value.hostname not in {'localhost','127.0.0.1','::1'}
         and not value.username and not value.password and not value.query and not value.fragment
         and value.path in {'','/'},'approved_safe_entrypoint_unverified')
@@ -381,7 +393,9 @@ async def same_deployment_session(client,cookie):
     require(isinstance(cookie,str) and re.fullmatch('[a-f0-9]{64}\\.[a-f0-9]{64}',cookie),'anonymous_login_failed')
     local=await client.get('http://127.0.0.1:8080/login',
         headers={'Cookie':'assistant_session='+cookie},max_redirects=0)
-    parsed=SimpleCookie();parsed.load((await local.header_value('set-cookie')) or '')
+    cookies=[row['value'] for row in local.headers_array if row['name'].lower()=='set-cookie']
+    require(len(cookies)==1,'anonymous_deployment_mismatch')
+    parsed=SimpleCookie();parsed.load(cookies[0])
     require(local.status==200 and 'assistant_session' in parsed
         and hmac.compare_digest(parsed['assistant_session'].value,cookie),'anonymous_deployment_mismatch')
 

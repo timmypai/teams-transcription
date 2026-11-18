@@ -19,10 +19,30 @@ assert spec is not None and spec.loader is not None
 acceptance=importlib.util.module_from_spec(spec);spec.loader.exec_module(acceptance)
 SHA=re.compile('[0-9a-f]{40}\\Z')
 IMAGE=re.compile('sha256:[0-9a-f]{64}\\Z')
+SAFE_STEP_ERRORS=frozenset({'smoke_run_identity_unverified','smoke_deployed_revision_mismatch',
+    'smoke_installed_identity_mismatch','smoke_installed_identity_unverified','smoke_health_failed',
+    'smoke_installed_service_changed','approved_safe_entrypoint_unverified','anonymous_login_not_observed',
+    'anonymous_login_controls_unverified','smoke_audit_missing','smoke_allowlist_changed',
+    'smoke_foreign_or_operation_changed'})
+
+
+def step_error(error):
+    if type(error) is ValueError:
+        value=str(error)
+        if value in SAFE_STEP_ERRORS:return value
+        prefix='target_runtime_rejected:'
+        if value.startswith(prefix):
+            from deploy.target_runtime import SAFE_FAILURE_CODES
+            code=value[len(prefix):]
+            if code in SAFE_FAILURE_CODES:return code
+    return 'current_live_assertion_unverified'
 
 
 def current_run(api,sha,run,attempt):
     """GitHub identity is independently read, never trusted from an old receipt."""
+    require(isinstance(sha,str) and SHA.fullmatch(sha)
+        and type(run) is int and 0<run<2**63 and type(attempt) is int and 0<attempt<2**31,
+        'smoke_request_identity_invalid')
     prefix='/repos/'+REPO
     observed=api.request(prefix+f'/actions/runs/{run}')[0]
     workflow=api.request(prefix+'/actions/workflows/deploy.yml')[0]
@@ -64,14 +84,15 @@ class OracleSmoke:
                     require(self.context is not None,'smoke_run_identity_unverified')
                     value=operation()
                     status='passed'
-                except Exception:
-                    # No exception text, private config, DOM or HTTP body escapes.
-                    status='failed';error='current_live_assertion_unverified';blocked=True
+                except Exception as exc:
+                    # Only fixed allowlisted failure codes, never exception
+                    # bodies, private config, DOM or HTTP content, may escape.
+                    status='failed';error=step_error(exc);blocked=True
             event=dict(id=sid,runner='shell',smoke=True,phase=phase,title=SPEC[sid][phase],status=status,error=error)
             self.events.append(event)
             path=self.evidence/'logs'/f'{acceptance.safe_id(sid)}.{phase}.txt'
             path.parent.mkdir(parents=True,exist_ok=True)
-            path.write_text(json.dumps(dict(status=status,assertions=value),sort_keys=True)+'\n')
+            path.write_text(json.dumps(dict(status=status,assertions=value,error=error),sort_keys=True)+'\n')
 
     def health(self,c):
         observed={}

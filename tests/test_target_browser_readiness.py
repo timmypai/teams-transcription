@@ -27,7 +27,7 @@ class BrowserReadinessTests(unittest.IsolatedAsyncioTestCase):
             value['cookie_secure']=True;runtime.write_text(json.dumps(value))
             settings=load_assistant_settings(runtime)
             daemon=AssistantDaemon(settings);app=create_admin_app(daemon,settings,local_teams_control=True)
-            sock=socket.socket();sock.bind(('127.0.0.1',8080));sock.listen(128)
+            sock=socket.socket();sock.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1);sock.bind(('127.0.0.1',8080));sock.listen(128)
             server=uvicorn.Server(uvicorn.Config(app,access_log=False,log_level='critical'))
             task=asyncio.create_task(server.serve(sockets=[sock]))
             try:
@@ -55,7 +55,7 @@ class BrowserReadinessTests(unittest.IsolatedAsyncioTestCase):
             settings=load_assistant_settings(root/'config/runtime.yml')
             daemon=AssistantDaemon(settings)
             app=create_admin_app(daemon,settings,local_teams_control=True)
-            sock=socket.socket();sock.bind(('127.0.0.1',8080));sock.listen(128)
+            sock=socket.socket();sock.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1);sock.bind(('127.0.0.1',8080));sock.listen(128)
             server=uvicorn.Server(uvicorn.Config(app,access_log=False,log_level='critical'))
             task=asyncio.create_task(server.serve(sockets=[sock]))
             try:
