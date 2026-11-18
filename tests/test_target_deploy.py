@@ -13,6 +13,20 @@ ROOT=Path(__file__).resolve().parents[1]
 
 
 class TargetDeployTests(unittest.TestCase):
+    def test_public_build_context_bind_is_writable_without_dac_override(self):
+        with tempfile.TemporaryDirectory() as folder:
+            c=None
+            def command(args,**kwargs):
+                # Stop at the real builder boundary; no daemon in this unit test.
+                context=Path(folder)/'contexts-1-1'
+                self.assertEqual(context.stat().st_mode&0o777,0o777,
+                    'public-only bind must be writable by rootful container UID0 with cap_drop ALL as well as rootless UID0')
+                self.assertEqual(Path(folder).stat().st_mode&0o777,0o700,
+                    'host parent remains private; no credentials enter the context')
+                raise RuntimeError('public-boundary-checked')
+            c=Controller(folder,1,1,command=command)
+            with self.assertRaisesRegex(RuntimeError,'public-boundary-checked'):c.build('a'*40)
+
     def test_whole_foreign_plan_rejected_before_first_effect_and_failures_recorded(self):
         audit=Audit([('stop','container',APP)])
         effects=[]

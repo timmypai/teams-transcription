@@ -12,3 +12,6 @@ cd /workspace/app
 python -m build --wheel --outdir /workspace/python_wheels
 python -m pip download --only-binary=:all: --dest /workspace/python_wheels \
   /workspace/python_wheels/teams_transcription-*.whl 'setuptools>=68'
+# Public package/source context only, under the host's private state parent.
+# Let the host owner remove rootful-container-created files without CHOWN caps.
+chmod -R a+rwX /workspace/app /workspace/codex_npm /workspace/python_wheels

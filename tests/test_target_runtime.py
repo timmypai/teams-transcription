@@ -49,7 +49,7 @@ class TargetRuntimeTests(unittest.TestCase):
         path.symlink_to(self.root/'config/runtime.yml')
         with self.assertRaises(ValueError):initialize(self.root,'new-password-not-allowed')
 
-    def test_active_lease_pending_summary_and_unknown_cleanup_fail_closed(self):
+    def test_unknown_paused_policy_fails_closed(self):
         initialize(self.root,'disposable-test-password')
         store=AssistantStore(self.root)
         # Actual application claim/maintenance contract is also covered by original
@@ -57,4 +57,44 @@ class TargetRuntimeTests(unittest.TestCase):
         with store._locked() as db,db:
             db.execute("UPDATE assistant_settings SET value=? WHERE id=0",(json.dumps({'scheduler_paused':None}),))
         self.assertFalse(database_state(self.root)['quiescent'])
+        with self.assertRaises(ValueError):maintenance(self.root,'enable')
+
+
+from test_capture_cleanup_review import CleanupFixture
+from unittest.mock import patch
+
+
+class TargetCleanupParityTests(CleanupFixture,unittest.TestCase):
+    def setUp(self):
+        self.make_store()
+        self.root=Path(self.tmp.name)
+        (self.root/'config').mkdir(mode=0o700)
+        runtime=self.root/'config/runtime.yml';runtime.write_text('{}');runtime.chmod(0o600)
+
+    def test_real_active_capture_lease_prevents_maintenance_before_stop(self):
+        self.capture(source=False)
+        state=database_state(self.root)
+        self.assertTrue(state['active_lease']);self.assertTrue(state['active_meeting'])
+        with self.assertRaisesRegex(ValueError,'runtime_not_quiescent'):maintenance(self.root,'enable')
+        self.assertFalse((self.root/'.deployment-maintenance').exists())
+
+    def test_unknown_cleanup_valid_review_and_stale_review_match_application(self):
+        from teams_transcription.storage import Session
+        session,_=self.interrupted(source=False)
+        for reviewed in (False,True):
+            if reviewed:
+                with patch('teams_transcription.assistant_store.os.kill',side_effect=ProcessLookupError):self.review(session)
+            state=database_state(self.root)
+            self.assertEqual(state['unreviewed_cleanup'],bool(self.store.capture_interlocks()))
+            self.assertEqual(state['unreviewed_cleanup'],not reviewed)
+        Session(self.tmp.name,session.ident).update(pid=987654320)
+        self.assertTrue(database_state(self.root)['unreviewed_cleanup'])
+        with self.assertRaises(ValueError):maintenance(self.root,'enable')
+
+    def test_legacy_pending_summary_blocks_deployment_without_starting_worker(self):
+        from summary_history_fixture import legacy_job
+        session,_=self.interrupted(source=False)
+        with patch('teams_transcription.assistant_store.os.kill',side_effect=ProcessLookupError):self.review(session)
+        legacy_job(self.store,session.ident)
+        self.assertTrue(database_state(self.root)['pending_summary'])
         with self.assertRaises(ValueError):maintenance(self.root,'enable')

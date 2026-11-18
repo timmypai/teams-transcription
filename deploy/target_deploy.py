@@ -179,7 +179,13 @@ class Controller:
     def build(self,sha):
         contexts=self.root/f'contexts-{self.run_id}-{self.attempt}'
         require(not contexts.exists(),'build_context_collision')
-        self.mutate('write','directory',str(self.root),lambda:contexts.mkdir(mode=0o700))
+        def create_public_context():
+            contexts.mkdir(mode=0o700)
+            # Public-only data under a private parent. Rootful hosted UID0 has
+            # no DAC override with cap_drop ALL; rootless UID0 maps differently.
+            # Do not solve this by adding capabilities or mounting private data.
+            contexts.chmod(0o777)
+        self.mutate('write','directory',str(self.root),create_public_context)
         base=next(line.split('=',1)[1] for line in (ROOT/'Dockerfile').read_text().splitlines() if line.startswith('ARG PYTHON_BASE='))
         self.mutate('run','container',self.builder,lambda:self.docker('run','--rm','--name',self.builder,
             '--label',OWNER+'='+REPO,'--cap-drop','ALL','--security-opt','no-new-privileges',
