@@ -1,0 +1,9 @@
+id = "L-0001"
+title = "Public dependency bind ownership differs on rootful and rootless Docker"
+event = "Hosted adapter probe failed before service creation at the public dependency builder; minimized build-boundary regression observes 0700 instead of required public writability."
+root_cause = "Container root with cap_drop ALL cannot write a runner-UID-owned 0700 bind on rootful hosted Docker; rootless UID0 maps to the host owner. Public contexts must explicitly support both without relaxing product/private-volume permissions."
+category = "verification"
+
+[enforcement]
+kind = "test"
+ref = "tests/test_target_deploy.py::test_public_build_context_bind_is_writable_without_dac_override"

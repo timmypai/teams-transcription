@@ -21,7 +21,7 @@ concurrency:
 jobs:
   shadow:
     if: >-
-      github.repository == 'paulpai0412/teams-transcription' &&
+      github.repository == 'timmypai/teams-transcription' &&
       github.ref == 'refs/heads/main' &&
       vars.ENABLE_PR_POLICY_SHADOW == 'true'
     runs-on: ubuntu-24.04
@@ -43,7 +43,7 @@ jobs:
         if: always()
         run: |
           printf '%s\n' '### PR policy shadow report' '' \
-            'This diagnostic always blocks merge. A successful test job or an absent Codex comment is not review approval.' \
+            'This diagnostic never authorizes merge. Independent Hermes exact-head GitHub review and verified Actions evidence are required.' \
             >> "$GITHUB_STEP_SUMMARY"
           if test -f "$RUNNER_TEMP/pr-policy.json"; then
             printf '\n```json\n' >> "$GITHUB_STEP_SUMMARY"

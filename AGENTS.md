@@ -6,7 +6,7 @@
 
 階段路由：需求仍未決才用 `grill-with-docs`；規格用 `to-spec`；經核准要寫遠端 tickets 才用 `to-tickets`；實作用 `tdd`（本任務已核准 public seams：映像、部署 CLI、SQLite 准入與 health）；除錯用 `diagnosing-bugs`；交付用 `code-review`。整套可用，不是每輪全部執行。已核准的規格、邊界與 routine validation 不重問；repository source／固定基底與本次任務說明可作審查來源。
 
-2026-10-31 使用者核准本 repo 試行分工：**Codex Cloud 獨立 code review，主助理做需求、協調修正與驗收，不額外疊逐行手動 review**。本試行的交付 review 路由由獨立 Codex Cloud 執行，不由寫碼者自審；尚未有可驗證的原生完成契約時維持阻擋，不能讓主助理的測試／說明替代 review。使用者允許改進意見、discussion、rule 自主迭代，但不取消安全 gate、不新增權限／費用，仍遵守平台必要確認。相關變更以 commit／PR 與政策 hash 留稽核；細節與精確啟用 blocker 見 [PR automation](docs/PR-AUTOMATION.md)。這是本 repo 的分工試行，不宣稱已啟用 automatic review／auto merge。政策本身仍需明確人工批准；merge 不部署。
+2026-11-18 使用者明確改用 **Hermes 獨立 reviewer + GitHub Actions**，正式取代本 target 的 2026-10-31 Codex Cloud-only 限制。target 固定 `timmypai/teams-transcription`；不要求 Cloud grant／額度／數字 App 身分，不變更應用 GPT Live OAuth。devops 為唯一 source/publisher，非作者 Hermes reviewer 親讀完整 diff／政策及最終 exact head，真跑測試並核對 GitHub Actions workflow/run/attempt/SHA，逐條獨立判斷 base 例外；以 reviewer 自己既有登入提交原生 GitHub review 並讀回 user/login、完整 commit_id、review link 及具體結論。stale/self/unknown/missing/unresolved findings 全 fail closed；CI 綠、無 findings、作者 JSON 或提交審查不是批准。政策變更本身也交獨立 reviewer，不自審、不 admin merge；只讀 shadow 不授權自動合併。merge 不部署，部署與控制僅走本 target 手動 default-tip workflow。歷史 evidence／上游記錄保留，但 Cloud-only 要求已被本決策取代。細節見 [PR automation](docs/PR-AUTOMATION.md)。
 
 完整27技能清單與assets／references盤點：[docs/agents/SKILLS-INVENTORY.md](docs/agents/SKILLS-INVENTORY.md)。
 
@@ -20,7 +20,7 @@ GitHub adapter：[docs/agents/issue-tracker.md](docs/agents/issue-tracker.md)；
 
 Python 會議助理：Google Calendar 找到 Teams 場次，自主入會；A 使用 `gpt-live-1-codex` 保存逐字來源，B 以獨立 native Live 通道回答「小白小白」問題。使用者已取消服務端會後摘要；不得重新啟用自動 outbox／worker／重試。逐字來源與既有歷史摘要仍保留可讀，本修正不新增 dot 整合或摘要替代服務。Docker 提供登入管理頁面。SQLite 是唯一會議資料權威；不使用 MCP 或會議 Markdown 交換／輸出。
 
-工作前讀 `docs/HANDOFF.md`、`README.md`、`TRANSFER.md`、`evidence/RESULTS.md`。來源起於 WSL2 移轉套件；GitHub 專案為 `paulpai0412/teams-transcription`。提交前核對 Git root／remote，不得提交至包含其他專案的父工作區。來源提交不代表核准部署；既有實測記錄不代表本次真實入會成功。
+工作前讀 `docs/HANDOFF.md`、`README.md`、`TRANSFER.md`、`evidence/RESULTS.md`。來源起於 WSL2 移轉套件；本 target 是 `timmypai/teams-transcription`，`paulpai0412` 僅歷史上游而非部署／審查身分。提交前核對 Git root／remote，不得提交至包含其他專案的父工作區。來源提交不代表核准部署；既有實測記錄不代表本次真實入會成功。
 
 ## Architecture & Data Flow
 
@@ -46,7 +46,7 @@ Python 會議助理：Google Calendar 找到 Teams 場次，自主入會；A 使
 
 ## Review guidelines
 
-以下供獨立 Codex Cloud reviewer 使用，依官方 review 介面提交 findings，不製造自訂 PASS／approval marker：
+以下供獨立 Hermes reviewer 使用，以自己既有登入提交並讀回原生 GitHub exact-head review（身分／完整 SHA／連結／具體結論），不製造 Cloud 結果或自訂可信 PASS／approval marker：
 
 - 核心音訊修改檢查 A／B 隔離、真實來源 quiet 與 render quiet、撤權／停止後發聲、SQLite context 完整交付、lease／來源 fence 與未知清理 interlock。合成結果不能推論真人遠端聽感或完整驗收。
 - 特別檢查修改是否新增帳號、credentials、安全／存取權限、網路、部署或費用，及是否刪測試、降低 acceptance／修改 review policy。這些需要人工批准；一般路徑或作者 label 不代表批准。

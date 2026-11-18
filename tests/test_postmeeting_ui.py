@@ -410,7 +410,7 @@ class PostmeetingUIBrowserTests(unittest.IsolatedAsyncioTestCase):
                 self.assertIn('等待外部整理',await page.locator('#postmeeting-status').inner_text())
                 self.assertIn('尚未接通',await page.locator('#postmeeting-status').inner_text())
                 self.assertEqual(await page.locator('#task-list select').count(),0)
-                self.assertEqual(await page.locator('#task-list a').first.get_attribute('href'),
+                self.assertEqual(await page.locator('#task-list').get_by_role('link',name='查看來源',exact=True).get_attribute('href'),
                     '/history/fixture-old#source-S0002')
                 await page.locator('#previous-section > summary').click()
                 self.assertTrue(await page.get_by_text('Old conclusion for explicit history',exact=True).is_visible())

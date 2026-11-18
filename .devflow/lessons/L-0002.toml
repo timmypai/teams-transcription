@@ -1,0 +1,9 @@
+id = "L-0002"
+title = "Foreign service fixtures must override inherited image ownership labels"
+event = "Hosted probe built the real target image, but namespace preflight rejected the foreign sentinel as a stale target resource; the sentinel had inherited the target image owner label."
+root_cause = "Docker run inherits image labels. A foreign sentinel made from a target-owned image is not foreign unless its owner label is explicitly overridden; otherwise the foreign snapshot can silently omit it."
+category = "verification"
+
+[enforcement]
+kind = "test"
+ref = "tests/test_target_deploy.py::test_foreign_sentinel_overrides_inherited_image_owner"

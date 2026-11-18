@@ -13,3 +13,7 @@ __pycache__/
 .pi/
 build/
 dist/
+.devflow/evidence*/
+.devflow/ui/node_modules/
+.devflow/ui/test-results/
+.devflow/fixture-wheels/

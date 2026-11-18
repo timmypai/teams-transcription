@@ -17,6 +17,33 @@ from test_assistant_daemon import iso
 
 
 class LocalControlTests(unittest.IsolatedAsyncioTestCase):
+    async def test_target_fixed_helper_uses_real_same_uid_socket_and_checks_cleanup(self):
+        from deploy.target_runtime import control
+        async with LocalTeamsControl(self.daemon,self.settings):
+            view=await control(self.root,'view',self.occurrence['id'])
+            self.assertTrue(view['recording_authorized'])
+            self.assertNotIn('join_url',view)
+            for action in ('join','prepare','shell'):
+                with self.assertRaisesRegex(ValueError,'control_operation_rejected'):
+                    await control(self.root,action,self.occurrence['id'])
+            joined=await self.call('join',self.fields)  # constructor-injected synthetic runner only
+            await asyncio.wait_for(self.started.wait(),2)
+            ident=joined['result']['session_id']
+            with self.assertRaises(LocalControlError):
+                await control(self.root,'stop',ident,'b'*64)
+            # Original synthetic runner does not issue Native work-finished proof.
+            # Stop-return must not silently become cleanup PASS.
+            with self.assertRaisesRegex(ValueError,'stop_cleanup_unverified'):
+                await control(self.root,'stop',ident,'a'*64)
+            await self.until(lambda:self.daemon.status()['active_session_id'] is None)
+            # Explicit synthetic terminal receipt; not a production/model claim.
+            from teams_transcription.storage import stamp
+            with self.store._locked() as db,db:
+                db.execute('INSERT INTO session_events(meeting_id,kind,payload_json,created_at) VALUES(?,?,?,?)',
+                    (ident,'teams_acceptance_work_finished','{}',stamp()))
+            result=await control(self.root,'stop',ident,'a'*64)
+            self.assertTrue(result['cleanup_verified'])
+
     event = daemon_fixture.AssistantDaemonTests.event
     until = daemon_fixture.AssistantDaemonTests.until
 

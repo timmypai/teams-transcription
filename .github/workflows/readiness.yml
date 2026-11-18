@@ -1,0 +1,39 @@
+name: Manual deployed readiness verification
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+  pull-requests: read
+  checks: read
+concurrency:
+  group: manual-target-teams-transcription
+  cancel-in-progress: false
+jobs:
+  verify:
+    if: github.repository == 'timmypai/teams-transcription' && github.ref == 'refs/heads/main'
+    runs-on: [self-hosted, devflow]
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+          clean: false
+      - name: Reviewed default tip admission before secret consumption
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 tools/target_admission.py --output "$RUNNER_TEMP/teams-readiness-admission.json"
+      - name: Fixed deployed browser and no-ID rejection consumer
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DEVFLOW_APP_ENV: ${{ secrets.DEVFLOW_APP_ENV }}
+        run: python3 deploy/target_deploy.py verify
+      - if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: devflow-evidence-readiness-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .devflow/evidence-deploy-${{ github.run_id }}-${{ github.run_attempt }}/
+          retention-days: 7
+          if-no-files-found: warn

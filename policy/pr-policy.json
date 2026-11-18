@@ -1,12 +1,11 @@
 {
   "schema": 1,
   "mode": "shadow",
-  "repository": "paulpai0412/teams-transcription",
-  "native_review_adapter": "unverified",
-  "codex_app_id": null,
-  "codex_bot_user_id": null,
+  "repository": "timmypai/teams-transcription",
+  "review_adapter": "hermes-independent-github",
+  "designated_reviewer": {"login": "paulpai0412", "id": 273007156, "type": "User"},
   "manual_paths": [
-    ".github/*", ".agents/*", "AGENTS.md", "policy/*", "tools/*",
+    ".github/*", ".devflow/*", ".agents/*", "AGENTS.md", "policy/*", "tools/*",
     "deploy/*", "docker/*", "Dockerfile", ".dockerignore", "*compose*",
     "pyproject.toml", "*requirements*", "*.lock", "*runtime*.yml", ".env*",
     "teams_transcription/*auth*", "teams_transcription/*config*",
@@ -23,7 +22,8 @@
   "core_paths": ["teams_transcription/*.py", "teams_transcription/static/*"],
   "ordinary_paths": ["docs/*.md", "README.md"],
   "required_checks": {
-    "ordinary": ["pr-contracts"],
-    "core": ["pr-contracts", "pr-full-regression"]
+    "ordinary": ["devflow-ci"],
+    "core": ["devflow-ci"],
+    "manual": ["devflow-ci"]
   }
 }

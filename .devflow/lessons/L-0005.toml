@@ -1,0 +1,9 @@
+id = "L-0005"
+title = "Exercise the installed consumer with the real container process topology"
+event = "The first readiness CI run reached authenticated browser UI, then exposed synchronous health blocking its disposable server event loop; the installed helper also assumed daemon PID1 despite Compose init:true."
+root_cause = "A live async consumer must offload blocking HTTP, and a kernel socket peer must be matched to the actual installed daemon command/executable/UID/lineage rather than the container init process. Component fixtures alone cannot prove installed-image wiring."
+category = "verification"
+
+[enforcement]
+kind = "test"
+ref = "tests/test_target_browser_readiness.py::test_actual_login_settings_close_health_and_invalid_secret_no_reset"

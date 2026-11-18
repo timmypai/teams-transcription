@@ -1,0 +1,9 @@
+id = "L-0003"
+title = "Exercise the canonical GitHub metadata collector, not only its pure gate"
+event = "Readonly live admission smoke rejected repository discovery; direct GitHub read of /repos/timmypai/teams-transcription/ returned 404 while canonical repository and branch/commit endpoints worked."
+root_cause = "A trailing slash changed the GitHub endpoint; pure observation-validation tests could not exercise URL assembly. The HTTP target allowlist must explicitly permit the exact canonical repository endpoint without broadening hosts or mutation methods."
+category = "verification"
+
+[enforcement]
+kind = "test"
+ref = "tests/test_target_admission.py::test_collector_uses_canonical_repo_endpoint_and_rechecks_identity"

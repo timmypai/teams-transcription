@@ -10,9 +10,9 @@ BASE = 'b' * 40
 
 def observation():
     return {
-        'repository': 'paulpai0412/teams-transcription', 'number': 23,
+        'repository': 'timmypai/teams-transcription', 'number': 23,
         'head_sha': SHA, 'base_sha': BASE, 'base_ref': 'main',
-        'head_repository': 'paulpai0412/teams-transcription',
+        'head_repository': 'timmypai/teams-transcription',
         'state': 'open', 'draft': False, 'author_id': 10,
         'complete': True, 'stable': True,
         'files': [{'filename': 'teams_transcription/b_question.py',
@@ -22,10 +22,22 @@ def observation():
 
 
 class PRPolicyTests(unittest.TestCase):
+    def test_only_designated_identity_clears_identity_diagnostic_not_merge(self):
+        obs=observation()
+        review=dict(id=1,commit_id=SHA,user_id=273007156,login='paulpai0412',type='User',
+            author_association='NONE',body_present=True,submitted_at='2026-11-18T00:00:00Z',
+            state='APPROVED',html_url='https://github.com/timmypai/teams-transcription/pull/23#pullrequestreview-1')
+        obs['reviews']=[review]
+        self.assertNotIn('review_identity_not_designated',evaluate(obs)['blockers'])
+        self.assertFalse(evaluate(obs)['merge_allowed'])
+        for update in (dict(user_id=None),dict(user_id=8),dict(login='stranger'),dict(type='Bot')):
+            obs['reviews']=[{**review,**update}]
+            self.assertIn('review_identity_not_designated',evaluate(obs)['blockers'])
+
     def test_core_fix_is_candidate_and_never_native_review_pass_by_silence(self):
         result = evaluate(observation())
         self.assertEqual(result['candidate_tier'], 'core')
-        self.assertIn('native_review_contract_unverified', result['blockers'])
+        self.assertIn('independent_review_scope_unverified', result['blockers'])
         self.assertFalse(result['merge_allowed'])
         self.assertEqual(result['head_sha'], SHA)
         self.assertEqual(result['mode'], 'shadow')
@@ -75,12 +87,12 @@ class PRPolicyTests(unittest.TestCase):
         obs = observation()
         obs['checks'] = [
             {'name': n, 'head_sha': SHA, 'status': 'completed', 'conclusion': 'success'}
-            for n in ('pr-contracts', 'pr-full-regression')]
+            for n in ('devflow-ci',)]
         obs['reviews'] = [{'commit_id': SHA, 'user_id': 99,
                            'state': 'APPROVED', 'login': 'codex-looking-bot'}]
         result = evaluate(obs)
         self.assertNotIn('required_check_not_successful', result['blockers'])
-        self.assertIn('codex_identity_unverified', result['blockers'])
+        self.assertIn('review_conclusion_missing', result['blockers'])
         self.assertIn('semantic_scope_unverified', result['blockers'])
         self.assertIn('required_test_provenance_unverified', result['blockers'])
         self.assertFalse(result['merge_allowed'])
@@ -88,18 +100,18 @@ class PRPolicyTests(unittest.TestCase):
     def test_skipped_stale_pending_failed_or_duplicate_checks_are_not_success(self):
         for conclusion in ('skipped', 'neutral', 'failure', None):
             obs = observation()
-            obs['checks'] = [{'name': 'pr-contracts', 'head_sha': SHA,
+            obs['checks'] = [{'name': 'devflow-ci', 'head_sha': SHA,
                               'status': 'completed', 'conclusion': conclusion}]
             self.assertIn('required_check_not_successful', evaluate(obs)['blockers'])
         for overrides in ({'head_sha': BASE}, {'status': 'in_progress'}):
             obs = observation()
-            check = {'name': 'pr-contracts', 'head_sha': SHA,
+            check = {'name': 'devflow-ci', 'head_sha': SHA,
                      'status': 'completed', 'conclusion': 'success'}
             check.update(overrides)
             obs['checks'] = [check]
             self.assertIn('required_check_not_successful', evaluate(obs)['blockers'])
         obs = observation()
-        check = {'name': 'pr-contracts', 'head_sha': SHA,
+        check = {'name': 'devflow-ci', 'head_sha': SHA,
                  'status': 'completed', 'conclusion': 'success'}
         obs['checks'] = [check, copy.deepcopy(check)]
         self.assertIn('required_check_not_successful', evaluate(obs)['blockers'])

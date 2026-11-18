@@ -43,7 +43,11 @@ class BrowserOutputLeaseTests(unittest.IsolatedAsyncioTestCase):
                     for _ in range(6):
                         await asyncio.sleep(.05)
                         self.assertFalse(await output.observe())
-                    self.assertGreater(output.activity_frames, 0)
+                    # Decoded input counters cannot prove rendered activity;
+                    # the native history exposes per-lease activity instead.
+                    self.assertEqual(output.counter_domain, 'target_decoded_input_v2')
+                    self.assertIsNone(output.activity_frames)
+                    self.assertTrue(output.render_activity_observed)
                     self.assertTrue(await policy.check())
                     await source.silence()
                     async def quiet():

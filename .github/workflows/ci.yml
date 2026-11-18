@@ -1,0 +1,138 @@
+name: Devflow isolated CI
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: devflow-ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+# No self-hosted jobs, secrets, publishing, privileged events or deployment.
+env:
+  SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+  DEVFLOW_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+  PR_BODY: ${{ github.event.pull_request.body || '' }}
+  DEVFLOW_KIND: ${{ github.event_name == 'pull_request' && 'pr' || 'integration' }}
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+      - run: python -m pip install PyYAML==6.0.3
+      - run: bash .devflow/check.sh
+      - if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: devflow-host-check-${{ env.SOURCE_SHA }}-${{ github.run_attempt }}
+          path: .devflow/evidence-check/
+          retention-days: 7
+          if-no-files-found: error
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3]
+    env:
+      TEST_SHARD: ${{ matrix.shard }}
+      TEST_SHARDS: '4'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+      - run: python -m pip install . 'build==1.3.0'
+      - run: |
+          python -m pip download --only-binary=:all: --dest .devflow/fixture-wheels 'websockets>=16,<17' jsonschema==4.26.0
+      - run: bash .devflow/build.sh
+      - run: python .devflow/image_regression.py
+      - if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: devflow-tests-${{ env.SOURCE_SHA }}-${{ github.run_attempt }}-${{ matrix.shard }}
+          path: .devflow/evidence-test/
+          retention-days: 7
+          if-no-files-found: error
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+      - run: python -m pip install . 'build==1.3.0'
+      - run: npm ci --prefix .devflow/ui --ignore-scripts --no-audit --no-fund
+      - run: bash .devflow/build.sh
+      - run: bash .devflow/verify.sh
+        env:
+          DEVFLOW_EVIDENCE: .devflow/evidence
+      - name: Disposable hosted target adapter build, collision and exact rollback
+        run: python .devflow/target_adapter_probe.py
+      - if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: devflow-evidence-${{ env.DEVFLOW_KIND }}-${{ env.SOURCE_SHA }}-${{ github.run_attempt }}
+          path: .devflow/evidence/
+          retention-days: 7
+          if-no-files-found: error
+  verify-base:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+      - run: python -m pip install . 'build==1.3.0'
+      - run: npm ci --prefix .devflow/ui --ignore-scripts --no-audit --no-fund
+      - run: bash .devflow/verify-base.sh "$BASE_SHA"
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+      - if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: devflow-evidence-base-${{ env.SOURCE_SHA }}-${{ github.run_attempt }}
+          path: .devflow/evidence-base/
+          retention-days: 7
+          if-no-files-found: error
+  devflow-ci:
+    if: always()
+    needs: [test, check, verify, verify-base]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    steps:
+      - name: Require every applicable exact-head job
+        env:
+          TEST: ${{ needs.test.result }}
+          CHECK: ${{ needs.check.result }}
+          VERIFY: ${{ needs.verify.result }}
+          BASE: ${{ needs.verify-base.result }}
+          EVENT: ${{ github.event_name }}
+        run: |
+          test "$TEST" = success
+          test "$CHECK" = success
+          test "$VERIFY" = success
+          if [ "$EVENT" = pull_request ]; then test "$BASE" = success; else test "$BASE" = skipped; fi

@@ -1,0 +1,50 @@
+services:
+  teams-transcription:
+    image: ${DEVFLOW_IMAGE:?immutable_image_required}
+    container_name: devflow-teams-transcription-app
+    user: '10001:10001'
+    init: true
+    restart: unless-stopped
+    read_only: true
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+      - seccomp:${DEVFLOW_RELEASE_DIR:?release_required}/chromium-seccomp.json
+    labels:
+      io.devflow.owner: timmypai/teams-transcription
+      io.devflow.source: ${DEVFLOW_SOURCE_SHA:?source_required}
+    command: [serve, --config, /data/config/runtime.yml, --local-teams-control]
+    environment:
+      ASSISTANT_HOST: 0.0.0.0
+      ASSISTANT_PORT: '8080'
+      ASSISTANT_CHROMIUM: /usr/bin/chromium
+      CODEX_HOME: /data/codex
+    ports: ['127.0.0.1:18101:8080']
+    volumes:
+      - type: volume
+        source: data
+        target: /data
+    networks: [project]
+    tmpfs: ['/tmp:size=512m,mode=1777']
+    shm_size: 1gb
+    mem_limit: 4g
+    cpus: '2'
+    pids_limit: 512
+    stop_grace_period: 45s
+    logging:
+      driver: json-file
+      options: {max-size: 10m, max-file: '3'}
+    healthcheck:
+      test: [CMD, teams-transcription, healthcheck, --port, '8080']
+      interval: 15s
+      timeout: 3s
+      start_period: 10s
+      retries: 3
+volumes:
+  data:
+    external: true
+    name: devflow-teams-transcription-data
+networks:
+  project:
+    external: true
+    name: devflow-teams-transcription

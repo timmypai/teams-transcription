@@ -1,8 +1,8 @@
-"""Read-only PR tier diagnostics. Native Codex PASS has no verified adapter yet.
+"""Read-only PR diagnostics for independent Hermes review + GitHub Actions.
 
 There is deliberately no merge API, approval override, or switch to enforce mode.
 Only trusted main may supply this program and its policy. Observations are not an
-attestation; even a GitHub APPROVED review is insufficient for this trial.
+attestation; native GitHub review is independently checked in the review lane.
 """
 import argparse
 import fnmatch
@@ -10,6 +10,10 @@ import hashlib
 import json
 from pathlib import Path
 import re
+try:
+    from tools.reviewer_identity import designated
+except ModuleNotFoundError:
+    from reviewer_identity import designated
 
 ROOT = Path(__file__).resolve().parents[1]
 POLICY = ROOT / 'policy' / 'pr-policy.json'
@@ -19,19 +23,20 @@ SHA = re.compile(r'[0-9a-f]{40}\Z')
 def evaluate(observation, policy=None):
     """Return a sanitized blocking report; never authorize a write action."""
     policy = json.loads(POLICY.read_text()) if policy is None else policy
-    blockers = ['shadow_only', 'native_review_contract_unverified',
+    blockers = ['shadow_only', 'independent_review_scope_unverified',
                 'semantic_scope_unverified', 'required_test_provenance_unverified']
     canonical = json.dumps(policy, sort_keys=True, separators=(',', ':')).encode()
     result = {
         'schema': 1, 'mode': 'shadow', 'merge_allowed': False,
-        'repository': 'paulpai0412/teams-transcription', 'pr_number': None,
+        'repository': 'timmypai/teams-transcription', 'pr_number': None,
         'policy_sha256': hashlib.sha256(canonical).hexdigest(),
         'head_sha': None, 'base_sha': None, 'candidate_tier': 'unknown',
         'blockers': blockers, 'observed_review_count': 0,
-        'current_head_review_count': 0, 'observed_check_count': 0,
+        'current_head_review_count': 0, 'observed_check_count': 0, 'review_evidence': [],
     }
     if (policy.get('schema') != 1 or policy.get('mode') != 'shadow'
-            or policy.get('native_review_adapter') != 'unverified'):
+            or policy.get('repository') != 'timmypai/teams-transcription'
+            or policy.get('review_adapter') != 'hermes-independent-github'):
         blockers.append('policy_unsupported')
         return result
     if not isinstance(observation, dict):
@@ -84,16 +89,32 @@ def evaluate(observation, policy=None):
     result['current_head_review_count'] = len(current)
     if not current:
         blockers.append('current_head_review_missing')
-    if not policy.get('codex_app_id') or not policy.get('codex_bot_user_id'):
-        blockers.append('codex_identity_unverified')
+
     author_id = observation.get('author_id')
     if type(author_id) is not int or author_id <= 0:
         blockers.append('author_unknown')
     if any(r.get('user_id') == author_id for r in current):
         blockers.append('author_review_not_independent')
-    if any(r.get('state') in ('CHANGES_REQUESTED', 'PENDING', 'DISMISSED')
-           for r in current):
+    # API order is chronological. Latest review from each principal supersedes
+    # earlier approval, including withdrawal, comments and unknown states.
+    latest = {}
+    for review in reviews:
+        if isinstance(review, dict):
+            latest[review.get('user_id')] = review
+    if not latest or any(r.get('state') != 'APPROVED'
+            or r.get('commit_id') != result['head_sha'] for r in latest.values()):
         blockers.append('review_not_clear')
+    for r in current:
+        if not designated(dict(login=r.get('login'),id=r.get('user_id'),type=r.get('type'))):
+            blockers.append('review_identity_not_designated')
+        if (not isinstance(r.get('login'), str) or not r['login']
+                or r.get('body_present') is not True
+                or not isinstance(r.get('submitted_at'), str)
+                or r.get('html_url') != f"https://github.com/timmypai/teams-transcription/pull/{number}#pullrequestreview-{r.get('id')}"):
+            blockers.append('review_conclusion_missing')
+            continue
+        result['review_evidence'].append(dict(reviewer=r['login'], head_sha=r['commit_id'],
+            review_url=r['html_url'], conclusion=r.get('state'), submitted_at=r['submitted_at']))
     threads = observation.get('unresolved_threads')
     if type(threads) is not int or threads < 0:
         blockers.append('threads_unknown')

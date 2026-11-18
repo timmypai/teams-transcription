@@ -43,6 +43,7 @@ RUN --network=none \
     && useradd --uid 10001 --create-home recorder \
     && install -d -m 0700 -o 10001 -g 10001 /data
 COPY docker/entrypoint.py /opt/meeting/entrypoint.py
+COPY deploy/target_runtime.py /opt/meeting/devflow_runtime.py
 # Source files may be created with umask 077 in the development workspace.
 # Runtime UID is operator-selected, so shipped code must be readable by it.
 RUN chmod -R a+rX /opt/meeting

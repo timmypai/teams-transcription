@@ -1,5 +1,46 @@
 # GitHub 開發與 Oracle staging 交付契約
 
+## timmypai 手動交付接入（本輪有效範圍）
+
+本輪 target 僅 `timmypai/teams-transcription`；來源為 `main@c792cf9f313dc1ba2fafe8eb1c811b8e862adc66`。下方 `paulpai0412` 的歷史部署資源、授權、runner、GHCR 與 `/opt/teams-staging` **不屬於本次可用資源**，不得借用。
+
+- 新 `ci.yml` 只在非特權 `pull_request`／手動 `workflow_dispatch` 跑 GitHub-hosted Ubuntu，唯讀 token、不讀真 secrets、不 publish、不上 Oracle、不 Join／grant。checkout exact head，test/check/verify/verify-base 由 `devflow-ci` 聚合。merge 不部署。
+- 公開 npm 固定 SHA512 的 `codex_npm` 與當次 Python3.12 公開 wheels 兩個命名 contexts 均實際建置；映像保留原 non-root、readonly、drop ALL、seccomp、tmpfs。回歸在獨有 Docker bridge（提供本機 ICE 所需正常路由，無 published ports、無憑證）的同版 nonroot/readonly/seccomp 映像執行；僅測試 `/tmp` 加 `exec` 以執行測試產生的 fake subprocess，產品 Compose 不變。先前 network-none／internal bridge 的真實 RTC 失敗保留，不以此推論產品音訊根因；只用合成本機 peers，禁止真 Teams／model／grant。只明列排除原移轉缺來源的兩個 bridge suites，不宣稱原始 full discovery。`test_staging_compose` 不跳過：改由 hosted `check` job 實際使用 Docker/Compose CLI 做無 daemon 的 config 檢查，另存 host-compose.json；image shards 明列 routed_to_host_check，聚合必須兩邊成功。Node、sandboxed Chromium 與固定 Codex 均由映像提供；Node Playwright runner 使用固定 Python Playwright 套件內建的相容 Node，不以 Debian Node18 啟動需20以上的 runner。
+- `.devflow/hosted_verify.py` 僅 disposable hosted harness：隨機 `teams-transcription-ci-*` 容器、專用 volume、無網路 app、無 published port、無 Docker socket 掛載。建立自己的 foreign sentinel／檔案／SQLite，核對前後 hash、身分、啟動時間及狀態；所有 controller mutations 都經 exact tuple allowlist，混合 foreign plan 在第一個操作前整批拒絕。證據的 `outside_mutations=0` 僅表示該 harness 稽核範圍，**不是 Oracle 或全主機任意檔案未寫入的證明**。
+- AC-1～3 的九個 Given/When/Then 從 EPIC `t_a3f4f673` 定稿逐字納入 `.devflow/scenarios.json`。PR 證據標明 disposable hosted scope，與部署證據分離；負例不在實際部署執行。UI 使用真正 sandboxed Chromium／已安裝管理頁；只用隨機一次性測試密碼，沒有真憑證、provider 或會議。trace/video/HAR 關閉，密碼欄清空後才截圖。
+- base job 真正建置 PR base 的應用映像，用相同 UI fixtures 核對既有登入行為；CLI adapter 在 base 缺席時回報 INVALID／`Base-unverifiable`，不製造假紅燈。UI 既有行為用 `Already-met`；PR 上的豁免仍需獨立 reviewer 核對，CI 綠不等於豁免已批准或 native review 完成。
+- `deploy/isolated_deployment.py oracle-preflight` 仍只屬 hosted harness，exit1／`target_manual_workflow_required`，不能 enable 或拿來部署。真實 source 入口是手動 `deploy.yml` → `.devflow/deploy.sh` → `deploy/target_deploy.py`。共用 devflow user/rootless daemon 信任邊界已接受，不要求專用帳號／獨立 daemon／pre-job gate；namespace 不等於權限隔離。
+- 本 PR 正式提供本 target 手動部署／產品 build／private runtime／SQLite fence／精確 release rollback 與固定控制 source；僅 source 與 hosted disposable 證據，不宣稱 Oracle 成功。原 SHIP t_3b14e30d 在獨立 review／merge 後擁有 Oracle 安裝、實際歸屬／18101／health／稽核／安全入口與使用者登入驗收；本 OPS 不 dispatch 部署或執行 VM。
+- 固定控制鏈 source：Hermes 已授權 Actions → 本 target `control.yml`／helper → `docker exec` 以同部署 UID10001 呼叫 `/data/.teams-control/control.sock` → daemon。只允許既有已授權 occurrence 的 `view` 與既有 acceptance binding 的 `stop`，沒有 shell/path/URL、prepare、Join 或授權輸入。親讀 same-UID／0700 parent／0600 socket；stop-return 後須同 binding 的持久 terminal/cleanup receipt，不明即失敗。原生 view 需要真實已授權 occurrence；SHIP 在可運行階段無 Join 探測，不虛構 occurrence／借 DB 或 ledger。真 Join／媒體同意／本人 OAuth/MFA 留 t_12402f67。
+- 使用者 2026-11-18 決策正式取代 Cloud-only：非作者 Hermes reviewer 審完整 diff／政策／最終 exact head，自己既有 GitHub 登入原生 review、讀回身分／commit_id／連結／具體結論並逐條判斷 base 例外；CI 綠、無 findings、提交審查不是批准。只讀 shadow 永不授權自動合併；不要求 Cloud grant／額度／App ID。詳見 [有效政策](PR-AUTOMATION.md)。
+
+### 本 target 的手動 source 契約
+
+`deploy.yml`／`control.yml`／`readiness.yml` 只有 workflow_dispatch；main 最新 commit 才執行。readonly contents/actions/pull-requests/checks token，checkout exact SHA、不保留 git credential。`target_admission.py` 在秘密與私有寫入之前向 GitHub 核對最新 main、merged PR、指定非作者 Hermes reviewer（`login=paulpai0412` 且 immutable numeric `user.id=273007156` 且 `type=User`）原生 APPROVED 的最終 head、merge tree=reviewed tree、零 unresolved threads 及該 head 最新 `ci.yml` PR run 的 repository/workflow id/path/run/attempt/event/SHA/success。長 build 後再讀一次。它不會合併，不接受作者 JSON/marker；full diff/scope/base 判斷屬 reviewer，而非文字 parse 假裝自動批准。新 head 必須重 CI/review；若 main 期間有新合併，停止並重派最新版，不重跑舊部署降版。
+
+沿 devflow 範本的 build→up→health→readonly smoke→確切前 release 回滾順序，因產品有兩個 public-only contexts／SQLite／sandbox 改以固定 Python adapter 實作，未更動共享 kit。`prepare-contexts.sh` 只在自己 disposable build container 下載固定 SHA512 Codex npm／公開 Python3.12 wheels；本機 app wheel只供依賴解析，產品仍在 Dockerfile `--network=none` 從當次 source 安裝。支援原生 amd64/arm64；無 GHCR/packages-write／host pip 安裝，不帶 data/OAuth。image ID、OCI source/revision、GitHub source/run/attempt 寫入私有 release receipt；不是 registry digest 簽章。
+
+固定資源清單：`devflow-teams-transcription-app`、volume `devflow-teams-transcription-data`、network `devflow-teams-transcription`、`io.devflow.owner=timmypai/teams-transcription`、僅127.0.0.1:18101→8080、該次命名 helper/build container、自有 image、`~/.devflow-live/timmypai-teams-transcription`（0700）內 state／release／public build contexts／audit。主機 rootless socket 由同 UID `/run/user/<uid>/docker.sock` 讀取，不借舊 staging socket。先比對 manifest/label/實際 container ID/image/port；外來同名 volume/network/container、18101碰撞、遺留helper、unknown switching 均拒絕，不領養／刪除。每個 adapter mutator 有 exact tuple allowlist／attempted/succeeded/failed 記錄；外來 plan 整批拒絕。快照只讀非本專案 Docker service 的 ID/image/start/status/health，前後需相等；不掛／操作外來資料。`outside_mutations=0` 是這個固定執行器操作範圍，**不是 syscall／全主機任意寫入證明**，共用 UID/daemon 仍是受信任邊界。
+
+`DEVFLOW_APP_ENV` secret 在首次初始化僅接受一行 `DEVFLOW_ADMIN_PASSWORD=<16..1024字元密碼>`，不 echo／放 argv／artifact；不接受 arbitrary dotenv 來改 image/mount/command。沒有預設密碼。以產品 UID10001 在自己 named volume 初始化0700/0600 runtime、scrypt密碼/session及SQLite；排程暫停、allowed_egress_hosts=[]、持久`/data/codex`空白，不碰模型／OAuth／現有帳號。既有配置/密碼絕不覆寫，部分初始化需查核，不從舊環境拷貝。rootless volume 採映像`/data` UID10001 copy-up，不用錯誤的host UID bind推測。
+
+更新前以實際 `.meeting-store.lock` 與 claim fence 檢查 paused／無active meeting/lease/pending summary／unknown cleanup interlock，再持久 `.deployment-maintenance` 擋新claim、停止自己service、重查並SQLite backup API做0600私有備份。未通過不得停止舊服務。up/health/smoke失敗先存 bounded inspect state（不raw logs/env），停止候選，僅在 schema/runtime config hash相同且 quiescent 時，用前 healthy **immutable image ID + exact compose/config.env/seccomp** 回滾；不使用live tag、不移除其他服務、不restore資料。成功後最後才解除maintenance、原子更新healthy state。build失敗不碰執行中服務；首次失敗無前版則保留switching/maintenance待查。SIGKILL、stop或maintenance解除不確定時 fail closed，不把未知清理改成成功／無限重試。重跑已healthy同SHA只讀health，不重建或重啟；不同run/attempt/nonce不覆寫舊release。release/public contexts/私有備份不自動prune，磁碟保留由SHIP查核，不動共享儲存。
+
+產品保持nonroot/readonly/drop ALL/no-new-privileges/seccomp/tmpfs、4GB/2CPU/512pids、取消摘要及lease/cleanup gate。smoke只GET `/healthz`／匿名`/login`，不登入、不seed、不Join、不model。hosted adapter probe實際跑public-context build、同名volume/port拒絕、private init/health、壞candidate→exact rollback、資料保留及foreign service/file/SQLite sentinel；這不是Oracle rootless/cgroup/真登入驗收。Unix+daemon synthetic regression另驗peer UID、授權、wrong binding、stop-return≠cleanup及精確terminal proof，沒有provider。
+
+管理入口候選僅VM loopback `http://127.0.0.1:18101/login`，**尚非使用者已可達URL**。SHIP 必須核實並記錄既有安全存取方式（例如由操作者建立的loopback安全通道；本卡不裝proxy／新公開網域），實際用browser看到login、完成管理登入、看到管理頁，再核對關分頁後health。若走外部HTTPS須另有核准的public_base_url/secure cookie設定；不自行暴露。管理密碼登入與`/chatgpt`本人OAuth/MFA、Google、Teams授權分開。初始空Codex home/deny-all只代表可安全啟動管理，不是Live已可用。
+
+### 已審 main 才能執行的無 Join 驗證入口
+
+`readiness.yml` 是無任何 caller inputs 的手動入口；與 deploy/control 共用 concurrency 與 host lock。先執行相同 `target_admission.py` main-tip/exact-head 原生 review/CI/tree/snapshot 核對，再向固定 deployed container 的已安裝 helper 執行 `verify`。不從 kit 臨時拷 code、不執行 PR branch、不部署／重啟服務；只在已核對 source SHA/image/container ID/UID10001/StartAt 的服務內啟動短命 sandboxed Chromium。loopback 登入→七日週行事曆→設定→關閉頁面/context/browser→再次health；不讀或提交任何設定表單，不改 public_base_url/cookie_secure 繞 gate。固定同源路由 allowlist 禁其他網頁與非登入 mutation。沒有 trace/video/HAR/storage_state、raw DOM/console/exception、截圖或私人 log artifact；只輸出 boolean、來源/container/image/run 收據。登入本身會產生正常的管理 audit/session，不是零資料寫入宣稱；run/claim/authorization/排程資料需前後相同。
+
+無 Join readiness 在已有 socket 對固定 `{}`（無 operation、occurrence/session id）傳送，檢查 parent精確0700/socket0600、目前UID ownership、SO_PEERCRED same UID 與該 kernel peer 的固定已安裝 daemon argv/executable/UID／init-child lineage（不把 Compose `init:true` 的 PID1 init 當成 daemon）；只接受既有 wire 的精確 `teams_local_control_rejected` 回覆。連線錯誤、EOF、timeout、未知／成功回覆都失敗，不能當預期拒絕成功。以 mode=ro/query_only 一致讀取 paused／無active工作，逐一hash固定控制權威表（settings/calendars/series/occurrences/runs/leases，值不出記憶體），前後相同；另從既有登入API核對daemon started/idle、不closing。只標 `transport-and-rejection-readiness`；正向 authorized view 與 bound stop/cleanup 仍為 **NOT EXECUTED**，沒有真 occurrence 不虛構／seed／prepare/join/stop/grant，也不碰 model/OAuth/ledger。
+
+管理密碼由操作者在 repository **Settings → Secrets and variables → Actions → New repository secret** 建立 `DEVFLOW_APP_ENV`，內容僅 `DEVFLOW_ADMIN_PASSWORD=<16..1024字元本人保管密碼>` 一行。SHIP 是 secret metadata 查核 owner；不要將值交給聊天、source、卡片、截圖、log或artifact。固定consumer只由 Actions env→host記憶體→`docker exec -i` stdin→短命consumer讀取，不放argv或app持久env；缺值／未知key／多行／不合長度拒絕，既有config/管理密碼絕不覆寫。source/hosted驗證不等待操作者secret；hosted使用一次性synthetic密碼，實跑真正daemon/socket/browser與缺secret/錯密碼負例，不是Oracle收據。loopback自動登入通過也**不證明使用者可達**；原SHIP仍需另外記錄並驗證已核准的安全存取途徑，不能新開公網／共享proxy。管理登入不是ChatGPT授權，OAuth/MFA/真Join仍留真人lane。
+
+以下保留原來源歷史契約，**已被上面本target決策取代，非本次操作授權或Cloud-only前提**。
+
+
 本次核准規格：`paulpai0412/teams-transcription`，從 `main@bf0a108237608e6ee5cea3e93e08e9b3105f38ad` 建立隔離分支；GitHub Actions build Docker → 私有 GHCR → Oracle VM pull 固定 digest。Oracle Ubuntu 24.04 ARM64 A1（2 OCPU／12 GB／200 GB）是 staging；production 保留原 Unraid 方向，本次不部署、不變更 Unraid。Cloud Codex 不直接 SSH Oracle、不建立 Tailscale、不開公網 port。VM bootstrap／帳號／runner 註冊由另一項已核准工作處理，此分支只提供待審查 source。
 
 ## Related 正式追蹤票與待驗收範圍

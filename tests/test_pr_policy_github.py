@@ -4,7 +4,7 @@ from tools.pr_policy_github import collect_pr, EvidenceError
 
 SHA = 'a' * 40
 BASE = 'b' * 40
-REPO = 'paulpai0412/teams-transcription'
+REPO = 'timmypai/teams-transcription'
 
 
 def pr():
@@ -31,7 +31,9 @@ class FakeGitHub:
         if '/check-runs?' in path:
             return {'total_count': 0, 'check_runs': []}, {}
         if '/reviews?' in path:
-            return [{'id': 4, 'user': {'id': 99, 'type': 'Bot'},
+            return [{'id': 4, 'user': {'id': 99, 'type': 'User', 'login': 'independent-reviewer'},
+                     'html_url': 'https://github.com/timmypai/teams-transcription/pull/23#pullrequestreview-4',
+                     'submitted_at': '2026-11-18T00:00:00Z',
                      'state': 'COMMENTED', 'commit_id': SHA,
                      'body': 'PRIVATE REVIEW MUST NOT LEAK'}], {}
         if path == '/graphql':
@@ -40,6 +42,18 @@ class FakeGitHub:
 
 
 class CollectorTests(unittest.TestCase):
+    def test_designated_none_identity_comes_from_api_with_numeric_id(self):
+        class DesignatedAPI(FakeGitHub):
+            def request(self,path,payload=None):
+                value,headers=super().request(path,payload)
+                if '/reviews?' in path:
+                    value[0].update(user=dict(id=273007156,login='paulpai0412',type='User'),
+                        author_association='NONE',state='APPROVED')
+                return value,headers
+        review=collect_pr(23,DesignatedAPI())['reviews'][0]
+        self.assertEqual((review['login'],review['user_id'],review['type'],review['author_association']),
+            ('paulpai0412',273007156,'User','NONE'))
+
     def test_complete_projection_contains_no_patch_or_review_body(self):
         import json
         obs = collect_pr(23, FakeGitHub())
