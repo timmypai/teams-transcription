@@ -23,21 +23,10 @@ from deploy.target_deploy import Controller, execute, snapshot, APP, VOLUME, PRO
 
 class HostedController(Controller):
     def __init__(self,*args,**kwargs):
-        kwargs['command']=public_builder_diagnostic
+        kwargs['command']=execute
         super().__init__(*args,**kwargs)
         self.docker_prefix=['docker','--host=unix:///var/run/docker.sock']
 
-
-def public_builder_diagnostic(args,**kwargs):
-    if '/source/.devflow/prepare-contexts.sh' not in args:return execute(args,**kwargs)
-    # Only this known public-only container: no app volume/secrets/env injection.
-    result=subprocess.run(args,text=True,capture_output=True,timeout=kwargs.get('timeout',900))
-    if result.returncode:
-        output=ROOT/'.devflow/evidence/target-adapter/public-builder.log'
-        output.parent.mkdir(parents=True,exist_ok=True)
-        output.write_text((result.stdout+result.stderr)[-65536:])
-        raise ValueError('public_builder_failed')
-    return result.stdout
 
 
 class BrokenCandidate(HostedController):

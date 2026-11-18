@@ -18,7 +18,9 @@ import time
 import uuid
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path[:0] = [str(ROOT/'deploy'), str(ROOT/'tools'), str(ROOT/'.devflow')]
+ADAPTER_ROOT = Path(os.environ['DEVFLOW_BASE_ROOT']) if os.environ.get('DEVFLOW_BASELINE')=='1' else ROOT
+BASE_ADAPTER = (ADAPTER_ROOT/'deploy/isolated_deployment.py').is_file()
+sys.path[:0] = [str((ADAPTER_ROOT if BASE_ADAPTER else ROOT)/'deploy'), str(ROOT/'tools'), str(ROOT/'.devflow')]
 from isolated_deployment import OperationAudit, admit_candidate, SOURCE_SHA, REPOSITORY
 from check_compose import example_values, render, write_env
 
@@ -306,7 +308,7 @@ def main():
         h = Harness(image,sha,evidence,Path(directory))
         try:
             h.prepare()
-            if os.environ.get('DEVFLOW_BASELINE') == '1':
+            if h.baseline and not BASE_ADAPTER:
                 h.deploy()
                 h.ui()
                 base_root = Path(os.environ['DEVFLOW_BASE_ROOT'])
@@ -326,6 +328,9 @@ def main():
                 h.ui()
                 h.compare()
                 h.write(evidence/'isolation.json',json.dumps(h.isolation,indent=2))
+                if h.baseline:
+                    h.write(evidence/'base-adapter.json',json.dumps(dict(base_sha=sha,adapter_exists=True,
+                        scope='all nine scenarios ran with base adapter and base image; not diagnostic RED')))
         except Exception as exc:
             h.problems.append('hosted_verification_failed')
             import re
@@ -345,7 +350,7 @@ def finish(h, *, kind, gate=True):
     for problem in h.problems: build.extend(['--problem',problem])
     run(build,check=False)
     report = json.loads((evidence/'acceptance.json').read_text())
-    expected = {sid for sid in h.specs if kind != 'base' or '/AC-3.' in sid}
+    expected = {sid for sid in h.specs if kind != 'base' or BASE_ADAPTER or '/AC-3.' in sid}
     present = {s['id'] for s in report['scenarios']}
     if present != expected:
         raise RuntimeError('scenario_set_incomplete')

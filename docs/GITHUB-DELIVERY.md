@@ -30,6 +30,16 @@
 
 管理入口候選僅VM loopback `http://127.0.0.1:18101/login`，**尚非使用者已可達URL**。SHIP 必須核實並記錄既有安全存取方式（例如由操作者建立的loopback安全通道；本卡不裝proxy／新公開網域），實際用browser看到login、完成管理登入、看到管理頁，再核對關分頁後health。若走外部HTTPS須另有核准的public_base_url/secure cookie設定；不自行暴露。管理密碼登入與`/chatgpt`本人OAuth/MFA、Google、Teams授權分開。初始空Codex home/deny-all只代表可安全啟動管理，不是Live已可用。
 
+### 本 target 的安全失敗證據（schema 1）
+
+既有 `deploy.yml` → `.devflow/deploy.sh` → `target_deploy.py` 的固定入口不變；沒有新 workflow、host shell/URL/path/args、權限、帳號或自動部署。失敗在同一 `evidence-deploy-<run>-<attempt>/failure.json` 與 stdout 只輸出 `schema_version=1`、`repository/source_sha/run_id/run_attempt/action`、`primary_failure`、最多8筆 `secondary_failures`、`cleanup`。不能取得或驗證的身分欄為 null。primary/secondary 只有固定 `phase/code`、有界 `exit_status`（-255..255，未知/timeout/有界中止為 null）與 public output 數值投影。phase enum：`prepare_contexts/image_build/audit/cleanup/unknown`；code enum：`command_failed/command_timeout/output_limit/command_start_failed/audit_failed/snapshot_failed/cleanup_failed/evidence_write_failed/unknown`，另保留既有 `target_runtime_rejected:<SAFE_FAILURE_CODES>` 精確碼。未知永遠為 unknown，不解析例外文字或猜測 ARM、wheel、buildx、OOM 根因。schema 只診斷操作邊界；Oracle run 44320770971 的真正 build 根因仍未知。
+
+公共 contexts/image build 的 stdout/stderr 也不可信：二進位 pipe + selector 每次最多8192 bytes，兩流共用8388608 bytes讀取預算，超過即有界中止；最多多讀一個8192-byte chunk判斷 overflow，不保存整行或raw檔。line計數飽和1024、單行長度飽和2048 bytes、事件上限0（**所有文字直接丟棄，不做raw、遮字fallback、tail或事件文字解析**）；行計數/長度截斷不阻止持續drain，總byte/時間界限仍生效。非UTF8、控制碼、秘密/PII/URL均不解碼、不持久化。prepare/image各維持原900/1800秒deadline，有界中止殺本機process group並最多等2秒reap；不能以Docker CLI退出當作daemon builder已清理，失敗時 `cleanup=unknown`，不盲retry/prune/remove。成功public命令仍繼續原immutable image/revision驗證，未知文字不會被誤判成build失敗。不新增private runtime/browser/OAuth/log/env採集，既有runtime安全碼及固定JSON consumer維持。
+
+原始失敗先記錄；snapshot/audit或candidate capture/stop/rollback的第二次失敗不能覆蓋它。candidate採證失敗仍嘗試固定owned candidate stop；stop未知就不回滾、不解除maintenance。只有原有schema/config/quiescent fence、前release immutable image/compose/seccomp及health完整通過才可記 `cleanup=rollback_verified`；其他失敗保留unknown（無需清理的前置拒絕為not_required），失敗run仍nonzero、不輸出本次healthy receipt。原audit scope文字及限制不變，沒有擴稱全host稽核。
+
+`python .devflow/diagnostics_proof.py` 在hosted check實跑同一CLI/seam測試：immutable failed `da251b1f4fb95620271191f0bdc9d9f71b96bde3` 六項真正When/Then assertion RED（非import error）→head GREEN；真disposable subprocess失敗/timeout/超量、二次audit失敗與完整payload/stdout/stderr負例。僅寫固定數值的 `diagnostics-red-green.json`，與九個原EPIC情境/27步及base豁免分層，不能當Oracle AC通過。Lesson: L-0006。獨立新head reviewer仍須逐條判斷Already-met/Base-unverifiable，不借舊PR批准；Oracle診斷取證/重試路由仍由原SHIP在審核合併後決定。
+
 ### 已審 main 才能執行的無 Join 驗證入口
 
 `readiness.yml` 是無任何 caller inputs 的手動入口；與 deploy/control 共用 concurrency 與 host lock。先執行相同 `target_admission.py` main-tip/exact-head 原生 review/CI/tree/snapshot 核對，再向固定 deployed container 的已安裝 helper 執行 `verify`。不從 kit 臨時拷 code、不執行 PR branch、不部署／重啟服務；只在已核對 source SHA/image/container ID/UID10001/StartAt 的服務內啟動短命 sandboxed Chromium。loopback 登入→七日週行事曆→設定→關閉頁面/context/browser→再次health；不讀或提交任何設定表單，不改 public_base_url/cookie_secure 繞 gate。固定同源路由 allowlist 禁其他網頁與非登入 mutation。沒有 trace/video/HAR/storage_state、raw DOM/console/exception、截圖或私人 log artifact；只輸出 boolean、來源/container/image/run 收據。登入本身會產生正常的管理 audit/session，不是零資料寫入宣稱；run/claim/authorization/排程資料需前後相同。
