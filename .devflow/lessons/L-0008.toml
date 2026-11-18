@@ -1,0 +1,9 @@
+id = "L-0008"
+title = "Formal deployment receipts are not per-scenario acceptance"
+event = "Successful Oracle deploy/readiness artifacts contained only receipt and audit, leaving the original three S3 scenarios unproven."
+root_cause = "The fixed manual deploy adapter never ran the original per-phase smoke assertions or serialized acceptance.json. Health and anonymous loopback password text cannot prove installed SHA, complete isolation audit, or an operator-approved safe login entrypoint. Bind the current GitHub run and installed image before executing live callbacks; missing entry conditions fail Given and leave later steps not-run."
+category = "verification"
+
+[enforcement]
+kind = "test"
+ref = "tests/test_oracle_smoke_evidence.py::test_loopback_login_is_not_verified_safe_entrypoint"

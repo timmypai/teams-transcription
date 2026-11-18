@@ -361,6 +361,11 @@ def main():
             and not root.stat().st_mode&0o077,'state_root_unsafe')
         c=Controller(root,run,attempt)
         c.failures=failures
+        oracle_smoke=None
+        if args.action=='deploy':
+            from deploy.target_smoke import OracleSmoke
+            evidence=ROOT/f'.devflow/evidence-deploy-{run}-{attempt}'
+            oracle_smoke=OracleSmoke(evidence,sha,run,attempt,api)
         if created:c.write(root/'owner.json',json.dumps(dict(repository=REPO,uid=os.getuid())))
         require(c.read(root/'owner.json')==dict(repository=REPO,uid=os.getuid()),'state_owner_collision')
         # Fixed private state, lock held across deploy/control (same workflow group).
@@ -379,6 +384,11 @@ def main():
                         # Fresh latest-tip/review/run admission again after long build.
                         receipt=collect(sha,GitHub(os.environ.get('GH_TOKEN')))
                         result=c.switch(receipt,image,state)
+                    # These assertions run against this installed service while
+                    # the original host lock/admission still hold. Never run the
+                    # disposable verifier or consume prior readiness receipts.
+                    oracle_smoke.health(c)
+                    oracle_smoke.login(c)
                 else:
                     require(state and state['source_sha']==sha,'deployed_revision_required')
                     c.release=root/'releases'/state['release'];c.verify_release(c.release)
@@ -392,6 +402,7 @@ def main():
                         ident,_=c.health(state['image'])
                         require(ident==state['container_id'],'deployed_container_mismatch')
                         result=c.runtime('verify',input=os.environ.get('DEVFLOW_APP_ENV',''))
+                        result['runtime_metadata']=c.runtime('metadata')
                         after=json.loads(c.docker('inspect',APP))[0]
                         require(after['Id']==ident and after['State']['StartedAt']==info['State']['StartedAt'],
                             'deployed_container_changed')
@@ -419,6 +430,12 @@ def main():
                 except Exception as exc:
                     failures.record(exc,'audit','audit_failed')
                     raise
+            if oracle_smoke is not None:
+                oracle_smoke.isolation(report,c.audit.allowlist)
+                verified=oracle_smoke.finish()
+                # Missing operator access must fail the run, but does not turn
+                # an already healthy installed service into an unsafe rollback.
+                require(verified,'oracle_smoke_unverified')
             require(report['foreign_unchanged'],'foreign_snapshot_changed')
             (evidence/'receipt.json').write_text(json.dumps({**receipt,'operation':args.action,'result':result,
                 'deploy_run_url':f'https://github.com/{REPO}/actions/runs/{run}',

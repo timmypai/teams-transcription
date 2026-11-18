@@ -1,0 +1,9 @@
+id = "L-0007"
+title = "Synchronize blocked-stage fixtures before arming their cancellation budget"
+event = "The deployed integration's sdp_apply subtest failed entered.is_set(); controlled predecessor blocking reproduces expiry before that later stage."
+root_cause = "The test assumed all preceding async scheduling and setup would fit inside the same 40ms used to cancel its selected blocked stage. The mechanism is reproduced on immutable failed main; this does not uniquely reconstruct the historical runner's scheduling. Keep the production overall deadline untouched, and test prerequisite expiry independently."
+category = "verification"
+
+[enforcement]
+kind = "test"
+ref = "tests/test_live_summary_diagnostics.py::test_real_overall_budget_expires_in_prerequisite_not_unentered_sdp_apply"

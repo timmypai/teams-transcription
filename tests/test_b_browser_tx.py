@@ -182,6 +182,9 @@ class BrowserTXTests(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(Exception):
             await self.sink.observe()
         self.assertFalse(self.sink.diagnostics()['connected'])
+        print('synthetic-revocation-scalars', self.revocation_evidence,
+              {'suspect_bins':[{**row,'offset_ms':i*10} for i,row in enumerate(tail)
+                  if row['rms']>.06 and 950<=row['frequency']<=1250]})
         return tail
 
     async def test_revoke_stops_downstream_audio_without_python_packet_gate(self):
@@ -202,6 +205,41 @@ class BrowserTXTests(unittest.IsolatedAsyncioTestCase):
             {'revocation':self.revocation_evidence,
              'suspect_bins':[{**row,'offset_ms':i*10} for i,row in enumerate(tail)
                              if row['rms']>.06 and 950<=row['frequency']<=1250]})
+
+    async def test_revocation_marker_positive_control_reaches_exact_downstream_peer(self):
+        await self.sink.set_muted(False)
+        await self.source.tone(frequency=1100)
+        await self.receiver.page.wait_for_function(
+            'downstream.bins.slice(-10).every(row=>row.rms>.06 && row.marker_rms>.06) && downstream.bins.length>=10')
+        rows=(await self.receiver.bins())[-10:]
+        self.assertTrue(all(950<=row['frequency']<=1250 and row['marker_rms']>.06 for row in rows))
+        print('synthetic-marker-positive-control',rows)
+
+    async def test_revocation_tail_negative_control_never_sends_marker_source(self):
+        # The source NEVER receives a 1100Hz instruction in this control. Retain
+        # real Chromium's full tail and exact sender counters for diagnosis;
+        # a zero-crossing match here cannot identify new provider marker audio.
+        controls=[]
+        for index,delay in enumerate((0,.005,.01,.02,.04,.08)):
+            if index:
+                await self.sink.stop()
+                await self.page.evaluate("__bMeetingId='one'")
+                self.policy=OwnedSenderDualPolicy(self.page,'one')
+                self.sink=BrowserTXSink(self.page,meeting_id='one',dual_channel_policy=self.policy.authorize)
+                await self.sink.bind();await self.sink.attach_live(self.source.page);await self.sink.start()
+            await self.receiver.reset()
+            await self.sink.set_muted(False)
+            await self.source.tone(frequency=550)
+            await self.receiver.page.wait_for_function(
+                'downstream.bins.length>=10 && downstream.bins.slice(-10).every(row=>row.rms>.06 && row.frequency>=450 && row.frequency<=650)')
+            await asyncio.sleep(delay)
+            before=await self._receiver_snapshot()
+            await self.page.evaluate("__bMeetingId='another-meeting'")
+            tail=await self._assert_revocation_tail(before)
+            controls.append(dict(delay_ms=round(delay*1000),
+                legacy_marker_bins=[row for row in tail if row['rms']>.06 and 950<=row['frequency']<=1250],
+                coherent_marker_bins=[row for row in tail if row['marker_rms']>.06]))
+        print('synthetic-no-marker-source-controls',controls)
 
     async def test_source_navigation_revokes_target_and_keeps_a_rx_separate(self):
         self.assertEqual(await self.page.evaluate('__meeting.peers.length'),1)

@@ -134,16 +134,19 @@ class NativeReceiver:
           const ctx=new AudioContext({sampleRate:48000});await ctx.resume();
           const url=URL.createObjectURL(new Blob([`
             class Meter extends AudioWorkletProcessor {
-              constructor(){super();this.n=0;this.energy=0;this.crossings=0;this.last=0;}
+              constructor(){super();this.n=0;this.energy=0;this.crossings=0;this.last=0;this.re=0;this.im=0;}
               process(inputs){
                 const samples=inputs[0]?.[0];
                 if(samples) for(const value of samples){
                   this.energy+=value*value;
+                  const phase=2*Math.PI*1100*this.n/48000;
+                  this.re+=value*Math.cos(phase);this.im+=value*Math.sin(phase);
                   if((value>=0)!==(this.last>=0)) this.crossings++;
                   this.last=value;
                   if(++this.n===480){
-                    this.port.postMessage({rms:Math.sqrt(this.energy/480),frequency:this.crossings*50});
-                    this.n=0;this.energy=0;this.crossings=0;
+                    this.port.postMessage({rms:Math.sqrt(this.energy/480),frequency:this.crossings*50,
+                      marker_rms:Math.SQRT2*Math.hypot(this.re,this.im)/480});
+                    this.n=0;this.energy=0;this.crossings=0;this.re=0;this.im=0;
                   }
                 }
                 return true;
