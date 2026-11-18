@@ -142,7 +142,8 @@ class Controller:
                 '--network','none','--read-only','--user','10001:10001','--cap-drop','ALL',
                 '--security-opt','no-new-privileges','--security-opt','seccomp='+str(release/'chromium-seccomp.json'),
                 '--tmpfs','/tmp:size=512m,mode=1777','--shm-size','1g',
-                '--mount',f'type=volume,src={VOLUME},dst=/data', '--entrypoint','python']
+                '--memory','4g','--cpus','2','--pids-limit','512','--entrypoint','python']
+            if action!='sandbox':command+=['--mount',f'type=volume,src={VOLUME},dst=/data']
             if input is not None:command+=['-i']
             raw=self.mutate('run','container',self.helper,lambda:self.docker(*command,image,RUNTIME,*args,input=input))
         else:
@@ -235,8 +236,10 @@ class Controller:
             and host['CapDrop']==['ALL'] and any('no-new-privileges' in x for x in host['SecurityOpt'])
             and any('seccomp=' in x or 'seccomp:' in x for x in host['SecurityOpt'])
             and not host['Privileged'] and host['Memory']==4294967296 and host['NanoCpus']==2000000000
-            and host['PidsLimit']==512 and c['Mounts']
-            and all(m['Type']=='volume' and m['Name']==VOLUME and m['Destination']=='/data' for m in c['Mounts']),
+            and host['PidsLimit']==512
+            and len([m for m in c['Mounts'] if m['Type']=='volume' and m['Name']==VOLUME and m['Destination']=='/data'])==1
+            and all(m['Type']=='volume' and m['Name']==VOLUME and m['Destination']=='/data'
+                or m['Type']=='tmpfs' and m['Destination'] in {'/tmp','/dev/shm'} for m in c['Mounts']),
             'runtime_security_mismatch')
         smoke=self.runtime('smoke')
         require(smoke['health'] and smoke['anonymous_login_page'],'smoke_failed')
@@ -251,6 +254,7 @@ class Controller:
 
     def switch(self,receipt,image,state):
         release=self.create_release(receipt,image)
+        self.runtime('sandbox',image=image)  # no data mount, credentials or network
         if state:
             old=self.root/'releases'/state['release'];previous=self.verify_release(old)
             before=self.runtime('enable');require(before['maintenance'],'maintenance_failed')
@@ -348,7 +352,7 @@ def main():
                 else:
                     require(state and state['source_sha']==sha,'deployed_revision_required')
                     c.release=root/'releases'/state['release'];c.verify_release(c.release)
-                    c.health(state['image'])
+                    if args.action=='view':c.health(state['image'])
                     result=c.runtime(args.action,ident=args.id,request_sha=args.request_sha)
             finally:
                 report=c.audit.report(before,snapshot(c.containers()))

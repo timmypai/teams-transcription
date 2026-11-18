@@ -13,6 +13,17 @@ ROOT=Path(__file__).resolve().parents[1]
 
 
 class TargetDeployTests(unittest.TestCase):
+    def test_foreign_sentinel_overrides_inherited_image_owner(self):
+        import importlib.util
+        spec=importlib.util.spec_from_file_location('target_probe',ROOT/'.devflow/target_adapter_probe.py')
+        module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+        command=module.sentinel_command('sha256:'+'a'*64,'synthetic-foreign')
+        self.assertIn(OWNER+'=fixture-foreign',command)
+        self.assertNotIn(OWNER+'='+REPO,command)
+        foreign=dict(Id='foreign-id',Image='image',Config=dict(Labels={OWNER:'fixture-foreign'}),
+            State=dict(StartedAt='original',Status='running'))
+        self.assertEqual(snapshot([foreign])[0]['id'],'foreign-id')
+
     def test_public_build_context_bind_is_writable_without_dac_override(self):
         with tempfile.TemporaryDirectory() as folder:
             c=None

@@ -55,6 +55,15 @@ class BrokenCandidate(HostedController):
         return release
 
 
+def sentinel_command(image,name):
+    # Image labels are inherited! Explicitly exclude this foreign fixture from
+    # the target owner; otherwise preflight correctly treats it as a stale helper
+    # and the foreign snapshot would omit the very service it must observe.
+    return ['run','-d','--name',name,'--label',OWNER+'=fixture-foreign',
+        '--network','none','--read-only','--user','10001:10001',
+        '--cap-drop','ALL','--security-opt','no-new-privileges','--entrypoint','sleep',image,'1800']
+
+
 def main():
     assert os.environ.get('RUNNER_ENVIRONMENT')=='github-hosted'
     sha=os.environ['SOURCE_SHA'];run=int(os.environ['GITHUB_RUN_ID']);attempt=int(os.environ['GITHUB_RUN_ATTEMPT'])
@@ -77,10 +86,10 @@ def main():
         try:
             # Real public-only native context preparation and actual Docker build.
             image=c.build(sha);report['image']=image
-            c.docker('run','-d','--name',foreign,'--network','none','--read-only','--user','10001:10001',
-                '--cap-drop','ALL','--security-opt','no-new-privileges','--entrypoint','sleep',image,'1800')
+            c.docker(*sentinel_command(image,foreign))
             cleanup.append(foreign)
             before=snapshot(c.containers())
+            assert any(row['id']==json.loads(c.docker('inspect',foreign))[0]['Id'] for row in before)
             c.docker('volume','create','--label','fixture=foreign-collision',VOLUME)
             try:
                 try:c.resources(None)

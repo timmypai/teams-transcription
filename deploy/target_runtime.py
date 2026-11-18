@@ -164,9 +164,19 @@ def smoke():
     return dict(health=True,anonymous_login_page=True,scope='readonly-no-auth-or-join')
 
 
+def sandbox():
+    from playwright.sync_api import sync_playwright
+    with sync_playwright() as p:
+        with p.chromium.launch(executable_path='/usr/bin/chromium',headless=True,chromium_sandbox=True) as browser:
+            page=browser.new_page()
+            page.set_content('<title>Local sandbox deployment probe</title>')
+            require(page.title()=='Local sandbox deployment probe','sandbox_page_failed')
+    return dict(sandboxed_local_page=True,no_private_data_mount=True)
+
+
 def main():
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('action',choices=['init','state','enable','disable','backup','smoke','view','stop'])
+    p.add_argument('action',choices=['init','state','enable','disable','backup','smoke','sandbox','view','stop'])
     p.add_argument('--id');p.add_argument('--request-sha');args=p.parse_args()
     try:
         root=Path('/data')
@@ -179,6 +189,7 @@ def main():
         elif args.action=='state':value=database_state(root)
         elif args.action in {'enable','disable','backup'}:value=maintenance(root,args.action,args.id)
         elif args.action in {'view','stop'}:value=asyncio.run(control(root,args.action,args.id,args.request_sha))
+        elif args.action=='sandbox':value=sandbox()
         else:value=smoke()
         print(json.dumps(value));return 0
     except Exception:
