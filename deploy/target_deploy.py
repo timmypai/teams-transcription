@@ -35,6 +35,13 @@ RUNTIME='/opt/meeting/devflow_runtime.py'
 def execute(args,*,input=None,timeout=120):
     result=subprocess.run(args,input=input,text=True,capture_output=True,timeout=timeout,
         env={k:v for k,v in os.environ.items() if k not in {'DEVFLOW_APP_ENV','GH_TOKEN','GITHUB_TOKEN'}})
+    if result.returncode and RUNTIME in args:
+        from deploy.target_runtime import SAFE_FAILURE_CODES
+        try:value=json.loads(result.stdout)
+        except (ValueError,TypeError):value={}
+        code=value.get('code') if isinstance(value,dict) else None
+        if isinstance(value,dict) and value.get('error')=='target_runtime_rejected' and code in SAFE_FAILURE_CODES:
+            raise ValueError('target_runtime_rejected:'+code)
     require(result.returncode==0,'target_command_failed')
     return result.stdout
 

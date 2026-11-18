@@ -13,6 +13,23 @@ ROOT=Path(__file__).resolve().parents[1]
 
 
 class TargetDeployTests(unittest.TestCase):
+    def test_secret_is_stdin_only_and_only_known_runtime_codes_escape(self):
+        from deploy.target_deploy import execute,RUNTIME
+        from types import SimpleNamespace
+        secret='synthetic-stdin-only-private-marker'
+        for payload,expected in ((dict(error='target_runtime_rejected',code='daemon_identity_mismatch'),
+                                   'target_runtime_rejected:daemon_identity_mismatch'),
+                                  (dict(error=secret,code=secret),'target_command_failed'),
+                                  ([], 'target_command_failed')):
+            def command(args,**kw):
+                self.assertNotIn(secret,str(args))
+                self.assertEqual(kw['input'],secret)
+                self.assertNotIn('DEVFLOW_APP_ENV',kw['env'])
+                return SimpleNamespace(returncode=1,stdout=json.dumps(payload),stderr=secret)
+            with patch('deploy.target_deploy.subprocess.run',side_effect=command):
+                with self.assertRaisesRegex(ValueError,'^'+expected+'$'):
+                    execute(['docker','exec','-i',APP,'python',RUNTIME,'verify'],input=secret)
+
     def test_foreign_sentinel_overrides_inherited_image_owner(self):
         import importlib.util
         spec=importlib.util.spec_from_file_location('target_probe',ROOT/'.devflow/target_adapter_probe.py')

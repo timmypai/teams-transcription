@@ -16,6 +16,15 @@ import sqlite3
 import stat
 import sys
 
+# Public fixed rejection codes only. No exception/DOM/secret text may escape.
+SAFE_FAILURE_CODES=frozenset({'daemon_identity_unknown','daemon_identity_mismatch',
+    'control_peer_uid_mismatch','control_peer_pid_mismatch','exact_rejection_required',
+    'control_parent_unsafe','control_socket_unsafe','readiness_not_quiescent',
+    'control_state_changed','browser_secret_required','browser_not_quiescent',
+    'browser_login_page_failed','browser_login_failed','daemon_status_failed','daemon_not_idle',
+    'browser_egress_rejected','browser_control_state_changed','post_browser_health_failed',
+    'secret_input_rejected','secret_keys_rejected','initial_password_required'})
+
 
 def require(ok,code):
     if not ok:raise ValueError(code)
@@ -212,7 +221,27 @@ def socket_peer_uid(connection):
     return struct.unpack('3i',connection.getsockopt(socket.SOL_SOCKET,socket.SO_PEERCRED,12))[1]
 
 
-async def rejection_readiness(root,*,expected_pid=None):
+def deployed_daemon_peer(pid):
+    """The kernel peer is the fixed installed daemon, not Docker's init PID.
+
+    Compose init:true makes PID1 docker-init; the actual CLI is its child. Read
+    bounded proc metadata only, never emit argv/status or accept a caller PID.
+    """
+    proc=Path('/proc')/str(pid)
+    with (proc/'cmdline').open('rb') as source:raw=source.read(4097)
+    require(len(raw)<=4096,'daemon_identity_unknown')
+    argv=raw.rstrip(b'\0').decode().split('\0')
+    expected=[str(Path(sys.executable).parent/'teams-transcription'),'serve','--config',
+              '/data/config/runtime.yml','--local-teams-control']
+    with (proc/'status').open() as source:status=source.read(16385)
+    require(len(status)<=16384,'daemon_identity_unknown')
+    fields=dict(line.split(':',1) for line in status.splitlines() if ':' in line)
+    require((proc/'exe').resolve()==Path(sys.executable).resolve() and argv[1:]==expected
+        and all(int(uid)==os.getuid() for uid in fields['Uid'].split())
+        and (pid==1 or fields['PPid'].strip()=='1'),'daemon_identity_mismatch')
+
+
+async def rejection_readiness(root,*,expected_pid=None,require_daemon=False):
     """Fixed malformed/no-ID message, NOT a positive authorized control probe."""
     import socket,struct
     root=Path(root);before=claim_snapshot(root)
@@ -230,6 +259,7 @@ async def rejection_readiness(root,*,expected_pid=None):
             require(socket_peer_uid(peer)==os.getuid(),'control_peer_uid_mismatch')
             pid=struct.unpack('3i',peer.getsockopt(socket.SOL_SOCKET,socket.SO_PEERCRED,12))[0]
             require(expected_pid is None or pid==expected_pid,'control_peer_pid_mismatch')
+            if require_daemon:deployed_daemon_peer(pid)
             # Exact existing malformed schema; dispatch rejects before ID lookup.
             writer.write(b'{}\n');await writer.drain()
             response=await reader.readline()
@@ -242,7 +272,7 @@ async def rejection_readiness(root,*,expected_pid=None):
         authorized_view='NOT EXECUTED',bound_stop_cleanup='NOT EXECUTED')
 
 
-async def browser_readiness(root,password,*,expected_pid=1):
+async def browser_readiness(root,password,*,expected_pid=None):
     """Short-lived real sandboxed Chromium; never records private UI or secrets."""
     from playwright.async_api import async_playwright,expect
     from urllib.parse import urlsplit
@@ -286,14 +316,14 @@ async def browser_readiness(root,password,*,expected_pid=1):
                 require(status.get('started') is True and status.get('closing') is False
                     and status.get('active_session_id') is None,'daemon_not_idle')
             await daemon_idle()
-            readiness=await rejection_readiness(root,expected_pid=expected_pid)
+            readiness=await rejection_readiness(root,expected_pid=expected_pid,require_daemon=expected_pid is None)
             await daemon_idle()
             require(not violations,'browser_egress_rejected')
             await page.close();await context.close()
         finally:await browser.close()
     # Browser context, cookies and entered password die before the health read.
     require(before==claim_snapshot(root) and database_state(root)['quiescent'],'browser_control_state_changed')
-    require(smoke()['health'],'post_browser_health_failed')
+    require((await asyncio.to_thread(smoke))['health'],'post_browser_health_failed')
     return dict(browser_login=True,weekly_calendar=True,settings=True,browser_closed=True,
         post_close_health=True,daemon_idle_before_after=True,control_state_unchanged=True,
         no_secret_artifacts=True,user_reachable_entrypoint='NOT VERIFIED',readiness=readiness)
@@ -319,8 +349,9 @@ def main():
         elif args.action=='sandbox':value=sandbox()
         else:value=smoke()
         print(json.dumps(value));return 0
-    except Exception:
-        print('{"error":"target_runtime_rejected"}');return 1
+    except Exception as error:
+        code=str(error) if type(error) is ValueError and str(error) in SAFE_FAILURE_CODES else 'runtime_failed'
+        print(json.dumps(dict(error='target_runtime_rejected',code=code)));return 1
 
 
 if __name__=='__main__':raise SystemExit(main())

@@ -50,6 +50,12 @@ class ReadinessTests(unittest.IsolatedAsyncioTestCase):
                 with self.assertRaises(ValueError):await rejection_readiness(self.root)
             finally:server.close();await server.wait_closed();path.unlink()
 
+    def test_deployed_peer_is_real_daemon_not_merely_same_uid_or_pid1(self):
+        from deploy.target_runtime import deployed_daemon_peer
+        # This real same-UID Python test process is not the fixed daemon.
+        with self.assertRaisesRegex(ValueError,'daemon_identity_mismatch'):
+            deployed_daemon_peer(os.getpid())
+
     async def test_real_timeout_and_wrong_daemon_pid_refuse(self):
         async with LocalTeamsControl(object(),self.settings):
             with self.assertRaisesRegex(ValueError,'control_peer_pid_mismatch'):
