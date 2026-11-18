@@ -8,6 +8,7 @@ from teams_transcription.b_dual_policy import OwnedSenderDualPolicy
 from teams_transcription.b_native_output import NativeTrackOutput
 from teams_transcription.browser import Browser
 from native_output_fixture import NativeReceiver, NativeSource, fixture_page, meeting_fixture
+from native_marker import marker_present
 
 
 @unittest.skipUnless(shutil.which('chromium'), 'Chromium fixture unavailable')
@@ -182,6 +183,9 @@ class BrowserTXTests(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(Exception):
             await self.sink.observe()
         self.assertFalse(self.sink.diagnostics()['connected'])
+        print('synthetic-revocation-scalars', self._testMethodName, self.revocation_evidence,
+              {'suspect_bins':[{**row,'offset_ms':i*10} for i,row in enumerate(tail)
+                  if row['rms']>.06 and 950<=row['frequency']<=1250]})
         return tail
 
     async def test_revoke_stops_downstream_audio_without_python_packet_gate(self):
@@ -198,7 +202,47 @@ class BrowserTXTests(unittest.IsolatedAsyncioTestCase):
         # sender, even while the downstream decoder conceals the previous tone.
         await self.source.tone(frequency=1100)
         tail=await self._assert_revocation_tail(before)
-        self.assertFalse(any(row['rms']>.06 and 950<=row['frequency']<=1250 for row in tail))
+        # Match the new marker's measured coherent RMS, not zero crossings of
+        # old Chromium PLC. Captured no-marker control demonstrates why the old
+        # discriminator is invalid; exact sender/RTP/quiet checks above remain.
+        self.assertFalse(any(marker_present(row) for row in tail),
+            {'revocation':self.revocation_evidence,
+             'marker_bins':[{**row,'offset_ms':i*10} for i,row in enumerate(tail) if marker_present(row)]})
+
+    async def test_revocation_marker_positive_control_reaches_exact_downstream_peer(self):
+        await self.sink.set_muted(False)
+        await self.source.tone(frequency=1100)
+        observed=await self.receiver.page.wait_for_function(
+            'downstream.bins.length>=10 && downstream.bins.slice(-10).every(row=>row.rms>.06 && row.marker_rms>.06) ? downstream.bins.slice(-10) : null')
+        rows=await observed.json_value()
+        self.assertTrue(all(row['rms']>.06 and row['marker_rms']>.06 for row in rows))
+        print('synthetic-marker-positive-control',rows)
+
+    async def test_revocation_tail_negative_control_never_sends_marker_source(self):
+        # The source NEVER receives a 1100Hz instruction in this control. Retain
+        # real Chromium's full tail and exact sender counters for diagnosis;
+        # a zero-crossing match here cannot identify new provider marker audio.
+        controls=[]
+        for index,delay in enumerate((0,.005,.01,.02,.04,.08)):
+            if index:
+                # A revoked meeting binding cannot be adopted or revived just
+                # to repeat a test. Use fresh contexts/peers for each control.
+                await self.asyncTearDown()
+                await self.asyncSetUp()
+            await self.receiver.reset()
+            await self.sink.set_muted(False)
+            await self.source.tone(frequency=550)
+            await self.receiver.page.wait_for_function(
+                'downstream.bins.length>=10 && downstream.bins.slice(-10).every(row=>row.rms>.06 && row.frequency>=450 && row.frequency<=650)')
+            await asyncio.sleep(delay)
+            before=await self._receiver_snapshot()
+            await self.page.evaluate("__bMeetingId='another-meeting'")
+            tail=await self._assert_revocation_tail(before)
+            self.assertFalse(any(marker_present(row) for row in tail),self.revocation_evidence)
+            controls.append(dict(delay_ms=round(delay*1000),
+                legacy_marker_bins=[row for row in tail if row['rms']>.06 and 950<=row['frequency']<=1250],
+                coherent_marker_bins=[row for row in tail if row['marker_rms']>.06]))
+        print('synthetic-no-marker-source-controls',controls)
 
     async def test_source_navigation_revokes_target_and_keeps_a_rx_separate(self):
         self.assertEqual(await self.page.evaluate('__meeting.peers.length'),1)

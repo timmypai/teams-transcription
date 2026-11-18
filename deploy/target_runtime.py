@@ -23,7 +23,10 @@ SAFE_FAILURE_CODES=frozenset({'daemon_identity_unknown','daemon_identity_mismatc
     'control_state_changed','browser_secret_required','browser_not_quiescent',
     'browser_login_page_failed','browser_login_failed','daemon_status_failed','daemon_not_idle',
     'browser_egress_rejected','browser_control_state_changed','post_browser_health_failed',
-    'secret_input_rejected','secret_keys_rejected','initial_password_required'})
+    'secret_input_rejected','secret_keys_rejected','initial_password_required',
+    'approved_safe_entrypoint_unverified','anonymous_login_failed','anonymous_api_not_rejected',
+    'authenticated_data_visible','anonymous_control_state_changed','codex_home_scope_unverified',
+    'anonymous_deployment_mismatch'})
 
 
 def require(ok,code):
@@ -329,9 +332,131 @@ async def browser_readiness(root,password,*,expected_pid=None):
         no_secret_artifacts=True,user_reachable_entrypoint='NOT VERIFIED',readiness=readiness)
 
 
+def runtime_metadata(root):
+    """Fixed permission/persistence metadata only; never list/read Codex files."""
+    from teams_transcription.assistant_config import load_assistant_settings
+    root=Path(root);private(root,True)
+    runtime=root/'config/runtime.yml';private(runtime)
+    settings=load_assistant_settings(runtime)
+    require(settings.data_root==str(root),'runtime_root_mismatch')
+    require(isinstance(settings.codex_home,str),'codex_home_scope_unverified')
+    codex=Path(settings.codex_home)
+    require(codex.is_relative_to(root) and codex.absolute()==codex.resolve(),'codex_home_scope_unverified')
+    home_exists=codex.exists()
+    if home_exists:private(codex,True)
+    return dict(runtime_private=True,runtime_uid=os.getuid(),runtime_gid=runtime.stat().st_gid,
+        runtime_mode=stat.S_IMODE(runtime.stat().st_mode),runtime_writable=os.access(runtime,os.W_OK,effective_ids=True),
+        codex_home_in_same_data_root=True,codex_home_exists=home_exists,
+        codex_home_private=True if home_exists else None,
+        codex_home_uid=codex.stat().st_uid if home_exists else None,
+        codex_home_gid=codex.stat().st_gid if home_exists else None,
+        codex_home_writable=os.access(codex,os.W_OK|os.X_OK,effective_ids=True) if home_exists else None,
+        codex_home_mode=stat.S_IMODE(codex.stat().st_mode) if home_exists else None,
+        credentials_read=False,provider_authorization='NOT VERIFIED')
+
+
+def configured_entrypoint(root):
+    """Operator-owned existing runtime configuration, never a workflow URL input.
+
+    Loopback-only configuration is explicitly unverified. No tunnel/proxy/public
+    configuration is created or changed. The original SHIP owns missing access.
+    """
+    from teams_transcription.assistant_config import load_assistant_settings
+    from urllib.parse import urlsplit
+    root=Path(root);private(root,True)
+    runtime=root/'config/runtime.yml';private(runtime)
+    settings=load_assistant_settings(runtime)
+    value=urlsplit(settings.public_base_url or '')
+    import ipaddress
+    host=value.hostname or ''
+    try:
+        address=ipaddress.ip_address(host)
+        mapped=address.ipv4_mapped if isinstance(address,ipaddress.IPv6Address) else None
+        loopback=address.is_loopback or address.is_unspecified or bool(mapped is not None and mapped.is_loopback)
+    except ValueError:
+        loopback=host=='localhost' or host.endswith('.localhost') or bool(re.fullmatch('[0-9.]+',host))
+    require(not loopback and settings.data_root==str(root) and value.scheme=='https' and settings.cookie_secure is True
+        and bool(value.hostname) and value.hostname not in {'localhost','127.0.0.1','::1'}
+        and not value.username and not value.password and not value.query and not value.fragment
+        and value.path in {'','/'},'approved_safe_entrypoint_unverified')
+    return value.scheme+'://'+value.netloc
+
+
+async def same_deployment_session(client,cookie):
+    """Reuse of an anonymous session binds ingress to the installed daemon.
+
+    No key read, authentication, caller URL or session persistence. The exact
+    localhost GET is the existing installed UI, not user-reachability proof.
+    """
+    from http.cookies import SimpleCookie
+    import hmac
+    require(isinstance(cookie,str) and re.fullmatch('[a-f0-9]{64}\\.[a-f0-9]{64}',cookie),'anonymous_login_failed')
+    local=await client.get('http://127.0.0.1:8080/login',
+        headers={'Cookie':'assistant_session='+cookie},max_redirects=0)
+    cookies=[row['value'] for row in local.headers_array if row['name'].lower()=='set-cookie']
+    require(len(cookies)==1,'anonymous_deployment_mismatch')
+    parsed=SimpleCookie();parsed.load(cookies[0])
+    require(local.status==200 and 'assistant_session' in parsed
+        and hmac.compare_digest(parsed['assistant_session'].value,cookie),'anonymous_deployment_mismatch')
+
+
+def anonymous_route_allowed(method,url,origin):
+    from urllib.parse import urlsplit
+    value=urlsplit(url)
+    return (method=='GET' and value.scheme+'://'+value.netloc==origin
+        and value.path in {'/login','/api/status','/assets/calendar.css'}
+        and not value.query and not value.fragment)
+
+
+async def anonymous_login(root):
+    """Anonymous GET-only real browser on existing configured HTTPS; no secrets."""
+    from playwright.async_api import async_playwright,expect
+    root=Path(root);origin=configured_entrypoint(root);before=claim_snapshot(root)
+    violations=[]
+    async with asyncio.timeout(30),async_playwright() as p:
+        browser=await p.chromium.launch(executable_path='/usr/bin/chromium',headless=True,chromium_sandbox=True)
+        try:
+            context=await browser.new_context(service_workers='block',accept_downloads=False)
+            async def guard(route):
+                request=route.request
+                if anonymous_route_allowed(request.method,request.url,origin):
+                    await route.continue_()
+                else:violations.append(True);await route.abort()
+            await context.route('**/*',guard)
+            page=await context.new_page();page.set_default_timeout(10000)
+            response=await page.goto(origin+'/login')
+            require(response is not None and response.status==200 and page.url==origin+'/login','anonymous_login_failed')
+            await expect(page.get_by_role('heading',name='管理登入',exact=True)).to_be_visible()
+            field=page.get_by_label('管理密碼',exact=True)
+            await expect(field).to_be_visible();await expect(field).to_have_attribute('type','password')
+            await expect(page.get_by_role('button',name='登入',exact=True)).to_be_visible()
+            # Bind the configured ingress to THIS installed daemon without
+            # reading its session key or authenticating. The real daemon reuses
+            # its anonymous signed/in-memory session on GET /login; a foreign
+            # cookie creates a different session. Keep all cookie bytes in RAM.
+            cookies=[cookie for cookie in await context.cookies(origin) if cookie['name']=='assistant_session']
+            require(len(cookies)==1 and cookies[0]['secure'] is True and cookies[0]['httpOnly'] is True,
+                'anonymous_login_failed')
+            await same_deployment_session(context.request,cookies[0]['value'])
+            # No authenticated data is fetched or retained. An unauthed API must
+            # reject; never parse its body on a surprising success.
+            response=await context.request.get(origin+'/api/status',max_redirects=0)
+            require(response.status==401,'anonymous_api_not_rejected')
+            require(not violations,'browser_egress_rejected')
+            require(await page.locator('.day-column').count()==0
+                and await page.get_by_role('heading',name='設定',exact=True).count()==0,'authenticated_data_visible')
+            await page.close();await context.close()
+        finally:await browser.close()
+    require(before==claim_snapshot(root),'anonymous_control_state_changed')
+    return dict(approved_safe_entrypoint=True,origin_bound=True,anonymous_context=True,
+        login_heading=True,password_field=True,login_button=True,anonymous_api_rejected=True,
+        no_authenticated_data=True,no_secret_artifacts=True,same_deployment_session=True,
+        user_reachable_entrypoint='configured-https-browser-verified')
+
+
 def main():
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('action',choices=['init','state','enable','disable','backup','smoke','sandbox','view','stop','verify'])
+    p.add_argument('action',choices=['init','state','enable','disable','backup','smoke','sandbox','view','stop','verify','entrypoint','login','metadata'])
     p.add_argument('--id');p.add_argument('--request-sha');args=p.parse_args()
     try:
         root=Path('/data')
@@ -343,6 +468,13 @@ def main():
                 # Do not let debug env enable driver protocol/secret logging.
                 for key in ('DEBUG','PWDEBUG'):os.environ.pop(key,None)
                 value=asyncio.run(browser_readiness(root,password))
+        elif args.action=='entrypoint':
+            configured_entrypoint(root)
+            value=dict(approved_safe_entrypoint=True,origin_bound=True)
+        elif args.action=='login':
+            for key in ('DEBUG','PWDEBUG'):os.environ.pop(key,None)
+            value=asyncio.run(anonymous_login(root))
+        elif args.action=='metadata':value=runtime_metadata(root)
         elif args.action=='state':value=database_state(root)
         elif args.action in {'enable','disable','backup'}:value=maintenance(root,args.action,args.id)
         elif args.action in {'view','stop'}:value=asyncio.run(control(root,args.action,args.id,args.request_sha))

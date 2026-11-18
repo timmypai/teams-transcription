@@ -7,6 +7,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from teams_transcription.b_live import ResponseLivePeer
 from teams_transcription.live_summary_diagnostics import DATA_EVENTS, RPC_EVENTS, LiveSummaryDiagnostics
 from tests import test_live_summary_probe
+from probe_budget_fixture import blocked_phase_budget
 
 
 class LiveSummaryDiagnosticsTests(unittest.IsolatedAsyncioTestCase):
@@ -56,7 +57,10 @@ class LiveSummaryDiagnosticsTests(unittest.IsolatedAsyncioTestCase):
                 elif phase == 'media_connected': probe.peer.wait_connected.side_effect = block
                 elif phase == 'wait_output':
                     probe._finished.wait = AsyncMock(side_effect=block)
-                result = await probe.run()
+                # Test the blocked stage, not how quickly earlier AsyncMocks
+                # happen to run on a loaded runner. Cancellation remains real.
+                with blocked_phase_budget(probe, phase):
+                    result = await probe.run()
                 self.assertTrue(entered.is_set())
                 self.assertEqual(result['state'], 'failed')
                 self.assertEqual(result['failure_code'], 'live_summary_probe_timeout')
@@ -75,6 +79,25 @@ class LiveSummaryDiagnosticsTests(unittest.IsolatedAsyncioTestCase):
                 self.assertEqual(diagnostic['rpc_returns']['append_text'], phase == 'wait_output')
                 self.assertFalse(any(method == 'turn/start' for method, _ in calls))
                 self.assert_cleaned(probe, result)
+
+    async def test_real_overall_budget_expires_in_prerequisite_not_unentered_sdp_apply(self):
+        probe, _, _ = self.make_probe(mode='silent', timeout=.04)
+        prerequisite = asyncio.Event()
+        target = asyncio.Event()
+        async def blocked_offer():
+            prerequisite.set()
+            await asyncio.Event().wait()
+        async def answer(*args):
+            target.set()
+        probe.peer.offer.side_effect = blocked_offer
+        probe.peer.answer.side_effect = answer
+        result = await probe.run()  # NO fixture deadline injection here.
+        self.assertTrue(prerequisite.is_set())
+        self.assertFalse(target.is_set())
+        self.assertEqual(result['diagnostics']['failure_phase'], 'ice_offer')
+        self.assertEqual(result['diagnostics']['phases']['sdp_apply']['state'], 'not_entered')
+        self.assertEqual(result['diagnostics']['timeout_scope'], 'overall_budget')
+        self.assert_cleaned(probe, result)
 
     async def test_actual_peer_branch_marks_sdp_authorization_without_starting_browser(self):
         probe, _, _ = self.make_probe(timeout=.04)
