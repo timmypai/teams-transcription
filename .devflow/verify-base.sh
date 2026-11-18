@@ -11,8 +11,8 @@ SOURCE_SHA="$base" DEVFLOW_SOURCE_DIR="$base_tree" bash .devflow/build.sh
 DEVFLOW_BASELINE=1 DEVFLOW_BASE_ROOT="$base_tree" SOURCE_SHA="$base" \
   DEVFLOW_KIND=base DEVFLOW_EVIDENCE="$head/.devflow/evidence-base" \
   python .devflow/hosted_verify.py
-# The UI can be Already-met. New CLI adapter is absent on base: INVALID,
-# not a manufactured Given/When failure. Exemptions require independent review.
+# Run all nine scenarios when the base adapter exists; legacy adapter-absent
+# bases remain explicit INVALID, never manufactured RED. Review every exemption.
 DEVFLOW_EVIDENCE="$head/.devflow/evidence-base" \
   python .devflow/acceptance.py classify-base --base-sha "$base"
 git worktree remove "$base_tree"

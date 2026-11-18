@@ -23,6 +23,7 @@ ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
 from tools.target_admission import collect, require, REPO
 from tools.pr_policy_github import GitHub
+from deploy.target_diagnostics import Failures, public_command
 
 PROJECT='devflow-teams-transcription'
 APP=PROJECT+'-app'
@@ -32,7 +33,11 @@ IMAGE=re.compile('sha256:[0-9a-f]{64}\\Z')
 RUNTIME='/opt/meeting/devflow_runtime.py'
 
 
-def execute(args,*,input=None,timeout=120):
+def execute(args,*,input=None,timeout=120,public_phase=None):
+    if public_phase is not None:
+        require(input is None,'public_stdin_rejected')
+        return public_command(args,phase=public_phase,timeout=timeout,
+            env={k:v for k,v in os.environ.items() if k not in {'DEVFLOW_APP_ENV','GH_TOKEN','GITHUB_TOKEN'}})
     result=subprocess.run(args,input=input,text=True,capture_output=True,timeout=timeout,
         env={k:v for k,v in os.environ.items() if k not in {'DEVFLOW_APP_ENV','GH_TOKEN','GITHUB_TOKEN'}})
     if result.returncode and RUNTIME in args:
@@ -92,6 +97,7 @@ class Controller:
         self.helper=f'{PROJECT}-helper-{run_id}-{attempt}'
         self.builder=f'{PROJECT}-build-{run_id}-{attempt}'
         self.release=None
+        self.failures=Failures()
         self.docker_prefix=['docker','--host=unix://'+f'/run/user/{os.getuid()}/docker.sock']
         self.audit=Audit([(a,k,t) for k,t,actions in [
             ('directory',str(self.root),['write']),('container',APP,['up','stop','exec']),
@@ -196,20 +202,24 @@ class Controller:
             contexts.chmod(0o777)
         self.mutate('write','directory',str(self.root),create_public_context)
         base=next(line.split('=',1)[1] for line in (ROOT/'Dockerfile').read_text().splitlines() if line.startswith('ARG PYTHON_BASE='))
-        self.mutate('run','container',self.builder,lambda:self.docker('run','--rm','--name',self.builder,
-            '--label',OWNER+'='+REPO,'--cap-drop','ALL','--security-opt','no-new-privileges',
-            '--mount',f'type=bind,src={ROOT},dst=/source,readonly',
-            '--mount',f'type=bind,src={contexts},dst=/workspace','--entrypoint','sh',base,
-            '/source/.devflow/prepare-contexts.sh',timeout=900))
+        self.failures.cleanup='unknown'
+        with self.failures.stage('prepare_contexts'):
+            self.mutate('run','container',self.builder,lambda:self.docker('run','--rm','--name',self.builder,
+                '--label',OWNER+'='+REPO,'--cap-drop','ALL','--security-opt','no-new-privileges',
+                '--mount',f'type=bind,src={ROOT},dst=/source,readonly',
+                '--mount',f'type=bind,src={contexts},dst=/workspace','--entrypoint','sh',base,
+                '/source/.devflow/prepare-contexts.sh',timeout=900,public_phase='prepare_contexts'))
         iid=contexts/'image-id'
-        self.mutate('build','image',REPO,lambda:self.docker('buildx','build','--load','--provenance=false',
-            '--build-context',f'codex_npm={contexts}/codex_npm','--build-context',f'python_wheels={contexts}/python_wheels',
-            '--label','org.opencontainers.image.source=https://github.com/'+REPO,
-            '--label','org.opencontainers.image.revision='+sha,'--label',OWNER+'='+REPO,
-            '--iidfile',str(iid),str(ROOT),timeout=1800))
-        image=iid.read_text().strip();require(IMAGE.fullmatch(image),'immutable_image_required')
-        inspect=json.loads(self.docker('image','inspect',image))[0]
-        require(inspect['Config']['Labels']['org.opencontainers.image.revision']==sha,'built_revision_mismatch')
+        with self.failures.stage('image_build'):
+            self.mutate('build','image',REPO,lambda:self.docker('buildx','build','--load','--provenance=false',
+                '--build-context',f'codex_npm={contexts}/codex_npm','--build-context',f'python_wheels={contexts}/python_wheels',
+                '--label','org.opencontainers.image.source=https://github.com/'+REPO,
+                '--label','org.opencontainers.image.revision='+sha,'--label',OWNER+'='+REPO,
+                '--iidfile',str(iid),str(ROOT),timeout=1800,public_phase='image_build'))
+            image=iid.read_text().strip();require(IMAGE.fullmatch(image),'immutable_image_required')
+            inspect=json.loads(self.docker('image','inspect',image))[0]
+            require(inspect['Config']['Labels']['org.opencontainers.image.revision']==sha,'built_revision_mismatch')
+        self.failures.cleanup='not_required'
         return image
 
     def create_release(self,receipt,image):
@@ -261,6 +271,7 @@ class Controller:
         self.write(self.root/f'diagnostics-{self.run_id}-{self.attempt}-{phase}.json',json.dumps(value))
 
     def switch(self,receipt,image,state):
+        self.failures.cleanup='unknown'
         release=self.create_release(receipt,image)
         self.runtime('sandbox',image=image)  # no data mount, credentials or network
         if state:
@@ -284,22 +295,29 @@ class Controller:
                 '--wait','--wait-timeout','90','teams-transcription'))
             ident,smoke=self.health(image)
             after=self.runtime('state');require(after['quiescent'],'post_start_not_quiescent')
-        except BaseException:
-            self.capture('candidate')
+        except BaseException as primary:
+            self.failures.record(primary)
+            try:self.capture('candidate')
+            except Exception as capture_error:self.failures.record(capture_error,'audit','snapshot_failed')
             # Stop only the owned candidate. Failure to confirm stop never becomes
             # success; do not start an old writer or restore SQLite in uncertainty.
-            self.mutate('stop','container',APP,lambda:self.compose(release,'stop','teams-transcription'))
-            if previous:
-                current=self.runtime('state',image=image)
-                require(current['schema']==schema and current['config_sha256']==runtime_config
-                    and current['quiescent'],'rollback_schema_or_cleanup_interlock')
-                self.release=old
-                self.mutate('up','container',APP,lambda:self.compose(old,'up','-d','--no-build','--pull','never',
-                    '--wait','--wait-timeout','90','teams-transcription'))
-                restored,_=self.health(state['image'])
-                self.runtime('disable')
-                self.write(self.root/'state.json',json.dumps({**state,'phase':'healthy','container_id':restored}))
-                self.capture('rollback')
+            try:
+                self.mutate('stop','container',APP,lambda:self.compose(release,'stop','teams-transcription'))
+                if previous:
+                    current=self.runtime('state',image=image)
+                    require(current['schema']==schema and current['config_sha256']==runtime_config
+                        and current['quiescent'],'rollback_schema_or_cleanup_interlock')
+                    self.release=old
+                    self.mutate('up','container',APP,lambda:self.compose(old,'up','-d','--no-build','--pull','never',
+                        '--wait','--wait-timeout','90','teams-transcription'))
+                    restored,_=self.health(state['image'])
+                    self.runtime('disable')
+                    self.write(self.root/'state.json',json.dumps({**state,'phase':'healthy','container_id':restored}))
+                    self.failures.cleanup='rollback_verified'
+                    self.capture('rollback')
+            except Exception as cleanup_error:
+                self.failures.cleanup='unknown'
+                self.failures.record(cleanup_error,'cleanup','cleanup_failed')
             raise
         # Releasing maintenance is last. If unknown, retain switching; never
         # blindly rollback/stop after claims might have resumed.
@@ -307,6 +325,7 @@ class Controller:
         self.write(self.root/'state.json',json.dumps(dict(phase='healthy',source_sha=receipt['source_sha'],
             image=image,container_id=ident,release=release.name,previous_release=state['release'] if state else None,
             volume_created_at=self.probe('volume',VOLUME)['CreatedAt'],network_id=self.probe('network',PROJECT)['Id'])))
+        self.failures.cleanup='not_required'
         return smoke
 
 
@@ -325,13 +344,15 @@ def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('action',choices=['deploy','view','stop','verify'])
     p.add_argument('--id');p.add_argument('--request-sha');args=p.parse_args()
+    failures=Failures();sha=None;run=None;attempt=None;evidence=None
     try:
         os.umask(0o077)
+        run=int(os.environ['GITHUB_RUN_ID']);attempt=int(os.environ['GITHUB_RUN_ATTEMPT'])
+        require(0<run<2**63 and 0<attempt<2**31,'run_identity_invalid')
         sha=manual_environment()
         api=GitHub(os.environ.get('GH_TOKEN'))
         receipt=collect(sha,api)  # readonly; before private state/secret writes
-        run=int(os.environ['GITHUB_RUN_ID']);attempt=int(os.environ['GITHUB_RUN_ATTEMPT'])
-        require(run>0 and attempt>0,'run_identity_invalid')
+
         root=Path.home()/'.devflow-live'/'timmypai-teams-transcription'
         root.parent.mkdir(mode=0o700,exist_ok=True)
         created=not root.exists()
@@ -339,6 +360,7 @@ def main():
         require(root.absolute()==root.resolve() and root.stat().st_uid==os.getuid()
             and not root.stat().st_mode&0o077,'state_root_unsafe')
         c=Controller(root,run,attempt)
+        c.failures=failures
         if created:c.write(root/'owner.json',json.dumps(dict(repository=REPO,uid=os.getuid())))
         require(c.read(root/'owner.json')==dict(repository=REPO,uid=os.getuid()),'state_owner_collision')
         # Fixed private state, lock held across deploy/control (same workflow group).
@@ -378,24 +400,47 @@ def main():
                     else:
                         if args.action=='view':c.health(state['image'])
                         result=c.runtime(args.action,ident=args.id,request_sha=args.request_sha)
+            except Exception as exc:
+                failures.record(exc)
+                raise
             finally:
-                report=c.audit.report(before,snapshot(c.containers()))
-                c.write(root/f'audit-{run}-{attempt}.json',json.dumps(report))
-                evidence=ROOT/f'.devflow/evidence-deploy-{run}-{attempt}'
-                evidence.mkdir(parents=True,exist_ok=True)
-                (evidence/'audit.json').write_text(json.dumps(report,indent=2)+'\n')
-                for phase in ('candidate','rollback'):
-                    diagnostic=root/f'diagnostics-{run}-{attempt}-{phase}.json'
-                    if diagnostic.exists():
-                        (evidence/(phase+'.json')).write_text(diagnostic.read_text())
+                # A failed snapshot/audit must not hide the build/operation
+                # failure, nor manufacture an audit or successful receipt.
+                try:
+                    report=c.audit.report(before,snapshot(c.containers()))
+                    c.write(root/f'audit-{run}-{attempt}.json',json.dumps(report))
+                    evidence=ROOT/f'.devflow/evidence-deploy-{run}-{attempt}'
+                    evidence.mkdir(parents=True,exist_ok=True)
+                    (evidence/'audit.json').write_text(json.dumps(report,indent=2)+'\n')
+                    for phase in ('candidate','rollback'):
+                        diagnostic=root/f'diagnostics-{run}-{attempt}-{phase}.json'
+                        if diagnostic.exists():
+                            (evidence/(phase+'.json')).write_text(diagnostic.read_text())
+                except Exception as exc:
+                    failures.record(exc,'audit','audit_failed')
+                    raise
             require(report['foreign_unchanged'],'foreign_snapshot_changed')
             (evidence/'receipt.json').write_text(json.dumps({**receipt,'operation':args.action,'result':result,
                 'deploy_run_url':f'https://github.com/{REPO}/actions/runs/{run}',
                 'scope':'oracle-manual' if args.action=='deploy' else 'same-deployment-local-control',
                 'audit':report},indent=2)+'\n')
         return 0
-    except Exception:
-        print('target_operation_rejected; inspect bounded diagnostics/private state; do not retry unknown cleanup blindly')
+    except Exception as exc:
+        failures.record(exc)
+        # Public evidence only. Invalid/unavailable identities are null, never
+        # copied verbatim from untrusted environment or exception messages.
+        value=failures.document(REPO,sha if isinstance(sha,str) and re.fullmatch('[0-9a-f]{40}',sha) else None,
+            run if type(run) is int and 0<run<2**63 else None,
+            attempt if type(attempt) is int and 0<attempt<2**31 else None,args.action)
+        try:
+            if value['run_id'] is not None and value['run_attempt'] is not None:
+                evidence=ROOT/f'.devflow/evidence-deploy-{run}-{attempt}'
+                evidence.mkdir(parents=True,exist_ok=True)
+                (evidence/'failure.json').write_text(json.dumps(value,indent=2)+'\n')
+        except Exception as write_error:
+            failures.record(write_error,'audit','evidence_write_failed')
+            value['secondary_failures']=failures.secondary
+        print(json.dumps(value))
         return 1
 
 

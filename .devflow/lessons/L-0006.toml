@@ -1,0 +1,9 @@
+id = "L-0006"
+title = "Preserve deployment primary failure with bounded public-output projection"
+event = "Oracle run 44320770971 failed after public contexts and at image build, but execute/main reduced failure to a generic rejection; no build root cause was captured."
+root_cause = "capture_output and a generic main rejection lose phase/exit identity, while an audit/cleanup exception can replace the original operation failure. This is the observability defect, not an asserted Oracle build cause."
+category = "verification"
+
+[enforcement]
+kind = "test"
+ref = "tests/test_target_diagnostics.py::test_failed_image_build_keeps_phase_exit_and_discards_all_untrusted_text"
