@@ -29,6 +29,22 @@ class SmokeRuntimeTests(unittest.TestCase):
                     asyncio.run(anonymous_login(self.root))
         self.assertFalse((self.root/'codex').exists())
 
+    def test_anonymous_route_guard_covers_real_login_stylesheet_not_other_traffic(self):
+        import re
+        from urllib.parse import urljoin
+        from teams_transcription.admin_ui import page
+        from deploy.target_runtime import anonymous_route_allowed
+        origin='https://operator-approved.invalid'
+        html=page('管理登入','').body.decode()
+        required=re.findall(r'<link rel="stylesheet" href="([^"]+)"',html)
+        self.assertEqual(required,['/assets/calendar.css'])
+        self.assertTrue(all(anonymous_route_allowed('GET',urljoin(origin,path),origin) for path in required))
+        self.assertTrue(anonymous_route_allowed('GET',origin+'/login',origin))
+        for method,url in (('POST',origin+'/login'),('GET',origin+'/settings'),
+            ('GET','https://foreign.invalid/assets/calendar.css'),('GET',origin+'/assets/calendar.js'),
+            ('GET',origin+'/assets/calendar.css?private=query')):
+            self.assertFalse(anonymous_route_allowed(method,url,origin))
+
     def test_operator_owned_https_configuration_is_not_created_or_changed(self):
         runtime=self.root/'config/runtime.yml'
         value=json.loads(runtime.read_text());value.update(public_base_url='https://operator-approved.invalid',cookie_secure=True)

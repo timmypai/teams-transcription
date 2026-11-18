@@ -1,0 +1,9 @@
+id = "L-0011"
+title = "Anonymous browser guards must cover the real page's fixed public stylesheet"
+event = "The anonymous login guard rejected the stylesheet loaded by the real shared management page, although the login and API endpoints themselves were allowed."
+root_cause = "An endpoint-only GET allowlist is not a complete browser page contract. Derive the required asset from the actual anonymous page and allow only that fixed CSS on the same approved origin; retain denial for foreign origins, scripts, query-bearing URLs, authenticated paths and mutations. Keep API401 and blocked-egress errors distinct; never weaken TLS or Secure-cookie assertions to make a fixture pass."
+category = "verification"
+
+[enforcement]
+kind = "test"
+ref = "tests/test_oracle_smoke_runtime.py::test_anonymous_route_guard_covers_real_login_stylesheet_not_other_traffic"

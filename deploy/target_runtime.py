@@ -400,10 +400,17 @@ async def same_deployment_session(client,cookie):
         and hmac.compare_digest(parsed['assistant_session'].value,cookie),'anonymous_deployment_mismatch')
 
 
+def anonymous_route_allowed(method,url,origin):
+    from urllib.parse import urlsplit
+    value=urlsplit(url)
+    return (method=='GET' and value.scheme+'://'+value.netloc==origin
+        and value.path in {'/login','/api/status','/assets/calendar.css'}
+        and not value.query and not value.fragment)
+
+
 async def anonymous_login(root):
     """Anonymous GET-only real browser on existing configured HTTPS; no secrets."""
     from playwright.async_api import async_playwright,expect
-    from urllib.parse import urlsplit
     root=Path(root);origin=configured_entrypoint(root);before=claim_snapshot(root)
     violations=[]
     async with asyncio.timeout(30),async_playwright() as p:
@@ -411,9 +418,8 @@ async def anonymous_login(root):
         try:
             context=await browser.new_context(service_workers='block',accept_downloads=False)
             async def guard(route):
-                request=route.request;url=urlsplit(request.url)
-                if (request.method=='GET' and url.scheme+'://'+url.netloc==origin
-                    and url.path in {'/login','/api/status'} and not url.query and not url.fragment):
+                request=route.request
+                if anonymous_route_allowed(request.method,request.url,origin):
                     await route.continue_()
                 else:violations.append(True);await route.abort()
             await context.route('**/*',guard)
@@ -435,7 +441,8 @@ async def anonymous_login(root):
             # No authenticated data is fetched or retained. An unauthed API must
             # reject; never parse its body on a surprising success.
             response=await context.request.get(origin+'/api/status',max_redirects=0)
-            require(response.status==401 and not violations,'anonymous_api_not_rejected')
+            require(response.status==401,'anonymous_api_not_rejected')
+            require(not violations,'browser_egress_rejected')
             require(await page.locator('.day-column').count()==0
                 and await page.get_by_role('heading',name='設定',exact=True).count()==0,'authenticated_data_visible')
             await page.close();await context.close()
