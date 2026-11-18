@@ -45,6 +45,13 @@ class TargetDeployTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             c=None
             def command(args,**kwargs):
+                if kwargs.get('public_probe'):
+                    from test_build_evidence import HELP,VERSION
+                    from deploy.target_deploy import execute
+                    import sys
+                    script=Path(folder)/'probe.py'
+                    script.write_text('import sys\nsys.stdout.write('+repr(HELP if args[-1]=='--help' else VERSION)+')\n')
+                    return execute([sys.executable,str(script)],**kwargs)
                 # Stop at the real builder boundary; no daemon in this unit test.
                 context=Path(folder)/'contexts-1-1'
                 self.assertEqual(context.stat().st_mode&0o777,0o777,

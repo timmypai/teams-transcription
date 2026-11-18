@@ -1,9 +1,9 @@
 id = "L-0006"
-title = "Preserve deployment primary failure with bounded public-output projection"
-event = "Oracle run 44320770971 failed after public contexts and at image build, but execute/main reduced failure to a generic rejection; no build root cause was captured."
-root_cause = "capture_output and a generic main rejection lose phase/exit identity, while an audit/cleanup exception can replace the original operation failure. This is the observability defect, not an asserted Oracle build cause."
+title = "Bounded diagnostics require a discriminating reviewed consumer"
+event = "Oracle image_build failed twice; schema1 preserved exit125 and byte counts but could not safely distinguish a next action."
+root_cause = "Observability without a validated consumer loses decision information. Fixed capability probes and anchored enum projection must route distinguishable disposable failures, while unknown/truncated/conflicting evidence stops. Oracle build cause remains unknown."
 category = "verification"
 
 [enforcement]
 kind = "test"
-ref = "tests/test_target_diagnostics.py::test_failed_image_build_keeps_phase_exit_and_discards_all_untrusted_text"
+ref = "tests/test_build_evidence.py::test_distinct_failures_reach_real_child_and_publish_fixed_consumer_routes"

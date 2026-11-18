@@ -23,7 +23,7 @@ ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
 from tools.target_admission import collect, require, REPO
 from tools.pr_policy_github import GitHub
-from deploy.target_diagnostics import Failures, public_command
+from deploy.target_diagnostics import Failures, PublicCommandFailure, public_command
 
 PROJECT='devflow-teams-transcription'
 APP=PROJECT+'-app'
@@ -33,10 +33,10 @@ IMAGE=re.compile('sha256:[0-9a-f]{64}\\Z')
 RUNTIME='/opt/meeting/devflow_runtime.py'
 
 
-def execute(args,*,input=None,timeout=120,public_phase=None):
+def execute(args,*,input=None,timeout=120,public_phase=None,public_probe=None):
     if public_phase is not None:
         require(input is None,'public_stdin_rejected')
-        return public_command(args,phase=public_phase,timeout=timeout,
+        return public_command(args,phase=public_phase,timeout=timeout,probe=public_probe,
             env={k:v for k,v in os.environ.items() if k not in {'DEVFLOW_APP_ENV','GH_TOKEN','GITHUB_TOKEN'}})
     result=subprocess.run(args,input=input,text=True,capture_output=True,timeout=timeout,
         env={k:v for k,v in os.environ.items() if k not in {'DEVFLOW_APP_ENV','GH_TOKEN','GITHUB_TOKEN'}})
@@ -106,7 +106,25 @@ class Controller:
             ('network',PROJECT,['create']),('image',REPO,['build']),
         ] for a in actions])
 
-    def docker(self,*args,**kw):return self.command(self.docker_prefix+list(args),**kw)
+    def docker(self,*args,**kw):
+        try:value=self.command(self.docker_prefix+list(args),**kw)
+        except PublicCommandFailure as exc:
+            self.failures.observe(exc);raise
+        self.failures.observe(value)
+        return value
+
+    def build_preflight(self):
+        # Called only inside the existing admitted/locked build path. Same
+        # docker_prefix/socket, fixed readonly commands; never install/fallback.
+        for command,args in [('buildx_version',('buildx','version')),
+                             ('buildx_build_help',('buildx','build','--help'))]:
+            try:self.docker(*args,timeout=15,public_phase='build_preflight',public_probe=command)
+            except PublicCommandFailure:pass
+        diag=self.failures.build_diagnostics
+        states=[row['state'] for row in diag['capabilities']]
+        missing='unavailable' in states or 'unsupported' in diag['required_options'].values()
+        if states!=['available','available'] or set(diag['required_options'].values())!={'supported'} or diag['projection_incomplete']:
+            raise PublicCommandFailure('build_preflight','capability_missing' if missing else 'capability_unknown')
 
     def mutate(self,action,kind,target,fn):return self.audit.apply([(action,kind,target)],fn)
 
@@ -192,6 +210,7 @@ class Controller:
         return snapshot(all_containers)
 
     def build(self,sha):
+        with self.failures.stage('build_preflight'):self.build_preflight()
         contexts=self.root/f'contexts-{self.run_id}-{self.attempt}'
         require(not contexts.exists(),'build_context_collision')
         def create_public_context():
@@ -420,6 +439,9 @@ def main():
                     failures.record(exc,'audit','audit_failed')
                     raise
             require(report['foreign_unchanged'],'foreign_snapshot_changed')
+            # Publish diagnostic evidence before the success receipt. A failed
+            # diagnostic write must not leave a healthy receipt for this run.
+            (evidence/'failure.json').write_text(json.dumps(failures.document(REPO,sha,run,attempt,args.action),indent=2)+'\n')
             (evidence/'receipt.json').write_text(json.dumps({**receipt,'operation':args.action,'result':result,
                 'deploy_run_url':f'https://github.com/{REPO}/actions/runs/{run}',
                 'scope':'oracle-manual' if args.action=='deploy' else 'same-deployment-local-control',
