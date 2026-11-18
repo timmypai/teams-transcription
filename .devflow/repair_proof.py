@@ -94,6 +94,11 @@ def marker_replay(source):
 
 
 def main():
+    # Injected CLI tests intentionally exercise private umask 077. A later
+    # import must not leave private bytecode in public source copied by the
+    # cap-drop builder. Fail BEFORE loading application/test modules otherwise.
+    if not sys.dont_write_bytecode:
+        raise SystemExit('repair_proof_requires_no_bytecode')
     hashes={}
     with tempfile.TemporaryDirectory(prefix='repair-fixed-main-') as directory:
         base=Path(directory)
@@ -112,7 +117,8 @@ def main():
     document=dict(scope='hosted-controlled-repair-not-Oracle-not-EPIC-acceptance',failed_source_sha=FAILED,
         baseline_sha256=hashes,budget=dict(red=red_budget,green=green_budget),
         consumer=dict(red=red_smoke,green=green_smoke),audio_marker_replay=audio,success=success,
-        historical_integration_run=44339519115,oracle_executed=False)
+        historical_integration_run=44339519115,oracle_executed=False,
+        proof_bytecode_disabled=sys.dont_write_bytecode)
     output=ROOT/'.devflow/evidence';output.mkdir(parents=True,exist_ok=True)
     (output/'repair-red-green.json').write_text(json.dumps(document,indent=2)+'\n')
     print(json.dumps(document));return 0 if success else 1

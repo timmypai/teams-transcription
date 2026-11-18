@@ -35,7 +35,46 @@ class BrowserReadinessTests(unittest.IsolatedAsyncioTestCase):
                     while not server.started:
                         if task.done():await task;self.fail('disposable server failed')
                         await asyncio.sleep(.01)
-                with patch('deploy.target_runtime.configured_entrypoint',return_value='http://127.0.0.1:8080'):
+                # Fulfill a synthetic secure origin FROM the real disposable
+                # daemon. This exercises real Chromium Secure/HttpOnly cookies
+                # and the REAL APIResponse contract, without cert installs or
+                # pretending that loopback proves an operator-safe TLS route.
+                from contextlib import asynccontextmanager
+                from types import SimpleNamespace
+                from urllib.parse import urlsplit
+                from playwright.async_api import async_playwright as real_playwright
+                origin='https://installed-smoke.invalid'
+                @asynccontextmanager
+                async def fixture_playwright():
+                    async with real_playwright() as p:
+                        async def launch(**options):
+                            browser=await p.chromium.launch(**options)
+                            create=browser.new_context
+                            async def new_context(**options):
+                                context=await create(**options)
+                                register=context.route;get=context.request.get
+                                async def mapped_get(url,**kwargs):
+                                    if url.startswith(origin+'/'):
+                                        url='http://127.0.0.1:8080'+url[len(origin):]
+                                    return await get(url,**kwargs)
+                                async def route(pattern,handler):
+                                    async def backend(original):
+                                        class FixtureRoute:
+                                            request=original.request
+                                            async def continue_(self):
+                                                url=urlsplit(self.request.url)
+                                                response=await get('http://127.0.0.1:8080'+url.path,max_redirects=0)
+                                                await original.fulfill(response=response)
+                                            async def abort(self):await original.abort()
+                                        await handler(FixtureRoute())
+                                    await register(pattern,backend)
+                                context.route=route;context.request.get=mapped_get
+                                return context
+                            browser.new_context=new_context
+                            return browser
+                        yield SimpleNamespace(chromium=SimpleNamespace(launch=launch))
+                with patch('deploy.target_runtime.configured_entrypoint',return_value=origin),\
+                    patch('playwright.async_api.async_playwright',fixture_playwright):
                     result=await anonymous_login(root)
                 self.assertTrue(all(result[k] for k in ('anonymous_context','login_heading','password_field',
                     'login_button','anonymous_api_rejected','same_deployment_session','no_authenticated_data')))

@@ -1,0 +1,9 @@
+id = "L-0010"
+title = "Private umask tests must not leave bytecode in public build source"
+event = "After adding the controlled repair proof before the disposable adapter build, public context preparation failed and its root-owned partial npm tree also resisted cleanup."
+root_cause = "The proof exercises the real deployment CLI, which sets umask077. Subsequent application imports in that same proof process can create source __pycache__ files mode0600. A controlled fresh-cache subprocess produced 27 such application bytecode files; -B produced none. The cap-drop rootful public builder is a different owner and cannot read those private source bytes during its recursive copy. Run the proof with -B and reject unguarded execution before imports; do not loosen private runtime modes or builder capabilities. Final hosted build remains required to confirm the end-to-end correction."
+category = "verification"
+
+[enforcement]
+kind = "test"
+ref = "tests/test_repair_proof_hygiene.py::test_plain_interpreter_refuses_before_application_import_or_git_lookup"
