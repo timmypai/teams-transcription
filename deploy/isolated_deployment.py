@@ -1,8 +1,9 @@
 """Admission and bounded audit for the hosted, disposable deployment harness.
 
 This is NOT a VM isolation boundary. No host identities or sockets are guessed.
-The Oracle entry point deliberately has no enable flag until SHIP establishes
-trusted admission, ownership and an independently reviewed host controller.
+The Oracle entry point deliberately has no enable flag: the target-specific
+manual deploy adapter is not implemented/reviewed. The operator has accepted
+the shared devflow user/rootless daemon; no dedicated execution gate is required.
 """
 import argparse
 import json
@@ -32,7 +33,8 @@ class OperationAudit:
 
     The caller owns the executor and lifecycle. This log proves only those
     operations, not arbitrary host filesystem non-interference. Production
-    AC-2 additionally needs a trusted execution boundary, not this Python list.
+    AC-2 additionally needs real deployment operation/snapshot evidence, not
+    this Python list. Project naming is not a permissions isolation boundary.
     """
     def __init__(self, allowlist):
         self.allowlist = frozenset(tuple(row) for row in allowlist)
@@ -63,7 +65,7 @@ class OperationAudit:
                     foreign_before=before, foreign_after=after,
                     allowlist=[list(row) for row in sorted(self.allowlist)],
                     operations=self.events.copy(),
-                    limitation='Not proof of arbitrary host filesystem writes; VM admission unverified')
+                    limitation='Not proof of arbitrary host filesystem writes; target VM deployment unverified')
 
 
 def main():
@@ -72,7 +74,7 @@ def main():
     parser.parse_args()
     print(json.dumps(dict(enabled=False, repository=REPOSITORY,
                           vm_mutation_allowlist=[],
-                          error='dedicated_execution_and_native_review_unverified')))
+                          error='target_deploy_adapter_and_native_review_unverified')))
     return 1
 
 

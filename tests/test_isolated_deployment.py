@@ -65,6 +65,7 @@ class AdmissionTests(unittest.TestCase):
         receipt=json.loads(result.stdout)
         self.assertFalse(receipt['enabled'])
         self.assertEqual(receipt['vm_mutation_allowlist'],[])
+        self.assertEqual(receipt['error'],'target_deploy_adapter_and_native_review_unverified')
 
     def test_hosted_ci_never_runs_vm_or_privileged_events(self):
         workflow=yaml.load((ROOT/'.github/workflows/ci.yml').read_text(),Loader=yaml.BaseLoader)
