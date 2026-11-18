@@ -48,6 +48,11 @@ class TargetDiagnosticsTests(unittest.TestCase):
                 ' os.write(1,payload);os.write(2,payload);sys.exit(17)\n')
             controller=None
             def command(args,**kw):
+                if kw.get('public_probe'):
+                    from test_build_evidence import HELP,VERSION
+                    probe=folder/'probe.py'
+                    probe.write_text('import sys\nsys.stdout.write('+repr(HELP if args[-1]=='--help' else VERSION)+')\n')
+                    return td.execute([sys.executable,str(probe)],**kw)
                 is_prepare='run' in args
                 if (phase=='prepare_contexts')==is_prepare:
                     kw['timeout']=2 if mode=='timeout' else 5
@@ -83,7 +88,7 @@ class TargetDiagnosticsTests(unittest.TestCase):
             self.assertNotIn('receipt.json',payloads)
             self.assertIn('failure.json',payloads,'failed CLI must publish phase/exit evidence, not just generic rejection')
             report=json.loads(payloads['failure.json'])
-            self.assertEqual(report['schema_version'],1)
+            self.assertEqual(report['schema_version'],2)
             self.assertEqual({k:report[k] for k in ('repository','source_sha','run_id','run_attempt','action')},
                 dict(repository=td.REPO,source_sha=SHA,run_id=123,run_attempt=2,action='deploy'))
             self.assertEqual(report['primary_failure']['phase'],phase)
@@ -199,11 +204,16 @@ class DiagnosticBoundaryTests(unittest.TestCase):
             calls=[];image='sha256:'+'b'*64
             def command(args,**kw):
                 calls.append(kw.get('public_phase'))
+                if kw.get('public_probe'):
+                    from test_build_evidence import HELP,VERSION
+                    script=Path(folder)/'probe.py'
+                    script.write_text('import sys\nsys.stdout.write('+repr(HELP if args[-1]=='--help' else VERSION)+')\n')
+                    return candidate.execute([sys.executable,str(script)],**kw)
                 if 'buildx' in args:
                     (Path(folder)/'contexts-1-1/image-id').write_text(image)
                 if 'inspect' in args:return json.dumps([dict(Config=dict(Labels={'org.opencontainers.image.revision':SHA}))])
                 return ''
             c=candidate.Controller(folder,1,1,command=command)
             self.assertEqual(c.build(SHA),image)
-            self.assertEqual(calls,['prepare_contexts','image_build',None])
+            self.assertEqual(calls,['build_preflight','build_preflight','prepare_contexts','image_build',None])
             self.assertIsNone(c.failures.primary)
