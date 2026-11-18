@@ -73,6 +73,8 @@ class SmokeCLITests(unittest.TestCase):
                 return c
             class API:
                 def request(self,path):
+                    if path=='/repos/'+td.REPO:
+                        return dict(id=REPO_ID,full_name=td.REPO,default_branch='main'),{}
                     if path.endswith('/actions/workflows/deploy.yml'):
                         return dict(id=WORKFLOW,path='.github/workflows/deploy.yml'),{}
                     if path.endswith('/actions/runs/123'):
@@ -124,3 +126,29 @@ class SmokeCLITests(unittest.TestCase):
     def test_wrong_run_identity_is_not_pass(self):self.negative('run')
     def test_foreign_changed_is_not_pass(self):self.negative('foreign')
     def test_loopback_login_is_not_verified_safe_entrypoint(self):self.negative('entrypoint')
+
+
+class SmokeIdentityBoundaryTests(unittest.TestCase):
+    def test_missing_wrong_attempt_repository_workflow_and_stale_run_refuse(self):
+        from deploy.target_smoke import current_run
+        valid=dict(id=RUN,run_attempt=ATTEMPT,workflow_id=WORKFLOW,path='.github/workflows/deploy.yml',
+            head_sha=SHA,head_branch='main',event='workflow_dispatch',status='in_progress',conclusion=None,
+            repository=dict(id=REPO_ID,full_name=td.REPO),head_repository=dict(id=REPO_ID,full_name=td.REPO))
+        class API:
+            run=valid
+            def request(self,path):
+                if path=='/repos/'+td.REPO:return dict(id=REPO_ID,full_name=td.REPO,default_branch='main'),{}
+                if path.endswith('/deploy.yml'):return dict(id=WORKFLOW,path='.github/workflows/deploy.yml'),{}
+                return self.run,{}
+        api=API()
+        with patch.dict(os.environ,dict(GITHUB_WORKFLOW_REF=td.REPO+'/.github/workflows/deploy.yml@refs/heads/main')):
+            self.assertEqual(current_run(api,SHA,RUN,ATTEMPT)['repository_id'],REPO_ID)
+            for changes in ({'run_attempt':1},{'workflow_id':1},{'id':999},{'event':'pull_request'},
+                {'head_branch':'other'},{'status':'completed','conclusion':'success'},
+                {'repository':dict(id=REPO_ID+1,full_name=td.REPO)},
+                {'head_repository':dict(id=REPO_ID,full_name='foreign/target')},{'path':'readiness.yml'}):
+                with self.subTest(changes=changes):
+                    api.run={**valid,**changes}
+                    with self.assertRaises(ValueError):current_run(api,SHA,RUN,ATTEMPT)
+            api.run={}
+            with self.assertRaises((ValueError,KeyError)):current_run(api,SHA,RUN,ATTEMPT)

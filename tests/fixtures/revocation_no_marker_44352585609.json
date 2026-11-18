@@ -1,0 +1,26 @@
+{
+  "scope": "captured-synthetic-local-peer-tail-not-Oracle-not-real-audio",
+  "repository": "timmypai/teams-transcription",
+  "repository_id": 1461049898,
+  "source_sha": "d014a9760a5f45951eaa5358ca286c59b92ee5c4",
+  "run_id": 44352585609,
+  "run_attempt": 1,
+  "artifact_id": 14450285408,
+  "artifact_digest": "sha256:032bdbeb5161069317937e7bafcb587a2ed126622336d15fcbccc02f6af61771",
+  "file": "execution.log",
+  "line": 14,
+  "control": "test_source_navigation_revokes_target_and_keeps_a_rx_separate",
+  "source_frequency_hz": 550,
+  "post_revoke_1100hz_source_dispatched": false,
+  "sender_packets_at_boundary": 29,
+  "sender_packets_100ms": 29,
+  "sender_packets_final": 29,
+  "receiver_packets_after_boundary": 1,
+  "concealed_samples_after_boundary": 56950,
+  "last_audible_tail_ms": 180,
+  "final_200ms_peak_rms": 0,
+  "suspect_bins": [
+    {"rms": 0.1697803972623998, "frequency": 1250, "marker_rms": 0.01553924301317159, "offset_ms": 80},
+    {"rms": 0.09693007052691534, "frequency": 950, "marker_rms": 0.010009259782488653, "offset_ms": 90}
+  ]
+}

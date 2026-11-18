@@ -48,6 +48,14 @@
 
 管理密碼由操作者在 repository **Settings → Secrets and variables → Actions → New repository secret** 建立 `DEVFLOW_APP_ENV`，內容僅 `DEVFLOW_ADMIN_PASSWORD=<16..1024字元本人保管密碼>` 一行。SHIP 是 secret metadata 查核 owner；不要將值交給聊天、source、卡片、截圖、log或artifact。固定consumer只由 Actions env→host記憶體→`docker exec -i` stdin→短命consumer讀取，不放argv或app持久env；缺值／未知key／多行／不合長度拒絕，既有config/管理密碼絕不覆寫。source/hosted驗證不等待操作者secret；hosted使用一次性synthetic密碼，實跑真正daemon/socket/browser與缺secret/錯密碼負例，不是Oracle收據。loopback自動登入通過也**不證明使用者可達**；原SHIP仍需另外記錄並驗證已核准的安全存取途徑，不能新開公網／共享proxy。管理登入不是ChatGPT授權，OAuth/MFA/真Join仍留真人lane。
 
+- `target_smoke.py` 於同一正式 deploy invocation／原 host lock 內執行原 `AC-1.S3`、`AC-3.S3`，保存當次 audit 後執行 `AC-2.S3`；只用 `.devflow/acceptance.py` 的原事件／report 格式，步驟逐字讀原 `scenarios.json`，不改 checker、不回填舊 run、不在 Oracle 執行 hosted verifier／S2。當次 GitHub repo/workflow/run/attempt/main/SHA 由 API 核對；健康步驟另核對當下 state、container/image/OCI source/revision 與前後 StartedAt。artifact 附 `acceptance.json`、每步固定數值／boolean log、`smoke-identity.json` 及真正 consumer source；映像仍是 local immutable ID，不冒稱 registry digest。
+- `AC-3.S3` 先檢查**既有操作者私有 runtime** 的 HTTPS `public_base_url`／secure cookie，不建立或改入口。缺少配置／只有 loopback 時 Given failed、When/Then not-run、deploy run nonzero；不會因 `b'password'` 或內部 readiness 通過而轉 PASS。核准入口存在時，短命匿名 sandboxed browser 只 GET 該 origin 的 `/login`／未登入 `/api/status`，檢查真登入控件／401／無管理頁。匿名 session cookie 只留記憶體，另向固定 installed loopback `/login` 核對同一 in-memory session reuse，防止另一個外觀相同服務冒充本次部署；不讀 session key、不輸出 cookie、不登入、不修改授權。自動 HTTPS probe 不等於操作者已實際從自己的裝置登入；只有安全私有通道但自動 consumer 無法抵達時仍未驗，由原 SHIP 問必要前提，**不要求新建公網／proxy**。
+- 健康切換／maintenance 已完成但入口前提未驗，保留原 healthy state 並讓 acceptance fail，不對健康服務盲目重啟或回滾；原 up／health 失敗的精確 release rollback 完全保留。重跑同 SHA 仍不 rebuild/restart，但重新執行當次真 smoke，不能以舊成功 receipt 代替。
+- `readiness` 另從同一已安裝 helper 取固定 runtime/codex-home 存在／UID/mode／位於 `/data` 的 metadata；不列檔、不讀 OAuth/token、不搬家／初始化 Codex home。home 不存在為未驗，不推定登入；provider authorization 始終 `NOT VERIFIED`。這些 metadata 不替代本人 OAuth 或 authorized view/bound stop-cleanup。
+- hosted `repair_proof.py` 對固定失敗 main 執行既有 seam：六個 consumer assertion RED→GREEN，及受控前置阻塞造成 sdp_apply 未進入的原測試 RED→事件同步 fixture GREEN；另保留無注入的整體 deadline 前置逾時控制。不改產品 40ms／production deadline，不冒稱已唯一重建舊 runner 排程。Lesson: L-0007、L-0008。
+
+- 撤權測試保留原 sender ended/disabled、RTP 不再增加、全段尾音 <1000ms 與末200ms RMS <.001 的所有門檻。hosted run44352585609 的真 550Hz-only/no-marker 控制取得零交越1250/950Hz假命中；固定去敏scalar fixture綁 artifact14450285408/digest，原失敗版 predicate 重播 RED，而同窗1100Hz coherent RMS只 .01554/.01001。fixture改用同一480-sample窗的標記音component，保留 .06 RMS 門檻，另真下游1100Hz正控制／550Hz從未送marker的多相位負控制；沒有改production音訊或時限，不推定真人遠端洩漏，也不稱歷史根因已唯一重建。Lesson: L-0009。
+
 以下保留原來源歷史契約，**已被上面本target決策取代，非本次操作授權或Cloud-only前提**。
 
 

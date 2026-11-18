@@ -1,0 +1,9 @@
+id = "L-0009"
+title = "A PLC tail's zero crossings do not identify new source audio"
+event = "Hosted run 44352585609 artifact14450285408 captured a 550Hz-only source-navigation revocation control with 1250/950Hz zero-crossing bins; no 1100Hz source was ever sent."
+root_cause = "The old fixture treated total RMS plus zero-crossing frequency of a Chromium concealment transient as proof of newly dispatched 1100Hz audio. Captured bins have RMS .1698/.0969 but coherent 1100Hz RMS .01554/.01001, so the original predicate produces an actual false positive in a no-marker control. This identifies a fixture discriminator defect, not the unique cause of a historical real meeting or a remote-drain guarantee. Measure the marker's component in the same window; keep .06 RMS sensitivity, sender stop/RTP stability and the original bounded tail/quiet assertions."
+category = "verification"
+
+[enforcement]
+kind = "test"
+ref = "tests/test_native_marker.py::test_captured_no_marker_plc_tail_is_red_for_old_rule_green_for_marker_identity"

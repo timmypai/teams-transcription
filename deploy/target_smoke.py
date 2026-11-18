@@ -26,6 +26,9 @@ def current_run(api,sha,run,attempt):
     prefix='/repos/'+REPO
     observed=api.request(prefix+f'/actions/runs/{run}')[0]
     workflow=api.request(prefix+'/actions/workflows/deploy.yml')[0]
+    repository=api.request(prefix)[0]
+    require(repository['full_name']==REPO and repository['default_branch']=='main'
+        and type(repository['id']) is int and repository['id']>0,'smoke_repository_mismatch')
     require(observed['id']==run and type(observed['id']) is int
         and observed['run_attempt']==attempt and type(observed['run_attempt']) is int
         and observed['head_sha']==sha and observed['head_branch']=='main'
@@ -35,7 +38,7 @@ def current_run(api,sha,run,attempt):
         and observed['path']==workflow['path']=='.github/workflows/deploy.yml'
         and observed['repository']['full_name']==observed['head_repository']['full_name']==REPO
         and type(observed['repository']['id']) is int and observed['repository']['id']>0
-        and observed['repository']['id']==observed['head_repository']['id'], 'smoke_run_identity_mismatch')
+        and observed['repository']['id']==observed['head_repository']['id']==repository['id'], 'smoke_run_identity_mismatch')
     require(os.environ.get('GITHUB_WORKFLOW_REF')==REPO+'/.github/workflows/deploy.yml@refs/heads/main',
         'smoke_workflow_ref_mismatch')
     return dict(repository_id=observed['repository']['id'],workflow_id=workflow['id'],
@@ -48,7 +51,7 @@ class OracleSmoke:
         self.evidence=Path(evidence);self.evidence.mkdir(parents=True,exist_ok=True)
         require(not (self.evidence/'scenario-events.jsonl').exists(),'smoke_evidence_collision')
         self.sha=sha;self.run=run;self.attempt=attempt;self.events=[];self.image='';self.details={}
-        self.context=None
+        self.context=None;self.api=api
         try:self.context=current_run(api,sha,run,attempt)
         except Exception:pass  # Unknown identity is failed Given, never PASS.
 
@@ -138,6 +141,10 @@ class OracleSmoke:
         self.scenario(2,(given,when,then))
 
     def finish(self):
+        if self.context is not None:
+            try:
+                require(current_run(self.api,self.sha,self.run,self.attempt)==self.context,'smoke_identity_changed')
+            except Exception:self.context=None
         events=self.evidence/'scenario-events.jsonl'
         with events.open('x') as out:
             for event in self.events:out.write(json.dumps(event,ensure_ascii=False)+'\n')
