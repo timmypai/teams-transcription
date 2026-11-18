@@ -198,7 +198,10 @@ class BrowserTXTests(unittest.IsolatedAsyncioTestCase):
         # sender, even while the downstream decoder conceals the previous tone.
         await self.source.tone(frequency=1100)
         tail=await self._assert_revocation_tail(before)
-        self.assertFalse(any(row['rms']>.06 and 950<=row['frequency']<=1250 for row in tail))
+        self.assertFalse(any(row['rms']>.06 and 950<=row['frequency']<=1250 for row in tail),
+            {'revocation':self.revocation_evidence,
+             'suspect_bins':[{**row,'offset_ms':i*10} for i,row in enumerate(tail)
+                             if row['rms']>.06 and 950<=row['frequency']<=1250]})
 
     async def test_source_navigation_revokes_target_and_keeps_a_rx_separate(self):
         self.assertEqual(await self.page.evaluate('__meeting.peers.length'),1)
