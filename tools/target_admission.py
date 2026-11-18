@@ -12,8 +12,10 @@ import subprocess
 
 try:
     from tools.pr_policy_github import GitHub, pages, unresolved_threads
+    from tools.reviewer_identity import designated
 except ModuleNotFoundError:
     from pr_policy_github import GitHub, pages, unresolved_threads
+    from reviewer_identity import designated
 
 REPO='timmypai/teams-transcription'
 SHA=re.compile('[0-9a-f]{40}\\Z')
@@ -32,6 +34,7 @@ def validate_release(e):
     pr=e['pr']; head=pr['head_sha']
     require(SHA.fullmatch(head) and pr['merged'] is True and pr['merge_commit_sha']==e['source_sha']
         and pr['base_ref']=='main' and pr['head_repository']==REPO,'merged_pr_mismatch')
+    require(type(pr.get('author_id')) is int and pr['author_id']>0,'author_identity_required')
     require(type(pr['unresolved_threads']) is int and pr['unresolved_threads']==0,'review_threads_not_clear')
     reviews=e['reviews'];latest={}
     for r in reviews:
@@ -41,8 +44,8 @@ def validate_release(e):
     # Unknown/newer review cannot be hidden behind an older approval.
     for login,r in latest.items():
         require(r['state']=='APPROVED' and r['commit_id']==head,'current_head_review_required')
-        require(login!=pr['author'] and r['user']['type']=='User'
-            and r.get('author_association') in {'OWNER','MEMBER','COLLABORATOR'},'review_not_independent')
+        require(login!=pr['author'] and r['user'].get('id')!=pr.get('author_id')
+            and designated(r['user']),'review_not_independent')
         require(isinstance(r.get('body'),str) and bool(r['body'].strip()),'review_conclusion_missing')
         require(r['html_url']==f"https://github.com/{REPO}/pull/{pr['number']}#pullrequestreview-{r['id']}",
             'review_link_mismatch')
@@ -55,7 +58,8 @@ def validate_release(e):
         and type(run['run_attempt']) is int and run['run_attempt']>0,'ci_identity_required')
     review=list(latest.values())[-1]
     return dict(repository=REPO,source_sha=e['source_sha'],reviewed_head_sha=head,tree=e['tree'],
-        pr_number=pr['number'],reviewer=review['user']['login'],review_url=review['html_url'],
+        pr_number=pr['number'],reviewer=review['user']['login'],reviewer_id=review['user']['id'],
+        reviewer_type=review['user']['type'],review_association=review.get('author_association'),review_url=review['html_url'],
         review_conclusion=review['state'],ci_run_id=run['id'],ci_run_attempt=run['run_attempt'],
         ci_workflow_id=run['workflow_id'],ci_run_url=f"https://github.com/{REPO}/actions/runs/{run['id']}")
 
@@ -86,13 +90,19 @@ def collect(source,api):
     data=dict(repository=repo['full_name'],default_branch=branch,tip=before,source_sha=source,
         tree=tree,reviewed_tree=reviewed_tree,reviews=reviews,run=run,
         pr=dict(number=number,merged=pr['merged'],merge_commit_sha=pr['merge_commit_sha'],head_sha=head,
-            author=pr['user']['login'],base_ref=pr['base']['ref'],
+            author=pr['user']['login'],author_id=pr['user']['id'],base_ref=pr['base']['ref'],
             head_repository=pr['head']['repo']['full_name'],unresolved_threads=unresolved_threads(api,number)))
     receipt=validate_release(data)
     after=read('/branches/main')['commit']['sha']
     pr_after=read(f'/pulls/{number}')
     require(before==after==source and pr_after['head']['sha']==head and pr_after['updated_at']==pr['updated_at'],
         'snapshot_changed')
+    require(reviews==pages(api,prefix+f'/pulls/{number}/reviews?')
+        and run==read(f"/actions/runs/{newest['id']}")
+        and pr['user']==pr_after['user']
+        and data['pr']['unresolved_threads']==unresolved_threads(api,number),'snapshot_changed')
+    runs_after=pages(api,prefix+f'/actions/workflows/ci.yml/runs?head_sha={head}&event=pull_request','workflow_runs')
+    require(bool(runs_after) and max(runs_after,key=lambda r:r['id'])['id']==newest['id'],'snapshot_changed')
     return receipt
 
 

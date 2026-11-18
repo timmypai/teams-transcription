@@ -6,7 +6,7 @@
 
 - devops 是原 PR #1 的唯一 source/publisher/Actions CI owner；Hermes `reviewer` profile 是獨立 reviewer。實作者不得同次自審、偽造 Cloud review 或借 reviewer 憑證。
 - reviewer 必須親讀**完整 diff（含政策與部署程式）及最終 exact head**、需求、實際測試／Actions artifacts，提交具體 APPROVED 或 CHANGES_REQUESTED，不以無 findings、CI 綠或提交審查當批准。
-- reviewer 以自己既有 GitHub 登入提交原生 PR review，重新讀回 `user.login`、完整 `commit_id`、`html_url`、`state` 與具體審查結論；Kanban review transition metadata 保存這些值及 full head SHA。GitHub 真缺權限時只回報該 reviewer 的具體失敗操作與修法，不要求 Cloud grant／額度。author 不得自審。
+- reviewer 以自己既有 GitHub 登入提交原生 PR review，重新讀回 `user.login`、immutable numeric `user.id`、`user.type`、`author_association`、完整 `commit_id`、`html_url`、`state` 與具體審查結論；Kanban review transition metadata 保存這些值及 full head SHA。本 target 唯一指定身分為 `paulpai0412` / `273007156` / `User`，login+id+type 同時吻合且非 PR 作者；`NONE` association 不否決此指定身分，但任何其他 NONE、同名錯id、同id錯login、missing id、bot/self 均拒絕。不新增 collaborator/write 權限；policy/code 只從已合併可信 main 執行，不接收 PR body、caller、Actions inputs/env 指定 reviewer。映射本身隨 PR 正式獨立審查，不讓 PR workflow bootstrap 批准。GitHub 真缺權限時只回報該 reviewer 的具體失敗操作與修法，不要求 Cloud grant／額度。author 不得自審。
 - push 新 head 使舊 review／CI 失效；未解 findings／threads、缺 review、未知／截斷／逾時、stale head、作者自審、退件／撤銷均 fail closed。後續 APPROVED 必須解決前次 findings；新 commit 需重審。
 - reviewer 逐條核對九個情境的 27 條 Given/When/Then 與 base 證據。六條 Base-unverifiable 須確認 base 確無 target adapter；三條 Already-met 須確認真實 base browser 執行。豁免不是作者說了就有效，需在審查結論逐條判斷；不得製造環境紅燈或拿 hosted fixture 當 Oracle PASS。
 
@@ -27,6 +27,6 @@
 
 帳號、credentials、安全／存取權、網路、部署、新費用、policy／workflow、刪測試或降低驗收都需本次 target-and-action 授權及獨立 scope 審查；檔名 allowlist 不等於語義安全。本次僅授權 PR #1 必要政策、手動部署適配及固定控制鏈 source，不授權直接部署、公開網域、Cloud grant／費用或改 GPT Live OAuth／A/B 音訊。
 
-merge **不部署**。新 `deploy.yml` 與 `control.yml` 僅 `workflow_dispatch`、固定本 target／main 最新且經獨立審查的 commit，self-hosted devflow 通道；不借歷史 staging helper／GHCR／ledger／OAuth。部署後仍需真實 health／smoke／歸屬／操作稽核／安全入口與登入；控制鏈安裝後須無 Join 實測。真 Join／媒體同意／本人 OAuth/MFA 分階段由指定卡處理。見 [GitHub delivery](GITHUB-DELIVERY.md)。
+merge **不部署**。新 `deploy.yml`、`control.yml` 與 `readiness.yml` 僅 `workflow_dispatch`、固定本 target／main 最新且經獨立審查的 commit，self-hosted devflow 通道；不借歷史 staging helper／GHCR／ledger／OAuth。部署後仍需真實 health／smoke／歸屬／操作稽核／安全入口與登入；控制鏈安裝後須無 Join 實測。真 Join／媒體同意／本人 OAuth/MFA 分階段由指定卡處理。見 [GitHub delivery](GITHUB-DELIVERY.md)。
 
 不新增 paid provider fallback／自動合併／新帳號／daemon。GitHub Actions 使用受本任務授權的既有通道；不宣稱額外費用必為零，不購買方案或擴權。

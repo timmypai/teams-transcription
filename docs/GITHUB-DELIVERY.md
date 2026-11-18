@@ -16,7 +16,7 @@
 
 ### 本 target 的手動 source 契約
 
-`deploy.yml`／`control.yml` 只有 workflow_dispatch；main 最新 commit 才執行。readonly contents/actions/pull-requests/checks token，checkout exact SHA、不保留 git credential。`target_admission.py` 在秘密與私有寫入之前向 GitHub 核對最新 main、merged PR、非作者 collaborator 原生 APPROVED 的最終 head、merge tree=reviewed tree、零 unresolved threads 及該 head 最新 `ci.yml` PR run 的 repository/workflow id/path/run/attempt/event/SHA/success。長 build 後再讀一次。它不會合併，不接受作者 JSON/marker；full diff/scope/base 判斷屬 reviewer，而非文字 parse 假裝自動批准。新 head 必須重 CI/review；若 main 期間有新合併，停止並重派最新版，不重跑舊部署降版。
+`deploy.yml`／`control.yml`／`readiness.yml` 只有 workflow_dispatch；main 最新 commit 才執行。readonly contents/actions/pull-requests/checks token，checkout exact SHA、不保留 git credential。`target_admission.py` 在秘密與私有寫入之前向 GitHub 核對最新 main、merged PR、指定非作者 Hermes reviewer（`login=paulpai0412` 且 immutable numeric `user.id=273007156` 且 `type=User`）原生 APPROVED 的最終 head、merge tree=reviewed tree、零 unresolved threads 及該 head 最新 `ci.yml` PR run 的 repository/workflow id/path/run/attempt/event/SHA/success。長 build 後再讀一次。它不會合併，不接受作者 JSON/marker；full diff/scope/base 判斷屬 reviewer，而非文字 parse 假裝自動批准。新 head 必須重 CI/review；若 main 期間有新合併，停止並重派最新版，不重跑舊部署降版。
 
 沿 devflow 範本的 build→up→health→readonly smoke→確切前 release 回滾順序，因產品有兩個 public-only contexts／SQLite／sandbox 改以固定 Python adapter 實作，未更動共享 kit。`prepare-contexts.sh` 只在自己 disposable build container 下載固定 SHA512 Codex npm／公開 Python3.12 wheels；本機 app wheel只供依賴解析，產品仍在 Dockerfile `--network=none` 從當次 source 安裝。支援原生 amd64/arm64；無 GHCR/packages-write／host pip 安裝，不帶 data/OAuth。image ID、OCI source/revision、GitHub source/run/attempt 寫入私有 release receipt；不是 registry digest 簽章。
 
@@ -29,6 +29,14 @@
 產品保持nonroot/readonly/drop ALL/no-new-privileges/seccomp/tmpfs、4GB/2CPU/512pids、取消摘要及lease/cleanup gate。smoke只GET `/healthz`／匿名`/login`，不登入、不seed、不Join、不model。hosted adapter probe實際跑public-context build、同名volume/port拒絕、private init/health、壞candidate→exact rollback、資料保留及foreign service/file/SQLite sentinel；這不是Oracle rootless/cgroup/真登入驗收。Unix+daemon synthetic regression另驗peer UID、授權、wrong binding、stop-return≠cleanup及精確terminal proof，沒有provider。
 
 管理入口候選僅VM loopback `http://127.0.0.1:18101/login`，**尚非使用者已可達URL**。SHIP 必須核實並記錄既有安全存取方式（例如由操作者建立的loopback安全通道；本卡不裝proxy／新公開網域），實際用browser看到login、完成管理登入、看到管理頁，再核對關分頁後health。若走外部HTTPS須另有核准的public_base_url/secure cookie設定；不自行暴露。管理密碼登入與`/chatgpt`本人OAuth/MFA、Google、Teams授權分開。初始空Codex home/deny-all只代表可安全啟動管理，不是Live已可用。
+
+### 已審 main 才能執行的無 Join 驗證入口
+
+`readiness.yml` 是無任何 caller inputs 的手動入口；與 deploy/control 共用 concurrency 與 host lock。先執行相同 `target_admission.py` main-tip/exact-head 原生 review/CI/tree/snapshot 核對，再向固定 deployed container 的已安裝 helper 執行 `verify`。不從 kit 臨時拷 code、不執行 PR branch、不部署／重啟服務；只在已核對 source SHA/image/container ID/UID10001/StartAt 的服務內啟動短命 sandboxed Chromium。loopback 登入→七日週行事曆→設定→關閉頁面/context/browser→再次health；不讀或提交任何設定表單，不改 public_base_url/cookie_secure 繞 gate。固定同源路由 allowlist 禁其他網頁與非登入 mutation。沒有 trace/video/HAR/storage_state、raw DOM/console/exception、截圖或私人 log artifact；只輸出 boolean、來源/container/image/run 收據。登入本身會產生正常的管理 audit/session，不是零資料寫入宣稱；run/claim/authorization/排程資料需前後相同。
+
+無 Join readiness 在已有 socket 對固定 `{}`（無 operation、occurrence/session id）傳送，檢查 parent精確0700/socket0600、目前UID ownership、SO_PEERCRED same UID 且 peer PID1（已部署daemon）；只接受既有 wire 的精確 `teams_local_control_rejected` 回覆。連線錯誤、EOF、timeout、未知／成功回覆都失敗，不能當預期拒絕成功。以 mode=ro/query_only 一致讀取 paused／無active工作，逐一hash固定控制權威表（settings/calendars/series/occurrences/runs/leases，值不出記憶體），前後相同；另從既有登入API核對daemon started/idle、不closing。只標 `transport-and-rejection-readiness`；正向 authorized view 與 bound stop/cleanup 仍為 **NOT EXECUTED**，沒有真 occurrence 不虛構／seed／prepare/join/stop/grant，也不碰 model/OAuth/ledger。
+
+管理密碼由操作者在 repository **Settings → Secrets and variables → Actions → New repository secret** 建立 `DEVFLOW_APP_ENV`，內容僅 `DEVFLOW_ADMIN_PASSWORD=<16..1024字元本人保管密碼>` 一行。SHIP 是 secret metadata 查核 owner；不要將值交給聊天、source、卡片、截圖、log或artifact。固定consumer只由 Actions env→host記憶體→`docker exec -i` stdin→短命consumer讀取，不放argv或app持久env；缺值／未知key／多行／不合長度拒絕，既有config/管理密碼絕不覆寫。source/hosted驗證不等待操作者secret；hosted使用一次性synthetic密碼，實跑真正daemon/socket/browser與缺secret/錯密碼負例，不是Oracle收據。loopback自動登入通過也**不證明使用者可達**；原SHIP仍需另外記錄並驗證已核准的安全存取途徑，不能新開公網／共享proxy。管理登入不是ChatGPT授權，OAuth/MFA/真Join仍留真人lane。
 
 以下保留原來源歷史契約，**已被上面本target決策取代，非本次操作授權或Cloud-only前提**。
 

@@ -174,18 +174,145 @@ def sandbox():
     return dict(sandboxed_local_page=True,no_private_data_mount=True)
 
 
+def read_password(raw):
+    """Only the one documented secret entry. Never return raw input in errors."""
+    require(isinstance(raw,str) and len(raw)<=4096 and '\r' not in raw,'secret_input_rejected')
+    lines=raw.splitlines()
+    require(len(lines)==1 and lines[0].startswith('DEVFLOW_ADMIN_PASSWORD='),'secret_keys_rejected')
+    password=lines[0].split('=',1)[1]
+    require(16<=len(password)<=1024 and not any(ord(c)<32 or ord(c)==127 for c in password),'initial_password_required')
+    return password
+
+
+def claim_snapshot(root):
+    """Readonly consistent control/authorization snapshot; values never leave RAM.
+
+    Do not hash transcripts, credentials, or login audit. These fixed tables own
+    paused, occurrence consent, run/claim and Calendar/series policy. Stream rows
+    under a bounded SQLite transaction; no constructor/migration/seed is called.
+    """
+    import time
+    deadline=time.monotonic()+5
+    path=Path(root)/'.meeting-store.sqlite3';private(path)
+    digest=hashlib.sha256()
+    with contextlib.closing(sqlite3.connect(path.as_uri()+'?mode=ro',uri=True,timeout=5)) as db:
+        db.set_progress_handler(lambda:int(time.monotonic()>deadline),1000)
+        db.execute('PRAGMA query_only=ON');db.execute('BEGIN')
+        for table in ('assistant_settings','assistant_calendars','meeting_series',
+                      'calendar_occurrences','assistant_runs','execution_leases'):
+            digest.update(table.encode())
+            for row in db.execute('SELECT * FROM '+table+' ORDER BY rowid'):
+                digest.update(json.dumps(row,separators=(',',':'),default=str).encode())
+                digest.update(b'\n')
+    return digest.digest()
+
+
+def socket_peer_uid(connection):
+    import socket,struct
+    return struct.unpack('3i',connection.getsockopt(socket.SOL_SOCKET,socket.SO_PEERCRED,12))[1]
+
+
+async def rejection_readiness(root,*,expected_pid=None):
+    """Fixed malformed/no-ID message, NOT a positive authorized control probe."""
+    import socket,struct
+    root=Path(root);before=claim_snapshot(root)
+    require(database_state(root)['quiescent'],'readiness_not_quiescent')
+    parent=root/'.teams-control';info=parent.lstat()
+    require(parent.absolute()==parent.resolve() and stat.S_ISDIR(info.st_mode)
+        and stat.S_IMODE(info.st_mode)==0o700 and info.st_uid==os.getuid(),'control_parent_unsafe')
+    path=parent/'control.sock';info=path.lstat()
+    require(path.absolute()==path.resolve() and stat.S_ISSOCK(info.st_mode)
+        and stat.S_IMODE(info.st_mode)==0o600 and info.st_uid==os.getuid(),'control_socket_unsafe')
+    async with asyncio.timeout(3):
+        reader,writer=await asyncio.open_unix_connection(path,limit=256)
+        try:
+            peer=writer.get_extra_info('socket')
+            require(socket_peer_uid(peer)==os.getuid(),'control_peer_uid_mismatch')
+            pid=struct.unpack('3i',peer.getsockopt(socket.SOL_SOCKET,socket.SO_PEERCRED,12))[0]
+            require(expected_pid is None or pid==expected_pid,'control_peer_pid_mismatch')
+            # Exact existing malformed schema; dispatch rejects before ID lookup.
+            writer.write(b'{}\n');await writer.drain()
+            response=await reader.readline()
+            require(response==b'{"error": "teams_local_control_rejected"}\n','exact_rejection_required')
+        finally:
+            writer.close();await writer.wait_closed()
+    require(before==claim_snapshot(root) and database_state(root)['quiescent'],'control_state_changed')
+    return dict(scope='transport-and-rejection-readiness',same_uid=True,private_socket=True,
+        exact_rejection=True,sqlite_unchanged=True,scheduler_paused=True,
+        authorized_view='NOT EXECUTED',bound_stop_cleanup='NOT EXECUTED')
+
+
+async def browser_readiness(root,password,*,expected_pid=1):
+    """Short-lived real sandboxed Chromium; never records private UI or secrets."""
+    from playwright.async_api import async_playwright,expect
+    from urllib.parse import urlsplit
+    require(isinstance(password,str) and 16<=len(password)<=1024,'browser_secret_required')
+    root=Path(root);before=claim_snapshot(root)
+    require(database_state(root)['quiescent'],'browser_not_quiescent')
+    origin='http://127.0.0.1:8080'
+    violations=[]
+    async with asyncio.timeout(45),async_playwright() as p:
+        browser=await p.chromium.launch(executable_path='/usr/bin/chromium',headless=True,chromium_sandbox=True)
+        try:
+            context=await browser.new_context(service_workers='block',accept_downloads=False)
+            async def guard(route):
+                req=route.request;url=urlsplit(req.url)
+                safe=(url.scheme=='http' and url.netloc=='127.0.0.1:8080'
+                    and ((req.method=='GET' and (url.path in {'/login','/','/settings','/api/status','/api/calendar','/healthz'}
+                         or url.path in {'/assets/calendar.css','/assets/calendar.js'}))
+                         or req.method=='POST' and url.path=='/login'))
+                if safe:await route.continue_()
+                else:violations.append(True);await route.abort()
+            await context.route('**/*',guard)
+            page=await context.new_page()
+            # No handlers that store request/response/console/error bodies; no
+            # tracing, screenshots, video, HAR, downloads or storage_state files.
+            page.set_default_timeout(10000)
+            response=await page.goto(origin+'/login')
+            require(response.status==200,'browser_login_page_failed')
+            await expect(page.get_by_role('heading',name='管理登入',exact=True)).to_be_visible()
+            await page.locator('input[name=password]').fill(password)
+            async with page.expect_response(lambda r:urlsplit(r.url).path=='/api/calendar') as pending:
+                await page.get_by_role('button',name='登入',exact=True).click()
+            response=await pending.value
+            require(response.status==200 and (await response.json())['scheduler_paused'] is True,'browser_login_failed')
+            await expect(page.locator('.day-column:not(.time-axis)')).to_have_count(7)
+            await page.goto(origin+'/settings')
+            await expect(page.get_by_role('heading',name='設定',exact=True)).to_be_visible()
+            async def daemon_idle():
+                response=await context.request.get(origin+'/api/status')
+                require(response.status==200,'daemon_status_failed')
+                status=await response.json()
+                require(status.get('started') is True and status.get('closing') is False
+                    and status.get('active_session_id') is None,'daemon_not_idle')
+            await daemon_idle()
+            readiness=await rejection_readiness(root,expected_pid=expected_pid)
+            await daemon_idle()
+            require(not violations,'browser_egress_rejected')
+            await page.close();await context.close()
+        finally:await browser.close()
+    # Browser context, cookies and entered password die before the health read.
+    require(before==claim_snapshot(root) and database_state(root)['quiescent'],'browser_control_state_changed')
+    require(smoke()['health'],'post_browser_health_failed')
+    return dict(browser_login=True,weekly_calendar=True,settings=True,browser_closed=True,
+        post_close_health=True,daemon_idle_before_after=True,control_state_unchanged=True,
+        no_secret_artifacts=True,user_reachable_entrypoint='NOT VERIFIED',readiness=readiness)
+
+
 def main():
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('action',choices=['init','state','enable','disable','backup','smoke','sandbox','view','stop'])
+    p.add_argument('action',choices=['init','state','enable','disable','backup','smoke','sandbox','view','stop','verify'])
     p.add_argument('--id');p.add_argument('--request-sha');args=p.parse_args()
     try:
         root=Path('/data')
-        if args.action=='init':
+        if args.action in {'init','verify'}:
             raw=sys.stdin.read(4097)
-            require(len(raw)<=4096,'secret_input_rejected')
-            pairs=[line.split('=',1) for line in raw.splitlines() if line.strip()]
-            require(len(pairs)<=1 and all(len(x)==2 and x[0]=='DEVFLOW_ADMIN_PASSWORD' for x in pairs),'secret_keys_rejected')
-            value=initialize(root,pairs[0][1] if pairs else None)
+            password=read_password(raw) if raw else None
+            if args.action=='init':value=initialize(root,password)
+            else:
+                # Do not let debug env enable driver protocol/secret logging.
+                for key in ('DEBUG','PWDEBUG'):os.environ.pop(key,None)
+                value=asyncio.run(browser_readiness(root,password))
         elif args.action=='state':value=database_state(root)
         elif args.action in {'enable','disable','backup'}:value=maintenance(root,args.action,args.id)
         elif args.action in {'view','stop'}:value=asyncio.run(control(root,args.action,args.id,args.request_sha))

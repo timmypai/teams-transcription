@@ -170,6 +170,7 @@ def collect_pr(number, api):
                    | {'app_id': c['app']['id']} for c in checks],
         'reviews': [{k: r[k] for k in ('id', 'commit_id', 'state')}
                     | {'user_id': r['user']['id'], 'login': r['user']['login'],
+                       'type': r['user']['type'], 'author_association': r.get('author_association'),
                        'html_url': r['html_url'], 'submitted_at': r['submitted_at'],
                        'body_present': isinstance(r.get('body'), str) and bool(r['body'].strip())}
                    for r in reviews],

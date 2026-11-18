@@ -22,6 +22,18 @@ def observation():
 
 
 class PRPolicyTests(unittest.TestCase):
+    def test_only_designated_identity_clears_identity_diagnostic_not_merge(self):
+        obs=observation()
+        review=dict(id=1,commit_id=SHA,user_id=273007156,login='paulpai0412',type='User',
+            author_association='NONE',body_present=True,submitted_at='2026-11-18T00:00:00Z',
+            state='APPROVED',html_url='https://github.com/timmypai/teams-transcription/pull/23#pullrequestreview-1')
+        obs['reviews']=[review]
+        self.assertNotIn('review_identity_not_designated',evaluate(obs)['blockers'])
+        self.assertFalse(evaluate(obs)['merge_allowed'])
+        for update in (dict(user_id=None),dict(user_id=8),dict(login='stranger'),dict(type='Bot')):
+            obs['reviews']=[{**review,**update}]
+            self.assertIn('review_identity_not_designated',evaluate(obs)['blockers'])
+
     def test_core_fix_is_candidate_and_never_native_review_pass_by_silence(self):
         result = evaluate(observation())
         self.assertEqual(result['candidate_tier'], 'core')

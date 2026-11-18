@@ -11,9 +11,9 @@ HEAD='b'*40
 def evidence():
     return dict(repository='timmypai/teams-transcription',default_branch='main',tip=SHA,
         source_sha=SHA,tree='c'*40,reviewed_tree='c'*40,
-        pr=dict(number=1,merged=True,merge_commit_sha=SHA,head_sha=HEAD,author='writer',
+        pr=dict(number=1,merged=True,merge_commit_sha=SHA,head_sha=HEAD,author='writer',author_id=9,
             base_ref='main',head_repository='timmypai/teams-transcription',unresolved_threads=0),
-        reviews=[dict(id=2,user=dict(login='reviewer',type='User'),state='APPROVED',
+        reviews=[dict(id=2,user=dict(login='paulpai0412',id=273007156,type='User'),state='APPROVED',
             commit_id=HEAD,body='Reviewed full diff and policy; base exceptions individually accepted.',
             author_association='COLLABORATOR',html_url='https://github.com/timmypai/teams-transcription/pull/1#pullrequestreview-2')],
         run=dict(id=3,run_attempt=1,head_sha=HEAD,event='pull_request',path='.github/workflows/ci.yml',
@@ -22,11 +22,34 @@ def evidence():
 
 
 class TargetAdmissionTests(unittest.TestCase):
+    def test_designated_real_github_none_identity_with_synthetic_release(self):
+        # Historical GitHub review 5955663902: identity only; release/CI are
+        # explicitly synthetic, NOT an approval of any new head or deployment.
+        e=evidence()
+        e['reviews'][0]['user']=dict(login='paulpai0412',id=273007156,type='User')
+        e['reviews'][0]['author_association']='NONE'
+        self.assertEqual(validate_release(e)['reviewer'],'paulpai0412')
+
+    def test_none_stranger_spoof_missing_bot_and_self_are_rejected(self):
+        for user in (
+            dict(login='stranger',id=8,type='User'),
+            dict(login='paulpai0412',id=8,type='User'),
+            dict(login='stranger',id=273007156,type='User'),
+            dict(login='paulpai0412',type='User'),
+            dict(login='paulpai0412',id=True,type='User'),
+            dict(login='paulpai0412',id=273007156,type='Bot'),
+        ):
+            e=evidence();e['reviews'][0].update(user=user,author_association='NONE')
+            with self.subTest(user=user),self.assertRaises(ValueError):validate_release(e)
+        e=evidence();e['pr']['author']='paulpai0412'
+        e['reviews'][0].update(user=dict(login='paulpai0412',id=273007156,type='User'),author_association='NONE')
+        with self.assertRaises(ValueError):validate_release(e)
+
     def test_collector_uses_canonical_repo_endpoint_and_rechecks_identity(self):
         e=evidence();repo=e['repository']
         pr=dict(number=1,merged=True,merged_at='2026-11-18T00:00:00Z',merge_commit_sha=SHA,
             head=dict(sha=HEAD,repo=dict(full_name=repo)),base=dict(ref='main'),
-            user=dict(login='writer'),updated_at='2026-11-18T00:00:00Z')
+            user=dict(login='writer',id=9),updated_at='2026-11-18T00:00:00Z')
         calls=[]
         class API:
             def request(self,path,payload=None):
@@ -44,15 +67,39 @@ class TargetAdmissionTests(unittest.TestCase):
                 if path=='/graphql':return dict(data=dict(repository=dict(pullRequest=dict(reviewThreads=dict(
                     nodes=[],pageInfo=dict(hasNextPage=False,endCursor=None)))))),{}
                 raise AssertionError('noncanonical or unknown API endpoint: '+path)
-        self.assertEqual(collect(SHA,API())['reviewed_head_sha'],HEAD)
+        result=collect(SHA,API())
+        self.assertEqual(result['reviewed_head_sha'],HEAD)
+        self.assertEqual(result['reviewer_id'],273007156)
         self.assertEqual(calls.count('/repos/'+repo+'/branches/main'),2)
         self.assertNotIn('/repos/'+repo+'/',calls)
+        # Exercise API numeric ID propagation, not a pure seam fixture alone.
+        for bad in (None,8,True):
+            e['reviews'][0]['user']['id']=bad
+            with self.subTest(id=bad),self.assertRaises(ValueError):collect(SHA,API())
+        e['reviews'][0]['user']['id']=273007156
+        for target in ('review','tip','pr','run','threads'):
+            class MovingAPI(API):
+                def __init__(self):self.counts={}
+                def request(self,path,payload=None):
+                    value,headers=super().request(path,payload)
+                    self.counts[path]=self.counts.get(path,0)+1
+                    value=copy.deepcopy(value)
+                    if self.counts[path]>1:
+                        if target=='review' and '/reviews?' in path:value[0]['state']='DISMISSED'
+                        if target=='tip' and path.endswith('/branches/main'):value['commit']['sha']='d'*40
+                        if target=='pr' and path.endswith('/pulls/1'):value['updated_at']='changed'
+                        if target=='run' and path.endswith('/actions/runs/3'):value['run_attempt']=2
+                        if target=='threads' and path=='/graphql':
+                            value['data']['repository']['pullRequest']['reviewThreads']['nodes']=[dict(isResolved=False)]
+                    return value,headers
+            with self.subTest(changed=target),self.assertRaisesRegex(ValueError,'snapshot_changed'):
+                collect(SHA,MovingAPI())
 
     def test_reviewed_exact_tree_and_ci_are_admitted(self):
         result=validate_release(evidence())
         self.assertEqual(result['reviewed_head_sha'],HEAD)
         self.assertEqual(result['source_sha'],SHA)
-        self.assertEqual(result['reviewer'],'reviewer')
+        self.assertEqual(result['reviewer'],'paulpai0412')
         self.assertEqual(result['ci_run_attempt'],1)
 
     def test_stale_self_missing_unknown_or_unresolved_are_not_admitted(self):

@@ -10,6 +10,10 @@ import hashlib
 import json
 from pathlib import Path
 import re
+try:
+    from tools.reviewer_identity import designated
+except ModuleNotFoundError:
+    from reviewer_identity import designated
 
 ROOT = Path(__file__).resolve().parents[1]
 POLICY = ROOT / 'policy' / 'pr-policy.json'
@@ -101,6 +105,8 @@ def evaluate(observation, policy=None):
             or r.get('commit_id') != result['head_sha'] for r in latest.values()):
         blockers.append('review_not_clear')
     for r in current:
+        if not designated(dict(login=r.get('login'),id=r.get('user_id'),type=r.get('type'))):
+            blockers.append('review_identity_not_designated')
         if (not isinstance(r.get('login'), str) or not r['login']
                 or r.get('body_present') is not True
                 or not isinstance(r.get('submitted_at'), str)

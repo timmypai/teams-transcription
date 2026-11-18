@@ -147,7 +147,8 @@ class Controller:
             if input is not None:command+=['-i']
             raw=self.mutate('run','container',self.helper,lambda:self.docker(*command,image,RUNTIME,*args,input=input))
         else:
-            raw=self.mutate('exec','container',APP,lambda:self.docker('exec',APP,'python',RUNTIME,*args))
+            raw=self.mutate('exec','container',APP,lambda:self.docker('exec',*(['-i'] if input is not None else []),
+                APP,'python',RUNTIME,*args,input=input))
         value=json.loads(raw)
         require(isinstance(value,dict) and 'error' not in value,'runtime_operation_rejected')
         return value
@@ -315,7 +316,7 @@ def manual_environment():
 
 def main():
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('action',choices=['deploy','view','stop'])
+    p.add_argument('action',choices=['deploy','view','stop','verify'])
     p.add_argument('--id');p.add_argument('--request-sha');args=p.parse_args()
     try:
         os.umask(0o077)
@@ -352,8 +353,24 @@ def main():
                 else:
                     require(state and state['source_sha']==sha,'deployed_revision_required')
                     c.release=root/'releases'/state['release'];c.verify_release(c.release)
-                    if args.action=='view':c.health(state['image'])
-                    result=c.runtime(args.action,ident=args.id,request_sha=args.request_sha)
+                    if args.action=='verify':
+                        info=json.loads(c.docker('inspect',APP))[0]
+                        image_info=json.loads(c.docker('image','inspect',state['image']))[0]
+                        labels=image_info['Config']['Labels']
+                        require(labels['org.opencontainers.image.revision']==sha
+                            and labels['org.opencontainers.image.source']=='https://github.com/'+REPO
+                            and labels[OWNER]==REPO,'deployed_source_mismatch')
+                        ident,_=c.health(state['image'])
+                        require(ident==state['container_id'],'deployed_container_mismatch')
+                        result=c.runtime('verify',input=os.environ.get('DEVFLOW_APP_ENV',''))
+                        after=json.loads(c.docker('inspect',APP))[0]
+                        require(after['Id']==ident and after['State']['StartedAt']==info['State']['StartedAt'],
+                            'deployed_container_changed')
+                        c.health(state['image'])
+                        result.update(container_id=ident,image=state['image'],uid=10001,source_sha=sha)
+                    else:
+                        if args.action=='view':c.health(state['image'])
+                        result=c.runtime(args.action,ident=args.id,request_sha=args.request_sha)
             finally:
                 report=c.audit.report(before,snapshot(c.containers()))
                 c.write(root/f'audit-{run}-{attempt}.json',json.dumps(report))

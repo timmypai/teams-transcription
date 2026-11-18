@@ -3,6 +3,7 @@
   "mode": "shadow",
   "repository": "timmypai/teams-transcription",
   "review_adapter": "hermes-independent-github",
+  "designated_reviewer": {"login": "paulpai0412", "id": 273007156, "type": "User"},
   "manual_paths": [
     ".github/*", ".devflow/*", ".agents/*", "AGENTS.md", "policy/*", "tools/*",
     "deploy/*", "docker/*", "Dockerfile", ".dockerignore", "*compose*",

@@ -1,0 +1,9 @@
+id = "L-0004"
+title = "Bind commissioned reviewer identity to actual GitHub metadata"
+event = "Historical native APPROVED review had association NONE; the collaborator-only gate rejected it while synthetic collaborator fixtures passed."
+root_cause = "Fixtures assumed repository permission implied independent review, rather than exercising the commissioned principal's immutable numeric id, login and User type through the API collector. NONE alone proves neither trust nor distrust."
+category = "verification"
+
+[enforcement]
+kind = "test"
+ref = "tests/test_target_admission.py::test_collector_uses_canonical_repo_endpoint_and_rechecks_identity"

@@ -113,6 +113,23 @@ def main():
             assert state['phase']=='healthy'
             assert c.resources(state)==before
             report['initial_smoke']=smoke
+            # Actual installed short-lived consumer on disposable storage only.
+            # No source injection, argv password, tracing or private artifacts.
+            secret=os.environ['DEVFLOW_APP_ENV']
+            password_before=c.runtime('state')
+            try:c.runtime('verify',input='')
+            except ValueError:pass
+            else:raise AssertionError('missing verification secret accepted')
+            browser=c.runtime('verify',input=secret)
+            assert browser['browser_login'] and browser['weekly_calendar'] and browser['settings']
+            assert browser['browser_closed'] and browser['post_close_health']
+            assert browser['readiness']['exact_rejection'] and browser['readiness']['sqlite_unchanged']
+            assert browser['readiness']['authorized_view']=='NOT EXECUTED'
+            assert browser['readiness']['bound_stop_cleanup']=='NOT EXECUTED'
+            assert c.runtime('state')==password_before
+            report['deployed_browser_and_no_id_readiness']=browser
+            report['missing_secret_refused']=True
+            assert secret.split('=',1)[1] not in json.dumps(report)
             script="""import sqlite3,json
 p='/data/.meeting-store.sqlite3'
 with sqlite3.connect(p) as db:
