@@ -1,7 +1,7 @@
 id = "L-0011"
 title = "Anonymous browser guards must cover the real page's fixed public stylesheet"
 event = "The anonymous login guard rejected the stylesheet loaded by the real shared management page, although the login and API endpoints themselves were allowed."
-root_cause = "An endpoint-only GET allowlist is not a complete browser page contract. Derive the required asset from the actual anonymous page and allow only that fixed CSS on the same approved origin; retain denial for foreign origins, scripts, query-bearing URLs, authenticated paths and mutations. Keep API401 and blocked-egress errors distinct; never weaken TLS or Secure-cookie assertions to make a fixture pass."
+root_cause = "An endpoint-only GET allowlist is not a complete browser page contract. Derive the required asset from the actual anonymous page and allow only that fixed CSS on the same approved origin; retain denial for foreign origins, scripts, query-bearing URLs, authenticated paths and mutations. Keep API401 and blocked-egress errors distinct. Retain TLS/Secure-cookie assertions for non-loopback HTTPS; the operator-approved fixed private tunnel uses its actual HTTP/non-Secure semantics, with HttpOnly/session binding and exact host-loopback port mapping still required. Never change a fixture or operator runtime to pretend HTTP is HTTPS."
 category = "verification"
 
 [enforcement]

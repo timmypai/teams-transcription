@@ -121,7 +121,9 @@ def main():
         proof_bytecode_disabled=sys.dont_write_bytecode)
     output=ROOT/'.devflow/evidence';output.mkdir(parents=True,exist_ok=True)
     (output/'repair-red-green.json').write_text(json.dumps(document,indent=2)+'\n')
-    print(json.dumps(document));return 0 if success else 1
+    print(json.dumps(document))
+    private_result=load('approved_private_smoke_proof',ROOT/'.devflow/private_smoke_proof.py').main()
+    return 0 if success and private_result==0 else 1
 
 
 if __name__=='__main__':raise SystemExit(main())

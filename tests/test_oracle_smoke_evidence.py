@@ -32,22 +32,26 @@ REPO_ID=1461049898
 
 
 class SmokeCLITests(unittest.TestCase):
-    def exercise(self, defect=None):
+    def exercise(self, defect=None, *,mode='configured-https'):
         with tempfile.TemporaryDirectory() as directory:
             folder=Path(directory);source=folder/'source';source.mkdir()
             controller=None
-            container=dict(Id=CID,Name='/'+td.APP,Image=IMAGE,
+            container:dict=dict(Id=CID,Name='/'+td.APP,Image=IMAGE,
                 Config=dict(User='10001:10001',Labels={td.OWNER:td.REPO}),
+                HostConfig=dict(PortBindings={'8080/tcp':[{'HostIp':'127.0.0.1','HostPort':'18101'}]}),
                 State=dict(StartedAt='synthetic-start',Running=True,Status='running',Health=dict(Status='healthy')))
             image=dict(Config=dict(Labels={'org.opencontainers.image.revision':SHA,
                 'org.opencontainers.image.source':'https://github.com/'+td.REPO,td.OWNER:td.REPO}))
             safe=dict(approved_safe_entrypoint=True,anonymous_context=True,
                 login_heading=True,password_field=True,login_button=True,
                 anonymous_api_rejected=True,no_authenticated_data=True,origin_bound=True,
-                user_reachable_entrypoint='configured-https-verified',no_secret_artifacts=True,same_deployment_session=True)
+                access_mode=mode,no_secret_artifacts=True,same_deployment_session=True)
             if defect=='entrypoint':safe=dict(user_reachable_entrypoint='NOT VERIFIED')
             if defect=='missing':safe={}
             if defect=='sha':image['Config']['Labels']['org.opencontainers.image.revision']='d'*40
+            if defect in {'wrong-port','nonloopback-bind'}:
+                container['HostConfig']['PortBindings']['8080/tcp'][0].update(
+                    {'HostPort':'18102'} if defect=='wrong-port' else {'HostIp':'0.0.0.0'})
             foreign=dict(Id='foreign',Image='foreign-image',Name='/foreign',Config=dict(Labels={}),
                 State=dict(StartedAt='before',Status='running',Health=dict(Status='healthy')))
             def command(args,**kw):
@@ -68,6 +72,11 @@ class SmokeCLITests(unittest.TestCase):
                 c.switch=switch
                 c.health=lambda image:(CID,dict(health=True,anonymous_login_page=True))
                 def runtime(action,**kw):
+                    if action=='login' and defect=='changed-container':container['Id']='e'*64
+                    if action=='login' and defect=='changed-port':
+                        container['HostConfig']['PortBindings']['8080/tcp'][0]['HostPort']='18102'
+                    if action=='login' and defect=='changed-mode':
+                        return {**safe,'access_mode':'configured-https'}
                     return copy.deepcopy(safe) if action in {'entrypoint','login'} else dict(health=True,anonymous_login_page=True)
                 c.runtime=runtime
                 return c
@@ -106,6 +115,16 @@ class SmokeCLITests(unittest.TestCase):
                     [spec[row['id']][phase] for phase in ('given','when','then')])
                 self.assertTrue(row['evidence'])
             self.assertNotIn('S2',json.dumps(report))
+            if code==0:
+                login=next(row for row in report['scenarios'] if row['id'].endswith('AC-3.S3'))
+                # Use the evidence references produced by the actual consumer,
+                # not a separate report manufactured by the fixture.
+                from deploy.target_smoke import acceptance
+                given=evidence/'logs'/f"{acceptance.safe_id(login['id'])}.given.txt"
+                assertions=json.loads(given.read_text())['assertions']
+                self.assertEqual(assertions.get('access_mode'),mode)
+                self.assertTrue(assertions.get('fixed_host_loopback_mapping_verified'))
+                self.assertNotIn('approved_configured_https_entrypoint',assertions)
             return code,report,evidence.exists()
 
     def test_success_has_current_identity_image_and_nine_real_step_assertions(self):
@@ -125,7 +144,23 @@ class SmokeCLITests(unittest.TestCase):
     def test_wrong_running_image_revision_is_not_pass(self):self.negative('sha')
     def test_wrong_run_identity_is_not_pass(self):self.negative('run')
     def test_foreign_changed_is_not_pass(self):self.negative('foreign')
-    def test_loopback_login_is_not_verified_safe_entrypoint(self):self.negative('entrypoint')
+    def test_missing_entrypoint_proof_is_not_verified_access(self):self.negative('entrypoint')
+
+
+class PrivateSmokeCLITests(unittest.TestCase):
+    def test_approved_private_mode_is_named_truthfully_in_formal_consumer(self):
+        code,report,_=SmokeCLITests().exercise(mode='approved-private-ssh-tunnel')
+        self.assertEqual(code,0)
+        self.assertTrue(all(s['status']=='passed' for s in report['scenarios']))
+
+    def test_private_mode_wrong_mapping_unknown_mode_and_identity_changes_refuse(self):
+        for defect in ('wrong-port','nonloopback-bind','changed-container','changed-port','changed-mode'):
+            with self.subTest(defect=defect):
+                code,report,_=SmokeCLITests().exercise(defect,mode='approved-private-ssh-tunnel')
+                self.assertEqual(code,1)
+                self.assertNotEqual(next(s for s in report['scenarios'] if s['id'].endswith('AC-3.S3'))['status'],'passed')
+        code,_,_=SmokeCLITests().exercise(mode='caller-approved-arbitrary-http')
+        self.assertEqual(code,1)
 
 
 class SmokeIdentityBoundaryTests(unittest.TestCase):

@@ -123,24 +123,38 @@ class OracleSmoke:
         self.scenario(1,(given,when,then))
 
     def login(self,c):
-        value={}
+        from deploy.target_runtime import PRIVATE_ACCESS,HTTPS_ACCESS
+        value={};entry={}
+        def installed_binding():
+            observed=self.details['installed']
+            info=json.loads(c.docker('inspect','devflow-teams-transcription-app'))[0]
+            require(info['Id']==observed['container_id'] and info['Image']==observed['image_id']
+                and info['State']['StartedAt']==observed['started'] and info['State']['Running'] is True
+                and info['Config']['Labels'].get('io.devflow.owner')==REPO
+                and info['HostConfig']['PortBindings']=={'8080/tcp':[{'HostIp':'127.0.0.1','HostPort':'18101'}]},
+                'smoke_installed_service_changed')
         def given():
             require(bool(self.image) and 'installed' in self.details,'smoke_installed_identity_unverified')
-            proof=c.runtime('entrypoint')
-            require(proof.get('approved_safe_entrypoint') is True and proof.get('origin_bound') is True,
+            installed_binding()
+            entry.update(c.runtime('entrypoint'))
+            require(entry.get('approved_safe_entrypoint') is True and entry.get('origin_bound') is True
+                and entry.get('access_mode') in {PRIVATE_ACCESS,HTTPS_ACCESS},
                 'approved_safe_entrypoint_unverified')
-            return dict(approved_configured_https_entrypoint=True,anonymous_browser_required=True)
+            return dict(approved_configured_entrypoint=True,access_mode=entry['access_mode'],
+                fixed_host_loopback_mapping_verified=True,anonymous_browser_required=True)
         def when():
             value.update(c.runtime('login'))
-            require(value.get('anonymous_context') is True and value.get('origin_bound') is True,
+            require(value.get('anonymous_context') is True and value.get('origin_bound') is True
+                and value.get('access_mode')==entry['access_mode'],
                 'anonymous_login_not_observed')
             return dict(fresh_anonymous_browser_opened_login=True)
         def then():
             keys=('approved_safe_entrypoint','login_heading','password_field','login_button',
                 'anonymous_api_rejected','no_authenticated_data','no_secret_artifacts','same_deployment_session')
             require(all(value.get(k) is True for k in keys),'anonymous_login_controls_unverified')
-            self.details['login']={k:True for k in keys}
-            return {k:True for k in keys}
+            installed_binding()
+            self.details['login']=dict(**{k:True for k in keys},access_mode=entry['access_mode'])
+            return self.details['login']
         self.scenario(3,(given,when,then))
 
     def isolation(self,report,expected):

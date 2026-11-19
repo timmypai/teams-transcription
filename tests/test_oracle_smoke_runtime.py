@@ -16,18 +16,66 @@ class SmokeRuntimeTests(unittest.TestCase):
         self.root=Path(self.tmp.name);self.root.chmod(0o700)
         initialize(self.root,'disposable-test-password')
 
-    def test_missing_and_loopback_safe_access_refuse_before_any_browser_or_network(self):
+    def test_approved_default_private_tunnel_uses_only_fixed_installed_origin(self):
+        runtime=self.root/'config/runtime.yml';before=runtime.read_bytes()
+        try:
+            observed=configured_entrypoint(self.root)
+        except ValueError as error:
+            self.fail('approved private tunnel rejected: '+str(error))
+        self.assertEqual(observed,'http://127.0.0.1:8080')
+        self.assertEqual(runtime.read_bytes(),before)
+        self.assertFalse((self.root/'codex').exists())
+
+    def test_unapproved_urls_ports_and_loopbacks_refuse_before_browser_or_network(self):
         runtime=self.root/'config/runtime.yml'
         original=json.loads(runtime.read_text())
-        for url in (None,'http://127.0.0.1:8080','https://localhost','https://127.0.0.1',
+        for url in ('http://127.0.0.1:18101','http://localhost:8080','http://127.0.0.1:8081',
+                    'http://192.0.2.1:8080','http://operator-approved.invalid','https://localhost','https://127.0.0.1',
                     'https://127.0.1.2','https://[::1]','https://[::ffff:127.0.0.1]',
                     'https://alias.localhost','https://2130706433'):
             value={**original,'public_base_url':url,'cookie_secure':bool(url and url.startswith('https'))}
             runtime.write_text(json.dumps(value))
             with patch('playwright.async_api.async_playwright',side_effect=AssertionError('no browser on unverified entry')):
-                with self.assertRaisesRegex(ValueError,'approved_safe_entrypoint_unverified'):
+                with self.assertRaises(ValueError):
                     asyncio.run(anonymous_login(self.root))
         self.assertFalse((self.root/'codex').exists())
+
+    def test_private_mode_requires_exact_runtime_origin_listener_and_cookie_policy(self):
+        runtime=self.root/'config/runtime.yml';original=json.loads(runtime.read_text())
+        for url in ('http://127.0.0.1:8080','http://127.0.0.1:8080/'):
+            runtime.write_text(json.dumps({**original,'public_base_url':url}))
+            self.assertEqual(configured_entrypoint(self.root),'http://127.0.0.1:8080')
+        for changes in ({'cookie_secure':True},{'host':'127.0.0.1'},{'port':8081},
+            {'public_base_url':'http://127.0.0.1:8080/login'},
+            {'public_base_url':'http://127.0.0.1:8080/?approved=true'},
+            {'public_base_url':'http://127.0.0.1:8080/#approved'},
+            {'public_base_url':'http://user@127.0.0.1:8080'},
+            {'data_root':str(self.root/'foreign')}):
+            runtime.write_text(json.dumps({**original,**changes}))
+            # The image intentionally exports ASSISTANT_HOST/PORT. Isolate
+            # file-input negatives; effective env precedence remains unchanged.
+            with patch.dict(os.environ,dict(ASSISTANT_HOST='',ASSISTANT_PORT='')),\
+                self.subTest(changes=changes),self.assertRaises(ValueError):configured_entrypoint(self.root)
+
+    def test_private_mode_validates_effective_environment_listener(self):
+        for changes in ({'ASSISTANT_HOST':'127.0.0.1'},{'ASSISTANT_PORT':'8081'},
+            {'ASSISTANT_PUBLIC_BASE_URL':'http://127.0.0.1:18101'}):
+            with patch.dict(os.environ,changes),self.subTest(changes=changes),self.assertRaises(ValueError):
+                configured_entrypoint(self.root)
+        with patch.dict(os.environ,dict(ASSISTANT_HOST='0.0.0.0',ASSISTANT_PORT='8080')):
+            self.assertEqual(configured_entrypoint(self.root),'http://127.0.0.1:8080')
+
+    def test_cookie_transport_exception_is_fixed_private_only(self):
+        from deploy.target_runtime import anonymous_cookie_valid
+        for origin,secure,host in (('http://127.0.0.1:8080',False,'127.0.0.1'),
+            ('https://operator-approved.invalid',True,'operator-approved.invalid')):
+            cookie=dict(secure=secure,httpOnly=True,sameSite='Lax',domain=host,path='/')
+            self.assertTrue(anonymous_cookie_valid(cookie,origin))
+            for changes in ({'secure':not secure},{'httpOnly':False},{'sameSite':'None'},
+                {'domain':'foreign.invalid'},{'path':'/settings'}):
+                self.assertFalse(anonymous_cookie_valid({**cookie,**changes},origin))
+        self.assertFalse(anonymous_cookie_valid(dict(secure=False,httpOnly=True,
+            sameSite='Lax',domain='127.0.0.1',path='/'),'http://127.0.0.1:8081'))
 
     def test_anonymous_route_guard_covers_real_login_stylesheet_not_other_traffic(self):
         import re
@@ -43,6 +91,12 @@ class SmokeRuntimeTests(unittest.TestCase):
         for method,url in (('POST',origin+'/login'),('GET',origin+'/settings'),
             ('GET','https://foreign.invalid/assets/calendar.css'),('GET',origin+'/assets/calendar.js'),
             ('GET',origin+'/assets/calendar.css?private=query')):
+            self.assertFalse(anonymous_route_allowed(method,url,origin))
+        origin='http://127.0.0.1:8080'
+        for method,url in (('POST',origin+'/login'),('GET',origin+'/settings'),
+            ('GET','http://127.0.0.1:18101/login'),('GET','http://localhost:8080/login'),
+            ('GET',origin+'/assets/calendar.js'),('GET',origin+'/api/status?x=1'),
+            ('GET',origin+'/login#redirect')):
             self.assertFalse(anonymous_route_allowed(method,url,origin))
 
     def test_operator_owned_https_configuration_is_not_created_or_changed(self):
