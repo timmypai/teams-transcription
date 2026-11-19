@@ -1,0 +1,9 @@
+id = "L-0012"
+title = "Bind approved private smoke to fixed transport and installed identity"
+event = "The formal anonymous smoke rejected the operator-approved SSH tunnel because it required a non-loopback HTTPS origin and a Secure cookie even for the fixed private HTTP deployment."
+root_cause = "Approval of a private tunnel does not alter the transport predicate in the actual runtime/consumer. Permit only the fixed installed HTTP origin with its exact listener/configuration and non-Secure HttpOnly/SameSite cookie; retain non-loopback HTTPS/Secure policy. Verify host 127.0.0.1:18101 -> container 8080 and the same installed container/image/start before and after login, retain signed in-memory session reuse, API401, GET-only scope and unchanged claims. Record the actual private access mode rather than naming it HTTPS. Never accept caller URLs/approval booleans, rewrite operator runtime, or substitute hosted results for Oracle evidence."
+category = "verification"
+
+[enforcement]
+kind = "test"
+ref = "tests/test_oracle_smoke_runtime.py::test_approved_default_private_tunnel_uses_only_fixed_installed_origin"

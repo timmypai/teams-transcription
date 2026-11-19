@@ -355,17 +355,33 @@ def runtime_metadata(root):
         credentials_read=False,provider_authorization='NOT VERIFIED')
 
 
+PRIVATE_ORIGIN='http://127.0.0.1:8080'
+PRIVATE_ACCESS='approved-private-ssh-tunnel'
+HTTPS_ACCESS='configured-https'
+
+
+def access_evidence(origin):
+    """Fixed transport names, never a caller-supplied approval or URL payload."""
+    return dict(access_mode=PRIVATE_ACCESS if origin==PRIVATE_ORIGIN else HTTPS_ACCESS)
+
+
 def configured_entrypoint(root):
     """Operator-owned existing runtime configuration, never a workflow URL input.
 
-    Loopback-only configuration is explicitly unverified. No tunnel/proxy/public
-    configuration is created or changed. The original SHIP owns missing access.
+    The operator approved host 127.0.0.1:18101 -> this installed :8080 UI.
+    Only that fixed private mode may use HTTP/non-Secure cookies. Host binding
+    and the installed container identity are independently checked by the deploy
+    consumer. No tunnel, proxy, runtime config or public listener is created.
     """
     from teams_transcription.assistant_config import load_assistant_settings
     from urllib.parse import urlsplit
     root=Path(root);private(root,True)
     runtime=root/'config/runtime.yml';private(runtime)
     settings=load_assistant_settings(runtime)
+    require(settings.data_root==str(root),'approved_safe_entrypoint_unverified')
+    if (settings.public_base_url in {None,PRIVATE_ORIGIN,PRIVATE_ORIGIN+'/'}
+        and settings.cookie_secure is False and settings.host=='0.0.0.0' and settings.port==8080):
+        return PRIVATE_ORIGIN
     value=urlsplit(settings.public_base_url or '')
     import ipaddress
     host=value.hostname or ''
@@ -386,12 +402,13 @@ async def same_deployment_session(client,cookie):
     """Reuse of an anonymous session binds ingress to the installed daemon.
 
     No key read, authentication, caller URL or session persistence. The exact
-    localhost GET is the existing installed UI, not user-reachability proof.
+    localhost GET is the existing installed UI; operator reachability remains
+    limited to the explicitly approved private-tunnel equivalence when used.
     """
     from http.cookies import SimpleCookie
     import hmac
     require(isinstance(cookie,str) and re.fullmatch('[a-f0-9]{64}\\.[a-f0-9]{64}',cookie),'anonymous_login_failed')
-    local=await client.get('http://127.0.0.1:8080/login',
+    local=await client.get(PRIVATE_ORIGIN+'/login',
         headers={'Cookie':'assistant_session='+cookie},max_redirects=0)
     cookies=[row['value'] for row in local.headers_array if row['name'].lower()=='set-cookie']
     require(len(cookies)==1,'anonymous_deployment_mismatch')
@@ -408,8 +425,15 @@ def anonymous_route_allowed(method,url,origin):
         and not value.query and not value.fragment)
 
 
+def anonymous_cookie_valid(cookie,origin):
+    from urllib.parse import urlsplit
+    return (cookie.get('secure') is (origin!=PRIVATE_ORIGIN)
+        and cookie.get('httpOnly') is True and cookie.get('sameSite')=='Lax'
+        and cookie.get('domain')==urlsplit(origin).hostname and cookie.get('path')=='/')
+
+
 async def anonymous_login(root):
-    """Anonymous GET-only real browser on existing configured HTTPS; no secrets."""
+    """Anonymous GET-only browser on fixed private or configured HTTPS; no secrets."""
     from playwright.async_api import async_playwright,expect
     root=Path(root);origin=configured_entrypoint(root);before=claim_snapshot(root)
     violations=[]
@@ -435,7 +459,7 @@ async def anonymous_login(root):
             # its anonymous signed/in-memory session on GET /login; a foreign
             # cookie creates a different session. Keep all cookie bytes in RAM.
             cookies=[cookie for cookie in await context.cookies(origin) if cookie['name']=='assistant_session']
-            require(len(cookies)==1 and cookies[0]['secure'] is True and cookies[0]['httpOnly'] is True,
+            require(len(cookies)==1 and anonymous_cookie_valid(cookies[0],origin),
                 'anonymous_login_failed')
             await same_deployment_session(context.request,cookies[0]['value'])
             # No authenticated data is fetched or retained. An unauthed API must
@@ -451,7 +475,7 @@ async def anonymous_login(root):
     return dict(approved_safe_entrypoint=True,origin_bound=True,anonymous_context=True,
         login_heading=True,password_field=True,login_button=True,anonymous_api_rejected=True,
         no_authenticated_data=True,no_secret_artifacts=True,same_deployment_session=True,
-        user_reachable_entrypoint='configured-https-browser-verified')
+        **access_evidence(origin))
 
 
 def main():
@@ -469,8 +493,8 @@ def main():
                 for key in ('DEBUG','PWDEBUG'):os.environ.pop(key,None)
                 value=asyncio.run(browser_readiness(root,password))
         elif args.action=='entrypoint':
-            configured_entrypoint(root)
-            value=dict(approved_safe_entrypoint=True,origin_bound=True)
+            origin=configured_entrypoint(root)
+            value=dict(approved_safe_entrypoint=True,origin_bound=True,**access_evidence(origin))
         elif args.action=='login':
             for key in ('DEBUG','PWDEBUG'):os.environ.pop(key,None)
             value=asyncio.run(anonymous_login(root))

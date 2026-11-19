@@ -15,6 +15,45 @@ from teams_transcription.daemon import AssistantDaemon
 from deploy.target_runtime import initialize,browser_readiness,claim_snapshot
 
 class BrowserReadinessTests(unittest.IsolatedAsyncioTestCase):
+    async def test_fixed_private_mode_real_browser_same_deployment_no_secret_or_claim_change(self):
+        from deploy.target_runtime import anonymous_login,configured_entrypoint,access_evidence
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);root.chmod(0o700)
+            password=secrets.token_urlsafe(32);initialize(root,password)
+            runtime=root/'config/runtime.yml';before=runtime.read_bytes()
+            settings=load_assistant_settings(runtime)
+            daemon=AssistantDaemon(settings);app=create_admin_app(daemon,settings,local_teams_control=True)
+            sock=socket.socket();sock.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1)
+            sock.bind(('127.0.0.1',8080));sock.listen(128)
+            server=uvicorn.Server(uvicorn.Config(app,access_log=False,log_level='critical'))
+            task=asyncio.create_task(server.serve(sockets=[sock]))
+            try:
+                async with asyncio.timeout(5):
+                    while not server.started:
+                        if task.done():await task;self.fail('disposable server failed')
+                        await asyncio.sleep(.01)
+                claims=claim_snapshot(root)
+                files={str(p.relative_to(root)) for p in root.rglob('*')}
+                # No URL/config/browser/cookie substitution: the actual fixed
+                # consumer opens real HTTP and observes its non-Secure cookie.
+                result=await anonymous_login(root)
+                self.assertEqual(result['access_mode'],'approved-private-ssh-tunnel')
+                self.assertEqual(access_evidence(configured_entrypoint(root))['access_mode'],result['access_mode'])
+                self.assertTrue(all(result[k] is True for k in ('anonymous_context','login_heading','password_field',
+                    'login_button','anonymous_api_rejected','same_deployment_session','no_authenticated_data','no_secret_artifacts')))
+                self.assertEqual(claim_snapshot(root),claims)
+                self.assertEqual(runtime.read_bytes(),before)
+                self.assertEqual({str(p.relative_to(root)) for p in root.rglob('*')},files)
+                self.assertNotIn(password,json.dumps(result))
+                self.assertNotIn('https',json.dumps(result))
+                self.assertFalse((root/'codex').exists())
+                self.assertIsNone(daemon.status()['active_session_id'])
+                self.assertTrue(daemon.store.settings()['scheduler_paused'])
+            finally:
+                server.should_exit=True
+                try:await asyncio.wait_for(task,5)
+                finally:sock.close()
+
     async def test_real_anonymous_smoke_controls_and_session_instance_binding(self):
         # Explicit disposable loopback DI only: exercises browser selectors and
         # installed-daemon binding, NOT configured HTTPS/operator reachability.
