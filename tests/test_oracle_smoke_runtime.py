@@ -52,7 +52,18 @@ class SmokeRuntimeTests(unittest.TestCase):
             {'public_base_url':'http://user@127.0.0.1:8080'},
             {'data_root':str(self.root/'foreign')}):
             runtime.write_text(json.dumps({**original,**changes}))
-            with self.subTest(changes=changes),self.assertRaises(ValueError):configured_entrypoint(self.root)
+            # The image intentionally exports ASSISTANT_HOST/PORT. Isolate
+            # file-input negatives; effective env precedence remains unchanged.
+            with patch.dict(os.environ,dict(ASSISTANT_HOST='',ASSISTANT_PORT='')),\
+                self.subTest(changes=changes),self.assertRaises(ValueError):configured_entrypoint(self.root)
+
+    def test_private_mode_validates_effective_environment_listener(self):
+        for changes in ({'ASSISTANT_HOST':'127.0.0.1'},{'ASSISTANT_PORT':'8081'},
+            {'ASSISTANT_PUBLIC_BASE_URL':'http://127.0.0.1:18101'}):
+            with patch.dict(os.environ,changes),self.subTest(changes=changes),self.assertRaises(ValueError):
+                configured_entrypoint(self.root)
+        with patch.dict(os.environ,dict(ASSISTANT_HOST='0.0.0.0',ASSISTANT_PORT='8080')):
+            self.assertEqual(configured_entrypoint(self.root),'http://127.0.0.1:8080')
 
     def test_cookie_transport_exception_is_fixed_private_only(self):
         from deploy.target_runtime import anonymous_cookie_valid
