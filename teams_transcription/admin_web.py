@@ -431,6 +431,12 @@ def create_admin_app(daemon, settings, *, local_teams_control=False):
             '<p>可在此啟動官方裝置授權，再到 OpenAI 網站登入並輸入短效代碼。'+
             '授權保留在同一部署的私有持久目錄；登入成功仍須另外驗證帳號與 GPT Live 音訊收發。</p>'+
             '<a href="/chatgpt">登入或重新授權 ChatGPT</a></section>')
+        body += ('<section><h2>媒體出口政策</h2><p>以下為目前有效的 HTTP/WebSocket 精確 host allowlist。空白為合法 [] deny-all；'+
+            '不是缺設定，也不自動放寬。僅在排程暫停、無會議及無授權作業時由本人明確修改。'+
+            '不接受 URL、萬用字元或 shell；動態 Live SDP 仍須同 thread own-start proof，這不是全域網路防火牆。</p>'+
+            form(session,'media-policy','<label>每行一個獲准 host（全小寫；空白拒絕全部）<textarea name="hosts">'+
+                h('\n'.join(settings.allowed_egress_hosts))+'</textarea></label>'+
+                checkbox('confirmed','我明確核准這份媒體出口政策，不代表會議或 OAuth 同意'),'保存媒體政策')+'</section>')
         for calendar in rows:
             fields = ''.join(hidden(key,calendar[key]) for key in ('id','revision') if key in calendar)
             fields += (input_field('account_id','資料帳號範圍',calendar['account_id'])+
@@ -466,6 +472,10 @@ def create_admin_app(daemon, settings, *, local_teams_control=False):
             controls = ''
             if row['state']=='pending':
                 controls += control(session,'join',row['id'],'加入')
+                controls += form(session,'target-consent',hidden('id',row['id'])+hidden('revision',row['revision'])+
+                    checkbox('present','我現在已在此會議；已通知準備單次加入')+
+                    checkbox('media','我確認本次加入、錄音、逐字保存及助理發聲同意'),
+                    '建立五分鐘 Hermes 單次控制 binding（不加入）')
             if row['state'] in {'pending','needs_review'}:
                 controls += control(session,'skip',row['id'],'略過')
                 controls += form(session,'assign-series',hidden('id',row['id'])+
@@ -770,6 +780,33 @@ def create_admin_app(daemon, settings, *, local_teams_control=False):
             if 'join_now' in values:
                 await daemon.join(row['id'])
             destination = '/?meeting='+quote(row['id'],safe='')
+        elif name=='target-consent':
+            async with daemon._join_lock:
+                if daemon.auth_operation_in_progress or daemon.status()['active_session_id'] is not None or daemon.closing.is_set():
+                    raise AdminError('capture_unavailable')
+                result=await asyncio.to_thread(daemon.store.issue_target_consent,target,integer(values,'revision'),
+                    present=values.get('present')=='on',media=values.get('media')=='on')
+            if 'application/json' not in request.headers.get('accept',''):
+                return page('Hermes 單次控制 binding','<p>不代表已入會、OAuth 或遠端聽驗成功。'+
+                    '五分鐘內僅供本次 Actions Join；不要把會議連結或登入資料貼到聊天。</p><pre>'+
+                    h(json.dumps(result,ensure_ascii=False,indent=2))+'</pre><a href="/schedule">返回場次</a>',session)
+        elif name=='media-policy':
+            raw=values.get('hosts','')
+            if values.get('confirmed')!='on' or len(raw)>4096:
+                raise AdminError('media_policy_confirmation_required')
+            hosts=raw.splitlines() if raw else []
+            async with daemon._join_lock:
+                policy=await asyncio.to_thread(daemon.store.settings)
+                if (daemon.auth_operation_in_progress or daemon.status()['active_session_id'] is not None
+                        or (Path(settings.data_root)/'.deployment-maintenance').exists()
+                        or policy.get('scheduler_paused') is not True or daemon.closing.is_set()
+                        or await asyncio.to_thread(daemon.store.capture_interlocks)):
+                    raise AdminError('capture_unavailable')
+                from .private_runtime import save_media_policy
+                try:result=await asyncio.to_thread(save_media_policy,settings,hosts)
+                except (ValueError,OSError):raise AdminError('media_policy_rejected') from None
+                await asyncio.to_thread(daemon.store.audit_control,'admin','media_policy_saved','runtime')
+            destination='/settings'
         elif name=='join':
             acceptance=None
             if 'acceptance_request' in values:
@@ -1020,6 +1057,10 @@ def create_admin_app(daemon, settings, *, local_teams_control=False):
             'google_oauth_client_required':google_setup_message('google_oauth_client_required'),
             'oauth_redirect_not_registered':google_setup_message('oauth_redirect_not_registered'),
             'revision_conflict':'資料已被更新，請重新載入後再修改。',
+            'target_owner_confirmation_required':'請本人確認現在在場及本次媒體同意；此操作不會加入或授權新場次。',
+            'target_occurrence_not_authorized':'場次授權或版本已變動；請重新載入既有合法待加入場次，確認暫停排程及清理狀態。',
+            'media_policy_confirmation_required':'保存前必須明確核准這份媒體出口政策；空白保持拒絕全部。',
+            'media_policy_rejected':'媒體政策未保存：請確認精確小寫 hosts、私有 runtime.yml，且沒有環境覆寫。',
             'capture_cleanup_review_required':'上次離會狀態尚未確認，請先完成清理確認。',
             'record_not_found':'找不到這筆會議或資料。'}
         response = page('操作未完成','<p class="error">'+h(messages.get(code,'操作未完成，請確認目前狀態後再試。'))+

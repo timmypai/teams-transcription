@@ -187,7 +187,7 @@ class AssistantDaemon:
         if not self._provider.admissible(self._provider.settings):
             raise AssistantStoreError('provider_account_not_admissible')
 
-    async def join(self, occurrence_id, actor='admin', *, acceptance=None):
+    async def join(self, occurrence_id, actor='admin', *, acceptance=None, target_control=False):
         from .teams_acceptance import validate_policy,is_owner_immediate
         if acceptance is not None:
             acceptance=validate_policy(acceptance)
@@ -224,9 +224,12 @@ class AssistantDaemon:
             validate_teams_url(occurrence.get('join_url'))
             if (Path(self.settings.data_root) / '.deployment-maintenance').exists():
                 raise AssistantStoreError('deployment_maintenance')
+            if target_control:
+                await asyncio.to_thread(self.store.validate_target_consent,occurrence_id,acceptance)
             await self._admission()
             lease = await asyncio.to_thread(self.store.claim_run,occurrence_id,self.owner,self.settings.lease_seconds,
-                **({'acceptance':acceptance} if acceptance is not None else {}))
+                **({'acceptance':acceptance} if acceptance is not None else {}),
+                **({'target_control':True} if target_control else {}))
             if acceptance is not None:occurrence=lease.pop('acceptance_occurrence')
             session = Session(self.settings.data_root,lease['session_id'],lease=lease)
             await asyncio.to_thread(self.store.audit_control,actor,'meeting_join_requested',session.ident)
@@ -274,6 +277,8 @@ class AssistantDaemon:
     async def _speaking_policy(self, session_id):
         run = await asyncio.to_thread(self.store.get_run,session_id)
         occurrence = run['occurrence']
+        if not occurrence.get('recording_authorized') or not occurrence.get('speaking_authorized'):
+            return False
         if occurrence['calendar_ref']:
             calendar = await asyncio.to_thread(self.store.get_calendar,occurrence['calendar_ref'])
             return calendar['enabled'] and calendar['recording_authorized'] and calendar['speaking_authorized']

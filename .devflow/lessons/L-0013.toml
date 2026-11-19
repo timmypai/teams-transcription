@@ -1,0 +1,9 @@
+id = "L-0013"
+title = "A readiness probe is not an authorized current-target control bridge"
+event = "Main had only view/stop in the manual workflow and fixed helper, while the socket had Join/output; an effective codex_home string existed but the directory did not. Asking the owner to authenticate could not repair either engineering prerequisite."
+root_cause = "Exercise the current manual CLI -> installed fixed helper -> real same-UID socket -> daemon -> SQLite with constructor-injected runner, not the old target authority/ledger or dispatch success. A target Join must consume an authenticated owner-issued fresh occurrence/revision/request binding inside the same claim transaction; recheck after provider await, deny replay/expiry/changed source/unknown cleanup. Persist output denial so Calendar refresh/monitor cannot regrant. Stop requires work-finished + cleaned + terminal + released lease. Prepare only the effective in-data private home via no-follow directory descriptors; never read/copy tokens, grant or modify existing ownership/config. Keep [] deny-all and distinguish offline engineering, deployed readiness, owner OAuth, participant consent and remote hearing."
+category = "verification"
+
+[enforcement]
+kind = "test"
+ref = "tests/test_target_control_cli.py::test_manual_menu_through_real_cli_helper_socket_single_claim_and_cleanup"

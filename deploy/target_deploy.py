@@ -144,10 +144,11 @@ class Controller:
         return self.command(prefix+self.docker_prefix+['compose','-p',PROJECT,'-f',str(release/'compose.yml'),
             '--env-file',str(release/'config.env'),*args],timeout=180)
 
-    def runtime(self,action,*,image=None,ident=None,request_sha=None,input=None):
+    def runtime(self,action,*,image=None,ident=None,request_sha=None,revision=None,input=None):
         args=[action]
         if ident:args+=['--id',ident]
         if request_sha:args+=['--request-sha',request_sha]
+        if revision is not None:args+=['--revision',str(revision)]
         if image:
             release=self.release
             require(release is not None and IMAGE.fullmatch(image),'helper_release_required')
@@ -342,8 +343,8 @@ def manual_environment():
 
 def main():
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('action',choices=['deploy','view','stop','verify'])
-    p.add_argument('--id');p.add_argument('--request-sha');args=p.parse_args()
+    p.add_argument('action',choices=['deploy','view','join','output-disable','stop','prepare-home','verify'])
+    p.add_argument('--id');p.add_argument('--request-sha');p.add_argument('--revision',type=int);args=p.parse_args()
     failures=Failures();sha=None;run=None;attempt=None;evidence=None
     try:
         os.umask(0o077)
@@ -412,8 +413,15 @@ def main():
                         c.health(state['image'])
                         result.update(container_id=ident,image=state['image'],uid=10001,source_sha=sha)
                     else:
-                        if args.action=='view':c.health(state['image'])
-                        result=c.runtime(args.action,ident=args.id,request_sha=args.request_sha)
+                        if args.action in {'view','join','prepare-home'}:c.health(state['image'])
+                        result=c.runtime(args.action,ident=args.id,request_sha=args.request_sha,revision=args.revision)
+                        if args.action=='prepare-home':
+                            installed=json.loads(c.docker('inspect',APP))[0]
+                            writable=any(m.get('Type')=='volume' and m.get('Name')==VOLUME
+                                and m.get('Destination')=='/data' and m.get('RW') is True for m in installed['Mounts'])
+                            require(writable and installed['Id']==state['container_id'] and installed['Image']==state['image'],
+                                'deployed_persistence_unverified')
+                            result.update(data_volume_rw=True,container_id=installed['Id'],image=state['image'],source_sha=sha)
             except Exception as exc:
                 failures.record(exc)
                 raise

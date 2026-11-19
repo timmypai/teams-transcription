@@ -24,7 +24,7 @@ class SmokeRuntimeTests(unittest.TestCase):
             self.fail('approved private tunnel rejected: '+str(error))
         self.assertEqual(observed,'http://127.0.0.1:8080')
         self.assertEqual(runtime.read_bytes(),before)
-        self.assertFalse((self.root/'codex').exists())
+        self.assertEqual(list((self.root/'codex').iterdir()),[])
 
     def test_unapproved_urls_ports_and_loopbacks_refuse_before_browser_or_network(self):
         runtime=self.root/'config/runtime.yml'
@@ -38,7 +38,7 @@ class SmokeRuntimeTests(unittest.TestCase):
             with patch('playwright.async_api.async_playwright',side_effect=AssertionError('no browser on unverified entry')):
                 with self.assertRaises(ValueError):
                     asyncio.run(anonymous_login(self.root))
-        self.assertFalse((self.root/'codex').exists())
+        self.assertEqual(list((self.root/'codex').iterdir()),[])
 
     def test_private_mode_requires_exact_runtime_origin_listener_and_cookie_policy(self):
         runtime=self.root/'config/runtime.yml';original=json.loads(runtime.read_text())
@@ -109,7 +109,7 @@ class SmokeRuntimeTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'private_resource_required'):configured_entrypoint(self.root)
 
     def test_metadata_never_reads_lists_or_copies_codex_credentials(self):
-        codex=self.root/'codex';codex.mkdir(mode=0o700)
+        codex=self.root/'codex';codex.mkdir(mode=0o700,exist_ok=True)
         auth=codex/'auth.json';auth.write_text('SYNTHETIC-PRIVATE-NOT-READ');auth.chmod(0o600)
         original=Path.open
         def guarded(path,*args,**kwargs):
@@ -127,11 +127,12 @@ class SmokeRuntimeTests(unittest.TestCase):
         self.assertFalse(value['credentials_read'])
         self.assertEqual(value['provider_authorization'],'NOT VERIFIED')
         self.assertNotIn('SYNTHETIC',json.dumps(value))
-        self.assertNotIn(str(self.root),json.dumps(value))
+        self.assertEqual(value['codex_home'],str(codex))  # actual effective path, no credential contents
         codex.chmod(0o755)
         with self.assertRaises(ValueError):runtime_metadata(self.root)
 
     def test_missing_home_stays_unverified_not_initialized_or_authenticated(self):
+        (self.root/'codex').rmdir()  # older existing deployment fixture
         value=runtime_metadata(self.root)
         self.assertFalse(value['codex_home_exists'])
         self.assertIsNone(value['codex_home_private'])
