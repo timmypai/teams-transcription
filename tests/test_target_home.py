@@ -44,7 +44,8 @@ class TargetHomeTests(unittest.TestCase):
         home=self.root/'codex';home.mkdir(mode=0o700,exist_ok=True)
         home.rmdir();home.symlink_to(self.root/'config',target_is_directory=True)
         with self.assertRaises(ValueError):runtime.prepare_home(self.root)
-        home.unlink();home.mkdir(mode=0o755)
+        home.unlink();home.mkdir(mode=0o755);home.chmod(0o755)  # explicit negative, even after CLI umask077
+        self.assertEqual(home.stat().st_mode&0o777,0o755)
         with self.assertRaises(ValueError):runtime.prepare_home(self.root)
         home.chmod(0o700)
         original=os.fstat
