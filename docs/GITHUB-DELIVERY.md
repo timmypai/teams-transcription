@@ -1,5 +1,13 @@
 # GitHub 開發與 Oracle staging 交付契約
 
+## 本 target 控制/OAuth 工程增量（2026-11-19）
+
+[繁中操作指南與證據界線](TARGET-CONTROL-OAUTH.zh-TW.md) 定義本次增量：原 `control.yml` 固定選單擴為 view/join/output-disable/stop/prepare-home，不是舊 target 的 root authority/ledger/prepare；本人在既有 authenticated Origin/CSRF 管理 action 對合法 pending occurrence 確認當次在場及媒體同意，五分鐘 boot/time/revision/request binding 在真正 SQLite claim 同交易消費。未變 Calendar reread 保留 binding，來源更動拒絕；output-disable 持久否決該 occurrence speaking，不能被 Calendar refresh/monitor 重授。stop 必須 work-finished/cleaned/terminal/released lease，不把未知清理當成功。Actions 不提供授權發聲、任意 shell/path/URL 或 seed。
+
+有效 Codex home 現在由新初始化與固定 prepare-home 工程動作建立/驗證；既有部署須部署新已審來源後執行該動作，不能假設舊收據中的 missing home 已修。逐層 no-follow/UID-GID/0700/RWX；不讀列搬token、不grant、不model、不改現有owner/config。metadata現在明列實際有效路徑及egress/deny-all，舊metadata「不輸出路徑」描述不再適用。本人可由 `/settings` 的明確媒體政策表單原子保存固定私有runtime的精確hosts（或空白 []）；不自動放寬，不增加通用Actions設定輸入。下方 view/stop-only、home不建立的描述保留為先前source範圍，不代表新增量的能力。
+
+本卡僅source/hosted：真main08a5c0a helper Join拒絕與home缺失的兩項assertion RED（errors=0）→候選GREEN，另有真CLI/helper/socket/daemon/SQLite控制整鏈、正常及負面控制與真sandboxed owner UI。runner為constructor fixture，不是Teams/model。獨立review→既有t_12402f67 SHIP負責手動default-tip部署/工程readiness/本人OAuth/真人聽驗；merge不部署，AC-2 manual/核准私有tunnel不變，未宣稱真人AC-4/5通過。Lesson: L-0013。
+
 ## timmypai 手動交付接入（本輪有效範圍）
 
 本輪 target 僅 `timmypai/teams-transcription`；來源為 `main@c792cf9f313dc1ba2fafe8eb1c811b8e862adc66`。下方 `paulpai0412` 的歷史部署資源、授權、runner、GHCR 與 `/opt/teams-staging` **不屬於本次可用資源**，不得借用。

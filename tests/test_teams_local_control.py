@@ -23,7 +23,7 @@ class LocalControlTests(unittest.IsolatedAsyncioTestCase):
             view=await control(self.root,'view',self.occurrence['id'])
             self.assertTrue(view['recording_authorized'])
             self.assertNotIn('join_url',view)
-            for action in ('join','prepare','shell'):
+            for action in ('prepare','shell'):
                 with self.assertRaisesRegex(ValueError,'control_operation_rejected'):
                     await control(self.root,action,self.occurrence['id'])
             joined=await self.call('join',self.fields)  # constructor-injected synthetic runner only

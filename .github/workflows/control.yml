@@ -3,17 +3,21 @@ on:
   workflow_dispatch:
     inputs:
       operation:
-        description: Read authorized occurrence view or stop an already bound run; no Join/grant
+        description: Bound single Join, read view, disable output, verified stop or empty private home; no grant
         type: choice
-        options: [view, stop]
+        options: [view, join, output-disable, stop, prepare-home]
         default: view
         required: true
       id:
-        description: Existing authorized occurrence (view) or session (stop), 32 lowercase hex
+        description: Existing occurrence (view/join) or session (output-disable/stop), 32 lowercase hex; empty for prepare-home
         type: string
-        required: true
+        required: false
       request_sha:
-        description: Existing acceptance request binding for stop; not an authorization grant
+        description: Owner-issued fresh request for Join, same run binding for output-disable/stop; not a grant
+        type: string
+        default: ''
+      revision:
+        description: Owner-issued occurrence revision for Join only; empty otherwise
         type: string
         default: ''
 permissions:
@@ -46,7 +50,11 @@ jobs:
           OPERATION: ${{ inputs.operation }}
           TARGET_ID: ${{ inputs.id }}
           REQUEST_SHA: ${{ inputs.request_sha }}
-        run: python3 deploy/target_deploy.py "$OPERATION" --id "$TARGET_ID" --request-sha "$REQUEST_SHA"
+          REVISION: ${{ inputs.revision }}
+        run: |
+          args=("$OPERATION" --id "$TARGET_ID" --request-sha "$REQUEST_SHA")
+          if [[ -n "$REVISION" ]]; then args+=(--revision "$REVISION"); fi
+          python3 deploy/target_deploy.py "${args[@]}"
       - if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:

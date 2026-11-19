@@ -46,7 +46,7 @@ class BrowserReadinessTests(unittest.IsolatedAsyncioTestCase):
                 self.assertEqual({str(p.relative_to(root)) for p in root.rglob('*')},files)
                 self.assertNotIn(password,json.dumps(result))
                 self.assertNotIn('https',json.dumps(result))
-                self.assertFalse((root/'codex').exists())
+                self.assertEqual(list((root/'codex').iterdir()),[])  # initialized, not OAuth-authorized
                 self.assertIsNone(daemon.status()['active_session_id'])
                 self.assertTrue(daemon.store.settings()['scheduler_paused'])
             finally:

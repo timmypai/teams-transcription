@@ -2,7 +2,9 @@
 
 No HTTP routes, password/session tokens, arbitrary target URLs, transcript or arbitrary
 commands. OS UID is the local principal; this is not isolation from that UID.
-The root-owned host helper remains the authority/ledger/lock admission boundary.
+The legacy helper has its own authority/ledger boundary. The current target's
+fixed manual Actions helper instead requires an authenticated owner attestation
+consumed in the same deployment's SQLite claim; it never borrows that ledger.
 """
 import asyncio
 import contextlib
@@ -85,7 +87,9 @@ async def dispatch(daemon, settings, message):
             and (status.get('response') or {}).get('state') in {'sleeping','listening','thinking','answering'})
         return view
     request_sha=identifier(fields.get('acceptance_request'),64)
-    if operation=='join' and set(fields)=={'id','acceptance_request','acceptance_revision','acceptance_stop_policy'}:
+    join_fields={'id','acceptance_request','acceptance_revision','acceptance_stop_policy'}
+    target_control=fields.get('target_control') is True
+    if operation=='join' and set(fields)==join_fields | ({'target_control'} if target_control else set()):
         if fields['acceptance_stop_policy']!='owner_or_meeting_end':
             raise LocalControlError()
         policy=validate_policy(dict(version=VERSION,request_sha256=request_sha,
@@ -96,7 +100,8 @@ async def dispatch(daemon, settings, message):
         if (view['scheduler_paused'] is not True or view['egress_allows_target_host'] is not True
                 or view['recording_authorized'] is not True or view['speaking_authorized'] is not True):
             raise LocalControlError()
-        result=await daemon.join(target,actor='local-teams-control',acceptance=policy)
+        result=await daemon.join(target,actor='local-teams-control',acceptance=policy,
+            **({'target_control':True} if target_control else {}))
         return dict(ok=True,result=result)
     expected={'id','acceptance_request'} | ({'enabled'} if operation=='output' else set())
     if operation not in {'output','stop'} or set(fields)!=expected:
@@ -108,6 +113,7 @@ async def dispatch(daemon, settings, message):
     if not policy or policy['request_sha256']!=request_sha or policy['maximum_seconds'] is not None:
         raise LocalControlError('teams_local_control_binding_rejected')
     if operation=='output':
+        await asyncio.to_thread(daemon.store.revoke_target_output,target,request_sha)
         await daemon.set_output(target,False,actor='local-teams-control')
     else:
         await daemon.stop(target,actor='local-teams-control')

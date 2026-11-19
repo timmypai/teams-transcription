@@ -26,7 +26,9 @@ SAFE_FAILURE_CODES=frozenset({'daemon_identity_unknown','daemon_identity_mismatc
     'secret_input_rejected','secret_keys_rejected','initial_password_required',
     'approved_safe_entrypoint_unverified','anonymous_login_failed','anonymous_api_not_rejected',
     'authenticated_data_visible','anonymous_control_state_changed','codex_home_scope_unverified',
-    'anonymous_deployment_mismatch'})
+    'anonymous_deployment_mismatch','control_binding_required','control_revision_required',
+    'control_arguments_rejected','stop_cleanup_unverified','authorized_occurrence_required',
+    'codex_home_private_required','codex_home_not_writable','runtime_not_quiescent'})
 
 
 def require(ok,code):
@@ -55,7 +57,7 @@ def initialize(root,password):
         require(settings.data_root==str(root),'runtime_root_mismatch')
         # Never reset an existing operator configuration/password/consent.
         require((root/'.meeting-store.sqlite3').exists(),'partial_initialization_requires_review')
-        return dict(initialized=False,existing=True)
+        return dict(initialized=False,existing=True,home=prepare_home(root))
     require(not any(p.exists() or p.is_symlink() for p in paths)
         and not (root/'.meeting-store.sqlite3').exists(),'partial_initialization_requires_review')
     require(isinstance(password,str) and 16<=len(password)<=1024 and '\n' not in password,'initial_password_required')
@@ -68,7 +70,7 @@ def initialize(root,password):
     runtime.chmod(0o600)
     initialize_admin_credentials(load_assistant_settings(runtime),password)
     AssistantStore(root)  # schema only, no daemon/browser/network/credentials
-    return dict(initialized=True,scheduler_paused=True,summary_disabled=True)
+    return dict(initialized=True,scheduler_paused=True,summary_disabled=True,home=prepare_home(root))
 
 
 def database_state(root):
@@ -130,34 +132,54 @@ def maintenance(root,operation,backup_id=None):
         return value
 
 
-async def control(root,operation,ident,request_sha=None):
+async def control(root,operation,ident,request_sha=None,*,revision=None):
     from teams_transcription.teams_local_control import request, LocalControlError
-    require(operation in {'view','stop'},'control_operation_rejected')
+    require(operation in {'view','join','output-disable','stop'},'control_operation_rejected')
+    require(operation=='join' or revision is None,'control_arguments_rejected')
+    require(operation!='view' or not request_sha,'control_arguments_rejected')
     require(re.fullmatch('[0-9a-f]{32}',ident or ''),'control_id_invalid')
     fields=dict(id=ident)
-    if operation=='stop':
+    if operation!='view':
         require(re.fullmatch('[0-9a-f]{64}',request_sha or ''),'control_binding_required')
         fields['acceptance_request']=request_sha
-    failure=None
+    if operation=='join':
+        require(type(revision) is int and revision>0,'control_revision_required')
+        fields.update(acceptance_revision=revision,acceptance_stop_policy='owner_or_meeting_end',target_control=True)
+    if operation=='output-disable':fields['enabled']='false'
+    failure=None;result={}
     try:
-        result=await request(root,dict(operation=operation,fields=fields))
+        result=await request(root,dict(operation='output' if operation=='output-disable' else operation,fields=fields))
     except LocalControlError as exc:
         if operation!='stop':raise
         failure=exc  # already-stopped retries still need the exact durable proof
+    if operation in {'join','output-disable'}:return result
     # view is the original privacy-filtered acceptance projection; no URL/text.
     if operation=='stop':
-        # Stop-return alone is NOT cleanup. Re-read the real SQLite receipt.
+        # Stop-return alone is NOT cleanup. Wait boundedly for the real durable
+        # worker receipt + terminal run + released capture lease; never force it.
+        import time
         from teams_transcription.teams_acceptance import receipt
-        with contextlib.closing(sqlite3.connect((Path(root)/'.meeting-store.sqlite3').as_uri()+'?mode=ro',uri=True)) as db:
-            db.row_factory=sqlite3.Row
-            db.execute('PRAGMA query_only=ON')
-            status=json.loads(db.execute('SELECT status_json FROM session_runtime WHERE meeting_id=?',(ident,)).fetchone()[0])
-            proof=receipt(db,ident,status)
-            state=db.execute('SELECT state FROM assistant_runs WHERE session_id=?',(ident,)).fetchone()[0]
-        verified=bool(proof and proof['request_sha256']==request_sha
-            and proof['cleanup_verified'] is True and state in {'completed','failed','stopped','interrupted'})
-        if failure and not verified:raise failure
-        require(verified,'stop_cleanup_unverified')
+        def cleanup_proof():
+            with contextlib.closing(sqlite3.connect((Path(root)/'.meeting-store.sqlite3').as_uri()+'?mode=ro',uri=True)) as db:
+                db.row_factory=sqlite3.Row
+                db.execute('PRAGMA query_only=ON');db.execute('BEGIN')
+                row=db.execute('SELECT status_json FROM session_runtime WHERE meeting_id=?',(ident,)).fetchone()
+                run=db.execute('SELECT state,error_code,end_reason FROM assistant_runs WHERE session_id=?',(ident,)).fetchone()
+                if not row or not run:return False,False
+                status=json.loads(row[0]);proof=receipt(db,ident,status)
+                active=db.execute("SELECT 1 FROM execution_leases WHERE session_id=? AND kind='capture' AND state='active'",(ident,)).fetchone()
+                terminal=run[0] in {'completed','failed','stopped','interrupted'}
+                return bool(proof and proof['request_sha256']==request_sha and proof['cleanup_verified'] is True
+                    and terminal and not active and run['error_code']!='capture_cleanup_unknown'
+                    and run['end_reason']!='service_interrupted'),terminal
+        deadline=time.monotonic()+12
+        while True:
+            verified,terminal=await asyncio.to_thread(cleanup_proof)
+            if verified:break
+            if terminal or time.monotonic()>=deadline:
+                if failure:raise failure
+                raise ValueError('stop_cleanup_unverified')
+            await asyncio.sleep(.05)
         return dict(ok=True,cleanup_verified=True)
     require(result.get('recording_authorized') is True and result.get('speaking_authorized') is True,
         'authorized_occurrence_required')
@@ -332,6 +354,38 @@ async def browser_readiness(root,password,*,expected_pid=None):
         no_secret_artifacts=True,user_reachable_entrypoint='NOT VERIFIED',readiness=readiness)
 
 
+def prepare_home(root):
+    """Only mkdir private directories under the effective existing data root.
+
+    Walk pinned directory descriptors with O_NOFOLLOW. Existing directories are
+    validated, never chowned/chmodded; no auth file is listed/opened/copied.
+    """
+    from teams_transcription.assistant_config import load_assistant_settings
+    root=Path(root);private(root,True)
+    runtime=root/'config/runtime.yml';private(runtime)
+    settings=load_assistant_settings(runtime)
+    home=Path(settings.codex_home or '/')
+    require(settings.data_root==str(root) and home.is_absolute() and home!=root
+        and home.is_relative_to(root) and home.absolute()==home.resolve(), 'codex_home_scope_unverified')
+    parts=home.relative_to(root).parts
+    require(parts and all(p not in {'.','..'} for p in parts),'codex_home_scope_unverified')
+    fd=os.open(root,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW)
+    created=False
+    try:
+        for part in parts:
+            try:
+                os.mkdir(part,mode=0o700,dir_fd=fd);created=True
+            except FileExistsError:pass
+            child=os.open(part,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW,dir_fd=fd)
+            os.close(fd);fd=child
+            info=os.fstat(fd)
+            require(info.st_uid==os.getuid() and info.st_gid==os.getgid()
+                and stat.S_IMODE(info.st_mode)==0o700,'codex_home_private_required')
+        require(os.access('.',os.R_OK|os.W_OK|os.X_OK,dir_fd=fd,effective_ids=True),'codex_home_not_writable')
+    finally:os.close(fd)
+    return dict(codex_home_created=created,**runtime_metadata(root))
+
+
 def runtime_metadata(root):
     """Fixed permission/persistence metadata only; never list/read Codex files."""
     from teams_transcription.assistant_config import load_assistant_settings
@@ -344,8 +398,13 @@ def runtime_metadata(root):
     require(codex.is_relative_to(root) and codex.absolute()==codex.resolve(),'codex_home_scope_unverified')
     home_exists=codex.exists()
     if home_exists:private(codex,True)
+    from teams_transcription.runtime_guard import RuntimeLiveGuard
+    RuntimeLiveGuard('metadata',settings.allowed_egress_hosts)  # inert validation, [] stays deny-all
     return dict(runtime_private=True,runtime_uid=os.getuid(),runtime_gid=runtime.stat().st_gid,
         runtime_mode=stat.S_IMODE(runtime.stat().st_mode),runtime_writable=os.access(runtime,os.W_OK,effective_ids=True),
+        codex_home=str(codex),runtime_path=str(runtime),
+        effective_allowed_egress_hosts=list(settings.allowed_egress_hosts),
+        egress_deny_all=not settings.allowed_egress_hosts,
         codex_home_in_same_data_root=True,codex_home_exists=home_exists,
         codex_home_private=True if home_exists else None,
         codex_home_uid=codex.stat().st_uid if home_exists else None,
@@ -480,8 +539,8 @@ async def anonymous_login(root):
 
 def main():
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('action',choices=['init','state','enable','disable','backup','smoke','sandbox','view','stop','verify','entrypoint','login','metadata'])
-    p.add_argument('--id');p.add_argument('--request-sha');args=p.parse_args()
+    p.add_argument('action',choices=['init','state','enable','disable','backup','smoke','sandbox','view','join','output-disable','stop','prepare-home','verify','entrypoint','login','metadata'])
+    p.add_argument('--id');p.add_argument('--request-sha');p.add_argument('--revision',type=int);args=p.parse_args()
     try:
         root=Path('/data')
         if args.action in {'init','verify'}:
@@ -499,9 +558,13 @@ def main():
             for key in ('DEBUG','PWDEBUG'):os.environ.pop(key,None)
             value=asyncio.run(anonymous_login(root))
         elif args.action=='metadata':value=runtime_metadata(root)
+        elif args.action=='prepare-home':
+            require(not args.id and not args.request_sha and args.revision is None,'control_arguments_rejected')
+            require(database_state(root)['quiescent'],'runtime_not_quiescent')
+            value=prepare_home(root)
         elif args.action=='state':value=database_state(root)
         elif args.action in {'enable','disable','backup'}:value=maintenance(root,args.action,args.id)
-        elif args.action in {'view','stop'}:value=asyncio.run(control(root,args.action,args.id,args.request_sha))
+        elif args.action in {'view','join','output-disable','stop'}:value=asyncio.run(control(root,args.action,args.id,args.request_sha,revision=args.revision))
         elif args.action=='sandbox':value=sandbox()
         else:value=smoke()
         print(json.dumps(value));return 0

@@ -11,6 +11,7 @@ from datetime import datetime, timezone
 from .meeting_store import MeetingStore, TERMINAL, canonical_json
 from .storage import process_signature
 from .postmeeting_store import PostmeetingStoreMixin
+from .target_consent import TargetConsentMixin
 
 
 class AssistantStoreError(ValueError):
@@ -50,7 +51,7 @@ def task_signature(item):
     return hashlib.sha256(canonical_json({key:item[key] for key in ('text','owner','date')}).encode()).hexdigest()
 
 
-class AssistantStore(PostmeetingStoreMixin, MeetingStore):
+class AssistantStore(TargetConsentMixin, PostmeetingStoreMixin, MeetingStore):
     def __init__(self, root):
         super().__init__(root)
         with self._locked() as db:
@@ -240,6 +241,13 @@ class AssistantStore(PostmeetingStoreMixin, MeetingStore):
                 previous = json.loads(old['value']) if old else None
                 if previous and event.get('updated_at') and previous.get('updated_at') and event['updated_at']<previous['updated_at']:
                     continue
+                # Calendar rereads cannot erase current-target local consent or
+                # restore speaking after an explicit per-occurrence denial.
+                if previous and previous.get('target_speaking_revoked') is True:
+                    value.update(speaking_authorized=False,target_speaking_revoked=True)
+                if previous and {k:v for k,v in previous.items() if k!='target_control_consent'}==value:
+                    if 'target_control_consent' in previous:
+                        value['target_control_consent']=previous['target_control_consent']
                 runnable = (value.get('status')=='confirmed' and not value.get('all_day')
                     and value.get('link_status')=='valid' and value.get('start_at') and value.get('end_at'))
                 state = 'cancelled' if value.get('status')=='cancelled' else 'pending' if runnable else 'needs_review'
@@ -548,7 +556,7 @@ class AssistantStore(PostmeetingStoreMixin, MeetingStore):
             self._row(db,'meeting_series','id',series_id)
             return self._prior_db(db,series_id,timestamp(before_at))
 
-    def claim_run(self, occurrence_id, owner, lease_seconds=30, *, acceptance=None):
+    def claim_run(self, occurrence_id, owner, lease_seconds=30, *, acceptance=None, target_control=False):
         from .teams_acceptance import validate_policy, POLICY_EVENT
         if acceptance is not None:acceptance=validate_policy(acceptance)
         owner = text(owner,128)
@@ -570,6 +578,8 @@ class AssistantStore(PostmeetingStoreMixin, MeetingStore):
                 raise AssistantStoreError('teams_owner_stop_policy_required')
             if acceptance is not None and occurrence['revision']!=acceptance['occurrence_revision']:
                 raise AssistantStoreError('teams_acceptance_revision_changed')
+            if target_control:
+                self._validate_target_consent_db(occurrence,acceptance)
             if occurrence['state']!='pending':
                 raise AssistantStoreError('occurrence_not_ready')
             if not occurrence.get('recording_authorized'):
@@ -580,6 +590,8 @@ class AssistantStore(PostmeetingStoreMixin, MeetingStore):
                 calendar = json.loads(self._row(db,'assistant_calendars','id',occurrence['calendar_ref'])['value'])
                 if not calendar['enabled'] or not calendar['recording_authorized']:
                     raise AssistantStoreError('calendar_not_authorized')
+                if target_control and not calendar.get('speaking_authorized'):
+                    raise AssistantStoreError('speaking_authorization_required')
             if db.execute("SELECT 1 FROM execution_leases WHERE kind='capture' AND state='active'").fetchone():
                 raise AssistantStoreError('meeting_slot_busy')
             if self._capture_interlocks_db(db):
