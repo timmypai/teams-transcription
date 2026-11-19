@@ -277,7 +277,10 @@ class AssistantDaemon:
     async def _speaking_policy(self, session_id):
         run = await asyncio.to_thread(self.store.get_run,session_id)
         occurrence = run['occurrence']
-        if not occurrence.get('recording_authorized') or not occurrence.get('speaking_authorized'):
+        # Only the explicit per-occurrence current-target denial overrides the
+        # Calendar authority. Other Calendar consent is re-read live below, not
+        # taken from an older occurrence snapshot at the previous poll.
+        if occurrence.get('target_speaking_revoked') is True:
             return False
         if occurrence['calendar_ref']:
             calendar = await asyncio.to_thread(self.store.get_calendar,occurrence['calendar_ref'])
