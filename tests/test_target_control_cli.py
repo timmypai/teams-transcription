@@ -87,8 +87,13 @@ class TargetControlCLITests(unittest.IsolatedAsyncioTestCase):
                 code,_=await asyncio.to_thread(invoke,'join',self.occurrence['id'],
                     consent['request_sha256'],consent['revision'])
                 self.assertEqual(code,1)
-                code,_=await asyncio.to_thread(invoke,'output-disable',ident,consent['request_sha256'])
-                self.assertEqual(code,0)
+                # Runner-start is not completed output admission. Test the
+                # intended ready -> revoke -> stop path, not startup revocation.
+                await self.until(lambda:any(row['action']=='speech_enabled' and row['target']==ident
+                    for row in self.store.audit()))
+                self.assertTrue(output.enabled)
+                code,receipt=await asyncio.to_thread(invoke,'output-disable',ident,consent['request_sha256'])
+                self.assertEqual(code,0,receipt)
                 self.assertFalse(output.enabled)
                 code,receipt=await asyncio.to_thread(invoke,'stop',ident,consent['request_sha256'])
                 self.assertEqual(code,0,receipt)
