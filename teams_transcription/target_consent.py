@@ -28,6 +28,9 @@ class TargetConsentMixin:
                 calendar=json.loads(self._row(db,'assistant_calendars','id',occurrence['calendar_ref'])['value'])
                 if not all(calendar.get(k) is True for k in ('enabled','recording_authorized','speaking_authorized')):
                     raise AssistantStoreError('target_occurrence_not_authorized')
+            from .occurrence_window import in_join_window
+            if not in_join_window(occurrence,time.time()):
+                raise AssistantStoreError('occurrence_outside_join_window')
             boot,now=self._lease_clock()
             consent=dict(request_sha256=secrets.token_hex(32),revision=revision+1,
                 boot_id=boot,issued_boottime=now,expires_boottime=now+300,

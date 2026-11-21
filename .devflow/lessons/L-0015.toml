@@ -1,0 +1,9 @@
+id = "L-0015"
+title = "Runner started is not completed output admission in a revoke-success fixture"
+event = "PR7 run44868608087 shard3 failed output-disable; 20 local repeats reproduced three failures, and a diagnostic repeat observed speaking_authorization_revoked followed by meeting_stopping."
+root_cause = "The success-path CLI fixture revoked speaking as soon as its runner started, while monitor set_output(True) could still be doing its post-await policy check. The intended ready/revoke/stop sequence must observe the real speech_enabled audit before revocation, not depend on scheduling speed. Retain every claim, denial, output and cleanup assertion. Startup-revocation fail-closed behavior is not changed by this fixture repair."
+category = "verification"
+
+[enforcement]
+kind = "test"
+ref = "tests/test_target_control_cli.py::test_manual_menu_through_real_cli_helper_socket_single_claim_and_cleanup"

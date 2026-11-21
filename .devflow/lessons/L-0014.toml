@@ -1,0 +1,9 @@
+id = "L-0014"
+title = "Validate target binding time and preserve fixed daemon rejection codes end to end"
+event = "t_91e50210: an expired occurrence received a binding and the manual Join result reduced the rejection to unknown."
+root_cause = "Owner binding issuance did not reuse daemon join-window admission. Socket, installed runtime and manual failure evidence each discarded the fixed rejection identity. Share the scheduled predicate while retaining owner-immediate rules; allowlist codes at each boundary and label the control phase without exception bodies."
+category = "code-pattern"
+
+[enforcement]
+kind = "test"
+ref = "tests/test_target_join_failure.py::test_expired_join_keeps_daemon_code_and_phase_in_manual_failure_json"

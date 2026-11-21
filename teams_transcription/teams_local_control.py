@@ -20,6 +20,8 @@ import stat
 import struct
 
 from .teams_acceptance import VERSION, meeting_view, validate_policy
+from .assistant_store import AssistantStoreError
+from .control_errors import SAFE_CONTROL_FAILURE_CODES
 
 MAX_REQUEST = 4096
 MAX_RESPONSE = 65536
@@ -30,6 +32,10 @@ class LocalControlError(ValueError):
         self.code = code
         super().__init__(code)
 
+
+def public_failure_code(error):
+    code=error.code if isinstance(error,(AssistantStoreError,LocalControlError)) else None
+    return code if isinstance(code,str) and code in SAFE_CONTROL_FAILURE_CODES else 'teams_local_control_rejected'
 
 def socket_path(root):
     return Path(root)/'.teams-control'/'control.sock'
@@ -184,9 +190,9 @@ class LocalTeamsControl:
                 # Transport expiry/disconnect must not cancel a committed claim
                 # between SQLite's worker thread and daemon ownership handoff.
                 value=await dispatch(self.daemon,self.settings,decode_message(raw))
-            except Exception:
+            except Exception as error:
                 # Never serialize exception bodies, configuration, tokens or URLs.
-                value=dict(error='teams_local_control_rejected')
+                value=dict(error=public_failure_code(error))
             raw=json.dumps(value,allow_nan=False).encode()+b'\n'
             if len(raw)>MAX_RESPONSE:raw=b'{"error":"teams_local_control_rejected"}\n'
             with contextlib.suppress(ConnectionError,TimeoutError):
@@ -225,7 +231,11 @@ async def request(root,message):
             result=await reader.readline()
             if not result.endswith(b'\n') or len(result)>MAX_RESPONSE:raise LocalControlError()
             value=json.loads(result)
-            if not isinstance(value,dict) or 'error' in value:raise LocalControlError()
+            if not isinstance(value,dict):raise LocalControlError()
+            if 'error' in value:
+                code=value['error']
+                raise LocalControlError(code if type(code) is str and code in SAFE_CONTROL_FAILURE_CODES
+                    else 'teams_local_control_rejected')
             return value
         finally:
             writer.close();await writer.wait_closed()

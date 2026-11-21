@@ -212,14 +212,11 @@ class AssistantDaemon:
                 await asyncio.to_thread(self.store.sync_occurrences,calendar['id'],[fresh])
                 occurrence = await asyncio.to_thread(self.store.get_occurrence,occurrence_id)
             now = self.clock()
-            start = datetime.fromisoformat(occurrence['start_at']).timestamp() if occurrence.get('start_at') else None
-            end = datetime.fromisoformat(occurrence['end_at']).timestamp() if occurrence.get('end_at') else None
             immediate=is_owner_immediate(occurrence)
             if immediate and acceptance is None:
                 raise AssistantStoreError('teams_preparation_acceptance_required')
-            if (occurrence['state']!='pending' or not immediate and (start is None or end is None or end<=now
-                    or now<start-occurrence['join_early_seconds']
-                    or now>start+occurrence['max_lateness_seconds'])):
+            from .occurrence_window import in_join_window
+            if not in_join_window(occurrence,now):
                 raise AssistantStoreError('occurrence_outside_join_window')
             validate_teams_url(occurrence.get('join_url'))
             if (Path(self.settings.data_root) / '.deployment-maintenance').exists():
