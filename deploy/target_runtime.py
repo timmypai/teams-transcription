@@ -16,6 +16,8 @@ import sqlite3
 import stat
 import sys
 
+from teams_transcription.control_errors import SAFE_CONTROL_FAILURE_CODES
+
 # Public fixed rejection codes only. No exception/DOM/secret text may escape.
 SAFE_FAILURE_CODES=frozenset({'daemon_identity_unknown','daemon_identity_mismatch',
     'control_peer_uid_mismatch','control_peer_pid_mismatch','exact_rejection_required',
@@ -28,7 +30,7 @@ SAFE_FAILURE_CODES=frozenset({'daemon_identity_unknown','daemon_identity_mismatc
     'authenticated_data_visible','anonymous_control_state_changed','codex_home_scope_unverified',
     'anonymous_deployment_mismatch','control_binding_required','control_revision_required',
     'control_arguments_rejected','stop_cleanup_unverified','authorized_occurrence_required',
-    'codex_home_private_required','codex_home_not_writable','runtime_not_quiescent'})
+    'codex_home_private_required','codex_home_not_writable','runtime_not_quiescent'}) | SAFE_CONTROL_FAILURE_CODES
 
 
 def require(ok,code):
@@ -569,7 +571,12 @@ def main():
         else:value=smoke()
         print(json.dumps(value));return 0
     except Exception as error:
-        code=str(error) if type(error) is ValueError and str(error) in SAFE_FAILURE_CODES else 'runtime_failed'
+        from teams_transcription.teams_local_control import LocalControlError
+        code='runtime_failed'
+        if type(error) is ValueError and str(error) in SAFE_FAILURE_CODES:
+            code=str(error)
+        elif isinstance(error,LocalControlError) and type(error.code) is str and error.code in SAFE_CONTROL_FAILURE_CODES:
+            code=error.code
         print(json.dumps(dict(error='target_runtime_rejected',code=code)));return 1
 
 

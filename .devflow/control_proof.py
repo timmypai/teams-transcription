@@ -53,7 +53,9 @@ def main():
         oracle_executed=False,real_join=False,oauth_or_model=False)
     output=ROOT/'.devflow/evidence';output.mkdir(parents=True,exist_ok=True)
     (output/'control-home-red-green.json').write_text(json.dumps(document,indent=2)+'\n')
-    print(json.dumps(document));return 0 if success else 1
+    print(json.dumps(document))
+    from join_window_proof import main as join_window_proof
+    return 0 if success and join_window_proof()==0 else 1
 
 
 if __name__=='__main__':raise SystemExit(main())

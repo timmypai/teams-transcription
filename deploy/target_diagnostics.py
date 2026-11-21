@@ -17,7 +17,8 @@ MAX_LINES=1024
 MAX_LINE_BYTES=2048
 MAX_EVENTS=0
 MAX_SECONDARY=8
-PHASES=frozenset({'prepare_contexts','image_build','audit','cleanup','unknown'})
+PHASES=frozenset({'prepare_contexts','image_build','audit','cleanup','unknown',
+    'control_view','control_join','control_output-disable','control_stop','control_prepare-home'})
 CODES=frozenset({'command_failed','command_timeout','output_limit','command_start_failed',
     'unknown','audit_failed','snapshot_failed','cleanup_failed','evidence_write_failed'})
 PUBLIC_PHASES=frozenset({'prepare_contexts','image_build'})
@@ -97,7 +98,9 @@ def failure(exc,phase='unknown',code='unknown'):
     from deploy.target_runtime import SAFE_FAILURE_CODES
     if type(exc) is ValueError and len(exc.args)==1 and type(exc.args[0]) is str:
         if exc.args[0] in {'target_runtime_rejected:'+code for code in SAFE_FAILURE_CODES}:
-            row['code']=exc.args[0]
+            from teams_transcription.control_errors import SAFE_CONTROL_FAILURE_CODES
+            runtime_code=exc.args[0].removeprefix('target_runtime_rejected:')
+            row['code']=runtime_code if runtime_code in SAFE_CONTROL_FAILURE_CODES else exc.args[0]
     if isinstance(exc,PublicCommandFailure):
         row.update(phase=exc.phase if exc.phase in PUBLIC_PHASES else 'unknown',
             code=exc.code if exc.code in CODES else 'unknown',exit_status=bounded_exit(exc.exit_status))

@@ -414,7 +414,8 @@ def main():
                         result.update(container_id=ident,image=state['image'],uid=10001,source_sha=sha)
                     else:
                         if args.action in {'view','join','prepare-home'}:c.health(state['image'])
-                        result=c.runtime(args.action,ident=args.id,request_sha=args.request_sha,revision=args.revision)
+                        with failures.stage('control_'+args.action):
+                            result=c.runtime(args.action,ident=args.id,request_sha=args.request_sha,revision=args.revision)
                         if args.action=='prepare-home':
                             installed=json.loads(c.docker('inspect',APP))[0]
                             writable=any(m.get('Type')=='volume' and m.get('Name')==VOLUME
