@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Locator } from '@playwright/test';
 import { calendarOccurrences, calendarSettings, issueBinding, login, OperationError } from './operations';
 import { readFileSync, mkdirSync } from 'node:fs';
 import { runOperation } from './ops/run';
@@ -6,6 +6,16 @@ process.env.ADMIN_PASSWORD = readFileSync(process.env.DEVFLOW_FIXTURE_PASSWORD_F
 
 // Disposable service only. These are NOT the manual AC-4 Teams/audio acceptance.
 test.use({ baseURL: 'http://127.0.0.1:18081' });
+
+async function bindingArgs(row: Locator) {
+  return {
+    occurrence_id: await row.getAttribute('data-occurrence-id'),
+    revision: Number(await row.locator('form[action="/actions/target-consent"] input[name="revision"]').inputValue()),
+    start_at: await row.locator('time[data-edge="start"]').getAttribute('datetime'),
+    end_at: await row.locator('time[data-edge="end"]').getAttribute('datetime'),
+    present: true, media: true,
+  };
+}
 test('calendar-occurrences: Given anonymous and seeded calendar, When login and sync, Then future and current pending metadata with read evidence', async ({ page }) => {
   await test.step('Given 未登入且一次性日曆尚未同步', async () => {
     await page.goto('/login');
@@ -22,7 +32,7 @@ test('calendar-occurrences: Given anonymous and seeded calendar, When login and 
     expect(result.read).toEqual({attempted:1,succeeded:1,failed:0,event_count:5,completed:true});
     expect(result.occurrences.map(row => row.joinable).sort()).toEqual([false,true,true]);
     expect(result.occurrences).toHaveLength(3);
-    expect(Object.keys(result.occurrences[0]).sort()).toEqual(['end_at', 'joinable', 'occurrence_id', 'start_at']);
+    expect(Object.keys(result.occurrences[0]).sort()).toEqual(['end_at', 'joinable', 'occurrence_id', 'revision', 'start_at']);
     expect(result.occurrences[0].occurrence_id).toMatch(/^[a-f0-9]{32}$/);
     expect(Date.parse(result.occurrences[0].end_at)-Date.parse(result.occurrences[0].start_at)).toBe(3600000);
     expect(JSON.stringify(result)).not.toMatch(/PRIVATE|microsoft|password|csrf/i);
@@ -36,24 +46,36 @@ test('issue-binding: Given synced calendar, When issue in window, Then binding e
     await expect(page.getByRole('heading', { name: '排程與人工入會' })).toBeVisible();
   });
   await test.step('When 同一操作簽發有效場次 binding', async () => {
-    const id = await page.locator('tr[data-occurrence-id]').filter({
+    const args = await bindingArgs(page.locator('tr[data-occurrence-id]').filter({
       has: page.locator('td:first-child').filter({ hasText: /^PRIVATE-current/ }),
-    }).getAttribute('data-occurrence-id');
-    const binding = await issueBinding(page, { occurrence_id: id, present: true, media: true });
-    expect(binding.occurrence_id).toBe(id);
+    }));
+    const writes: string[] = [];
+    page.on('request', request => { if (request.method() === 'POST') writes.push(new URL(request.url()).pathname); });
+    for (const invalid of [{...args, revision: String(args.revision)}, {...args, media: 'true'}]) {
+      await expect(issueBinding(page, invalid)).rejects.toMatchObject({code:'invalid_binding_args'});
+    }
+    for (const changed of [{...args, revision: args.revision+1}, {...args, end_at: args.start_at},
+      {...args, end_at: '2099-01-01T01:00:00Z'}]) {
+      await expect(issueBinding(page, changed)).rejects.toBeInstanceOf(OperationError);
+    }
+    expect(writes).toEqual([]);
+    const binding = await issueBinding(page, args);
+    expect(writes).toEqual(['/actions/target-consent']);
+    expect(binding.occurrence_id).toBe(args.occurrence_id);
     expect(binding.revision).toBe(2);
     expect(binding.request_sha256).toMatch(/^[a-f0-9]{64}$/);
     expect(binding.expires_at-binding.issued_at).toBeCloseTo(300, 2);
     expect(binding.expires_in_seconds).toBe(300);
     expect(JSON.stringify(binding)).not.toMatch(/PRIVATE|microsoft|password|csrf/i);
+    await expect(issueBinding(page, args)).rejects.toMatchObject({code:'binding_selection_changed'});
   });
   await test.step('Then 過期與尚未進入入會時段的場次被拒絕並保留畫面原因', async () => {
     for (const name of ['PRIVATE-expired', 'PRIVATE-later']) {
       await page.goto('/schedule');
-      const id = await page.locator('tr[data-occurrence-id]').filter({
+      const args = await bindingArgs(page.locator('tr[data-occurrence-id]').filter({
         has: page.locator('td:first-child').filter({ hasText: new RegExp(`^${name}`) }),
-      }).getAttribute('data-occurrence-id');
-      await expect(issueBinding(page, { occurrence_id: id, present: true, media: true })).rejects.toMatchObject({
+      }));
+      await expect(issueBinding(page, args)).rejects.toMatchObject({
         code: 'occurrence_outside_join_window', reason: expect.stringContaining('場次不在可入會時段'),
       });
     }

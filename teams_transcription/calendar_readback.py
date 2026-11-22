@@ -73,8 +73,9 @@ def validate_operation(value):
     require(value['ready'] == expected)
     require(isinstance(value['occurrences'],list) and (value['ready'] or not value['occurrences']))
     for row in value['occurrences']:
-        require(isinstance(row,dict) and set(row) == {'occurrence_id','start_at','end_at','joinable'})
+        require(isinstance(row,dict) and set(row) == {'occurrence_id','revision','start_at','end_at','joinable'})
         require(isinstance(row['occurrence_id'],str) and re.fullmatch('[a-f0-9]{32}',row['occurrence_id']))
+        require(type(row['revision']) is int and 0 < row['revision'] < 2**53)
         require(type(row['joinable']) is bool)
         require(all(isinstance(row[key],str) and re.fullmatch(
             r'\d{4}-\d\d-\d\dT[\d:.]+(?:Z|[+-]\d\d:\d\d)',row[key]) for key in ('start_at','end_at')))

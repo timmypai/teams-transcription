@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 from .meeting_store import MeetingStore, TERMINAL, canonical_json
 from .storage import process_signature
 from .postmeeting_store import PostmeetingStoreMixin
-from .target_consent import TargetConsentMixin
+from .target_consent import TARGET_CALENDAR_CLAIM_EVENT, TargetConsentMixin
 
 
 class AssistantStoreError(ValueError):
@@ -251,7 +251,8 @@ class AssistantStore(TargetConsentMixin, PostmeetingStoreMixin, MeetingStore):
                 ident = old['id'] if old else uuid.uuid4().hex
                 name = text(event.get('title') or '未命名會議',400)
                 series = old['series_id'] if old else self._series(db,calendar['account_id'],series_key,name)
-                value = dict(event)
+                value = {key:item for key,item in event.items()
+                    if key not in {'target_control_consent','target_speaking_revoked'}}
                 value.update(event_id=event_id,title=name,
                     recording_authorized=calendar['recording_authorized'],speaking_authorized=calendar['speaking_authorized'],
                     join_early_seconds=calendar['join_early_seconds'],max_lateness_seconds=calendar['max_lateness_seconds'])
@@ -595,20 +596,20 @@ class AssistantStore(TargetConsentMixin, PostmeetingStoreMixin, MeetingStore):
                 raise AssistantStoreError('teams_owner_stop_policy_required')
             if acceptance is not None and occurrence['revision']!=acceptance['occurrence_revision']:
                 raise AssistantStoreError('teams_acceptance_revision_changed')
-            if target_control:
-                self._validate_target_consent_db(occurrence,acceptance)
+            calendar_consent = self._validate_target_consent_db(db,occurrence,acceptance) if target_control else None
             if occurrence['state']!='pending':
                 raise AssistantStoreError('occurrence_not_ready')
-            if not occurrence.get('recording_authorized'):
-                raise AssistantStoreError('recording_authorization_required')
-            if acceptance is not None and not occurrence.get('speaking_authorized'):
-                raise AssistantStoreError('speaking_authorization_required')
-            if occurrence.get('calendar_ref'):
-                calendar = json.loads(self._row(db,'assistant_calendars','id',occurrence['calendar_ref'])['value'])
-                if not calendar['enabled'] or not calendar['recording_authorized']:
-                    raise AssistantStoreError('calendar_not_authorized')
-                if target_control and not calendar.get('speaking_authorized'):
+            if calendar_consent is None:
+                if not occurrence.get('recording_authorized'):
+                    raise AssistantStoreError('recording_authorization_required')
+                if acceptance is not None and not occurrence.get('speaking_authorized'):
                     raise AssistantStoreError('speaking_authorization_required')
+                if occurrence['calendar_ref']:
+                    calendar = json.loads(self._row(db,'assistant_calendars','id',occurrence['calendar_ref'])['value'])
+                    if not calendar['enabled'] or not calendar['recording_authorized']:
+                        raise AssistantStoreError('calendar_not_authorized')
+                    if target_control and not calendar.get('speaking_authorized'):
+                        raise AssistantStoreError('speaking_authorization_required')
             if db.execute("SELECT 1 FROM execution_leases WHERE kind='capture' AND state='active'").fetchone():
                 raise AssistantStoreError('meeting_slot_busy')
             if self._capture_interlocks_db(db):
@@ -638,6 +639,10 @@ class AssistantStore(TargetConsentMixin, PostmeetingStoreMixin, MeetingStore):
                 db.execute('INSERT INTO session_events(meeting_id,kind,payload_json,created_at) VALUES(?,?,?,?)',
                     (session_id,POLICY_EVENT,canonical_json(acceptance),utc_now()))
                 lease['acceptance_occurrence']=occurrence
+            if calendar_consent is not None:
+                db.execute('INSERT INTO session_events(meeting_id,kind,payload_json,created_at) VALUES(?,?,?,?)',
+                    (session_id,TARGET_CALENDAR_CLAIM_EVENT,'{}',utc_now()))
+                lease['target_calendar_consent'] = calendar_consent
             return lease
 
     def heartbeat_run(self, lease, lease_seconds=30):

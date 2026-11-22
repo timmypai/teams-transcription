@@ -820,6 +820,8 @@ def create_admin_app(daemon, settings, *, local_teams_control=False):
                 await daemon.join(row['id'])
             destination = '/?meeting='+quote(row['id'],safe='')
         elif name=='target-consent':
+            if set(values)!={'id','revision','present','media'}:
+                raise AdminError('target_owner_confirmation_required')
             async with daemon._join_lock:
                 if daemon.auth_operation_in_progress or daemon.status()['active_session_id'] is not None or daemon.closing.is_set():
                     raise AdminError('capture_unavailable')
@@ -1096,7 +1098,7 @@ def create_admin_app(daemon, settings, *, local_teams_control=False):
             'google_oauth_client_required':google_setup_message('google_oauth_client_required'),
             'oauth_redirect_not_registered':google_setup_message('oauth_redirect_not_registered'),
             'revision_conflict':'資料已被更新，請重新載入後再修改。',
-            'target_owner_confirmation_required':'請本人確認現在在場及本次媒體同意；此操作不會加入或授權新場次。',
+            'target_owner_confirmation_required':'請本人確認現在在場及本次媒體同意；此操作不會加入或授權其他場次。',
             'occurrence_outside_join_window':'場次不在可入會時段；請核對日期、開始／結束時間及允許提早／遲到時段，不會建立 binding 或加入。',
             'target_occurrence_not_authorized':'場次授權或版本已變動；請重新載入既有合法待加入場次，確認暫停排程及清理狀態。',
             'media_policy_confirmation_required':'保存前必須明確核准這份媒體出口政策；空白保持拒絕全部。',

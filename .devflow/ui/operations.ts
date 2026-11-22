@@ -23,6 +23,10 @@ async function schedule(page: Page) {
   await page.goto('/schedule');
   requireValue(await page.getByRole('heading', { name: '排程與人工入會', exact: true }).isVisible(), 'schedule_page_required');
 }
+function datedEdge(value: unknown): value is string {
+  return typeof value === 'string' && /^\d{4}-\d\d-\d\dT[\d:.]+(?:Z|[+-]\d\d:\d\d)$/.test(value) &&
+    Number.isFinite(Date.parse(value));
+}
 const googleCodes = new Set([
   'google_oauth_client_required','google_authorization_required','google_reauthorization_required',
   'private_calendar_configuration_invalid','private_calendar_directory_required','google_transport_failed',
@@ -72,21 +76,21 @@ export async function calendarOccurrences(page: Page) {
   try { new Intl.DateTimeFormat('en', {timeZone:timezone}); } catch { throw new OperationError('schedule_timezone_missing'); }
   const rows = await page.locator('tr[data-state="pending"]').evaluateAll(rows => rows.map(row => ({
     occurrence_id: row.getAttribute('data-occurrence-id'),
+    revision: row.querySelector('form[action="/actions/target-consent"] input[name="revision"]')?.getAttribute('value'),
     start_at: row.querySelector('time[data-edge="start"]')?.getAttribute('datetime'),
     end_at: row.querySelector('time[data-edge="end"]')?.getAttribute('datetime'),
     discoverable: row.getAttribute('data-discoverable'), joinable: row.getAttribute('data-joinable'),
   })));
-  const occurrences: {occurrence_id:string,start_at:string,end_at:string,joinable:boolean}[] = [];
+  const occurrences: {occurrence_id:string,revision:number,start_at:string,end_at:string,joinable:boolean}[] = [];
   for (const row of rows) {
+    const revision = Number(row.revision);
     requireValue(typeof row.occurrence_id === 'string' && /^[a-f0-9]{32}$/.test(row.occurrence_id) &&
-      typeof row.start_at === 'string' && typeof row.end_at === 'string' &&
-      /^\d{4}-\d\d-\d\dT[\d:.]+(?:Z|[+-]\d\d:\d\d)$/.test(row.start_at) &&
-      /^\d{4}-\d\d-\d\dT[\d:.]+(?:Z|[+-]\d\d:\d\d)$/.test(row.end_at) &&
-      Number.isFinite(Date.parse(row.start_at)) && Date.parse(row.end_at) > Date.parse(row.start_at) &&
+      Number.isSafeInteger(revision) && revision > 0 &&
+      datedEdge(row.start_at) && datedEdge(row.end_at) && Date.parse(row.end_at) > Date.parse(row.start_at) &&
       ['true','false'].includes(row.discoverable || '') && ['true','false'].includes(row.joinable || ''),
       'calendar_occurrence_invalid');
     if (row.discoverable === 'true' && Date.parse(row.end_at) > Date.now()) {
-      occurrences.push({occurrence_id:row.occurrence_id,start_at:row.start_at,end_at:row.end_at,joinable:row.joinable === 'true'});
+      occurrences.push({occurrence_id:row.occurrence_id,revision,start_at:row.start_at,end_at:row.end_at,joinable:row.joinable === 'true'});
     }
   }
   // Failed prerequisites never turn stale locally cached rows into candidates.
@@ -153,8 +157,13 @@ export async function calendarSettings(page: Page, args: Record<string,unknown>)
 }
 
 export async function issueBinding(page: Page, args: Record<string, unknown>) {
-  const id = args.occurrence_id;
-  requireValue(typeof id === 'string' && /^[a-f0-9]{32}$/.test(id), 'invalid_occurrence_id');
+  requireValue(args && typeof args === 'object' && !Array.isArray(args) &&
+    Object.keys(args).sort().join(',') === 'end_at,media,occurrence_id,present,revision,start_at', 'invalid_binding_args');
+  const {occurrence_id: id, revision, start_at: start, end_at: end} = args;
+  requireValue(typeof id === 'string' && /^[a-f0-9]{32}$/.test(id) &&
+    typeof revision === 'number' && Number.isSafeInteger(revision) && revision > 0 &&
+    datedEdge(start) && datedEdge(end) && Date.parse(end) > Date.parse(start) &&
+    typeof args.present === 'boolean' && typeof args.media === 'boolean', 'invalid_binding_args');
   // Supply these only after fresh owner attendance/media consent; never infer it from login.
   requireValue(args.present === true && args.media === true, 'fresh_owner_confirmation_required');
   await schedule(page);
@@ -162,6 +171,10 @@ export async function issueBinding(page: Page, args: Record<string, unknown>) {
   requireValue(await row.count() === 1 && await row.getAttribute('data-state') === 'pending', 'pending_occurrence_required');
   const form = row.locator('form[action="/actions/target-consent"]');
   requireValue(await form.count() === 1, 'binding_form_required');
+  requireValue(await form.locator('input[name="id"]').inputValue() === id &&
+    await form.locator('input[name="revision"]').inputValue() === String(revision) &&
+    await row.locator('time[data-edge="start"]').getAttribute('datetime') === start &&
+    await row.locator('time[data-edge="end"]').getAttribute('datetime') === end, 'binding_selection_changed');
   await form.getByRole('checkbox', { name: '我現在已在此會議；已通知準備單次加入' }).check();
   await form.getByRole('checkbox', { name: '我確認本次加入、錄音、逐字保存及助理發聲同意' }).check();
   await form.getByRole('button', { name: '建立五分鐘 Hermes 單次控制 binding（不加入）', exact: true }).click();
@@ -175,7 +188,7 @@ export async function issueBinding(page: Page, args: Record<string, unknown>) {
   }
   requireValue(await page.getByRole('heading', { name: 'Hermes 單次控制 binding', exact: true }).isVisible(), 'binding_page_required');
   const value = JSON.parse(await page.locator('pre').innerText());
-  requireValue(value.occurrence_id === id && Number.isInteger(value.revision) && value.revision > 0 &&
+  requireValue(value.occurrence_id === id && value.revision === revision + 1 &&
     /^[a-f0-9]{64}$/.test(value.request_sha256) && value.expires_in_seconds === 300 &&
     Number.isFinite(value.issued_at) && Number.isFinite(value.expires_at) &&
     value.expires_at > Date.now()/1000, 'binding_result_invalid');

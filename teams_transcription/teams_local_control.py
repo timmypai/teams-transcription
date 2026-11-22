@@ -100,11 +100,11 @@ async def dispatch(daemon, settings, message):
             raise LocalControlError()
         policy=validate_policy(dict(version=VERSION,request_sha256=request_sha,
             occurrence_revision=fields['acceptance_revision'],maximum_seconds=None))
-        # The host rechecks its root authority and reserves the canonical ledger
-        # before this call. Retain runtime policy, egress, revision and lease gates.
+        # Current-target media is checked against the exact owner binding by the
+        # daemon and again in its SQLite claim. Legacy callers still need grants.
         view=await dispatch(daemon,settings,dict(operation='view',fields=dict(id=target)))
         if (view['scheduler_paused'] is not True or view['egress_allows_target_host'] is not True
-                or view['recording_authorized'] is not True or view['speaking_authorized'] is not True):
+                or not target_control and not (view['recording_authorized'] and view['speaking_authorized'])):
             raise LocalControlError()
         result=await daemon.join(target,actor='local-teams-control',acceptance=policy,
             **({'target_control':True} if target_control else {}))

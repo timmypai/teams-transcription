@@ -59,11 +59,13 @@ Bot 依**剛讀回**的精確 ref/revision，只調整 Calendar 讀取開關：
 ```bash
 # 本 target 本人帳號的主日曆尚未配置：固定 primary，revision 必須為0。
 devflow operate teams-transcription calendar-settings \
-  --arg calendar_ref=primary --arg revision=0 --arg enabled=true
+  --args '{"calendar_ref":"primary","revision":0,"enabled":true}'
 # 已配置者：用上一次安全讀回的 local ref/revision，絕非 Google ID。
 devflow operate teams-transcription calendar-settings \
-  --arg calendar_ref=<本地32hex-ref> --arg revision=<剛讀回的整數> --arg enabled=true
+  --args "$CALENDAR_SETTINGS_ARGS"
 ```
+
+`CALENDAR_SETTINGS_ARGS` 由 Bot 以當次讀回的資料組成 JSON：`calendar_ref` 是字串、`revision` 是整數、`enabled` 是布林值。`--arg` 一律傳字串，不用於整數或布林參數。
 
 `primary` 明確指本人授權帳號的主日曆，不能猜成其他人的 Calendar。若本人指定非主日曆，只能選**已存在**設定的安全 local ref；本入口不接收聊天／args 中的任意 Calendar ID，也不使用 CalendarList scope 去枚舉所有日曆。若所需非主日曆尚未配置，先回報「缺該 Calendar 的受審私有設定入口；現有安全交付位置尚未提供」，交原 orchestrator 補入口，**不要索取 ID、請本人代操作管理頁或把值塞密碼 secret**；不能以任意新 secret 宣稱已有 consumer。這是刻意 fail-closed 的範圍界線，不假裝已支援任意新增。
 
@@ -77,7 +79,7 @@ devflow operate teams-transcription calendar-occurrences
 
 核對本次新 `poll_id`、Google configured/authorized/error_code、enabled_calendar_count、read.attempted/succeeded/failed/event_count/completed、ready。零Calendar/零attempted仍是 **未讀取**；client installed或UI ok也不是 Google成功。真 Google成功至少須本部署真授權、啟用Calendar>0、本次全部讀取完成且成功；空 events可以成功，但不能憑空製造會議。hosted fixture 的 mock GET僅測工程投影。
 
-只有實際取回合法場次、同部署其他 prerequisites齊全後，才集中取得本人新鮮在場／錄音／逐字保存／發聲同意。**新primary的錄音/發聲為false，因此不是binding-ready**：既有binding gate仍要求該Calendar與場次已有適用範圍的媒體授權；本入口不把Google讀取同意或單次在場陳述擴成整個Calendar的媒體授權。若缺此政策，SHIP必須明示缺項與範圍，交原orchestrator處理受審授權操作；不得自動勾全Calendar錄音/發聲、削弱binding gate或要求本人代操作管理頁。
+只有實際取回合法場次、同部署前置條件齊全後，才集中取得本人當次新鮮在場、加入、錄音、逐字保存與發聲同意。**主日曆的錄音與發聲旗標維持 false**；Bot 用[單次控制流程](TARGET-CONTROL-OAUTH.zh-TW.md)為選定場次簽發 binding。唯讀 OAuth 不是媒體同意，單次 binding 也不授權整個 Calendar、系列或一般排程。
 
 **Bot**操作日曆與300秒binding，不恢復「本人操作管理頁／轉貼occurrence_id或binding」舊流程。當次通知、單次Join、遠端聽到2與cleanup仍由原SHIP驗，不能因本卡PR/CI完成而宣稱 AC-4/5真人PASS。
 

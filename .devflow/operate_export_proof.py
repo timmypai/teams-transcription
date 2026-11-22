@@ -14,6 +14,7 @@ import secrets
 import shutil
 import stat
 import subprocess
+import sys
 import tarfile
 import tempfile
 import time
@@ -23,6 +24,11 @@ import struct
 
 ROOT = Path(__file__).resolve().parents[1]
 BASE = '8339fd79769fe42e6418ac95e8af9dae9072cd98'
+MEDIA_BASE = '9634a0948a041ec624048c29f743b0d951e19068'
+MEDIA_SCENARIO = 't_a3f4f673/AC-6.S1'
+CLAIM_SUITE = 'test_target_single_calendar'
+CLAIM_POSITIVE = CLAIM_SUITE + '.SingleCalendarTests.test_authenticated_grant_claim_monitor_disable_and_stop'
+MEDIA_DENIED = 'target_occurrence_not_authorized'
 DOCKER = shutil.which('docker')
 
 
@@ -50,6 +56,44 @@ def assert_success(folder, op):
     assert all(stat.S_IMODE(p.stat().st_mode) == 0o600 for p in folder.iterdir() if p.is_file())
     assert {p.name for p in folder.iterdir()} == {'result.json', op+'.png'}, 'unexpected_export'
     return result
+
+
+def select_binding_args(result):
+    assert result['ready'] is True and len(result['occurrences']) == 3
+    row = min(result['occurrences'],key=lambda item:datetime.fromisoformat(item['start_at']))
+    assert row['joinable'] is True
+    return {key: row[key] for key in ('occurrence_id','revision','start_at','end_at') if key in row} | {
+        'present':True,'media':True}
+
+
+def run_media_claim(source, test):
+    env = {**os.environ, 'PYTHONPATH':os.pathsep.join((str(source/'tests'),str(source)))}
+    return subprocess.run([sys.executable,'-B','-m','unittest','-q',test],
+        cwd=source,env=env,capture_output=True,timeout=120)
+
+
+def assert_media_claim_red(base):
+    red = run_media_claim(base, CLAIM_POSITIVE)
+    assert red.returncode == 1 and b'FAILED (failures=1)' in red.stderr, 'base_claim_not_assertion_failure'
+    assert b'422 != 200' in red.stderr and MEDIA_DENIED.encode() in red.stderr, 'base_claim_wrong_red'
+
+
+def copy_claim_test(target):
+    relative = 'tests/' + CLAIM_SUITE + '.py'
+    shutil.copyfile(ROOT/relative, target/relative)
+
+
+def prove_media_claim(base):
+    """Exercise the same authenticated form, real SQLite and bound daemon on both sources."""
+    copy_claim_test(base)
+    assert_media_claim_red(base)
+    assert run_media_claim(ROOT, CLAIM_SUITE).returncode == 0, 'candidate_single_calendar_claim_suite_failed'
+    return dict(case='readonly-calendar-claim',base_sha=MEDIA_BASE,base='RED',head='GREEN',
+        code=MEDIA_DENIED)
+
+
+class BaseBindingDenied(Exception):
+    """The browser rejection was corroborated by the same authenticated form test."""
 
 
 class Harness:
@@ -83,7 +127,7 @@ os.execv(os.environ['PROOF_DOCKER'],[os.environ['PROOF_DOCKER'],*args])
 '''
         (self.bin/'docker').write_text(wrapper); (self.bin/'docker').chmod(0o755)
 
-    def prepare(self):
+    def prepare(self, source_sha=None):
         assert docker('inspect', self.app, check=False).returncode != 0
         docker('run','-d','--name',self.app,'--user','10001:10001','--read-only',
                '--cap-drop','ALL','--security-opt','no-new-privileges',
@@ -97,6 +141,11 @@ os.execv(os.environ['PROOF_DOCKER'],[os.environ['PROOF_DOCKER'],*args])
             for name,data in [('fixture.py',fixture.encode()),('devflow-fixture-password',self.password.encode())]:
                 info=tarfile.TarInfo(name);info.size=len(data);info.mode=0o600;bundle.addfile(info,io.BytesIO(data))
         docker('exec','-i',self.app,'tar','-xf','-','-C','/tmp',data=archive.getvalue())
+        if source_sha is not None:
+            # Only the fixed app source is overlaid; dependencies and browser
+            # match the candidate test image. Both runs use the same fixture.
+            bundle = subprocess.check_output(['git','archive',source_sha,'teams_transcription'],cwd=ROOT)
+            docker('exec','-i',self.app,'tar','-xf','-','-C','/tmp',data=bundle)
         docker('exec','-d',self.app,'python','/tmp/fixture.py')
         for _ in range(60):
             p=docker('exec',self.app,'python','-c',
@@ -105,10 +154,10 @@ os.execv(os.environ['PROOF_DOCKER'],[os.environ['PROOF_DOCKER'],*args])
             time.sleep(.5)
         assert p.returncode == 0, 'given_fixture_not_ready'
 
-    def checkout(self, name, base=False):
+    def checkout(self, name, source_sha=None):
         target=self.scratch/name;target.mkdir()
-        if base:
-            archive=subprocess.check_output(['git','archive',BASE],cwd=ROOT)
+        if source_sha is not None:
+            archive=subprocess.check_output(['git','archive',source_sha],cwd=ROOT)
             with tarfile.open(fileobj=io.BytesIO(archive)) as bundle: bundle.extractall(target,filter='data')
         else:
             shutil.copytree(ROOT/'.devflow',target/'.devflow',ignore=shutil.ignore_patterns('evidence*','node_modules','__pycache__'))
@@ -146,8 +195,56 @@ asyncio.run(main())
 '''
         docker('exec','-i',self.app,'python','-c',decode,data=base64.b64encode(path.read_bytes()))
 
+    def assert_readonly_calendar(self, target, label):
+        rc, folder = self.operate(target,label,'calendar-settings')
+        assert rc == 0, 'readonly_calendar_settings_unavailable'
+        result = assert_success(folder,'calendar-settings')
+        assert result['scheduler_paused'] and len(result['calendars']) == 1
+        row = result['calendars'][0]
+        assert row['enabled'] is True and row['recording_authorized'] is False and row['speaking_authorized'] is False
+        return row
+
+    def select_readonly_occurrence(self, target, *, baseline):
+        row = self.assert_readonly_calendar(target, 'media-settings')
+        rc, folder = self.operate(target,'media-occurrences','calendar-occurrences')
+        assert rc == 0, 'media_calendar_selection_not_ready'
+        args = select_binding_args(assert_success(folder,'calendar-occurrences'))
+        if baseline:
+            # The old selector did not export revision for this untouched fixture.
+            args.setdefault('revision', 1)
+        assert args['revision'] == 1
+        return row, args
+
+    def refuse_invalid_binding(self, target, args):
+        for label, attempt, expected in [
+            ('binding-string-args',{**args,'revision':'1','present':'true'},'invalid_binding_args'),
+            ('binding-stale-selection',args,'binding_selection_changed'),
+        ]:
+            rc, folder = self.operate(target,label,'issue-binding',attempt)
+            assert rc != 0 and json.loads((folder/'result.json').read_text()) == {'ok':False,'code':expected}
+            assert not list(folder.glob('*.png'))
+            self.records.append(dict(case=label,exit=rc,assertion='refused',code=expected))
+
+    def prove_media_base(self):
+        base = self.checkout('media-base',MEDIA_BASE)
+        self.assert_readonly_calendar(base,'media-base-settings')
+        rc, folder = self.operate(base,'media-base-occurrences','calendar-occurrences')
+        assert rc == 0, 'base_calendar_selection_not_ready'
+        args = select_binding_args(assert_success(folder,'calendar-occurrences'))
+        # The fixed-base selector did not export revision; this untouched fixture
+        # is revision 1. Its production operation ignores the extra exact fields.
+        args['revision'] = 1
+        rc, folder = self.operate(base,'media-base-binding','issue-binding',args)
+        assert rc != 0, 'base_readonly_binding_must_be_red'
+        assert json.loads((folder/'result.json').read_text()) == {
+            'ok':False,'code':'target_occurrence_not_authorized'}
+        assert not list(folder.glob('*.png'))
+        self.records.append(dict(case='readonly-calendar-binding',base_sha=MEDIA_BASE,
+            assertion='RED',code='target_occurrence_not_authorized'))
+        self.records.append(prove_media_claim(base))
+
     def prove(self):
-        base=self.checkout('base',base=True)
+        base=self.checkout('base',BASE)
         rc,folder=self.operate(base,'base')
         try: assert_success(folder,'look')
         except AssertionError as exc:
@@ -159,9 +256,10 @@ asyncio.run(main())
             self.records.append(dict(source=source,case='base-look',exit=rc,assertion='RED',code=str(exc),png_count=len(list(folder.glob('*.png')))))
         else: raise AssertionError('base_must_be_red')
         head=self.checkout('head')
+        binding_args = {}
+        readonly_before = None
         for op in ['look','calendar-occurrences','calendar-settings','issue-binding']:
-            args={}
-            if op=='issue-binding': args=dict(occurrence_id=occurrence,present=True,media=True)
+            args=binding_args if op=='issue-binding' else {}
             rc,folder=self.operate(head,op,op,args)
             if rc:
                 self.records.append(dict(case=op,exit=rc,assertion='failed',
@@ -170,14 +268,20 @@ asyncio.run(main())
             result=assert_success(folder,op)
             self.decode_screenshot(folder/(op+'.png'))
             if op=='calendar-occurrences':
-                assert result['ready'] is True and len(result['occurrences'])==3, 'seeded_current_and_future_occurrences_missing'
-                # UI order is descending; its first item is the later meeting,
-                # intentionally outside the existing join window. Select the
-                # nearest fixture start without weakening admission or TTL.
-                occurrence=min(result['occurrences'],
-                    key=lambda row: datetime.fromisoformat(row['start_at']))['occurrence_id']
+                binding_args = select_binding_args(result)
+                assert binding_args['revision'] == 1
+            if op=='calendar-settings':
+                assert result['scheduler_paused'] and len(result['calendars']) == 1
+                row = result['calendars'][0]
+                assert row['enabled'] is True and row['recording_authorized'] is False and row['speaking_authorized'] is False
+                readonly_before = row
+            if op=='issue-binding':
+                assert result['revision'] == binding_args['revision']+1
             dest=self.evidence/op;shutil.copytree(folder,dest)
             self.records.append(dict(case=op,exit=rc,assertion='GREEN'))
+        assert self.assert_readonly_calendar(head,'media-head-settings-after-binding') == readonly_before
+        self.records.append(dict(case='readonly-calendar-settings-unchanged',assertion='GREEN'))
+        self.refuse_invalid_binding(head, binding_args)
         rc,folder=self.operate(head,'calendar-settings-save','calendar-settings',
             dict(calendar_ref='primary',revision=0,enabled=True))
         assert rc==0, 'calendar_settings_save_operation_failed'
@@ -228,19 +332,67 @@ asyncio.run(main())
             self.records.append(dict(case=label,exit=rc,assertion='refused'))
 
 
+def run_media_scenario(record, scratch, evidence, *, baseline):
+    """Use installed exact-source image and operate script; no real media or OAuth."""
+    scratch.mkdir()
+    harness = Harness(scratch, evidence)
+    state = {}
+
+    def given():
+        harness.prepare()
+        state['checkout'] = harness.checkout('media', harness.sha if baseline else None)
+        state['calendar'], state['args'] = harness.select_readonly_occurrence(state['checkout'], baseline=baseline)
+        state['source'] = state['checkout'] if baseline else ROOT
+        if baseline:
+            copy_claim_test(state['source'])
+
+    def when():
+        target, args = state['checkout'], state['args']
+        rc, folder = harness.operate(target,'media-issue','issue-binding',args)
+        if rc != 0:
+            assert json.loads((folder/'result.json').read_text()) == {'ok':False,'code':MEDIA_DENIED}
+            assert not list(folder.glob('*.png'))
+            assert_media_claim_red(state['source'])
+            raise BaseBindingDenied(MEDIA_DENIED)
+        state['binding'] = assert_success(folder,'issue-binding')
+        state['png'] = folder/'issue-binding.png'
+
+    def then():
+        target, args = state['checkout'], state['args']
+        assert state['binding']['revision'] == args['revision'] + 1
+        assert harness.assert_readonly_calendar(target,'media-settings-after') == state['calendar']
+        harness.refuse_invalid_binding(target,args)
+        assert run_media_claim(state['source'], CLAIM_SUITE).returncode == 0, 'single_calendar_claim_suite_failed'
+        harness.decode_screenshot(state['png'])
+        shots = evidence/'shots'
+        shots.mkdir(exist_ok=True)
+        shutil.copyfile(state['png'], shots/(MEDIA_SCENARIO.replace('/','__')+'.png'))
+
+    try:
+        record(MEDIA_SCENARIO, given, when, then, expected_base_red=BaseBindingDenied)
+    finally:
+        if harness.app_created:
+            docker('rm','-f',harness.app)
+
 
 def main():
     assert os.environ.get('GITHUB_ACTIONS')=='true' and os.environ.get('RUNNER_ENVIRONMENT')=='github-hosted'
     assert os.environ.get('GITHUB_REPOSITORY')=='timmypai/teams-transcription'
     evidence=ROOT/'.devflow/evidence/operate-export';evidence.mkdir(parents=True,exist_ok=True);evidence.chmod(0o700)
     with tempfile.TemporaryDirectory(prefix='operate-export-') as temp:
-        h=Harness(Path(temp),evidence)
+        scratch = Path(temp)
+        media_scratch = scratch/'media'; media_scratch.mkdir()
+        base = Harness(media_scratch,evidence)
+        h=Harness(scratch,evidence)
         try:
+            base.prepare(MEDIA_BASE);base.prove_media_base()
             h.prepare();h.prove()
         finally:
             if h.app_created:
                 docker('rm','-f',h.app)
-            receipt=dict(base_sha=BASE,head_sha=h.sha,cases=h.records,
+            if base.app_created:
+                docker('rm','-f',base.app)
+            receipt=dict(base_sha=BASE,media_base_sha=MEDIA_BASE,head_sha=h.sha,cases=base.records+h.records,
                          daemon='hosted-rootful-socket-adapter; production-rootless-unchanged',
                          real_join=False,oauth_or_model=False)
             (evidence/'proof.json').write_text(json.dumps(receipt,indent=2)+'\n');(evidence/'proof.json').chmod(0o600)

@@ -130,6 +130,7 @@ def receipt(db,session_id,status):
 def meeting_view(store,occurrence_id):
     """Authenticated admin projection; never materializes transcript/title/URL."""
     from .calendar_client import validate_teams_url
+    from .target_consent import TARGET_CALENDAR_CLAIM_EVENT
     from urllib.parse import urlsplit
     with store._locked() as db:
         occurrence=store._occurrence(store._row(db,'calendar_occurrences','id',occurrence_id))
@@ -153,6 +154,9 @@ def meeting_view(store,occurrence_id):
         prepared=occurrence.get('local_preparation')
         if isinstance(prepared,dict):result['preparation_request_sha256']=prepared.get('request_sha256')
         if proof is not None:
+            if db.execute('SELECT 1 FROM session_events WHERE meeting_id=? AND kind=? LIMIT 1',
+                    (session_id,TARGET_CALENDAR_CLAIM_EVENT)).fetchone():
+                proof['target_calendar_claimed']=True
             proof['cleanup_verified']=proof['cleanup_verified'] and not active and run['state']!='running'
             proof['joined']=bool(db.execute("SELECT 1 FROM session_events WHERE meeting_id=? AND kind='joined' LIMIT 1",(session_id,)).fetchone())
             rx=status.get('rx_audio')

@@ -59,8 +59,7 @@ def main():
         initialize_admin_credentials(settings, password)
         daemon = AssistantDaemon(settings, calendar=Calendar())
         daemon.store.update_settings({'scheduler_paused':True})
-        daemon.store.save_calendar(dict(calendar_id='synthetic', name='PRIVATE-calendar', enabled=True,
-            recording_authorized=True, speaking_authorized=True))
+        daemon.store.save_calendar(dict(calendar_id='synthetic', name='PRIVATE-calendar', enabled=True))
         app = create_admin_app(daemon, settings)
         async def fixture_mode(request):
             mode = request.path_params['mode']
