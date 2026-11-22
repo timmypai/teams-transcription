@@ -1,0 +1,39 @@
+name: Install target Google Web client
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+  pull-requests: read
+  checks: read
+concurrency:
+  group: manual-target-teams-transcription
+  cancel-in-progress: false
+jobs:
+  install:
+    if: github.repository == 'timmypai/teams-transcription' && github.ref == 'refs/heads/main'
+    runs-on: [self-hosted, devflow]
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+          clean: false
+      - name: Reviewed deployed default tip admission before client input
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 tools/target_admission.py --output "$RUNNER_TEMP/teams-google-client-admission.json"
+      - name: Fixed private client installation only, no OAuth or Calendar read
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TEAMS_GOOGLE_CLIENT_JSON: ${{ secrets.TEAMS_GOOGLE_CLIENT_JSON }}
+        run: python3 deploy/target_deploy.py install-google-client
+      - if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: devflow-evidence-google-client-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .devflow/evidence-deploy-${{ github.run_id }}-${{ github.run_attempt }}/
+          retention-days: 1
+          if-no-files-found: warn

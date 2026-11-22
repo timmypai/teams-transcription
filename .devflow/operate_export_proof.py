@@ -39,6 +39,9 @@ def assert_success(folder, op):
     assert result.get('ok') is True, 'host_export_not_success'
     if op == 'look':
         assert result == dict(ok=True, path='/login', status=200, title='管理登入')
+    elif op == 'calendar-settings':
+        from teams_transcription.calendar_readback import validate_settings_operation
+        validate_settings_operation(result)
     else:
         assert 'PRIVATE' not in json.dumps(result)
         assert result.get('timezone') == 'Asia/Taipei' if op == 'calendar-occurrences' else result.get('expires_in_seconds') == 300
@@ -156,7 +159,7 @@ asyncio.run(main())
             self.records.append(dict(source=source,case='base-look',exit=rc,assertion='RED',code=str(exc),png_count=len(list(folder.glob('*.png')))))
         else: raise AssertionError('base_must_be_red')
         head=self.checkout('head')
-        for op in ['look','calendar-occurrences','issue-binding']:
+        for op in ['look','calendar-occurrences','calendar-settings','issue-binding']:
             args={}
             if op=='issue-binding': args=dict(occurrence_id=occurrence,present=True,media=True)
             rc,folder=self.operate(head,op,op,args)
@@ -175,6 +178,26 @@ asyncio.run(main())
                     key=lambda row: datetime.fromisoformat(row['start_at']))['occurrence_id']
             dest=self.evidence/op;shutil.copytree(folder,dest)
             self.records.append(dict(case=op,exit=rc,assertion='GREEN'))
+        rc,folder=self.operate(head,'calendar-settings-save','calendar-settings',
+            dict(calendar_ref='primary',revision=0,enabled=True))
+        assert rc==0, 'calendar_settings_save_operation_failed'
+        result=assert_success(folder,'calendar-settings')
+        primary=next(row for row in result['calendars'] if row['primary'])
+        assert result['saved'] is True and primary['enabled'] is True and primary['revision']==1
+        assert primary['recording_authorized'] is False and primary['speaking_authorized'] is False
+        self.decode_screenshot(folder/'calendar-settings.png')
+        shutil.copytree(folder,self.evidence/'calendar-settings-save')
+        self.records.append(dict(case='calendar-settings-save',exit=rc,assertion='GREEN'))
+        # A valid browser PNG and exit zero must not publish extra private keys.
+        settings_script=head/'.devflow/ui/ops/calendar-settings.spec.ts'
+        settings_script.write_text(settings_script.read_text().replace(
+            "return calendarSettings(page, JSON.parse(process.env.DEVFLOW_OP_ARGS || '{}'));",
+            "const value=await calendarSettings(page,{}); return {...value, calendar_id:process.env.ADMIN_PASSWORD};"))
+        rc,folder=self.operate(head,'calendar-settings-private-canary','calendar-settings')
+        assert rc!=0, 'private_calendar_settings_accepted'
+        assert json.loads((folder/'result.json').read_text())==dict(ok=False,code='operation_export_failed')
+        assert self.password not in (folder/'result.json').read_text() and not list(folder.glob('*.png'))
+        self.records.append(dict(case='calendar-settings-private-canary',exit=rc,assertion='refused'))
         # Fault injection remains inside real sandboxed Playwright. All cases
         # deliberately return exit 0 except late-failure; none is a fake PASS.
         success=json.dumps(dict(ok=True,path='/login',status=200,title='管理登入'))

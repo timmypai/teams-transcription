@@ -9,7 +9,12 @@ import zlib
 from zoneinfo import ZoneInfoNotFoundError
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
-from teams_transcription.calendar_readback import validate_operation
+from teams_transcription.calendar_readback import validate_operation, validate_settings_operation
+
+SETTINGS_FAILURES = frozenset({'invalid_calendar_settings_args','calendar_settings_missing',
+    'calendar_settings_invalid','calendar_settings_not_quiescent','calendar_revision_changed',
+    'calendar_settings_save_failed','settings_page_required','missing_ADMIN_PASSWORD','login_page_required',
+    'admin_login_failed','operation_failed'})
 
 
 def read_helper(socket, helper, name, limit):
@@ -64,7 +69,8 @@ def export(socket, helper, folder, operation, playwright_exit):
         if isinstance(result, dict) and result.get('ok') is False:
             # Never publish raw reporter errors, DOM, inputs or exception text.
             code = result.get('code')
-            if isinstance(code, str) and re.fullmatch(r'[a-z_]{1,80}', code):
+            if (operation=='calendar-settings' and code in SETTINGS_FAILURES or
+                    operation!='calendar-settings' and isinstance(code,str) and re.fullmatch(r'[a-z_]{1,80}',code)):
                 failure['code'] = code
             raise ValueError('operation_not_successful')
         if playwright_exit != 0 or not isinstance(result, dict) or result.get('ok') is not True:
@@ -73,6 +79,8 @@ def export(socket, helper, folder, operation, playwright_exit):
             raise ValueError('invalid_look_metadata')
         if operation == 'calendar-occurrences':
             validate_operation(result)
+        if operation == 'calendar-settings':
+            validate_settings_operation(result)
         png = read_helper(socket, helper, operation+'.png', 32*1024*1024)
         validate_png(png)
         screenshot = folder/(operation+'.png')

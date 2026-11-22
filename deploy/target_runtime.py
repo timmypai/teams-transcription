@@ -539,13 +539,123 @@ async def anonymous_login(root):
         **access_evidence(origin))
 
 
+GOOGLE_INSTALL_CODES = frozenset({'google_client_input_required','google_client_format_invalid',
+    'google_client_redirect_mismatch','google_client_scope_rejected','google_client_private_required',
+    'google_client_conflict','google_client_install_failed'})
+SAFE_FAILURE_CODES = SAFE_FAILURE_CODES | GOOGLE_INSTALL_CODES
+
+
+def install_google_client(root, raw):
+    """One fixed private file, stdin only; no grant/token read or file replacement.
+
+    No-follow directory descriptors pin the owned persistent root. The existing
+    application claim lock serializes the paused/idle check and publication.
+    """
+    import secrets
+    from teams_transcription.assistant_config import load_assistant_settings
+    def unique(pairs):
+        result = {}
+        for key,value in pairs:
+            require(key not in result,'google_client_format_invalid')
+            result[key] = value
+        return result
+    require(isinstance(raw,str) and raw.strip(),'google_client_input_required')
+    try:
+        require(len(raw.encode())<=65536,'google_client_format_invalid')
+        document = json.loads(raw,object_pairs_hook=unique)
+        require(isinstance(document,dict) and set(document)=={'web'},'google_client_format_invalid')
+        web = document['web']
+        require(isinstance(web,dict) and not set(web)-{'client_id','client_secret','redirect_uris',
+            'project_id','auth_uri','token_uri','auth_provider_x509_cert_url','javascript_origins'},'google_client_format_invalid')
+        require(all(isinstance(web.get(key),str) and 1<=len(web[key])<=4096
+            and not any(ord(c)<33 or ord(c)==127 for c in web[key])
+            for key in ('client_id','client_secret')),'google_client_format_invalid')
+        redirects = web.get('redirect_uris')
+        require(isinstance(redirects,list) and 1<=len(redirects)<=32
+            and all(isinstance(uri,str) and 1<=len(uri)<=2048 for uri in redirects),'google_client_format_invalid')
+        # Only fields actually used by the fixed Google endpoints are persisted.
+        data = {'web':{key:web[key] for key in ('client_id','client_secret','redirect_uris')}}
+    except (TypeError,ValueError,UnicodeError) as error:
+        if type(error) is ValueError and str(error) in GOOGLE_INSTALL_CODES:raise
+        raise ValueError('google_client_format_invalid') from None
+    root = Path(root)
+    runtime = root/'config/runtime.yml'
+    private(root,True);private(runtime)
+    settings = load_assistant_settings(runtime)
+    require(settings.data_root==str(root) and settings.google_client_config_file==str(root/'config/google-client.json'),
+        'google_client_scope_rejected')
+    origin = configured_entrypoint(root)
+    require(origin+'/google/callback' in redirects,'google_client_redirect_mismatch')
+    # Reject invalid redirect entries, not merely absence of the effective URI.
+    from urllib.parse import urlsplit
+    for uri in redirects:
+        try:
+            parsed = urlsplit(uri)
+            require(parsed.scheme in {'https','http'} and bool(parsed.hostname) and not parsed.username
+                and not parsed.password and not parsed.query and not parsed.fragment
+                and (parsed.scheme=='https' or parsed.hostname in {'127.0.0.1','localhost','::1'}),
+                'google_client_redirect_mismatch')
+        except ValueError:raise ValueError('google_client_redirect_mismatch') from None
+    fd = os.open(root,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW)
+    temporary = None
+    try:
+        info = os.fstat(fd)
+        require((info.st_uid,info.st_gid,stat.S_IMODE(info.st_mode))==(os.getuid(),os.getgid(),0o700),
+            'google_client_private_required')
+        child = os.open('config',os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW,dir_fd=fd)
+        os.close(fd);fd=child
+        info = os.fstat(fd)
+        require((info.st_uid,info.st_gid,stat.S_IMODE(info.st_mode))==(os.getuid(),os.getgid(),0o700),
+            'google_client_private_required')
+        lock = os.open(root/'.meeting-store.lock',os.O_RDWR|os.O_NOFOLLOW)
+        with os.fdopen(lock,'r+b') as stream:
+            fcntl.flock(stream,fcntl.LOCK_EX|fcntl.LOCK_NB)
+            require(database_state(root)['quiescent'],'runtime_not_quiescent')
+            try: existing = os.open('google-client.json',os.O_RDONLY|os.O_NOFOLLOW|os.O_NONBLOCK,dir_fd=fd)
+            except FileNotFoundError:existing = None
+            if existing is not None:
+                with os.fdopen(existing,'rb') as source:
+                    info = os.fstat(source.fileno())
+                    require(stat.S_ISREG(info.st_mode) and info.st_nlink==1 and
+                        (info.st_uid,info.st_gid,stat.S_IMODE(info.st_mode))==(os.getuid(),os.getgid(),0o600),
+                        'google_client_private_required')
+                    saved = source.read(65537)
+                require(len(saved)<=65536 and json.loads(saved)==data,'google_client_conflict')
+            else:
+                temporary = '.google-client-'+secrets.token_hex(16)
+                out = os.open(temporary,os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW,0o600,dir_fd=fd)
+                with os.fdopen(out,'w') as destination:
+                    os.fchmod(destination.fileno(),0o600)
+                    destination.write(json.dumps(data));destination.flush();os.fsync(destination.fileno())
+                os.link(temporary,'google-client.json',src_dir_fd=fd,dst_dir_fd=fd,follow_symlinks=False)
+                os.unlink(temporary,dir_fd=fd);temporary=None
+                os.fsync(fd)
+            verify = os.open('google-client.json',os.O_RDONLY|os.O_NOFOLLOW|os.O_NONBLOCK,dir_fd=fd)
+            with os.fdopen(verify,'rb') as source:
+                info = os.fstat(source.fileno())
+                require(stat.S_ISREG(info.st_mode) and info.st_nlink==1 and
+                    (info.st_uid,info.st_gid,stat.S_IMODE(info.st_mode))==(os.getuid(),os.getgid(),0o600)
+                    and json.loads(source.read(65537))==data,'google_client_install_failed')
+        return dict(installed=True,existing=existing is not None,client_private=True,redirect_registered=True,
+            oauth_verified=False,google_read_verified=False)
+    except (OSError,ValueError) as error:
+        if type(error) is ValueError and str(error) in SAFE_FAILURE_CODES:raise
+        raise ValueError('google_client_install_failed') from None
+    finally:
+        if temporary is not None:os.unlink(temporary,dir_fd=fd)
+        os.close(fd)
+
+
 def main():
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('action',choices=['init','state','enable','disable','backup','smoke','sandbox','view','join','output-disable','stop','prepare-home','verify','entrypoint','login','metadata'])
+    p.add_argument('action',choices=['init','state','enable','disable','backup','smoke','sandbox','view','join','output-disable','stop','prepare-home','verify','entrypoint','login','metadata','install-google-client'])
     p.add_argument('--id');p.add_argument('--request-sha');p.add_argument('--revision',type=int);args=p.parse_args()
     try:
         root=Path('/data')
-        if args.action in {'init','verify'}:
+        if args.action=='install-google-client':
+            require(not args.id and not args.request_sha and args.revision is None,'control_arguments_rejected')
+            value=install_google_client(root,sys.stdin.read(65537))
+        elif args.action in {'init','verify'}:
             raw=sys.stdin.read(4097)
             password=read_password(raw) if raw else None
             if args.action=='init':value=initialize(root,password)

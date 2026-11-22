@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
-import { calendarOccurrences, issueBinding, login, OperationError } from './operations';
-import { readFileSync } from 'node:fs';
+import { calendarOccurrences, calendarSettings, issueBinding, login, OperationError } from './operations';
+import { readFileSync, mkdirSync } from 'node:fs';
+import { runOperation } from './ops/run';
 process.env.ADMIN_PASSWORD = readFileSync(process.env.DEVFLOW_FIXTURE_PASSWORD_FILE || '/tmp/devflow-fixture-password', 'utf8').trim();
 
 // Disposable service only. These are NOT the manual AC-4 Teams/audio acceptance.
@@ -59,6 +60,28 @@ test('issue-binding: Given synced calendar, When issue in window, Then binding e
   });
 });
 
+test('Calendar settings reads before exact form write, preserves grants and does not poll or OAuth', async ({page}) => {
+  await login(page);
+  await page.goto('/settings');
+  const requests: string[] = [];
+  page.on('request', request => requests.push(request.method()+' '+new URL(request.url()).pathname));
+  const before = await calendarSettings(page, {});
+  expect(before.saved).toBe(false);
+  expect(before.scheduler_paused).toBe(true);
+  const original = before.calendars[0];
+  expect(original.calendar_ref).toMatch(/^[a-f0-9]{32}$/);
+  expect(JSON.stringify(before)).not.toMatch(/PRIVATE|synthetic|password|csrf|@|https?:/);
+  const after = await calendarSettings(page, {calendar_ref:original.calendar_ref,revision:original.revision,enabled:!original.enabled});
+  expect(after.saved).toBe(true);
+  expect(after.calendars[0]).toEqual({...original,revision:original.revision+1,enabled:!original.enabled});
+  await expect(calendarSettings(page, {calendar_ref:original.calendar_ref,revision:original.revision,enabled:true})).rejects.toMatchObject({code:'calendar_revision_changed'});
+  await expect(calendarSettings(page, {calendar_ref:'PRIVATE@example.com',revision:0,enabled:true})).rejects.toMatchObject({code:'invalid_calendar_settings_args'});
+  await expect(calendarSettings(page, {calendar_ref:'primary',revision:0,enabled:true,recording_authorized:true})).rejects.toMatchObject({code:'invalid_calendar_settings_args'});
+  // Restore only the originally observed read bit via the same reviewed form.
+  await calendarSettings(page, {calendar_ref:original.calendar_ref,revision:original.revision+1,enabled:original.enabled});
+  expect(requests.every(row => ['GET /settings','GET /assets/calendar.css','POST /actions/calendar-readonly'].includes(row))).toBe(true);
+});
+
 test('operations refuse missing credentials and unconfirmed consent without a write', async ({ page }) => {
   const password = process.env.ADMIN_PASSWORD;
   delete process.env.ADMIN_PASSWORD;
@@ -111,5 +134,30 @@ test('calendar refuses absent, malformed, stale or inconsistent evidence and uns
     });
     await expect(calendarOccurrences(page)).rejects.toBeInstanceOf(OperationError);
     await page.unroute('**/schedule');
+  }
+});
+
+test('production settings runner creates primary read-only and exports only safe JSON/heading PNG', async ({page}) => {
+  await login(page);
+  const evidence = process.env.DEVFLOW_UI_EVIDENCE || '/tmp/devflow-evidence';
+  mkdirSync(evidence,{recursive:true});
+  const resultPath = evidence+'/calendar-settings-result.json';
+  const previousOrigin = process.env.BASE_URL, previousResult = process.env.DEVFLOW_OP_RESULT;
+  process.env.BASE_URL = 'http://127.0.0.1:18081';
+  process.env.DEVFLOW_OP_RESULT = resultPath;
+  try {
+    await expect(runOperation(page,'calendar-settings',() => calendarSettings(page,{calendar_ref:'primary'})))
+      .rejects.toThrow('invalid_calendar_settings_args');
+    expect(JSON.parse(readFileSync(resultPath,'utf8'))).toMatchObject({ok:false,code:'invalid_calendar_settings_args'});
+    await runOperation(page,'calendar-settings',() => calendarSettings(page,{calendar_ref:'primary',revision:0,enabled:true}));
+    const result = JSON.parse(readFileSync(resultPath,'utf8'));
+    const primary = result.calendars.find(row => row.primary);
+    expect(result).toMatchObject({ok:true,saved:true,scheduler_paused:true});
+    expect(primary).toMatchObject({revision:1,enabled:true,recording_authorized:false,speaking_authorized:false});
+    expect(JSON.stringify(result)).not.toMatch(/PRIVATE|synthetic|password|csrf|@|https?:/);
+    expect(readFileSync(evidence+'/calendar-settings.png').subarray(0,8).toString('hex')).toBe('89504e470d0a1a0a');
+  } finally {
+    if (previousOrigin === undefined) delete process.env.BASE_URL; else process.env.BASE_URL = previousOrigin;
+    if (previousResult === undefined) delete process.env.DEVFLOW_OP_RESULT; else process.env.DEVFLOW_OP_RESULT = previousResult;
   }
 });

@@ -144,13 +144,30 @@ class AssistantStore(TargetConsentMixin, PostmeetingStoreMixin, MeetingStore):
             self._audit(db,actor,'settings_changed','settings')
             return current
 
-    def save_calendar(self, values, actor='admin'):
+    def save_calendar(self, values, actor='admin', *, read_only=False):
         fields = {'id','account_id','calendar_id','name','enabled','recording_authorized','speaking_authorized',
             'join_early_seconds','max_lateness_seconds','revision'}
         if not isinstance(values,dict) or set(values)-fields:
             raise AssistantStoreError('invalid_calendar')
+        if read_only and (set(values)!={'id','revision','enabled'} or type(values['revision']) is not int
+                or type(values['enabled']) is not bool):
+            raise AssistantStoreError('invalid_calendar')
         ident = values.get('id') or uuid.uuid4().hex
         with self._locked() as db:
+            if read_only:
+                # Same lock/transaction boundary as the write and Join claim.
+                policy = json.loads(db.execute('SELECT value FROM assistant_settings WHERE id=0').fetchone()[0])
+                active = db.execute("SELECT EXISTS(SELECT 1 FROM execution_leases WHERE state='active')").fetchone()[0]
+                if policy.get('scheduler_paused') is not True or active:
+                    raise AssistantStoreError('calendar_settings_not_quiescent')
+                if ident=='primary':
+                    if values['revision']!=0 or db.execute('SELECT 1 FROM assistant_calendars WHERE '
+                            "account_id='default' AND calendar_id='primary'").fetchone():
+                        raise AssistantStoreError('revision_conflict')
+                    ident = uuid.uuid4().hex
+                    values = {**values,'id':ident,'account_id':'default','calendar_id':'primary','name':'主要行事曆'}
+                elif not db.execute('SELECT 1 FROM assistant_calendars WHERE id=?',(ident,)).fetchone():
+                    raise AssistantStoreError('record_not_found')
             old = db.execute('SELECT * FROM assistant_calendars WHERE id=?',(ident,)).fetchone()
             current = json.loads(old['value']) if old else {'enabled':False,'recording_authorized':False,
                 'speaking_authorized':False,'join_early_seconds':300,'max_lateness_seconds':300,'account_id':'default'}

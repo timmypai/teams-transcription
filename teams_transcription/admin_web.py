@@ -438,6 +438,18 @@ def create_admin_app(daemon, settings, *, local_teams_control=False):
             form(session,'media-policy','<label>每行一個獲准 host（全小寫；空白拒絕全部）<textarea name="hosts">'+
                 h('\n'.join(settings.allowed_egress_hosts))+'</textarea></label>'+
                 checkbox('confirmed','我明確核准這份媒體出口政策，不代表會議或 OAuth 同意'),'保存媒體政策')+'</section>')
+        body += '<section id="calendar-settings" data-settings="'+h(json.dumps(dict(
+            scheduler_paused=policy['scheduler_paused'],calendars=[dict(
+                calendar_ref=row['id'],revision=row['revision'],primary=row['calendar_id']=='primary' and row['account_id']=='default',
+                **{key:row[key] for key in ('enabled','recording_authorized','speaking_authorized',
+                    'join_early_seconds','max_lateness_seconds')}) for row in calendars])))+'"><h2>Calendar 讀取設定（不授權會議）</h2>'
+        readonly_rows = [(row['id'],row['revision'],row['enabled']) for row in calendars]
+        if not any(row['calendar_id']=='primary' and row['account_id']=='default' for row in calendars):
+            readonly_rows.append(('primary',0,False))
+        for ref,revision,enabled in readonly_rows:
+            body += form(session,'calendar-readonly',hidden('calendar_ref',ref)+hidden('revision',revision)+
+                checkbox('enabled','啟用唯讀 Calendar',enabled),'保存唯讀設定')
+        body += '</section>'
         for calendar in rows:
             fields = ''.join(hidden(key,calendar[key]) for key in ('id','revision') if key in calendar)
             fields += (input_field('account_id','資料帳號範圍',calendar['account_id'])+
@@ -776,6 +788,18 @@ def create_admin_app(daemon, settings, *, local_teams_control=False):
             poll = await daemon.poll_calendar()
             session['calendar_readback'] = poll['readback']
             destination = '/schedule'
+        elif name=='calendar-readonly':
+            if set(values)-{'csrf','calendar_ref','revision','enabled'} or values.get('enabled','on')!='on':
+                raise AdminError('invalid_calendar')
+            ref = values.get('calendar_ref')
+            if not isinstance(ref,str) or (ref!='primary' and not re.fullmatch('[a-f0-9]{32}',ref)):
+                raise AdminError('invalid_calendar')
+            async with daemon._join_lock:
+                if daemon.auth_operation_in_progress or daemon.status()['active_session_id'] is not None or daemon.closing.is_set():
+                    raise AdminError('calendar_settings_not_quiescent')
+                await asyncio.to_thread(daemon.store.save_calendar,dict(id=ref,revision=integer(values,'revision'),
+                    enabled='enabled' in values),read_only=True)
+            destination = '/settings'
         elif name=='calendar':
             fields = {key:values[key] for key in ('id','account_id','calendar_id','name') if key in values}
             fields.update(enabled='enabled' in values,recording_authorized='recording_authorized' in values,

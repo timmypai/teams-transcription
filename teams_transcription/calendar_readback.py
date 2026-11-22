@@ -80,3 +80,25 @@ def validate_operation(value):
             r'\d{4}-\d\d-\d\dT[\d:.]+(?:Z|[+-]\d\d:\d\d)',row[key]) for key in ('start_at','end_at')))
         start, end = (datetime.fromisoformat(row[key]) for key in ('start_at','end_at'))
         require(start.tzinfo is not None and end.tzinfo is not None and end > start)
+
+
+def validate_settings_operation(value):
+    def require(condition):
+        if not condition:raise ValueError('invalid_calendar_settings_metadata')
+    require(isinstance(value,dict) and set(value)=={'ok','scheduler_paused','calendars','saved'})
+    require(value['ok'] is True and type(value['scheduler_paused']) is bool and type(value['saved']) is bool)
+    require(not value['saved'] or value['scheduler_paused'])
+    require(isinstance(value['calendars'],list))
+    seen = set(); primary = 0
+    for row in value['calendars']:
+        require(isinstance(row,dict) and set(row)=={'calendar_ref','revision','primary','enabled',
+            'recording_authorized','speaking_authorized','join_early_seconds','max_lateness_seconds'})
+        require(isinstance(row['calendar_ref'],str) and re.fullmatch('[a-f0-9]{32}',row['calendar_ref'])
+            and row['calendar_ref'] not in seen)
+        seen.add(row['calendar_ref'])
+        require(type(row['revision']) is int and 0<row['revision']<2**53)
+        require(all(type(row[key]) is bool for key in ('primary','enabled','recording_authorized','speaking_authorized')))
+        require(type(row['join_early_seconds']) is int and 0<=row['join_early_seconds']<=600
+            and type(row['max_lateness_seconds']) is int and 0<=row['max_lateness_seconds']<=1800)
+        primary += row['primary']
+    require(primary<=1)

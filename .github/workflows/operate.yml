@@ -5,7 +5,7 @@ on:
       op:
         description: Reviewed UI operation
         type: choice
-        options: [look, calendar-occurrences, issue-binding]
+        options: [look, calendar-occurrences, calendar-settings, issue-binding]
         required: true
       args:
         description: Nonsecret JSON object; binding requires fresh present/media true

@@ -3,7 +3,7 @@
 set -euo pipefail
 umask 077
 cd "$(dirname "$0")/.."
-case ${DEVFLOW_OP:-} in look|calendar-occurrences|issue-binding) ;; *) echo 'unsupported_operation' >&2; exit 2;; esac
+case ${DEVFLOW_OP:-} in look|calendar-occurrences|calendar-settings|issue-binding) ;; *) echo 'unsupported_operation' >&2; exit 2;; esac
 E=.devflow/evidence/operate/${GITHUB_RUN_ID:-local}-${GITHUB_RUN_ATTEMPT:-1}
 mkdir -p "$(dirname "$E")"
 # A reused local/run directory must not supply stale success evidence.
