@@ -41,7 +41,8 @@ class TargetConsentMixin:
                 (json.dumps(value),occurrence_id))
             self._audit(db,'admin','target_owner_consent',occurrence_id)
             return dict(occurrence_id=occurrence_id,revision=revision+1,
-                request_sha256=consent['request_sha256'],expires_in_seconds=300)
+                request_sha256=consent['request_sha256'],expires_in_seconds=300,
+                issued_at=consent['issued_at'],expires_at=consent['expires_at'])
 
     def validate_target_consent(self, occurrence_id, acceptance):
         with self._locked() as db:

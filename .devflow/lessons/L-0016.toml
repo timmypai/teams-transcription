@@ -1,0 +1,9 @@
+id = "L-0016"
+title = "Expand native details before reading visible refusal diagnostics"
+event = "https://github.com/timmypai/teams-transcription/actions/runs/44973916746: issue-binding rejection assertion expected occurrence_outside_join_window but received generic binding_rejected."
+root_cause = "The server's fixed error code is inside a collapsed details element. innerText reads visible text and returned empty; the operation discarded the specific refusal. Expand the existing technical-details control and confirm visibility before reading, rather than weakening the expiry assertion or inventing a reason."
+category = "verification"
+
+[enforcement]
+kind = "test"
+ref = ".devflow/ui/operations.spec.ts::issue-binding: Given synced calendar, When issue in window, Then binding expires in 300s and expired/future are refused"

@@ -21,7 +21,7 @@ class ManualWorkflowTriggerTests(unittest.TestCase):
             'arm64-image.yml', 'meeting-functional-validation.yml',
             'oracle-staging.yml', 'oracle-diagnostics.yml', 'oracle-qa.yml',
             'pr-policy-shadow.yml', 'oracle-teams.yml',
-            'deploy.yml', 'control.yml', 'readiness.yml',
+            'deploy.yml', 'control.yml', 'readiness.yml', 'operate.yml',
         })
         for workflow in workflows:
             with self.subTest(workflow=workflow.name):
