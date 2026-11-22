@@ -52,6 +52,8 @@ export async function issueBinding(page: Page, args: Record<string, unknown>) {
   await form.getByRole('checkbox', { name: '我確認本次加入、錄音、逐字保存及助理發聲同意' }).check();
   await form.getByRole('button', { name: '建立五分鐘 Hermes 單次控制 binding（不加入）', exact: true }).click();
   if (await page.getByRole('heading', { name: '操作未完成', exact: true }).count()) {
+    await page.getByText('技術詳情', { exact: true }).click();
+    requireValue(await page.locator('details code').isVisible(), 'binding_rejected');
     const code = (await page.locator('details code').innerText()).trim();
     // Server renders fixed, escaped reasons, never exception bodies.
     requireValue(/^[a-z_]{1,80}$/.test(code), 'binding_rejected');
