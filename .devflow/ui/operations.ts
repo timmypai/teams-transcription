@@ -23,20 +23,74 @@ async function schedule(page: Page) {
   await page.goto('/schedule');
   requireValue(await page.getByRole('heading', { name: '排程與人工入會', exact: true }).isVisible(), 'schedule_page_required');
 }
+const googleCodes = new Set([
+  'google_oauth_client_required','google_authorization_required','google_reauthorization_required',
+  'private_calendar_configuration_invalid','private_calendar_directory_required','google_transport_failed',
+  'google_token_exchange_failed','invalid_google_token_response','calendar_response_too_large',
+  'invalid_google_response','calendar_request_failed','invalid_calendar_window','invalid_calendar_pagination',
+  'calendar_window_too_large','invalid_calendar_event','invalid_recurring_identity','calendar_event_too_large','calendar_poll_failed',
+]);
+async function readback(page: Page) {
+  requireValue(await page.locator('#calendar-readback').count() === 1, 'calendar_readback_missing');
+  const text = await page.locator('#calendar-readback').getAttribute('data-readback', {timeout:2000});
+  let value;
+  try { value = JSON.parse(text || ''); } catch { throw new OperationError('calendar_readback_invalid'); }
+  const google = value?.google, read = value?.read;
+  requireValue(/^[a-f0-9]{32}$/.test(value?.poll_id) && google && read &&
+    ['configured','authorized','reauthorization_required'].every(key => typeof google[key] === 'boolean') &&
+    (google.error_code === null || googleCodes.has(google.error_code)) &&
+    Number.isSafeInteger(value.enabled_calendar_count) && value.enabled_calendar_count >= 0 &&
+    ['attempted','succeeded','failed','event_count'].every(key => Number.isSafeInteger(read[key]) && read[key] >= 0) &&
+    typeof read.completed === 'boolean' && read.attempted <= value.enabled_calendar_count &&
+    read.attempted === read.succeeded + read.failed &&
+    (!read.completed || read.attempted === value.enabled_calendar_count) &&
+    Array.isArray(value.error_codes) && value.error_codes.every(code => googleCodes.has(code)) &&
+    typeof value.ready === 'boolean', 'calendar_readback_invalid');
+  const ready = google.configured && google.authorized && !google.reauthorization_required &&
+    google.error_code === null && value.enabled_calendar_count > 0 && read.completed &&
+    read.succeeded === value.enabled_calendar_count && value.error_codes.length === 0;
+  requireValue(value.ready === ready, 'calendar_readback_invalid');
+  return {poll_id:value.poll_id,google:{configured:google.configured,authorized:google.authorized,
+    reauthorization_required:google.reauthorization_required,error_code:google.error_code},
+    enabled_calendar_count:value.enabled_calendar_count,
+    read:{attempted:read.attempted,succeeded:read.succeeded,failed:read.failed,event_count:read.event_count,completed:read.completed},
+    error_codes:value.error_codes,ready};
+}
 export async function calendarOccurrences(page: Page) {
+  await schedule(page);
+  const previous = await page.locator('#calendar-readback').count() ? (await readback(page)).poll_id : null;
   await page.goto('/settings');
   requireValue(await page.getByRole('heading', { name: '設定', exact: true }).isVisible(), 'settings_page_required');
   await page.getByRole('button', { name: '更新行事曆', exact: true }).click();
+  requireValue(await page.getByRole('heading', { name: '排程與人工入會', exact: true }).isVisible(), 'calendar_sync_action_failed');
+  // Read the initiating session's completed snapshot through an explicit same-origin GET.
   await schedule(page);
-  requireValue(await page.locator('#calendar-sync').getAttribute('data-failed') === 'false', 'calendar_sync_failed');
+  const evidence = await readback(page);
+  requireValue(evidence.poll_id !== previous, 'calendar_readback_stale');
   const timezone = await page.locator('section[data-timezone]').getAttribute('data-timezone');
-  requireValue(timezone, 'schedule_timezone_missing');
-  const occurrences = await page.locator('tr[data-state="pending"]').evaluateAll(rows => rows.map(row => ({
+  requireValue(timezone && /^[A-Za-z_+-]+(?:\/[A-Za-z0-9_+-]+)*$/.test(timezone), 'schedule_timezone_missing');
+  try { new Intl.DateTimeFormat('en', {timeZone:timezone}); } catch { throw new OperationError('schedule_timezone_missing'); }
+  const rows = await page.locator('tr[data-state="pending"]').evaluateAll(rows => rows.map(row => ({
     occurrence_id: row.getAttribute('data-occurrence-id'),
     start_at: row.querySelector('time[data-edge="start"]')?.getAttribute('datetime'),
     end_at: row.querySelector('time[data-edge="end"]')?.getAttribute('datetime'),
-  })).filter(row => Date.parse(row.start_at || '') >= Date.now() && Date.parse(row.end_at || '') > Date.parse(row.start_at || '')));
-  return { timezone, occurrences };
+    discoverable: row.getAttribute('data-discoverable'), joinable: row.getAttribute('data-joinable'),
+  })));
+  const occurrences: {occurrence_id:string,start_at:string,end_at:string,joinable:boolean}[] = [];
+  for (const row of rows) {
+    requireValue(typeof row.occurrence_id === 'string' && /^[a-f0-9]{32}$/.test(row.occurrence_id) &&
+      typeof row.start_at === 'string' && typeof row.end_at === 'string' &&
+      /^\d{4}-\d\d-\d\dT[\d:.]+(?:Z|[+-]\d\d:\d\d)$/.test(row.start_at) &&
+      /^\d{4}-\d\d-\d\dT[\d:.]+(?:Z|[+-]\d\d:\d\d)$/.test(row.end_at) &&
+      Number.isFinite(Date.parse(row.start_at)) && Date.parse(row.end_at) > Date.parse(row.start_at) &&
+      ['true','false'].includes(row.discoverable || '') && ['true','false'].includes(row.joinable || ''),
+      'calendar_occurrence_invalid');
+    if (row.discoverable === 'true' && Date.parse(row.end_at) > Date.now()) {
+      occurrences.push({occurrence_id:row.occurrence_id,start_at:row.start_at,end_at:row.end_at,joinable:row.joinable === 'true'});
+    }
+  }
+  // Failed prerequisites never turn stale locally cached rows into candidates.
+  return {timezone,...evidence,occurrences:evidence.ready ? occurrences : []};
 }
 export async function issueBinding(page: Page, args: Record<string, unknown>) {
   const id = args.occurrence_id;

@@ -110,6 +110,7 @@ os.execv(os.environ['PROOF_DOCKER'],[os.environ['PROOF_DOCKER'],*args])
         else:
             shutil.copytree(ROOT/'.devflow',target/'.devflow',ignore=shutil.ignore_patterns('evidence*','node_modules','__pycache__'))
             shutil.copytree(ROOT/'docker',target/'docker')
+            shutil.copytree(ROOT/'teams_transcription',target/'teams_transcription',ignore=shutil.ignore_patterns('__pycache__'))
         return target
 
     def operate(self, target, label, op='look', args=None):
@@ -166,7 +167,7 @@ asyncio.run(main())
             result=assert_success(folder,op)
             self.decode_screenshot(folder/(op+'.png'))
             if op=='calendar-occurrences':
-                assert len(result['occurrences'])==2, 'seeded_future_occurrences_missing'
+                assert result['ready'] is True and len(result['occurrences'])==3, 'seeded_current_and_future_occurrences_missing'
                 # UI order is descending; its first item is the later meeting,
                 # intentionally outside the existing join window. Select the
                 # nearest fixture start without weakening admission or TTL.

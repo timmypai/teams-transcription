@@ -5,3 +5,4 @@ cd "$(dirname "$0")/.."
 python .devflow/hosted_verify.py
 python .devflow/operate_export_proof.py
 python .devflow/operate_proof.py
+python .devflow/calendar_readback_proof.py

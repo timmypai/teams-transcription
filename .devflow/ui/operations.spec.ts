@@ -5,7 +5,7 @@ process.env.ADMIN_PASSWORD = readFileSync(process.env.DEVFLOW_FIXTURE_PASSWORD_F
 
 // Disposable service only. These are NOT the manual AC-4 Teams/audio acceptance.
 test.use({ baseURL: 'http://127.0.0.1:18081' });
-test('calendar-occurrences: Given anonymous and seeded calendar, When login and sync, Then only future pending metadata', async ({ page }) => {
+test('calendar-occurrences: Given anonymous and seeded calendar, When login and sync, Then future and current pending metadata with read evidence', async ({ page }) => {
   await test.step('Given 未登入且一次性日曆尚未同步', async () => {
     await page.goto('/login');
     await expect(page.getByRole('heading', { name: '管理登入' })).toBeVisible();
@@ -17,8 +17,11 @@ test('calendar-occurrences: Given anonymous and seeded calendar, When login and 
   });
   await test.step('Then 回傳未來 pending 場次、時區及起訖，沒有私有內容', async () => {
     expect(result.timezone).toBe('Asia/Taipei');
-    expect(result.occurrences).toHaveLength(2);
-    expect(Object.keys(result.occurrences[0]).sort()).toEqual(['end_at', 'occurrence_id', 'start_at']);
+    expect(result.ready).toBe(true);
+    expect(result.read).toEqual({attempted:1,succeeded:1,failed:0,event_count:5,completed:true});
+    expect(result.occurrences.map(row => row.joinable).sort()).toEqual([false,true,true]);
+    expect(result.occurrences).toHaveLength(3);
+    expect(Object.keys(result.occurrences[0]).sort()).toEqual(['end_at', 'joinable', 'occurrence_id', 'start_at']);
     expect(result.occurrences[0].occurrence_id).toMatch(/^[a-f0-9]{32}$/);
     expect(Date.parse(result.occurrences[0].end_at)-Date.parse(result.occurrences[0].start_at)).toBe(3600000);
     expect(JSON.stringify(result)).not.toMatch(/PRIVATE|microsoft|password|csrf/i);
@@ -62,4 +65,51 @@ test('operations refuse missing credentials and unconfirmed consent without a wr
   try { await expect(login(page)).rejects.toMatchObject({ code: 'missing_ADMIN_PASSWORD' }); }
   finally { process.env.ADMIN_PASSWORD = password; }
   await expect(issueBinding(page, { occurrence_id: 'a'.repeat(32) })).rejects.toBeInstanceOf(OperationError);
+});
+
+for (const [mode, ready, attempted, succeeded] of [
+  ['zero',false,0,0], ['unconfigured',false,1,0], ['unauthorized',false,1,0],
+  ['failed',false,1,0], ['empty',true,1,1],
+] as const) {
+  test(`calendar readback ${mode}: UI success is separate from readiness`, async ({page}) => {
+    await page.request.post(`/fixture/${mode}`);
+    try {
+      await login(page);
+      const result = await calendarOccurrences(page);
+      expect(result.ready).toBe(ready);
+      expect(result.enabled_calendar_count).toBe(mode === 'zero' ? 0 : 1);
+      expect(result.read).toEqual({attempted,succeeded,failed:attempted-succeeded,event_count:0,completed:true});
+      expect(result.occurrences).toHaveLength(mode === 'empty' ? 3 : 0);
+      // An empty external response does not delete previously cached local rows.
+      expect(result.read.event_count).toBe(0);
+      if (mode === 'unconfigured') expect(result.google.configured).toBe(false);
+      if (mode === 'unauthorized') expect(result.google.authorized).toBe(false);
+    } finally { await page.request.post('/fixture/normal'); }
+  });
+}
+
+test('calendar refuses absent, malformed, stale or inconsistent evidence and unsafe occurrence fields', async ({page}) => {
+  await login(page);
+  for (const mutation of ['missing','unknown-code','missing-field','false-ready','stale','bad-id','bad-time']) {
+    await page.route('**/schedule', async route => {
+      const response = await route.fetch();
+      let body = await response.text();
+      if (mutation === 'missing') body = body.replace('id="calendar-readback"', 'id="removed"');
+      else if (mutation === 'bad-id') body = body.replace(/data-occurrence-id="[^"]+"/, 'data-occurrence-id="PRIVATE"');
+      else if (mutation === 'bad-time') body = body.replace(/datetime="[^"]+"/, 'datetime="PRIVATE"');
+      else {
+        body = body.replace(/data-readback="([^"]+)"/, (_, encoded) => {
+          const data = JSON.parse(encoded.replace(/&quot;/g, '"'));
+          if (mutation === 'unknown-code') data.google.error_code = 'PRIVATE';
+          if (mutation === 'missing-field') delete data.google.authorized;
+          if (mutation === 'false-ready') data.read.succeeded = 0;
+          if (mutation === 'stale') data.poll_id = 'a'.repeat(32);
+          return 'data-readback="'+JSON.stringify(data).replace(/"/g, '&quot;')+'"';
+        });
+      }
+      await route.fulfill({response,body});
+    });
+    await expect(calendarOccurrences(page)).rejects.toBeInstanceOf(OperationError);
+    await page.unroute('**/schedule');
+  }
 });
