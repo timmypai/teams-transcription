@@ -63,6 +63,8 @@ export async function calendarOccurrences(page: Page) {
   requireValue(await page.getByRole('heading', { name: '設定', exact: true }).isVisible(), 'settings_page_required');
   await page.getByRole('button', { name: '更新行事曆', exact: true }).click();
   requireValue(await page.getByRole('heading', { name: '排程與人工入會', exact: true }).isVisible(), 'calendar_sync_action_failed');
+  // Read the initiating session's completed snapshot through an explicit same-origin GET.
+  await schedule(page);
   const evidence = await readback(page);
   requireValue(evidence.poll_id !== previous, 'calendar_readback_stale');
   const timezone = await page.locator('section[data-timezone]').getAttribute('data-timezone');

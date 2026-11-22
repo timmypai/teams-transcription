@@ -1,6 +1,6 @@
 id = "L-0018"
 title = "Absence of calendar errors is not proof of an external read"
-event = "t_a89b35b8; https://github.com/timmypai/teams-transcription/actions/runs/44985016626"
+event = "t_a89b35b8; https://github.com/timmypai/teams-transcription/actions/runs/44986109349; https://github.com/timmypai/teams-transcription/actions/runs/44985016626"
 root_cause = "Zero enabled calendars still updated last_poll_at with no errors; the browser called that success and filtered only future starts. Bind read evidence to the initiating admin session, report enabled/attempted/succeeded/failed separately, require explicit readiness and use the existing join window for current occurrences. Reject malformed evidence at browser and export boundaries."
 category = "verification"
 
