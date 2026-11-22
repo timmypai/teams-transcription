@@ -32,7 +32,9 @@ test('issue-binding: Given synced calendar, When issue in window, Then binding e
     await expect(page.getByRole('heading', { name: '排程與人工入會' })).toBeVisible();
   });
   await test.step('When 同一操作簽發有效場次 binding', async () => {
-    const id = await page.locator('tr[data-occurrence-id]').filter({ hasText: 'PRIVATE-current' }).getAttribute('data-occurrence-id');
+    const id = await page.locator('tr[data-occurrence-id]').filter({
+      has: page.locator('td:first-child').filter({ hasText: /^PRIVATE-current/ }),
+    }).getAttribute('data-occurrence-id');
     const binding = await issueBinding(page, { occurrence_id: id, present: true, media: true });
     expect(binding.occurrence_id).toBe(id);
     expect(binding.revision).toBe(2);
@@ -44,7 +46,9 @@ test('issue-binding: Given synced calendar, When issue in window, Then binding e
   await test.step('Then 過期與尚未進入入會時段的場次被拒絕並保留畫面原因', async () => {
     for (const name of ['PRIVATE-expired', 'PRIVATE-later']) {
       await page.goto('/schedule');
-      const id = await page.locator('tr[data-occurrence-id]').filter({ hasText: name }).getAttribute('data-occurrence-id');
+      const id = await page.locator('tr[data-occurrence-id]').filter({
+        has: page.locator('td:first-child').filter({ hasText: new RegExp(`^${name}`) }),
+      }).getAttribute('data-occurrence-id');
       await expect(issueBinding(page, { occurrence_id: id, present: true, media: true })).rejects.toMatchObject({
         code: 'occurrence_outside_join_window', reason: expect.stringContaining('場次不在可入會時段'),
       });
