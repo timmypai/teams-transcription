@@ -1,0 +1,9 @@
+id = "L-0017"
+title = "Validate host-side operation evidence, not browser exit status"
+event = "https://github.com/timmypai/teams-transcription/actions/runs/44977642586; https://github.com/timmypai/teams-transcription/pull/9"
+root_cause = "A successful sandboxed browser wrote evidence into live tmpfs, but Docker cp exported no operation files and left the host setup sentinel. Returning only the browser exit status reported success without evidence. Stream allowlisted files through exec before cleanup and require real successful JSON plus a readable PNG on the host."
+category = "verification"
+
+[enforcement]
+kind = "journey"
+ref = ".devflow/operate_export_proof.py::assert_success"
