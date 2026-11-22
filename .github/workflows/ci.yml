@@ -86,6 +86,7 @@ jobs:
           DEVFLOW_EVIDENCE: .devflow/evidence
       - run: python -B .devflow/control_proof.py
       - run: python -B .devflow/repair_proof.py
+      - run: python -B .devflow/google_setup_proof.py
       - name: Disposable hosted target adapter build, collision and exact rollback
         run: python .devflow/target_adapter_probe.py
       - if: always()

@@ -92,6 +92,66 @@ export async function calendarOccurrences(page: Page) {
   // Failed prerequisites never turn stale locally cached rows into candidates.
   return {timezone,...evidence,occurrences:evidence.ready ? occurrences : []};
 }
+type CalendarSetting = {calendar_ref:string,revision:number,primary:boolean,enabled:boolean,
+  recording_authorized:boolean,speaking_authorized:boolean,join_early_seconds:number,max_lateness_seconds:number};
+async function settingsReadback(page: Page): Promise<{scheduler_paused:boolean,calendars:CalendarSetting[]}> {
+  await page.goto('/settings');
+  requireValue(await page.getByRole('heading', {name:'設定',exact:true}).isVisible(), 'settings_page_required');
+  requireValue(await page.locator('#calendar-settings').count() === 1, 'calendar_settings_missing');
+  let data;
+  try { data = JSON.parse(await page.locator('#calendar-settings').getAttribute('data-settings') || ''); }
+  catch { throw new OperationError('calendar_settings_invalid'); }
+  requireValue(data && Object.keys(data).sort().join(',') === 'calendars,scheduler_paused' &&
+    typeof data.scheduler_paused === 'boolean' && Array.isArray(data.calendars), 'calendar_settings_invalid');
+  const seen = new Set<string>();
+  for (const row of data.calendars) {
+    requireValue(row && Object.keys(row).sort().join(',') ===
+      'calendar_ref,enabled,join_early_seconds,max_lateness_seconds,primary,recording_authorized,revision,speaking_authorized' &&
+      typeof row.calendar_ref === 'string' && /^[a-f0-9]{32}$/.test(row.calendar_ref) && !seen.has(row.calendar_ref) &&
+      Number.isSafeInteger(row.revision) && row.revision > 0 &&
+      ['primary','enabled','recording_authorized','speaking_authorized'].every(key => typeof row[key] === 'boolean') &&
+      Number.isSafeInteger(row.join_early_seconds) && row.join_early_seconds >= 0 && row.join_early_seconds <= 600 &&
+      Number.isSafeInteger(row.max_lateness_seconds) && row.max_lateness_seconds >= 0 && row.max_lateness_seconds <= 1800,
+      'calendar_settings_invalid');
+    seen.add(row.calendar_ref);
+  }
+  requireValue(data.calendars.filter(row => row.primary).length <= 1, 'calendar_settings_invalid');
+  return data;
+}
+export async function calendarSettings(page: Page, args: Record<string,unknown>) {
+  requireValue(args && typeof args === 'object' && !Array.isArray(args), 'invalid_calendar_settings_args');
+  const writing = Object.keys(args).length > 0;
+  if (writing) requireValue(Object.keys(args).sort().join(',') === 'calendar_ref,enabled,revision' &&
+    typeof args.calendar_ref === 'string' && (args.calendar_ref === 'primary' || /^[a-f0-9]{32}$/.test(args.calendar_ref)) &&
+    Number.isSafeInteger(args.revision) && Number(args.revision) >= 0 && typeof args.enabled === 'boolean', 'invalid_calendar_settings_args');
+  const before = await settingsReadback(page);
+  if (!writing) return {...before,saved:false};
+  requireValue(before.scheduler_paused, 'calendar_settings_not_quiescent');
+  const old = before.calendars.find(row => row.calendar_ref === args.calendar_ref);
+  requireValue(args.calendar_ref === 'primary' ? args.revision === 0 && !before.calendars.some(row => row.primary) :
+    old && old.revision === args.revision, 'calendar_revision_changed');
+  if (old && old.enabled === args.enabled) return {...before,saved:false};
+  const form = page.locator('form[action="/actions/calendar-readonly"]').filter({
+    has:page.locator(`input[name="calendar_ref"][value="${args.calendar_ref}"]`),
+  });
+  requireValue(await form.count() === 1 && await form.locator('input[name="revision"]').inputValue() === String(args.revision),
+    'calendar_revision_changed');
+  await form.getByRole('checkbox', {name:'啟用唯讀 Calendar',exact:true}).setChecked(args.enabled as boolean);
+  await form.getByRole('button', {name:'保存唯讀設定',exact:true}).click();
+  requireValue(await page.getByRole('heading', {name:'設定',exact:true}).isVisible(), 'calendar_settings_save_failed');
+  const after = await settingsReadback(page);
+  requireValue(after.scheduler_paused, 'calendar_settings_save_failed');
+  const changed = old ? after.calendars.find(row => row.calendar_ref === old.calendar_ref) : after.calendars.find(row => row.primary);
+  requireValue(changed && changed.enabled === args.enabled && changed.revision === Number(args.revision)+1 &&
+    (old ? changed.recording_authorized === old.recording_authorized && changed.speaking_authorized === old.speaking_authorized &&
+      changed.primary === old.primary && changed.join_early_seconds === old.join_early_seconds && changed.max_lateness_seconds === old.max_lateness_seconds :
+      !changed.recording_authorized && !changed.speaking_authorized && changed.join_early_seconds === 300 && changed.max_lateness_seconds === 300) &&
+    after.calendars.length === before.calendars.length+(old ? 0 : 1) &&
+    before.calendars.filter(row => row !== old).every(row => JSON.stringify(row) === JSON.stringify(after.calendars.find(v => v.calendar_ref === row.calendar_ref))),
+    'calendar_settings_save_failed');
+  return {...after,saved:true};
+}
+
 export async function issueBinding(page: Page, args: Record<string, unknown>) {
   const id = args.occurrence_id;
   requireValue(typeof id === 'string' && /^[a-f0-9]{32}$/.test(id), 'invalid_occurrence_id');

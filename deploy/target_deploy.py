@@ -37,9 +37,9 @@ def execute(args,*,input=None,timeout=120,public_phase=None):
     if public_phase is not None:
         require(input is None,'public_stdin_rejected')
         return public_command(args,phase=public_phase,timeout=timeout,
-            env={k:v for k,v in os.environ.items() if k not in {'DEVFLOW_APP_ENV','GH_TOKEN','GITHUB_TOKEN'}})
+            env={k:v for k,v in os.environ.items() if k not in {'DEVFLOW_APP_ENV','DEVFLOW_OPS_ENV','TEAMS_GOOGLE_CLIENT_JSON','GH_TOKEN','GITHUB_TOKEN'}})
     result=subprocess.run(args,input=input,text=True,capture_output=True,timeout=timeout,
-        env={k:v for k,v in os.environ.items() if k not in {'DEVFLOW_APP_ENV','GH_TOKEN','GITHUB_TOKEN'}})
+        env={k:v for k,v in os.environ.items() if k not in {'DEVFLOW_APP_ENV','DEVFLOW_OPS_ENV','TEAMS_GOOGLE_CLIENT_JSON','GH_TOKEN','GITHUB_TOKEN'}})
     if result.returncode and RUNTIME in args:
         from deploy.target_runtime import SAFE_FAILURE_CODES
         try:value=json.loads(result.stdout)
@@ -165,6 +165,26 @@ class Controller:
                 APP,'python',RUNTIME,*args,input=input))
         value=json.loads(raw)
         require(isinstance(value,dict) and 'error' not in value,'runtime_operation_rejected')
+        return value
+
+    def install_google_client(self,state,raw):
+        """Validate persistent target identity BEFORE passing private stdin."""
+        require(isinstance(raw,str) and bool(raw.strip()) and len(raw.encode())<=65536,'google_client_input_required')
+        installed=json.loads(self.docker('inspect',APP))[0]
+        require(installed['Id']==state['container_id'] and installed['Image']==state['image']
+            and installed['Config']['User']=='10001:10001' and any(
+                m.get('Type')=='volume' and m.get('Name')==VOLUME and m.get('Destination')=='/data'
+                and m.get('RW') is True for m in installed.get('Mounts',[])),'deployed_persistence_unverified')
+        self.health(state['image'])
+        value=self.runtime('install-google-client',input=raw)
+        require(isinstance(value,dict) and set(value)=={'installed','existing','client_private',
+            'redirect_registered','oauth_verified','google_read_verified'} and
+            all(type(v) is bool for v in value.values()) and
+            all(value[k] for k in ('installed','client_private','redirect_registered')) and
+            not value['oauth_verified'] and not value['google_read_verified'],'google_client_receipt_invalid')
+        after=json.loads(self.docker('inspect',APP))[0]
+        require(after['Id']==installed['Id'] and after['State']['StartedAt']==installed['State']['StartedAt'],
+            'deployed_container_changed')
         return value
 
     def preflight(self,state):
@@ -343,7 +363,7 @@ def manual_environment():
 
 def main():
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('action',choices=['deploy','view','join','output-disable','stop','prepare-home','verify'])
+    p.add_argument('action',choices=['deploy','view','join','output-disable','stop','prepare-home','verify','install-google-client'])
     p.add_argument('--id');p.add_argument('--request-sha');p.add_argument('--revision',type=int);args=p.parse_args()
     failures=Failures();sha=None;run=None;attempt=None;evidence=None
     try:
@@ -393,7 +413,10 @@ def main():
                 else:
                     require(state and state['source_sha']==sha,'deployed_revision_required')
                     c.release=root/'releases'/state['release'];c.verify_release(c.release)
-                    if args.action=='verify':
+                    if args.action=='install-google-client':
+                        require(not args.id and not args.request_sha and args.revision is None,'control_arguments_rejected')
+                        result=c.install_google_client(state,os.environ.pop('TEAMS_GOOGLE_CLIENT_JSON',''))
+                    elif args.action=='verify':
                         info=json.loads(c.docker('inspect',APP))[0]
                         image_info=json.loads(c.docker('image','inspect',state['image']))[0]
                         labels=image_info['Config']['Labels']

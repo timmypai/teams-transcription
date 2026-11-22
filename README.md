@@ -101,7 +101,7 @@ python tools/compose_smoke.py --image sha256:IMAGE_ID
 
 實際啟用需操作者先準備 `/data/config/runtime.yml`、私人 appdata 的 UID/GID 與 Google 設定，再用 `compose.local.yml` 開啟 loopback 管理頁，透過同一配置的 `compose run --rm teams-transcription init-admin` 初始化。`compose.auth.yml` 僅 opt-in 掛載**同一部署既有** Codex home，允許正常 OAuth refresh 寫回；不複製 token、不自行建立新登入、不掛 Docker socket。本人首次裝置授權、私有持久home、重授權與軟體前置條件見 [部署與OAuth prerequisites](docs/DEPLOYMENT-PREREQUISITES.md)；新增CLI入口不代表本輪已取得grant，管理頁登入也不是ChatGPT。
 
-管理頁 Google／ChatGPT 裝置授權入口、配置需求與驗證限制見 [Web 授權](docs/WEB-AUTHORIZATION.md)。本次 source 修改不代表已部署或完成真帳號授權。本 target 固定 Actions 控制、本人新鮮同意 binding、空私有 home 準備與明確媒體政策見 [控制與 OAuth 前置繁中指南](docs/TARGET-CONTROL-OAUTH.zh-TW.md)；工程 ready、OAuth、單次 Join 與遠端聽驗分開記錄。
+管理頁 Google／ChatGPT 裝置授權入口、配置需求與驗證限制見 [Web 授權](docs/WEB-AUTHORIZATION.md)。本 target 的獨立 Web client 安裝、Bot Calendar 設定、本人 Google OAuth/MFA與實際讀取分層流程見 [Google／Calendar 安全設定指南](docs/GOOGLE-CALENDAR-SETUP.zh-TW.md)。本次 source 修改不代表已部署或完成真帳號授權。本 target 固定 Actions 控制、本人新鮮同意 binding、空私有 home 準備與明確媒體政策見 [控制與 OAuth 前置繁中指南](docs/TARGET-CONTROL-OAUTH.zh-TW.md)；工程 ready、OAuth、單次 Join 與遠端聽驗分開記錄。
 
 容器 `/dev/shm` 必須是 tmpfs：app-server TRACE 可能包含編碼媒體，單靠 `RUST_LOG` 或「沒有 WAV」不夠。RPC 私有 runtime 退出後清除，缺 tmpfs fail closed。不用 privileged、`--no-sandbox`、host IPC 或 unconfined 繞過問題。
 
