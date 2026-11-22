@@ -467,7 +467,11 @@ def create_admin_app(daemon, settings, *, local_teams_control=False):
             input_field('end_at','結束時間',(now+timedelta(hours=1)).strftime('%Y-%m-%dT%H:%M'),kind='datetime-local')+
             select_field('series_id','接續哪一組會議',choices)+checkbox('recording_authorized','已取得加入及錄音授權')+
             checkbox('speaking_authorized','已授權本場小白發聲')+checkbox('join_now','建立後立即加入'))
-        body += form(session,'manual',fields,'建立場次')+'</section><section><h2>場次</h2><table><tr><th>會議</th><th>時間／連結</th><th>狀態</th><th>操作</th></tr>'
+        body += form(session,'manual',fields,'建立場次')+'</section>'
+        sync_failed = bool(daemon.status()['calendar_errors'])
+        body += ('<p role="status" id="calendar-sync" data-failed="'+str(sync_failed).lower()+'">'+
+            ('日曆同步失敗，請到設定檢查 Google 連線。' if sync_failed else '日曆同步無已知錯誤。')+'</p>')
+        body += '<section data-timezone="'+h(settings.timezone)+'"><h2>場次</h2><table><tr><th>會議</th><th>時間／連結</th><th>狀態</th><th>操作</th></tr>'
         for row in rows:
             controls = ''
             if row['state']=='pending':
@@ -480,7 +484,9 @@ def create_admin_app(daemon, settings, *, local_teams_control=False):
                 controls += control(session,'skip',row['id'],'略過')
                 controls += form(session,'assign-series',hidden('id',row['id'])+
                     select_field('series_id','指定系列',choices[1:],row['series_id']),'分組')
-            body += ('<tr><td>'+h(row['title'])+'<br><a href="/series/'+h(row['series_id'])+'">系列記憶</a></td><td>'+h(row.get('start_at'))+
+            times = '<br>'.join('<time data-edge="'+edge+'" datetime="'+h(row.get(edge+'_at'))+'">'+
+                h(readable_time(row.get(edge+'_at')))+'</time>' for edge in ('start','end'))
+            body += ('<tr data-occurrence-id="'+h(row['id'])+'" data-state="'+h(row['state'])+'"><td>'+h(row['title'])+'<br><a href="/series/'+h(row['series_id'])+'">系列記憶</a></td><td>'+times+
                 '<br><span class="small">'+h(row.get('link_status'))+'</span></td><td>'+h(row['state'])+'</td><td>'+controls+'</td></tr>')
         return page('排程與人工入會',body+'</table></section>',session,active='schedule')
 

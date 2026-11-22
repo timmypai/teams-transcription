@@ -251,6 +251,7 @@ initialize_admin_credentials(load_assistant_settings(f),sys.stdin.read().strip()
             'playwright_node':self.docker('exec',self.app,node,'--version').stdout.strip()}))
         def browser_run():
             results.append(self.docker('exec','--env','DEVFLOW_EVENTS=/tmp/devflow-evidence/scenario-events.jsonl',
+                             '--env','DEVFLOW_UI_BASELINE='+str(int(self.baseline)),
                              self.app,node,'/tmp/devflow-ui/node_modules/@playwright/test/cli.js','test',
                              '--config=/tmp/devflow-ui/playwright.config.ts',check=False,timeout=180))
         self.mutate('write','container',self.app,browser_run)
