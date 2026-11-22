@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
 # Reviewed scripts only; disposable nonroot sandboxed browser, no app data mount.
 set -euo pipefail
+umask 077
 cd "$(dirname "$0")/.."
 case ${DEVFLOW_OP:-} in look|calendar-occurrences|issue-binding) ;; *) echo 'unsupported_operation' >&2; exit 2;; esac
 E=.devflow/evidence/operate/${GITHUB_RUN_ID:-local}-${GITHUB_RUN_ATTEMPT:-1}
-mkdir -p "$E"
+mkdir -p "$(dirname "$E")"
+# A reused local/run directory must not supply stale success evidence.
+mkdir "$E"
 chmod 700 "$E"
 export DEVFLOW_OPERATION_EVIDENCE="$E"
 envf=$(mktemp)
@@ -49,7 +52,7 @@ test "$installed" = "${GITHUB_SHA:?reviewed deployed SHA required}"
 v=$(python3 -c 'import json;print(json.load(open(".devflow/ui/package.json"))["devDependencies"]["@playwright/test"])')
 helper=devflow-teams-transcription-operate-${GITHUB_RUN_ID:?}-${GITHUB_RUN_ATTEMPT:?}
 # Container UID != host UID under rootless Docker. Keep private evidence inside
-# its namespace, then docker cp (without --archive) gives the host caller ownership.
+# its namespace, then stream from that live namespace to host-owned private files.
 docker "${docker_args[@]}" create --name "$helper" --user 10001:10001 --read-only \
   --cap-drop ALL --security-opt no-new-privileges --security-opt "seccomp=$PWD/docker/chromium-seccomp.json" \
   --network "container:$app" --shm-size=256m --tmpfs /tmp:rw,nosuid,nodev,size=512m \
@@ -62,10 +65,11 @@ docker "${docker_args[@]}" create --name "$helper" --user 10001:10001 --read-onl
 created=1
 docker "${docker_args[@]}" start "$helper" >/dev/null
 if docker "${docker_args[@]}" exec "$helper" bash -c \
-  'cp -R /ui/. /work/ && npm ci --ignore-scripts --no-audit --no-fund >/dev/null && node node_modules/@playwright/test/cli.js test --config=playwright.config.ts --trace off'; then
+  'umask 077; cp -R /ui/. /work/ && npm ci --ignore-scripts --no-audit --no-fund >/dev/null && node node_modules/@playwright/test/cli.js test --config=playwright.config.ts --trace off' >/dev/null 2>&1; then
   rc=0
 else
   rc=$?
 fi
-docker "${docker_args[@]}" cp "$helper:/evidence/." "$PWD/$E/"
-exit "$rc"
+# Docker's archive/cp view does not expose this live tmpfs. Read through exec,
+# while the owned helper is still running; export no native reporter/log files.
+python3 .devflow/export_operation.py "${docker_args[1]}" "$helper" "$E" "$DEVFLOW_OP" "$rc"
