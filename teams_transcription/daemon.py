@@ -221,7 +221,11 @@ class AssistantDaemon:
             if occurrence['calendar_ref']:
                 calendar = await asyncio.to_thread(self.store.get_calendar,occurrence['calendar_ref'])
                 fresh = await self.calendar.get_event(calendar['calendar_id'],occurrence['event_id'])
-                await asyncio.to_thread(self.store.sync_occurrences,calendar['id'],[fresh])
+                if target_control and fresh['event_id'] != occurrence['event_id']:
+                    raise AssistantStoreError('target_fresh_consent_required')
+                rows = await asyncio.to_thread(self.store.sync_occurrences,calendar['id'],[fresh])
+                if target_control and not any(row['id']==occurrence_id for row in rows):
+                    raise AssistantStoreError('target_fresh_consent_required')
                 occurrence = await asyncio.to_thread(self.store.get_occurrence,occurrence_id)
             now = self.clock()
             immediate=is_owner_immediate(occurrence)
@@ -283,8 +287,11 @@ class AssistantDaemon:
             config['teams_acceptance']=policy
         return config
 
-    async def _speaking_policy(self, session_id):
-        run = await asyncio.to_thread(self.store.get_run,session_id)
+    async def _speaking_policy(self, lease):
+        if 'target_calendar_consent' in lease:
+            _, speaking = await asyncio.to_thread(self.store.target_calendar_media,lease)
+            return speaking
+        run = await asyncio.to_thread(self.store.get_run,lease['session_id'])
         occurrence = run['occurrence']
         # Only the explicit per-occurrence current-target denial overrides the
         # Calendar authority. Other Calendar consent is re-read live below, not
@@ -299,6 +306,7 @@ class AssistantDaemon:
     async def _monitor(self, session, lease, task, occurrence):
         from .teams_acceptance import is_owner_immediate
         approved = output_approved = False
+        scoped = 'target_calendar_consent' in lease
         deadline = None if is_owner_immediate(occurrence) else datetime.fromisoformat(occurrence['end_at']).timestamp()
         if deadline is not None and self.settings.max_duration_seconds is not None:
             deadline = min(deadline, self.clock()+self.settings.max_duration_seconds)
@@ -307,23 +315,41 @@ class AssistantDaemon:
             state = await asyncio.to_thread(session.status)
             if self.closing.is_set() or deadline is not None and self.clock()>=deadline:
                 await self.stop(session.ident,actor='runtime',reason='service_shutdown' if self.closing.is_set() else 'scheduled_end')
-            if occurrence['calendar_ref']:
+            if scoped:
+                recording, _ = await asyncio.to_thread(self.store.target_calendar_media,lease)
+                if not recording:
+                    await self.stop(session.ident,actor='calendar-policy',reason='authorization_revoked')
+                    await asyncio.wait({task},timeout=.5)
+                    continue
+            elif occurrence['calendar_ref']:
                 policy = await asyncio.to_thread(self.store.get_calendar,occurrence['calendar_ref'])
                 if not policy['enabled'] or not policy['recording_authorized']:
                     await self.stop(session.ident,actor='calendar-policy',reason='authorization_revoked')
             if state.get('state')=='prepared' and not approved and not await asyncio.to_thread(session.stopped):
-                calendar = await asyncio.to_thread(self.store.get_occurrence,occurrence['id'])
-                if calendar['state']=='cancelled' or not calendar.get('recording_authorized'):
+                if scoped:
+                    recording, _ = await asyncio.to_thread(self.store.target_calendar_media,lease)
+                else:
+                    latest = await asyncio.to_thread(self.store.get_occurrence,occurrence['id'])
+                    recording = latest['state']!='cancelled' and latest.get('recording_authorized')
+                if not recording:
                     await self.stop(session.ident,actor='calendar-policy',reason='authorization_revoked')
                 else:
                     await asyncio.to_thread(confirm_prepared,session,state['rx_prepared']['generation'],self.owner)
                     approved = True
             controller = getattr(session,'response_controller',None)
             if controller is not None and controller.status().get('state') not in {'starting','unavailable','stopped','stop_unknown'}:
-                permitted = await self._speaking_policy(session.ident)
+                permitted = await self._speaking_policy(lease)
                 if permitted and not output_approved and not await asyncio.to_thread(session.stopped):
-                    await self.set_output(session.ident,True,actor='calendar-policy')
-                    output_approved = True
+                    try:
+                        await self.set_output(session.ident,True,actor='calendar-policy')
+                    except AssistantStoreError as error:
+                        # The bound revoke can win while this enable is awaiting
+                        # the controller. set_output already muted it; A can continue.
+                        if not scoped or str(error) not in {'speaking_authorization_required',
+                                'speaking_authorization_revoked','meeting_stopping'}:
+                            raise
+                    else:
+                        output_approved = True
                 elif not permitted and output_approved:
                     await self.set_output(session.ident,False,actor='calendar-policy')
                     output_approved = False
@@ -335,6 +361,12 @@ class AssistantDaemon:
         try:
             run = await asyncio.to_thread(self.store.get_run,session.ident)
             await asyncio.to_thread(session.create,self._config(run,occurrence))
+            if 'target_calendar_consent' in lease:
+                recording, _ = await asyncio.to_thread(self.store.target_calendar_media,lease)
+                if not recording:
+                    await self.stop(session.ident,actor='calendar-policy',reason='authorization_revoked')
+                    await asyncio.to_thread(session.update,state='stopped',cleanup_status='cleaned')
+                    return
             task = self._spawn(self.runner(session))
             monitor = self._spawn(self._monitor(session,lease,task,occurrence))
             done,_ = await asyncio.wait({task,monitor},return_when=asyncio.FIRST_COMPLETED)
@@ -405,14 +437,14 @@ class AssistantDaemon:
             try:
                 if self.closing.is_set() or await asyncio.to_thread(self.store.stop_requested,lease):
                     raise AssistantStoreError('meeting_stopping')
-                if enabled and not await self._speaking_policy(session_id):
+                if enabled and not await self._speaking_policy(lease):
                     raise AssistantStoreError('speaking_authorization_required')
                 operation = controller.enable_output() if enabled else controller.disable_output()
                 if inspect.isawaitable(operation):
                     await operation
                 if self.closing.is_set() or await asyncio.to_thread(self.store.stop_requested,lease):
                     raise AssistantStoreError('meeting_stopping')
-                if enabled and not await self._speaking_policy(session_id):
+                if enabled and not await self._speaking_policy(lease):
                     raise AssistantStoreError('speaking_authorization_revoked')
                 await asyncio.to_thread(session.event,'response_output_authorized',{'enabled':enabled})
                 await asyncio.to_thread(self.store.audit_control,actor,'speech_enabled' if enabled else 'speech_muted',session_id)

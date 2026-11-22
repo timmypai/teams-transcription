@@ -34,6 +34,17 @@ class CalendarExportTests(unittest.TestCase):
                 code = exporter.export('socket','helper',folder,'calendar-occurrences',0)
             return code, json.loads((Path(folder)/'result.json').read_text()), (Path(folder)/'calendar-occurrences.png').exists()
 
+    def test_occurrence_export_requires_an_integer_revision(self):
+        occurrence = dict(occurrence_id='a'*32, revision=1, joinable=True,
+            start_at='2030-01-01T09:00:00+00:00', end_at='2030-01-01T10:00:00+00:00')
+        value = {**valid(), 'occurrences':[occurrence]}
+        self.assertEqual(self.export(value), (0,value,True))
+        missing = {key:item for key,item in occurrence.items() if key!='revision'}
+        for row in [missing, *[{**occurrence,'revision':revision} for revision in (True,'1',0,2**53)]]:
+            with self.subTest(row=row):
+                self.assertEqual(self.export({**value,'occurrences':[row]}),
+                    (1,dict(ok=False,code='operation_export_failed'),False))
+
     def test_missing_unknown_private_or_inconsistent_fields_fail_closed(self):
         cases = []
         for key in valid():

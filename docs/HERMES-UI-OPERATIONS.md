@@ -25,7 +25,7 @@ devflow operate teams-transcription calendar-occurrences
 ```
 
 登入後在設定按「更新行事曆」，再開 `/schedule`。同步失敗即拒絕回傳成功；
-只回傳未來 pending 場次的 `occurrence_id`、`start_at`、`end_at` 及頁面 `timezone`。
+只回傳尚未結束且可供選擇的 pending 場次，包含 `occurrence_id`、整數 `revision`、`start_at`、`end_at`、`joinable` 及頁面 `timezone`。`joinable` 只代表目前在入會時間窗內，不代表已有媒體同意。
 起訖為帶 UTC offset 的 ISO 時間；結果不含標題、姓名、Google Calendar ID 或 Teams URL。
 沒有未來場次時回傳空陣列，不自行建立。截圖遮蔽標題與操作欄。
 
@@ -35,14 +35,17 @@ devflow operate teams-transcription calendar-occurrences
 才能以 JSON 布林旗標傳入該次同意（登入及既有日曆授權均不能推定本人在場）。
 
 ```bash
-devflow operate teams-transcription issue-binding --args '{"occurrence_id":"既有32位小寫hex場次ID","present":true,"media":true}'
+devflow operate teams-transcription issue-binding --args "$BINDING_ARGS"
 ```
+
+由 Bot 用當次選定場次的 `occurrence_id`、整數 `revision`、原樣 `start_at`／`end_at`，加上布林值 `present: true`、`media: true` 組成 `BINDING_ARGS` JSON。`--arg` 一律傳字串，不能代替這裡的整數與布林值。
 
 透過 `/schedule` 現有表單勾選並送出，不呼叫 Join。結果包含
 `occurrence_id`、`revision`、`request_sha256`、`issued_at`、`expires_at`、`expires_in_seconds`。
 時間為伺服器 Unix 秒數，效期維持 300 秒；`request_sha256` 是本次控制 binding，
 依原有控制入口對應到 Join 的 `request_sha`，不是 OAuth token。
 過期、太早、版本／授權失效時操作失敗，結果保留管理頁顯示的固定原因。
+這份 binding 只對選定的單場生效；唯讀 Calendar 不必啟用整個日曆的錄音或發聲。一般排程和其他場次不受影響。
 截圖只有 binding 頁面標題，不拍 binding 本文；不錄 trace、video、HAR 或自動失敗截圖。
 
 SHIP 取得結果後立即 dispatch 原有 `control.yml` Join，不經使用者轉貼、不走 block/resume，

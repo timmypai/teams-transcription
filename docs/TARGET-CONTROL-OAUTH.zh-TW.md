@@ -40,9 +40,9 @@ Web 授權沿用自己的 daemon reservation/cleanup，不要求把常駐 daemon
 ## 當次本人同意 → Hermes 單次 Join
 
 1. **Bot**先依[Google／Calendar 安全設定](GOOGLE-CALENDAR-SETUP.zh-TW.md)完成本target client/Calendar前置與本次真Google讀取，再經已審正式 `calendar-occurrences` 操作選擇既有合法pending occurrence，核對實際時間與join window；不能借舊DB、clone terminal場次或請本人抄ID。
-2. Hermes先通知準備單次加入，取得本人當次新鮮在場、加入／錄音／逐字保存／發聲同意後，才由Bot執行正式 `issue-binding`；不是由本人操作管理頁或轉貼binding。該操作沿原同源登入/CSRF表單簽發，不Join、不啟排程。
+2. Hermes 先通知準備單次加入，取得本人當次新鮮在場、加入、錄音、逐字保存與發聲同意後，才由 Bot 執行 `devflow operate teams-transcription issue-binding --args "$BINDING_ARGS"`；不用本人操作管理頁或轉貼 binding。Bot 用剛選定的 `occurrence_id`、整數 `revision`、原樣 `start_at`／`end_at`，加上布林值 `present: true`、`media: true` 組成 JSON。不要用一律傳字串的 `--arg`。操作核對表單版本及起訖，經同源登入與 CSRF 簽發；不 Join、不啟排程。同時段若分不清場次，不猜另一場。
 3. Bot在同一已準備run消費回傳 `occurrence_id`、revision、request_sha256、issued_at/expires_at。TTL固定300秒（工程新鮮度政策，不是會議長度），綁boot/boottime及wall clock；重啟、倒退、超時或freshness不明均拒絕。記錄簽發到Join dispatch實測秒數，不在中間block/resume，不延TTL，也不恢復本人轉貼流程。
-4. Hermes手動dispatch `control.yml`（僅main最新已審已部署SHA），operation=join、id/revision/request_sha使用剛收到的literal binding。固定helper強制target-control binding；daemon在provider await前與真正SQLite claim同交易重查，claim policy事件保證request/occurrence單次使用。Calendar unchanged reread保留binding；實際更動/版本不符拒絕。
+4. Hermes 手動 dispatch `control.yml`（僅 main 最新已審已部署 SHA），operation=join、id/revision/request_sha 使用剛收到的 binding。300 秒只限簽發至單次 claim，不是會議時限。即使唯讀 Calendar 的錄音與發聲旗標皆為 false，此 binding 也只授權選定且有效的單場；不改 Calendar、系列或一般排程授權。daemon 重讀 Calendar，並在 SQLite claim 內重查場次、時間窗、Calendar 設定版本、暫停狀態、租約和清理 interlock。取消、改期或授權來源變更不能用舊 binding 重試，也不會恢復已撤回的發聲。
 5. 正常回覆只表示 claim/starting，仍要觀測實際准入、授權媒體及本人遠端聽驗；不以HTTP/UI Join或Hermes自答代替。不要再次 dispatch Join；斷線/不確定先 view該合法occurrence及持久run，unknown留interlock。
 
 ## 撤發聲與正常停止

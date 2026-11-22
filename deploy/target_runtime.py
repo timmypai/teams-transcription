@@ -183,8 +183,11 @@ async def control(root,operation,ident,request_sha=None,*,revision=None):
                 raise ValueError('stop_cleanup_unverified')
             await asyncio.sleep(.05)
         return dict(ok=True,cleanup_verified=True)
-    require(result.get('recording_authorized') is True and result.get('speaking_authorized') is True,
-        'authorized_occurrence_required')
+    # A claimed single-Calendar run remains observable after revocation/stop.
+    # Its receipt is not an authorization to Join or enable output.
+    scoped = (result.get('acceptance') or {}).get('target_calendar_claimed') is True
+    require(scoped or (result.get('recording_authorized') is True
+        and result.get('speaking_authorized') is True),'authorized_occurrence_required')
     return result
 
 
