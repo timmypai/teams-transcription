@@ -77,7 +77,9 @@ devflow operate teams-transcription calendar-occurrences
 
 核對本次新 `poll_id`、Google configured/authorized/error_code、enabled_calendar_count、read.attempted/succeeded/failed/event_count/completed、ready。零Calendar/零attempted仍是 **未讀取**；client installed或UI ok也不是 Google成功。真 Google成功至少須本部署真授權、啟用Calendar>0、本次全部讀取完成且成功；空 events可以成功，但不能憑空製造會議。hosted fixture 的 mock GET僅測工程投影。
 
-只有實際取回合法場次、同部署其他 prerequisites齊全後，才集中取得本人新鮮在場／錄音／逐字保存／發聲同意。**Bot**操作日曆與300秒binding，不恢復「本人操作管理頁／轉貼occurrence_id或binding」舊流程。當次通知、單次Join、遠端聽到2與cleanup仍由原SHIP驗，不能因本卡PR/CI完成而宣稱 AC-4/5真人PASS。
+只有實際取回合法場次、同部署其他 prerequisites齊全後，才集中取得本人新鮮在場／錄音／逐字保存／發聲同意。**新primary的錄音/發聲為false，因此不是binding-ready**：既有binding gate仍要求該Calendar與場次已有適用範圍的媒體授權；本入口不把Google讀取同意或單次在場陳述擴成整個Calendar的媒體授權。若缺此政策，SHIP必須明示缺項與範圍，交原orchestrator處理受審授權操作；不得自動勾全Calendar錄音/發聲、削弱binding gate或要求本人代操作管理頁。
+
+**Bot**操作日曆與300秒binding，不恢復「本人操作管理頁／轉貼occurrence_id或binding」舊流程。當次通知、單次Join、遠端聽到2與cleanup仍由原SHIP驗，不能因本卡PR/CI完成而宣稱 AC-4/5真人PASS。
 
 ## 缺項只問可完成的動作
 
