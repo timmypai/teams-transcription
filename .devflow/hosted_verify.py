@@ -250,12 +250,14 @@ initialize_admin_credentials(load_assistant_settings(f),sys.stdin.read().strip()
             'system_node':self.docker('exec',self.app,'node','--version').stdout.strip(),
             'playwright_node':self.docker('exec',self.app,node,'--version').stdout.strip()}))
         def browser_run():
-            results.append(self.docker('exec','--env','DEVFLOW_EVENTS=/tmp/devflow-evidence/scenario-events.jsonl',
-                             '--env','DEVFLOW_UI_BASELINE='+str(int(self.baseline)),
-                             self.app,node,'/tmp/devflow-ui/node_modules/@playwright/test/cli.js','test',
-                             '--config=/tmp/devflow-ui/playwright.config.ts',check=False,timeout=180))
+            # Manual AC-4 engineering tests remain mandatory but are not EPIC scenarios.
+            # Keep their native report separate; acceptance rejects invented/missing IDs.
+            for suite in (['acceptance'] if self.baseline else ['acceptance','operations']):
+                results.append(self.docker('exec','--env','DEVFLOW_EVENTS=/tmp/devflow-evidence/scenario-events.jsonl',
+                                 '--env','DEVFLOW_UI_SUITE='+suite,
+                                 self.app,node,'/tmp/devflow-ui/node_modules/@playwright/test/cli.js','test',
+                                 '--config=/tmp/devflow-ui/playwright.config.ts',check=False,timeout=180))
         self.mutate('write','container',self.app,browser_run)
-        result = results[0]
         ui_output = self.scratch/'ui-output'
         self.mutate('write','directory',str(self.scratch),lambda: ui_output.mkdir())
         def export_ui():
@@ -273,7 +275,7 @@ initialize_admin_credentials(load_assistant_settings(f),sys.stdin.read().strip()
                 self.mutate('write','directory',str(self.evidence),lambda: (self.evidence/p.name).open('a').write(events))
             else:
                 self.mutate('write','directory',str(self.evidence),lambda p=p: shutil.copytree(p,self.evidence/p.name) if p.is_dir() else shutil.copyfile(p,self.evidence/p.name))
-        if result.returncode:
+        if any(result.returncode for result in results):
             self.problems.append('playwright_failed')
         assert self.health()
 
