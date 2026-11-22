@@ -25,6 +25,10 @@ import struct
 ROOT = Path(__file__).resolve().parents[1]
 BASE = '8339fd79769fe42e6418ac95e8af9dae9072cd98'
 MEDIA_BASE = '9634a0948a041ec624048c29f743b0d951e19068'
+MEDIA_SCENARIO = 't_a3f4f673/AC-6.S1'
+CLAIM_SUITE = 'test_target_single_calendar'
+CLAIM_POSITIVE = CLAIM_SUITE + '.SingleCalendarTests.test_authenticated_grant_claim_monitor_disable_and_stop'
+MEDIA_DENIED = 'target_occurrence_not_authorized'
 DOCKER = shutil.which('docker')
 
 
@@ -62,25 +66,34 @@ def select_binding_args(result):
         'present':True,'media':True}
 
 
+def run_media_claim(source, test):
+    env = {**os.environ, 'PYTHONPATH':os.pathsep.join((str(source/'tests'),str(source)))}
+    return subprocess.run([sys.executable,'-B','-m','unittest','-q',test],
+        cwd=source,env=env,capture_output=True,timeout=120)
+
+
+def assert_media_claim_red(base):
+    red = run_media_claim(base, CLAIM_POSITIVE)
+    assert red.returncode == 1 and b'FAILED (failures=1)' in red.stderr, 'base_claim_not_assertion_failure'
+    assert b'422 != 200' in red.stderr and MEDIA_DENIED.encode() in red.stderr, 'base_claim_wrong_red'
+
+
+def copy_claim_test(target):
+    relative = 'tests/' + CLAIM_SUITE + '.py'
+    shutil.copyfile(ROOT/relative, target/relative)
+
+
 def prove_media_claim(base):
     """Exercise the same authenticated form, real SQLite and bound daemon on both sources."""
-    suite = 'test_target_single_calendar'
-    shutil.copyfile(ROOT/'tests'/(suite+'.py'),base/'tests'/(suite+'.py'))
-
-    def run(target, test):
-        env = {**os.environ, 'PYTHONPATH':os.pathsep.join(filter(None, (
-            str(target/'tests'),str(target),os.environ.get('PYTHONPATH'))))}
-        return subprocess.run([sys.executable,'-B','-m','unittest','-q',test],
-            cwd=target,env=env,capture_output=True,timeout=120)
-
-    positive = suite+'.SingleCalendarTests.test_authenticated_grant_claim_monitor_disable_and_stop'
-    red = run(base,positive)
-    assert red.returncode == 1 and b'FAILED (failures=1)' in red.stderr, 'base_claim_not_assertion_failure'
-    assert b'422 != 200' in red.stderr and b'target_occurrence_not_authorized' in red.stderr, 'base_claim_wrong_red'
-    green = run(ROOT,suite)
-    assert green.returncode == 0, 'candidate_single_calendar_claim_suite_failed'
+    copy_claim_test(base)
+    assert_media_claim_red(base)
+    assert run_media_claim(ROOT, CLAIM_SUITE).returncode == 0, 'candidate_single_calendar_claim_suite_failed'
     return dict(case='readonly-calendar-claim',base_sha=MEDIA_BASE,base='RED',head='GREEN',
-        code='target_occurrence_not_authorized')
+        code=MEDIA_DENIED)
+
+
+class BaseBindingDenied(Exception):
+    """The browser rejection was corroborated by the same authenticated form test."""
 
 
 class Harness:
@@ -191,6 +204,27 @@ asyncio.run(main())
         assert row['enabled'] is True and row['recording_authorized'] is False and row['speaking_authorized'] is False
         return row
 
+    def select_readonly_occurrence(self, target, *, baseline):
+        row = self.assert_readonly_calendar(target, 'media-settings')
+        rc, folder = self.operate(target,'media-occurrences','calendar-occurrences')
+        assert rc == 0, 'media_calendar_selection_not_ready'
+        args = select_binding_args(assert_success(folder,'calendar-occurrences'))
+        if baseline:
+            # The old selector did not export revision for this untouched fixture.
+            args.setdefault('revision', 1)
+        assert args['revision'] == 1
+        return row, args
+
+    def refuse_invalid_binding(self, target, args):
+        for label, attempt, expected in [
+            ('binding-string-args',{**args,'revision':'1','present':'true'},'invalid_binding_args'),
+            ('binding-stale-selection',args,'binding_selection_changed'),
+        ]:
+            rc, folder = self.operate(target,label,'issue-binding',attempt)
+            assert rc != 0 and json.loads((folder/'result.json').read_text()) == {'ok':False,'code':expected}
+            assert not list(folder.glob('*.png'))
+            self.records.append(dict(case=label,exit=rc,assertion='refused',code=expected))
+
     def prove_media_base(self):
         base = self.checkout('media-base',MEDIA_BASE)
         self.assert_readonly_calendar(base,'media-base-settings')
@@ -247,13 +281,7 @@ asyncio.run(main())
             self.records.append(dict(case=op,exit=rc,assertion='GREEN'))
         assert self.assert_readonly_calendar(head,'media-head-settings-after-binding') == readonly_before
         self.records.append(dict(case='readonly-calendar-settings-unchanged',assertion='GREEN'))
-        for label, args, expected in [
-            ('binding-string-args',{**binding_args,'revision':'1','present':'true'},'invalid_binding_args'),
-            ('binding-stale-selection',binding_args,'binding_selection_changed'),
-        ]:
-            rc, folder = self.operate(head,label,'issue-binding',args)
-            assert rc != 0 and json.loads((folder/'result.json').read_text()) == {'ok':False,'code':expected}
-            self.records.append(dict(case=label,exit=rc,assertion='refused',code=expected))
+        self.refuse_invalid_binding(head, binding_args)
         rc,folder=self.operate(head,'calendar-settings-save','calendar-settings',
             dict(calendar_ref='primary',revision=0,enabled=True))
         assert rc==0, 'calendar_settings_save_operation_failed'
@@ -303,6 +331,48 @@ asyncio.run(main())
             assert self.password not in (folder/'result.json').read_text()
             self.records.append(dict(case=label,exit=rc,assertion='refused'))
 
+
+def run_media_scenario(record, scratch, evidence, *, baseline):
+    """Use installed exact-source image and operate script; no real media or OAuth."""
+    scratch.mkdir()
+    harness = Harness(scratch, evidence)
+    state = {}
+
+    def given():
+        harness.prepare()
+        state['checkout'] = harness.checkout('media', harness.sha if baseline else None)
+        state['calendar'], state['args'] = harness.select_readonly_occurrence(state['checkout'], baseline=baseline)
+        state['source'] = state['checkout'] if baseline else ROOT
+        if baseline:
+            copy_claim_test(state['source'])
+
+    def when():
+        target, args = state['checkout'], state['args']
+        rc, folder = harness.operate(target,'media-issue','issue-binding',args)
+        if rc != 0:
+            assert json.loads((folder/'result.json').read_text()) == {'ok':False,'code':MEDIA_DENIED}
+            assert not list(folder.glob('*.png'))
+            assert_media_claim_red(state['source'])
+            raise BaseBindingDenied(MEDIA_DENIED)
+        state['binding'] = assert_success(folder,'issue-binding')
+        state['png'] = folder/'issue-binding.png'
+
+    def then():
+        target, args = state['checkout'], state['args']
+        assert state['binding']['revision'] == args['revision'] + 1
+        assert harness.assert_readonly_calendar(target,'media-settings-after') == state['calendar']
+        harness.refuse_invalid_binding(target,args)
+        assert run_media_claim(state['source'], CLAIM_SUITE).returncode == 0, 'single_calendar_claim_suite_failed'
+        harness.decode_screenshot(state['png'])
+        shots = evidence/'shots'
+        shots.mkdir(exist_ok=True)
+        shutil.copyfile(state['png'], shots/(MEDIA_SCENARIO.replace('/','__')+'.png'))
+
+    try:
+        record(MEDIA_SCENARIO, given, when, then, expected_base_red=BaseBindingDenied)
+    finally:
+        if harness.app_created:
+            docker('rm','-f',harness.app)
 
 
 def main():

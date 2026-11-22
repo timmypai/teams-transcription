@@ -23,6 +23,8 @@ BASE_ADAPTER = (ADAPTER_ROOT/'deploy/isolated_deployment.py').is_file()
 sys.path[:0] = [str((ADAPTER_ROOT if BASE_ADAPTER else ROOT)/'deploy'), str(ROOT/'tools'), str(ROOT/'.devflow')]
 from isolated_deployment import OperationAudit, admit_candidate, SOURCE_SHA, REPOSITORY
 from check_compose import example_values, render, write_env
+from acceptance import parse_covers, pr_body
+from operate_export_proof import MEDIA_SCENARIO, run_media_scenario
 
 
 def run(args, *, input=None, timeout=120, check=True):
@@ -59,6 +61,8 @@ class Harness:
         self.commands = {}
         self.specs = json.loads((ROOT/'.devflow/scenarios.json').read_text())
         self.baseline = os.environ.get('DEVFLOW_BASELINE') == '1'
+        self.media_scenario = not self.baseline or MEDIA_SCENARIO in parse_covers(pr_body())[0]
+        self.expected_base_red = set()
         self.problems = []
         self.receipt = None
         self.isolation = None
@@ -93,16 +97,18 @@ class Harness:
                     file_sha256=hashlib.sha256((self.scratch/'foreign-file').read_bytes()).hexdigest(),
                     database_sha256=hashlib.sha256((self.scratch/'foreign.sqlite3').read_bytes()).hexdigest())
 
-    def event(self, sid, phase, status):
+    def event(self, sid, phase, status, error=''):
         spec = self.specs[sid]
         event = dict(id=sid, runner='shell', phase=phase, title=spec[phase],
-                     status=status, smoke=spec['smoke'], error='' if status!='failed' else 'hosted_scenario_assertion_failed')
+                     status=status, smoke=spec['smoke'], error=error)
         path = self.evidence/'scenario-events.jsonl'
         self.mutate('write', 'directory', str(self.evidence),
                     lambda: path.open('a').write(json.dumps(event, ensure_ascii=False)+'\n'))
 
     def scenario(self, ac, n, given, when, then):
-        sid = f't_a3f4f673/AC-{ac}.S{n}'
+        self.run_scenario(f't_a3f4f673/AC-{ac}.S{n}', given, when, then)
+
+    def run_scenario(self, sid, given, when, then, *, expected_base_red=()):
         failed = False
         for phase, fn in [('given', given), ('when', when), ('then', then)]:
             if failed:
@@ -110,13 +116,16 @@ class Harness:
                 continue
             try:
                 fn()
-            except Exception:
-                self.event(sid, phase, 'failed')
+            except Exception as exc:
+                if self.baseline and phase == 'when' and isinstance(exc, expected_base_red):
+                    self.expected_base_red.add(sid)
+                    self.event(sid, phase, 'failed', str(exc))
+                else:
+                    self.event(sid, phase, 'failed', 'hosted_scenario_assertion_failed')
+                    self.problems.append(sid)
                 failed = True
             else:
                 self.event(sid, phase, 'passed')
-        if failed:
-            self.problems.append(sid)
 
     def prepare(self):
         # Preflight rejects collisions; never adopts existing same-named resources.
@@ -250,8 +259,7 @@ initialize_admin_credentials(load_assistant_settings(f),sys.stdin.read().strip()
             'system_node':self.docker('exec',self.app,'node','--version').stdout.strip(),
             'playwright_node':self.docker('exec',self.app,node,'--version').stdout.strip()}))
         def browser_run():
-            # Manual AC-4 engineering tests remain mandatory but are not EPIC scenarios.
-            # Keep their native report separate; acceptance rejects invented/missing IDs.
+            # Keep the generic browser operation regressions separate from EPIC scenarios.
             for suite in (['acceptance'] if self.baseline else ['acceptance','operations']):
                 results.append(self.docker('exec','--env','DEVFLOW_EVENTS=/tmp/devflow-evidence/scenario-events.jsonl',
                                  '--env','DEVFLOW_UI_SUITE='+suite,
@@ -334,6 +342,8 @@ def main():
                 if h.baseline:
                     h.write(evidence/'base-adapter.json',json.dumps(dict(base_sha=sha,adapter_exists=True,
                         scope='all nine scenarios ran with base adapter and base image; not diagnostic RED')))
+            if h.media_scenario:
+                run_media_scenario(h.run_scenario, h.scratch/'calendar-media', evidence, baseline=h.baseline)
         except Exception as exc:
             h.problems.append('hosted_verification_failed')
             import re
@@ -354,6 +364,15 @@ def finish(h, *, kind, gate=True):
     run(build,check=False)
     report = json.loads((evidence/'acceptance.json').read_text())
     expected = {sid for sid in h.specs if kind != 'base' or BASE_ADAPTER or '/AC-3.' in sid}
+    if h.media_scenario:
+        expected.add(MEDIA_SCENARIO)
+        dest = evidence/'sources/calendar-media'
+        dest.mkdir()
+        for source in ['.devflow/scenarios.json', '.devflow/hosted_verify.py', '.devflow/operate_export_proof.py',
+                       'tests/test_target_single_calendar.py']:
+            shutil.copyfile(ROOT/source, dest/Path(source).name)
+    else:
+        expected.discard(MEDIA_SCENARIO)
     present = {s['id'] for s in report['scenarios']}
     if present != expected:
         raise RuntimeError('scenario_set_incomplete')
@@ -364,7 +383,8 @@ def finish(h, *, kind, gate=True):
         if '/AC-3.' in s['id'] and not (evidence/'shots'/(s['id'].replace('/','__')+'.png')).is_file():
             raise RuntimeError('browser_screenshot_missing')
     if not gate:
-        return 1 if h.problems or any(s['status']!='passed' for s in report['scenarios']) else 0
+        return int(bool(h.problems or any(s['status']!='passed' and s['id'] not in h.expected_base_red
+                                         for s in report['scenarios'])))
     return run(['python',str(ROOT/'.devflow/acceptance.py'),'gate'],check=False).returncode
 
 
