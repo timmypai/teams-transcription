@@ -5,6 +5,7 @@ cd "$(dirname "$0")/.."
 case ${DEVFLOW_OP:-} in look|calendar-occurrences|issue-binding) ;; *) echo 'unsupported_operation' >&2; exit 2;; esac
 E=.devflow/evidence/operate/${GITHUB_RUN_ID:-local}-${GITHUB_RUN_ATTEMPT:-1}
 mkdir -p "$E"
+chmod 700 "$E"
 export DEVFLOW_OPERATION_EVIDENCE="$E"
 envf=$(mktemp)
 chmod 600 "$envf"
@@ -15,6 +16,7 @@ import json,os,sys
 from pathlib import Path
 result=Path(os.environ['DEVFLOW_OPERATION_EVIDENCE'])/'result.json'
 result.write_text(json.dumps(dict(ok=False,code='operation_setup_failed')))
+result.chmod(0o600)
 try:
     args=json.loads(os.environ['DEVFLOW_OP_ARGS'])
     if not isinstance(args,dict):raise ValueError
