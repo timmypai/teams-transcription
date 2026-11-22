@@ -21,6 +21,7 @@ from starlette.requests import Request
 from starlette.responses import HTMLResponse, JSONResponse, RedirectResponse, PlainTextResponse, Response
 from starlette.routing import Route
 
+from .calendar_readback import occurrence_availability
 from .assistant_store import AssistantStoreError
 from .calendar_client import CalendarError
 from .meeting_store import TERMINAL
@@ -471,8 +472,14 @@ def create_admin_app(daemon, settings, *, local_teams_control=False):
         sync_failed = bool(daemon.status()['calendar_errors'])
         body += ('<p role="status" id="calendar-sync" data-failed="'+str(sync_failed).lower()+'">'+
             ('日曆同步失敗，請到設定檢查 Google 連線。' if sync_failed else '日曆同步無已知錯誤。')+'</p>')
+        readback = session.get('calendar_readback')
+        if readback is not None:
+            body += ('<p id="calendar-readback" data-readback="'+h(json.dumps(readback))+'">'+
+                ('本次已成功讀取啟用的 Google Calendar。' if readback['ready'] else
+                 '本次未嘗試讀取 Calendar。' if not readback['read']['attempted'] else '本次 Calendar 前置尚未就緒。')+'</p>')
         body += '<section data-timezone="'+h(settings.timezone)+'"><h2>場次</h2><table><tr><th>會議</th><th>時間／連結</th><th>狀態</th><th>操作</th></tr>'
         for row in rows:
+            discoverable, joinable = occurrence_availability(row, daemon.clock())
             controls = ''
             if row['state']=='pending':
                 controls += control(session,'join',row['id'],'加入')
@@ -486,7 +493,7 @@ def create_admin_app(daemon, settings, *, local_teams_control=False):
                     select_field('series_id','指定系列',choices[1:],row['series_id']),'分組')
             times = '<br>'.join('<time data-edge="'+edge+'" datetime="'+h(row.get(edge+'_at'))+'">'+
                 h(readable_time(row.get(edge+'_at')))+'</time>' for edge in ('start','end'))
-            body += ('<tr data-occurrence-id="'+h(row['id'])+'" data-state="'+h(row['state'])+'"><td>'+h(row['title'])+'<br><a href="/series/'+h(row['series_id'])+'">系列記憶</a></td><td>'+times+
+            body += ('<tr data-occurrence-id="'+h(row['id'])+'" data-state="'+h(row['state'])+'" data-discoverable="'+str(discoverable).lower()+'" data-joinable="'+str(joinable).lower()+'"><td>'+h(row['title'])+'<br><a href="/series/'+h(row['series_id'])+'">系列記憶</a></td><td>'+times+
                 '<br><span class="small">'+h(row.get('link_status'))+'</span></td><td>'+h(row['state'])+'</td><td>'+controls+'</td></tr>')
         return page('排程與人工入會',body+'</table></section>',session,active='schedule')
 
@@ -766,7 +773,9 @@ def create_admin_app(daemon, settings, *, local_teams_control=False):
                         raise AdminError('codex_auth_operation_in_progress')
                 await asyncio.to_thread(daemon.store.update_settings,{'scheduler_paused':values['paused']=='true'})
         elif name=='poll':
-            await daemon.poll_calendar()
+            poll = await daemon.poll_calendar()
+            session['calendar_readback'] = poll['readback']
+            destination = '/schedule'
         elif name=='calendar':
             fields = {key:values[key] for key in ('id','account_id','calendar_id','name') if key in values}
             fields.update(enabled='enabled' in values,recording_authorized='recording_authorized' in values,

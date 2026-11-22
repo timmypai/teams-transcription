@@ -6,6 +6,10 @@ import struct
 import subprocess
 import sys
 import zlib
+from zoneinfo import ZoneInfoNotFoundError
+
+sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
+from teams_transcription.calendar_readback import validate_operation
 
 
 def read_helper(socket, helper, name, limit):
@@ -67,6 +71,8 @@ def export(socket, helper, folder, operation, playwright_exit):
             raise ValueError('operation_not_successful')
         if operation == 'look' and result != dict(ok=True, path='/login', status=200, title='管理登入'):
             raise ValueError('invalid_look_metadata')
+        if operation == 'calendar-occurrences':
+            validate_operation(result)
         png = read_helper(socket, helper, operation+'.png', 32*1024*1024)
         validate_png(png)
         screenshot = folder/(operation+'.png')
@@ -75,7 +81,7 @@ def export(socket, helper, folder, operation, playwright_exit):
         (folder/'result.json').write_text(json.dumps(result, ensure_ascii=False)+'\n')
         (folder/'result.json').chmod(0o600)
         return 0
-    except (OSError, ValueError, TypeError, struct.error, zlib.error, subprocess.SubprocessError):
+    except (OSError, ValueError, TypeError, KeyError, ZoneInfoNotFoundError, struct.error, zlib.error, subprocess.SubprocessError):
         (folder/(operation+'.png')).unlink(missing_ok=True)
         (folder/'result.json').write_text(json.dumps(failure)+'\n')
         (folder/'result.json').chmod(0o600)

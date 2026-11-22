@@ -124,13 +124,19 @@ class AssistantDaemon:
             now = datetime.fromtimestamp(self.clock(),timezone.utc)
             calendars = await asyncio.to_thread(self.store.list_calendars)
             result = {'updated_count':0,'failed_count':0}
+            read = dict(attempted=0,succeeded=0,failed=0,event_count=0,completed=False)
+            enabled = sum(bool(row['enabled']) for row in calendars)
+            codes = set()
             for calendar in calendars:
                 if not calendar['enabled'] or self.closing.is_set():
                     continue
                 try:
+                    read['attempted'] += 1
                     events = await self.calendar.list_events(calendar['calendar_id'],
                         (now-timedelta(seconds=self.settings.lookback_seconds)).isoformat(),
                         (now+timedelta(hours=self.settings.lookahead_hours)).isoformat())
+                    read['succeeded'] += 1
+                    read['event_count'] += len(events)
                     rows = await asyncio.to_thread(self.store.sync_occurrences,calendar['id'],events,now.isoformat())
                     result['updated_count'] += len(rows)
                     self.calendar_errors.pop(calendar['id'],None)
@@ -140,9 +146,15 @@ class AssistantDaemon:
                         if occurrence['state']=='cancelled':
                             await self.stop(self._session.ident,actor='calendar-policy',reason='calendar_cancelled')
                 except Exception as error:
+                    if read['attempted'] > read['succeeded']+read['failed']:
+                        read['failed'] += 1
+                    codes.add(error_code(error,'calendar_poll_failed'))
                     self.calendar_errors[calendar['id']] = error_code(error,'calendar_poll_failed')
                     result['failed_count'] += 1
             self.last_poll_at = now.isoformat()
+            read['completed'] = read['attempted'] == enabled and not self.closing.is_set()
+            from .calendar_readback import poll_readback
+            result['readback'] = poll_readback(self.calendar.status(), enabled, read, codes)
             return result
 
     async def _schedule_loop(self):
