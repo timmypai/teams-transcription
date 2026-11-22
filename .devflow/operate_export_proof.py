@@ -182,8 +182,18 @@ asyncio.run(main())
 '''
         docker('exec','-i',self.app,'python','-c',decode,data=base64.b64encode(path.read_bytes()))
 
+    def assert_readonly_calendar(self, target, label):
+        rc, folder = self.operate(target,label,'calendar-settings')
+        assert rc == 0, 'readonly_calendar_settings_unavailable'
+        result = assert_success(folder,'calendar-settings')
+        assert result['scheduler_paused'] and len(result['calendars']) == 1
+        row = result['calendars'][0]
+        assert row['enabled'] is True and row['recording_authorized'] is False and row['speaking_authorized'] is False
+        return row
+
     def prove_media_base(self):
         base = self.checkout('media-base',MEDIA_BASE)
+        self.assert_readonly_calendar(base,'media-base-settings')
         rc, folder = self.operate(base,'media-base-occurrences','calendar-occurrences')
         assert rc == 0, 'base_calendar_selection_not_ready'
         args = select_binding_args(assert_success(folder,'calendar-occurrences'))
@@ -213,6 +223,7 @@ asyncio.run(main())
         else: raise AssertionError('base_must_be_red')
         head=self.checkout('head')
         binding_args = {}
+        readonly_before = None
         for op in ['look','calendar-occurrences','calendar-settings','issue-binding']:
             args=binding_args if op=='issue-binding' else {}
             rc,folder=self.operate(head,op,op,args)
@@ -228,11 +239,14 @@ asyncio.run(main())
             if op=='calendar-settings':
                 assert result['scheduler_paused'] and len(result['calendars']) == 1
                 row = result['calendars'][0]
-                assert row['enabled'] and not row['recording_authorized'] and not row['speaking_authorized']
+                assert row['enabled'] is True and row['recording_authorized'] is False and row['speaking_authorized'] is False
+                readonly_before = row
             if op=='issue-binding':
                 assert result['revision'] == binding_args['revision']+1
             dest=self.evidence/op;shutil.copytree(folder,dest)
             self.records.append(dict(case=op,exit=rc,assertion='GREEN'))
+        assert self.assert_readonly_calendar(head,'media-head-settings-after-binding') == readonly_before
+        self.records.append(dict(case='readonly-calendar-settings-unchanged',assertion='GREEN'))
         for label, args, expected in [
             ('binding-string-args',{**binding_args,'revision':'1','present':'true'},'invalid_binding_args'),
             ('binding-stale-selection',binding_args,'binding_selection_changed'),
