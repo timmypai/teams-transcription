@@ -5,6 +5,7 @@ hosted resources. Production still uses its fixed rootless socket/target.
 No Oracle, real credentials, OAuth, model, scheduler or Join.
 """
 import base64
+from datetime import datetime
 import io
 import json
 import os
@@ -158,10 +159,19 @@ asyncio.run(main())
             args={}
             if op=='issue-binding': args=dict(occurrence_id=occurrence,present=True,media=True)
             rc,folder=self.operate(head,op,op,args)
-            assert rc==0, 'head_operation_failed'
+            if rc:
+                self.records.append(dict(case=op,exit=rc,assertion='failed',
+                    code=json.loads((folder/'result.json').read_text())['code']))
+            assert rc==0, op+'_operation_failed'
             result=assert_success(folder,op)
             self.decode_screenshot(folder/(op+'.png'))
-            if op=='calendar-occurrences': occurrence=result['occurrences'][0]['occurrence_id']
+            if op=='calendar-occurrences':
+                assert len(result['occurrences'])==2, 'seeded_future_occurrences_missing'
+                # UI order is descending; its first item is the later meeting,
+                # intentionally outside the existing join window. Select the
+                # nearest fixture start without weakening admission or TTL.
+                occurrence=min(result['occurrences'],
+                    key=lambda row: datetime.fromisoformat(row['start_at']))['occurrence_id']
             dest=self.evidence/op;shutil.copytree(folder,dest)
             self.records.append(dict(case=op,exit=rc,assertion='GREEN'))
         # Fault injection remains inside real sandboxed Playwright. All cases
