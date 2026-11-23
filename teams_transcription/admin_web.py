@@ -364,7 +364,7 @@ def create_admin_app(daemon, settings, *, local_teams_control=False):
         jobs = await asyncio.to_thread(daemon.store.list_summary_jobs)
         body = '<section><p>排程：<span class="status">'+('暫停' if policy['scheduler_paused'] else '啟用')+'</span></p>'
         body += '<p>Google：'+h(status['google'].get('error_code') or ('已授權' if status['google'].get('authorized') else '未授權'))+'</p>'
-        body += '<p>背景工作：'+h(status['background_task_count'])+'；最後輪詢：'+h(status['last_poll_at'])+'</p>'
+        body += '<p>背景工作：'+h(status['background_task_count'])+'；最後輪詢：'+h(readable_time(status['last_poll_at']))+'</p>'
         body += '<p class="error">'+h(status['last_error'])+'</p>'
         if status['capture_interlock']:
             body += '<p class="error">Capture 清理待確認；禁止新的入會。摘要恢復仍可執行。</p>'
@@ -383,10 +383,11 @@ def create_admin_app(daemon, settings, *, local_teams_control=False):
                 control(session,'output',run['session_id'],'靜音',enabled='false')+
                 control(session,'output',run['session_id'],'授權發聲',enabled='true')+'</div>')
             body += '<a href="/history/'+h(run['session_id'])+'">來源與摘要</a></section>'
-        body += '<section><h2>歷史摘要工作（服務已停用）</h2><table><tr><th>來源 session</th><th>狀態</th><th>錯誤</th></tr>'
+        body += '<section><h2>會後摘要工作</h2><table><tr><th>來源 session</th><th>狀態</th><th>錯誤</th><th>操作</th></tr>'
         for job in jobs:
+            retry_btn = control(session,'retry-summary',job['session_id'],'重試摘要') if job['state']!='running' else ''
             body += ('<tr><td><a href="/history/'+h(job['session_id'])+'">'+h(job['session_id'])+'</a></td><td>'+h(job['state'])+
-                '</td><td>'+h(job['error_code'])+'</td></tr>')
+                '</td><td>'+h(job['error_code'])+'</td><td>'+retry_btn+'</td></tr>')
         return page('進階診斷',body+'</table></section>',session)
 
     async def settings_page(request):
@@ -473,8 +474,14 @@ def create_admin_app(daemon, settings, *, local_teams_control=False):
         rows = await asyncio.to_thread(daemon.store.list_occurrences)
         series = await asyncio.to_thread(daemon.store.list_series)
         choices = [('', '獨立單場會議')]+[(row['id'],row['name']) for row in series]
+        policy = await asyncio.to_thread(daemon.store.settings)
         now = datetime.now(ZoneInfo(settings.timezone)).replace(second=0,microsecond=0)
-        body = '<section><h2>使用 Teams 連結安排會議</h2><p>時間以 '+h(settings.timezone)+' 顯示。建立場次不代表已加入；加入與記錄需先取得同意。</p>'
+        body = ('<section><h2>自動入會排程</h2><p>目前：<strong>'+
+            ('已暫停' if policy['scheduler_paused'] else '已啟用')+
+            '</strong>。勾選「已取得加入及錄音授權」的場次，於時間到達時將自動加入。</p><div class="controls">'+
+            control(session,'scheduler','settings','啟用自動入會',paused='false')+
+            control(session,'scheduler','settings','暫停自動入會',paused='true')+'</div></section>')
+        body += '<section><h2>使用 Teams 連結安排會議</h2><p>時間以 '+h(settings.timezone)+' 顯示。建立場次不代表已加入；加入與記錄需先取得同意。</p>'
         fields = (input_field('title','會議名稱')+input_field('join_url','Teams 連結',kind='url')+
             input_field('start_at','開始時間',now.strftime('%Y-%m-%dT%H:%M'),kind='datetime-local')+
             input_field('end_at','結束時間',(now+timedelta(hours=1)).strftime('%Y-%m-%dT%H:%M'),kind='datetime-local')+
@@ -499,15 +506,39 @@ def create_admin_app(daemon, settings, *, local_teams_control=False):
                     checkbox('present','我現在已在此會議；已通知準備單次加入')+
                     checkbox('media','我確認本次加入、錄音、逐字保存及助理發聲同意'),
                     '建立五分鐘 Hermes 單次控制 binding（不加入）')
+            if row['state'] in {'completed','stopped','failed','interrupted','skipped'} and row.get('link_status')=='valid' and not row.get('all_day'):
+                controls += control(session,'rejoin',row['id'],'重新加入')
             if row['state'] in {'pending','needs_review'}:
                 controls += control(session,'skip',row['id'],'略過')
                 controls += form(session,'assign-series',hidden('id',row['id'])+
                     select_field('series_id','指定系列',choices[1:],row['series_id']),'分組')
+            if row['state'] != 'running':
+                controls += ' <a href="/schedule/'+h(quote(row['id'],safe=''))+'/delete">刪除…</a>'
             times = '<br>'.join('<time data-edge="'+edge+'" datetime="'+h(row.get(edge+'_at'))+'">'+
                 h(readable_time(row.get(edge+'_at')))+'</time>' for edge in ('start','end'))
             body += ('<tr data-occurrence-id="'+h(row['id'])+'" data-state="'+h(row['state'])+'" data-discoverable="'+str(discoverable).lower()+'" data-joinable="'+str(joinable).lower()+'"><td>'+h(row['title'])+'<br><a href="/series/'+h(row['series_id'])+'">系列記憶</a></td><td>'+times+
                 '<br><span class="small">'+h(row.get('link_status'))+'</span></td><td>'+h(row['state'])+'</td><td>'+controls+'</td></tr>')
         return page('排程與人工入會',body+'</table></section>',session,active='schedule')
+
+    async def schedule_delete_confirm(request):
+        session = authenticated(request)
+        ident = request.path_params['occurrence_id']
+        row = await asyncio.to_thread(daemon.store.get_occurrence,ident)
+        if row['state'] == 'deleted':
+            raise AssistantStoreError('record_not_found')
+        warning = ('此為 Google 行事曆同步場次。確認刪除後將在本機隱藏且下次輪詢不會恢復顯示，不會修改遠端 Google 行事曆。'
+            if row.get('calendar_ref') else
+            '此為手動建立的會議。確認刪除後將永久移除此場次及所有已封存的逐字稿與摘要紀錄，無法復原。')
+        body = '<section><h2>確認刪除會議</h2><p><strong>'+h(row['title'])+'</strong></p>'
+        body += '<p>時間：'+h(readable_time(row.get('start_at')))+' – '+h(readable_time(row.get('end_at')))+'</p>'
+        body += '<p class="warning">'+h(warning)+'</p>'
+        if row['state'] == 'running':
+            body += '<p class="error">進行中的會議不能直接刪除，請先讓助理離開。</p>'
+        else:
+            fields = hidden('id',row['id'])+checkbox('confirm_delete','我已了解上述影響，確認刪除此會議',False)
+            body += form(session,'delete',fields,'確認刪除會議')
+        body += '<p><a href="/schedule">取消並返回排程</a></p></section>'
+        return page('確認刪除會議',body,session,active='schedule')
 
     async def history(request):
         session = authenticated(request)
@@ -518,17 +549,30 @@ def create_admin_app(daemon, settings, *, local_teams_control=False):
             body += '<p>沒有未讀的整理完成通知。</p>'
         for notice in notifications:
             body += ('<article><p><a href="/history/'+h(quote(notice['session_id'],safe=''))+'">會後整理已完成</a> · '+
-                h(notice['created_at'])+'</p>'+control(session,'acknowledge-postmeeting',notice['id'],'標示已讀')+'</article>')
-        body += '</section><section><table><tr><th>會議</th><th>開始</th><th>Capture</th><th>會後整理</th></tr>'
+                h(readable_time(notice['created_at']))+'</p>'+control(session,'acknowledge-postmeeting',notice['id'],'標示已讀')+'</article>')
+        summary_jobs_by_session = {}
+        for sjob in await asyncio.to_thread(daemon.store.list_summary_jobs, 500):
+            summary_jobs_by_session.setdefault(sjob['session_id'], sjob)
+        body += '</section><section><table><tr><th>會議</th><th>開始</th><th>Capture</th><th>會後摘要</th></tr>'
         for run in runs:
+            sjob = summary_jobs_by_session.get(run['session_id'])
             jobs = await asyncio.to_thread(daemon.store.list_postmeeting_jobs,run['session_id'])
             job = jobs[0] if jobs else None
+            slabels = {'pending':'摘要等待產生','running':'摘要產生中','published':'摘要已產生','failed':'摘要產生失敗'}
             labels = {'ready':'等待外部整理','running':'外部整理進行中','published':'已發佈','notified':'已發佈，通知已保存'}
-            summary_status = (labels.get(job['state'],'狀態待確認') if job else
-                '歷史摘要已保存' if run['source'].get('summary_state') else '尚無外部整理記錄')
-            if job and job['error_code']:
-                summary_status += '，有待處理錯誤'
-            body += ('<tr><td><a href="/history/'+h(run['session_id'])+'">'+h(run['occurrence']['title'])+'</a></td><td>'+h(run['started_at'])+
+            if sjob:
+                summary_status = slabels.get(sjob['state'],'狀態待確認')
+                if sjob['error_code']:
+                    summary_status += '（'+str(sjob['error_code'])+'）'
+            elif run['source'].get('summary_state'):
+                summary_status = '摘要已保存'
+            elif job:
+                summary_status = labels.get(job['state'],'狀態待確認')
+                if job['error_code']:
+                    summary_status += '，有待處理錯誤'
+            else:
+                summary_status = '尚無摘要記錄'
+            body += ('<tr><td><a href="/history/'+h(run['session_id'])+'">'+h(run['occurrence']['title'])+'</a></td><td>'+h(readable_time(run['started_at']))+
                 '</td><td>'+h(run['state'])+' / '+h(run['end_reason'])+'</td><td>'+h(summary_status)+'</td></tr>')
         return page('會議歷史',body+'</table></section>',session,active='history')
 
@@ -564,19 +608,27 @@ def create_admin_app(daemon, settings, *, local_teams_control=False):
                 body += '<p class="error">仍存活或無法確認的 worker 不允許提交清理確認；請先人工處理並確認已停止。</p>'
             body += '</section>'
         elif review.get('reviewed_at'):
-            body += '<p>人工清理確認時間：'+h(review['reviewed_at'])+'；操作者：'+h(review.get('actor'))+'。原始中斷及來源品質維持不變。</p>'
+            body += '<p>人工清理確認時間：'+h(readable_time(review['reviewed_at']))+'；操作者：'+h(review.get('actor'))+'。原始中斷及來源品質維持不變。</p>'
         body += '<p>來源品質：'+h({'partial':'記錄不完整','complete':'已保存'}.get(snapshot['completeness'],'需要確認'))+'</p>'
         body += '<details><summary>來源品質與執行詳情</summary><pre>'+h(json.dumps(snapshot['transcript_state'],ensure_ascii=False,indent=2))+'</pre>'
         response = run['status'].get('response_status')
         if isinstance(response,dict):
             visible = {key:response.get(key) for key in
                 ('state','error_code','startup_phase','output_enabled','output_muted','progress')}
-            body += '<h2>語音 B 已保存快照</h2><p>觀測時間：'+h(run['status'].get('response_snapshot_at'))+'</p><pre>'+h(
+            body += '<h2>語音 B 已保存快照</h2><p>觀測時間：'+h(readable_time(run['status'].get('response_snapshot_at')))+'</p><pre>'+h(
                 json.dumps(visible,ensure_ascii=False,indent=2))+'</pre><p>本機送音或 drain 不代表遠端可聽。</p>'
         glossary = run['glossary_snapshot']
         body += '<p>詞庫快照版本：'+h(glossary['version'])+'；筆數：'+h(len(glossary['entries']))+'；省略：'+h(glossary['omitted_count'])+'</p>'
-        body += '</details><p><a href="/series/'+h(run['occurrence']['series_id'])+'">系列與待辦</a></p></section>'
-        jobs = detail['postmeeting']
+        body += '</details><p><a href="/series/'+h(run['occurrence']['series_id'])+'">系列與待辦</a></p>'
+        action_controls = ''
+        if run['state'] in TERMINAL|{'interrupted'} and snapshot['sources']:
+            action_controls += control(session,'retry-summary',ident,'重新產生摘要' if snapshot.get('summary') else '產生摘要')
+        if run['occurrence']['state'] in {'completed','stopped','failed','interrupted','skipped'} and run['occurrence'].get('link_status')=='valid':
+            action_controls += control(session,'rejoin',run['occurrence']['id'],'重新加入會議')
+        if action_controls:
+            body += '<div class="controls">'+action_controls+'</div>'
+        body += '</section>'
+        jobs = await asyncio.to_thread(daemon.store.list_postmeeting_jobs,ident)
         if jobs:
             labels = {'ready':'等待外部整理','running':'外部整理進行中','published':'本次整理已發佈','notified':'本次整理已發佈，完成通知已保存'}
             job = jobs[0]
@@ -584,16 +636,28 @@ def create_admin_app(daemon, settings, *, local_teams_control=False):
             if job['error_code']:
                 body += '<p>尚有待處理錯誤；不能視為整理已完成。</p>'
             body += '</section>'
-        summary = detail.get('summary')
+        summary = snapshot.get('summary') or (detail.get('summary') if detail.get('session_id')==ident else None)
         if summary:
             model = (summary.get('postmeeting_state') or {}).get('model') or summary.get('model')
             body += '<section><h2>衍生摘要</h2><p>模型：'+h(model)+'；來源品質不是 provider 最終定稿的替代。</p>'
             for section in ('重點','決策','待辦','未決問題'):
                 body += '<h3>'+h(section)+'</h3><ul>'
                 for item in summary[section]:
-                    links = ' '.join('<a href="#source-'+h(ident)+'">'+h(ident)+'</a>' for ident in item['sources'])
+                    links = ' '.join('<a href="#source-'+h(src)+'">'+h(src)+'</a>' for src in item['sources'])
                     body += '<li>'+h(item['text'])+' '+h(item.get('owner'))+' '+h(item.get('date'))+' '+links+'</li>'
                 body += '</ul>'
+            body += '</section>'
+        from .calendar_view import group_transcript_paragraphs
+        paragraphs = group_transcript_paragraphs(snapshot['sources'])
+        if paragraphs:
+            body += '<section><h2>逐字稿（段落整理）</h2><p>依時間間隔與來源類型分段呈現；原文及 provenance 完整保存於下方來源記錄。</p>'
+            for para in paragraphs:
+                time_range = readable_time(para['start_timestamp'])
+                if para['end_timestamp'] and para['end_timestamp'] != para['start_timestamp']:
+                    time_range += ' – ' + readable_time(para['end_timestamp'])
+                body += ('<article class="transcript-paragraph"><p class="row-meta">'+h(time_range)+' · '+
+                    h(para['source_state'])+' · '+h(para['segment_count'])+' 片段</p><p class="paragraph-text">'+
+                    h(para['text'])+'</p></article>')
             body += '</section>'
         body += '<section><h2>來源記錄</h2><p>原文及 provenance；不以姓名或詞庫覆寫。</p>'
         for source in snapshot['sources']:
@@ -760,7 +824,8 @@ def create_admin_app(daemon, settings, *, local_teams_control=False):
         rows = await asyncio.to_thread(daemon.store.audit)
         body = '<section><table><tr><th>時間</th><th>操作者</th><th>動作</th><th>目標 ID</th></tr>'
         for row in rows:
-            body += '<tr>'+''.join('<td>'+h(row[key])+'</td>' for key in ('created_at','actor','action','target'))+'</tr>'
+            body += ('<tr><td>'+h(readable_time(row['created_at']))+'</td><td>'+h(row['actor'])+
+                '</td><td>'+h(row['action'])+'</td><td>'+h(row['target'])+'</td></tr>')
         return page('操作稽核',body+'</table></section>',session)
 
     async def action(request):
@@ -861,6 +926,16 @@ def create_admin_app(daemon, settings, *, local_teams_control=False):
                 except ValueError:
                     raise AdminError('teams_acceptance_policy_rejected') from None
             result=await daemon.join(target,**({'acceptance':acceptance} if acceptance is not None else {}))
+        elif name=='rejoin':
+            result=await daemon.rejoin(target)
+            destination = '/?meeting='+quote(target or '',safe='')
+        elif name=='delete':
+            confirmed = (values.get('confirm_delete') == 'on'
+                or ('application/json' in request.headers.get('accept','') and values.get('confirmed') == 'true'))
+            if not confirmed:
+                raise AdminError('delete_confirmation_required')
+            result=await asyncio.to_thread(daemon.store.delete_occurrence,target)
+            destination = '/schedule'
         elif name=='skip':
             await asyncio.to_thread(daemon.store.skip_occurrence,target)
             destination = '/schedule'
@@ -879,7 +954,8 @@ def create_admin_app(daemon, settings, *, local_teams_control=False):
                 raise AdminError('invalid_output_policy')
             await daemon.set_output(target,values['enabled']=='true')
         elif name=='retry-summary':
-            await daemon.retry_summary(target)
+            result = await daemon.retry_summary(target)
+            destination = '/history/'+quote(target or '',safe='')
         elif name=='task-policy':
             await asyncio.to_thread(daemon.store.update_settings,dict(task_stale_days=integer(values,'task_stale_days')))
             destination = '/settings'
@@ -1057,8 +1133,11 @@ def create_admin_app(daemon, settings, *, local_teams_control=False):
         controls = data['controls']
         controls['stop'] = controls['stop'] and active
         controls['output'] = controls['output'] and active
-        controls['join'] = controls['join'] and bool(status.get('started')) and not (
+        can_start_capture = bool(status.get('started')) and not (
             status.get('active_session_id') or status.get('capture_interlock') or status.get('closing'))
+        controls['join'] = controls['join'] and can_start_capture
+        controls['rejoin'] = controls['rejoin'] and can_start_capture
+        controls['delete'] = controls['delete'] and not active
         if active and isinstance(status.get('response'),dict):
             data['response'] = {key:status['response'].get(key) for key in
                 ('state','output_enabled','output_muted','error_code','question_activity')}
@@ -1104,6 +1183,12 @@ def create_admin_app(daemon, settings, *, local_teams_control=False):
             'media_policy_confirmation_required':'保存前必須明確核准這份媒體出口政策；空白保持拒絕全部。',
             'media_policy_rejected':'媒體政策未保存：請確認精確小寫 hosts、私有 runtime.yml，且沒有環境覆寫。',
             'capture_cleanup_review_required':'上次離會狀態尚未確認，請先完成清理確認。',
+            'occurrence_not_rejoinable':'這場會議目前狀態不允許重新加入。',
+            'meeting_running_cannot_delete':'進行中的會議不能直接刪除，請先讓助理離開。',
+            'delete_confirmation_required':'請先勾選明確確認，才會刪除此會議。',
+            'summary_source_unavailable':'此場次尚無可摘要的逐字來源。',
+            'summary_already_running':'此場次摘要正在產生中，請稍候。',
+            'postmeeting_active_cannot_delete':'會後整理仍在執行或受阻，暫時無法刪除。',
             'record_not_found':'找不到這筆會議或資料。'}
         response = page('操作未完成','<p class="error">'+h(messages.get(code,'操作未完成，請確認目前狀態後再試。'))+
             '</p><details><summary>技術詳情</summary><code>'+h(code)+'</code></details><a href="/">返回行事曆</a>',request.state.admin_session)
@@ -1122,7 +1207,8 @@ def create_admin_app(daemon, settings, *, local_teams_control=False):
             await daemon.close()
 
     routes = [Route('/login',login,methods=['GET','POST']),Route('/logout',logout,methods=['POST']),
-        Route('/',dashboard),Route('/settings',settings_page),Route('/schedule',schedule),Route('/diagnostics',diagnostics),
+        Route('/',dashboard),Route('/settings',settings_page),Route('/schedule',schedule),
+        Route('/schedule/{occurrence_id}/delete',schedule_delete_confirm),Route('/diagnostics',diagnostics),
         Route('/history',history),Route('/history/{session_id}',history_detail),Route('/series/{series_id}',series_page),
         Route('/tasks/{series_id}/{task_id}',task_edit),
         Route('/glossary',glossary_page),Route('/glossary/{entry_id}',glossary_edit),Route('/audit',audit_page),

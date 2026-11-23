@@ -38,15 +38,21 @@ class AssistantStoreTests(unittest.TestCase):
     def finish(self, session, lease):
         self.store.finish_run(lease,'stopped','operator_stop')
 
-    def test_finished_capture_preserves_source_without_automatic_summary_job(self):
+    def test_finished_capture_enqueues_automatic_summary_job_and_supports_retry(self):
         session,lease=self.capture(self.occurrence())
         self.finish(session,lease)
         source=self.store.read(session.ident)
         self.assertTrue(source['terminal'])
         self.assertEqual([row['text'] for row in source['sources']],['Review the report.'])
-        self.assertEqual(self.store.list_summary_jobs(),[])
-        with self.assertRaisesRegex(AssistantStoreError,'summary_service_disabled'):
-            self.store.retry_summary(session.ident)
+        jobs=self.store.list_summary_jobs()
+        self.assertEqual(len(jobs),1)
+        self.assertEqual((jobs[0]['session_id'],jobs[0]['state']),(session.ident,'pending'))
+        claimed=self.store.claim_summary('fixture-summary')
+        self.store.finish_summary(claimed,'controlled_summary_failure')
+        self.assertEqual(self.store.list_summary_jobs()[0]['state'],'failed')
+        retried=self.store.retry_summary(session.ident)
+        self.assertEqual(retried['state'],'pending')
+        self.assertEqual(self.store.list_summary_jobs()[0]['state'],'pending')
 
     def test_direct_source_finalize_also_cannot_enqueue_summary(self):
         session,lease=self.capture(self.occurrence())
@@ -183,13 +189,17 @@ class AssistantStoreTests(unittest.TestCase):
         self.assertEqual(restarted.capture_interlocks(), [session.ident])
         self.assertEqual(restarted.list_summary_jobs(), [])
 
-    def test_source_seal_is_independent_of_canceled_summary_generation(self):
-        session, lease = self.capture(self.occurrence())
-        with patch.object(self.store,'_summary_source',side_effect=AssertionError('summary must stay disabled')):
-            self.finish(session,lease)
+    def test_source_seal_skips_summary_when_no_transcript_entries(self):
+        lease=self.store.claim_run(self.occurrence()['id'],'fixture-owner')
+        row=self.store.get_run(lease['session_id'])
+        session=Session(self.tmp.name,lease['session_id'],lease=lease).create(dict(
+            provider='codex',source='meeting',prior_context=row['prior_context']))
+        self.finish(session,lease)
         self.assertEqual(self.store.get_run(session.ident)['state'],'stopped')
         self.assertTrue(self.store.read(session.ident)['terminal'])
         self.assertEqual(self.store.list_summary_jobs(),[])
+        with self.assertRaisesRegex(AssistantStoreError,'summary_source_unavailable'):
+            self.store.retry_summary(session.ident)
 
     def test_restart_recovers_source_without_summary_or_rejoining(self):
         occurrence = self.occurrence()

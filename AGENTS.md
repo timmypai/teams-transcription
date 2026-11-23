@@ -18,7 +18,7 @@ GitHub adapter：[docs/agents/issue-tracker.md](docs/agents/issue-tracker.md)；
 
 ## Project Overview
 
-Python 會議助理：Google Calendar 找到 Teams 場次，自主入會；A 使用 `gpt-live-1-codex` 保存逐字來源，B 以獨立 native Live 通道回答「小白小白」問題。使用者已取消服務端會後摘要；不得重新啟用自動 outbox／worker／重試。逐字來源與既有歷史摘要仍保留可讀，本修正不新增 dot 整合或摘要替代服務。Docker 提供登入管理頁面。SQLite 是唯一會議資料權威；不使用 MCP 或會議 Markdown 交換／輸出。
+Python 會議助理：Google Calendar 找到 Teams 場次，自主入會；A 使用 `gpt-live-1-codex` 保存逐字來源，B 以獨立 native Live 通道回答「小白小白」問題。2026-11-23 操作者明確重新授權服務端會後 Codex 自動摘要與手動重試（`_enqueue_summary`、`_summary_loop`、`retry-summary`），以 SQLite 封存來源產生衍生摘要並維持原本 provenance／citation／fenced lease 安全邊界。Docker 提供登入管理頁面。SQLite 是唯一會議資料權威；不使用 MCP 或會議 Markdown 交換／輸出。
 
 工作前讀 `docs/HANDOFF.md`、`README.md`、`TRANSFER.md`、`evidence/RESULTS.md`。來源起於 WSL2 移轉套件；本 target 是 `timmypai/teams-transcription`，`paulpai0412` 僅歷史上游而非部署／審查身分。提交前核對 Git root／remote，不得提交至包含其他專案的父工作區。來源提交不代表核准部署；既有實測記錄不代表本次真實入會成功。
 
@@ -30,7 +30,7 @@ Python 會議助理：Google Calendar 找到 Teams 場次，自主入會；A 使
 - **詞庫：** `glossary_context.py` 驗證經核准、適用範圍的 people／terms 快照；入會凍結版本及 SHA，僅放入 A `initialItems`。這不是 ASR hotword API，不能據此宣稱辨識率提升。
 - **B：** `response_runtime.py` 組合 `b_native.py`、`b_native_output.py` 與 `b_browser_tx.py`。`b_question.py` 由已准入 PCM quiet＋穩定 ASR 建立 application question，不等待 provider user final／委派。每題重讀綁定會議的 SQLite，由 `MeetingQuestionContext` 交付完整可讀快照，經 `session.context.append`＋`RESULT_COMPLETE` 回傳同一 thread；沒有內容或累計 bytes 配額。完整交付後、marker dispatch 前核對授權並開通，marker 返回且 scope 重查後才 commit。B 的兩個接收段由 `b_no_plc.py` 解碼實收 Opus；持續原生 WebAudio 在缺樣時輸出零值，不走 NetEq PLC。跨頁 WebRTC relay → owned Teams sender 保留，不經 Python PCM／應用 FIFO／BufferSource 排程；真實來源 quiet 與播放 quiet 分開判定。relay 不進 A capture hook／peer roster，B 不改寫 A。
 - **Teams 音訊輸入：** `browser.py` 的 `OWNED_AUDIO_INPUT_JS` 僅於 response mode／精確 Teams origins 提供程式持有的靜音 WebAudio input；不開實體麥克風或偽造 permissions。需由 Teams 正常協商音訊傳送，不可把 recvonly／未協商 sender 硬改成可發聲。
-- **會後：** 停止／drain／清理 → SQLite seal，保留逐字來源及 provenance。服務端不排摘要 outbox、不啟動摘要 worker；歷史摘要／系列記憶／待辦只保留既有資料，省略舊待辦不代表完成。重啟不可自動重入中斷會議，也不可重新啟動已取消的摘要服務；清理不明確時保留 interlock。
+- **會後：** 停止／drain／清理 → SQLite seal，保留逐字來源及 provenance。正常結束且含逐字來源時自動排入 `summary_jobs` 由 `_summary_loop` 產生 Codex 衍生摘要（亦支援介面手動重試）；歷史摘要／系列記憶／待辦保留既有資料，省略舊待辦不代表完成。重啟不可自動重入中斷會議，也不對崩潰恢復的 `service_interrupted` 場次自動觸發模型摘要；清理不明確時保留 interlock。
 
 ## Key Directories
 

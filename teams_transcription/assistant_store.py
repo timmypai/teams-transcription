@@ -66,9 +66,10 @@ class AssistantStore(TargetConsentMixin, PostmeetingStoreMixin, MeetingStore):
                 series_id TEXT NOT NULL,event_id TEXT NOT NULL,identity_key TEXT NOT NULL UNIQUE,value TEXT NOT NULL,
                 start_at TEXT,end_at TEXT,state TEXT NOT NULL,revision INTEGER NOT NULL,last_seen TEXT NOT NULL);
               CREATE INDEX IF NOT EXISTS upcoming_occurrences ON calendar_occurrences(state,start_at);
-              CREATE TABLE IF NOT EXISTS assistant_runs(session_id TEXT PRIMARY KEY,occurrence_id TEXT NOT NULL UNIQUE,
+              CREATE TABLE IF NOT EXISTS assistant_runs(session_id TEXT PRIMARY KEY,occurrence_id TEXT NOT NULL,
                 started_at TEXT NOT NULL,ended_at TEXT,state TEXT NOT NULL,end_reason TEXT,error_code TEXT,
                 prior_json TEXT NOT NULL,glossary_json TEXT NOT NULL);
+              CREATE INDEX IF NOT EXISTS assistant_runs_occurrence_started ON assistant_runs(occurrence_id,started_at DESC);
               CREATE TABLE IF NOT EXISTS capture_cleanup_reviews(session_id TEXT PRIMARY KEY,
                 review_stamp TEXT NOT NULL,reviewed_at TEXT NOT NULL,actor TEXT NOT NULL,
                 resources_stopped INTEGER NOT NULL CHECK(resources_stopped=1),
@@ -91,6 +92,24 @@ class AssistantStore(TargetConsentMixin, PostmeetingStoreMixin, MeetingStore):
 
             self._init_postmeeting(db)
             self._migrate_calendar_identity_db(db)
+            self._migrate_assistant_runs_rejoin_db(db)
+
+    @staticmethod
+    def _migrate_assistant_runs_rejoin_db(db):
+        """Allow explicit operator rejoin runs while preserving every prior sealed run."""
+        row = db.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name='assistant_runs'").fetchone()
+        if not row or not row['sql'] or 'UNIQUE' not in row['sql'].upper():
+            return
+        with db:
+            db.execute('''CREATE TABLE assistant_runs_v2(session_id TEXT PRIMARY KEY,occurrence_id TEXT NOT NULL,
+                started_at TEXT NOT NULL,ended_at TEXT,state TEXT NOT NULL,end_reason TEXT,error_code TEXT,
+                prior_json TEXT NOT NULL,glossary_json TEXT NOT NULL)''')
+            db.execute('''INSERT INTO assistant_runs_v2
+                SELECT session_id,occurrence_id,started_at,ended_at,state,end_reason,error_code,prior_json,glossary_json
+                FROM assistant_runs''')
+            db.execute('DROP TABLE assistant_runs')
+            db.execute('ALTER TABLE assistant_runs_v2 RENAME TO assistant_runs')
+            db.execute('CREATE INDEX IF NOT EXISTS assistant_runs_occurrence_started ON assistant_runs(occurrence_id,started_at DESC)')
 
     @staticmethod
     def _migrate_calendar_identity_db(db):
@@ -269,7 +288,9 @@ class AssistantStore(TargetConsentMixin, PostmeetingStoreMixin, MeetingStore):
                 runnable = (value.get('status')=='confirmed' and not value.get('all_day')
                     and value.get('link_status')=='valid' and value.get('start_at') and value.get('end_at'))
                 state = 'cancelled' if value.get('status')=='cancelled' else 'pending' if runnable else 'needs_review'
-                if old and old['state'] in {'running','completed','failed','interrupted','skipped'}:
+                if old and old['state'] == 'deleted':
+                    state = 'deleted'
+                elif old and old['state'] in {'running','completed','failed','interrupted','skipped'}:
                     state = old['state'] if value.get('status')!='cancelled' else 'cancelled'
                 revision = old['revision']+1 if old and previous!=value else old['revision'] if old else 1
                 db.execute('INSERT INTO calendar_occurrences VALUES(?,?,?,?,?,?,?,?,?,?,?) '
@@ -283,7 +304,8 @@ class AssistantStore(TargetConsentMixin, PostmeetingStoreMixin, MeetingStore):
     def list_occurrences(self, limit=100):
         with self._locked() as db:
             return [self._occurrence(row) for row in db.execute(
-                'SELECT * FROM calendar_occurrences ORDER BY start_at DESC,rowid DESC LIMIT ?',(min(max(int(limit),1),1000),))]
+                "SELECT * FROM calendar_occurrences WHERE state!='deleted' ORDER BY start_at DESC,rowid DESC LIMIT ?",
+                (min(max(int(limit),1),1000),))]
 
     def get_occurrence(self, ident):
         with self._locked() as db:
@@ -437,6 +459,63 @@ class AssistantStore(TargetConsentMixin, PostmeetingStoreMixin, MeetingStore):
             db.execute("UPDATE calendar_occurrences SET state='skipped',revision=revision+1 WHERE id=?",(ident,))
             self._audit(db,actor,'occurrence_skipped',ident)
 
+    def delete_occurrence(self, ident, actor='admin'):
+        """Remove a manual meeting or tombstone a synced Google Calendar occurrence.
+
+        Never deletes an active capture, an unreviewed cleanup interlock, or an
+        occurrence with an active summary/postmeeting job.
+        """
+        with self._locked() as db, db:
+            row = self._row(db,'calendar_occurrences','id',ident)
+            if row['state'] == 'deleted':
+                raise AssistantStoreError('record_not_found')
+            runs = db.execute('SELECT session_id,state FROM assistant_runs WHERE occurrence_id=?',(ident,)).fetchall()
+            session_ids = [run['session_id'] for run in runs]
+            if row['state'] == 'running' or any(run['state'] == 'running' for run in runs):
+                raise AssistantStoreError('meeting_running_cannot_delete')
+            if session_ids:
+                placeholders = ','.join('?' for _ in session_ids)
+                if db.execute(f"SELECT 1 FROM execution_leases WHERE session_id IN ({placeholders}) AND state='active' LIMIT 1",
+                        session_ids).fetchone():
+                    raise AssistantStoreError('meeting_running_cannot_delete')
+                interlocks = set(self._capture_interlocks_db(db))
+                if any(sid in interlocks for sid in session_ids):
+                    raise AssistantStoreError('capture_cleanup_review_required')
+                if db.execute(f"SELECT 1 FROM summary_jobs WHERE session_id IN ({placeholders}) AND state='running' LIMIT 1",
+                        session_ids).fetchone():
+                    raise AssistantStoreError('summary_already_running')
+                if db.execute(f"SELECT 1 FROM postmeeting_jobs WHERE session_id IN ({placeholders}) AND state IN ('running','blocked') LIMIT 1",
+                        session_ids).fetchone():
+                    raise AssistantStoreError('postmeeting_active_cannot_delete')
+            if row['calendar_ref'] is not None:
+                db.execute("UPDATE calendar_occurrences SET state='deleted',revision=revision+1 WHERE id=?",(ident,))
+                self._audit(db,actor,'occurrence_deleted',ident)
+                return {'deleted':True,'id':ident,'tombstoned':True}
+            if session_ids:
+                placeholders = ','.join('?' for _ in session_ids)
+                job_ids = [item['id'] for item in db.execute(
+                    f'SELECT id FROM postmeeting_jobs WHERE session_id IN ({placeholders})',session_ids).fetchall()]
+                if job_ids:
+                    jph = ','.join('?' for _ in job_ids)
+                    for table in ('postmeeting_attempts','postmeeting_publications','postmeeting_notifications','series_state_revisions'):
+                        db.execute(f'DELETE FROM {table} WHERE job_id IN ({jph})',job_ids)
+                for table in ('postmeeting_notifications','postmeeting_publications','postmeeting_jobs',
+                        'postmeeting_snapshots','summary_jobs','capture_cleanup_reviews','execution_leases','assistant_runs'):
+                    db.execute(f'DELETE FROM {table} WHERE session_id IN ({placeholders})',session_ids)
+                for table in ('summary_revisions','summary_publication_recovery','question_activity',
+                        'session_runtime','session_stop_requests','session_events','transcript_increments',
+                        'transcript_captures','finals','revisions','final_aliases','provisionals','meetings'):
+                    db.execute(f'DELETE FROM {table} WHERE meeting_id IN ({placeholders})',session_ids)
+            db.execute('DELETE FROM calendar_occurrences WHERE id=?',(ident,))
+            series = db.execute('SELECT scope FROM meeting_series WHERE id=?',(row['series_id'],)).fetchone()
+            if series and series['scope'] == 'manual':
+                remaining = db.execute('SELECT 1 FROM calendar_occurrences WHERE series_id=? LIMIT 1',
+                    (row['series_id'],)).fetchone()
+                if remaining is None:
+                    db.execute('DELETE FROM memory_tasks WHERE series_id=?',(row['series_id'],))
+            self._audit(db,actor,'occurrence_deleted',ident)
+            return {'deleted':True,'id':ident,'tombstoned':False}
+
     def list_series(self):
         with self._locked() as db:
             return [dict(row) for row in db.execute('SELECT * FROM meeting_series ORDER BY name,id')]
@@ -574,9 +653,11 @@ class AssistantStore(TargetConsentMixin, PostmeetingStoreMixin, MeetingStore):
             self._row(db,'meeting_series','id',series_id)
             return self._prior_db(db,series_id,timestamp(before_at))
 
-    def claim_run(self, occurrence_id, owner, lease_seconds=30, *, acceptance=None, target_control=False):
+    def claim_run(self, occurrence_id, owner, lease_seconds=30, *, acceptance=None, target_control=False, allow_rejoin=False):
         from .teams_acceptance import validate_policy, POLICY_EVENT
         if acceptance is not None:acceptance=validate_policy(acceptance)
+        if allow_rejoin and (acceptance is not None or target_control):
+            raise AssistantStoreError('occurrence_not_rejoinable')
         owner = text(owner,128)
         with self._locked() as db, db:
             if (self.root / '.deployment-maintenance').exists():
@@ -589,6 +670,8 @@ class AssistantStore(TargetConsentMixin, PostmeetingStoreMixin, MeetingStore):
                         (POLICY_EVENT,acceptance['request_sha256'])).fetchone():
                     raise AssistantStoreError('teams_acceptance_already_claimed')
             occurrence = self._occurrence(self._row(db,'calendar_occurrences','id',occurrence_id))
+            if occurrence['state'] == 'deleted':
+                raise AssistantStoreError('record_not_found')
             if occurrence.get('local_preparation') is not None and acceptance is None:
                 raise AssistantStoreError('teams_preparation_acceptance_required')
             from .teams_acceptance import is_owner_immediate
@@ -597,7 +680,13 @@ class AssistantStore(TargetConsentMixin, PostmeetingStoreMixin, MeetingStore):
             if acceptance is not None and occurrence['revision']!=acceptance['occurrence_revision']:
                 raise AssistantStoreError('teams_acceptance_revision_changed')
             calendar_consent = self._validate_target_consent_db(db,occurrence,acceptance) if target_control else None
-            if occurrence['state']!='pending':
+            if allow_rejoin:
+                if (occurrence['state'] not in {'completed','stopped','failed','interrupted','skipped'}
+                        or occurrence.get('status')=='cancelled'
+                        or occurrence.get('link_status')!='valid'
+                        or occurrence.get('all_day')):
+                    raise AssistantStoreError('occurrence_not_rejoinable')
+            elif occurrence['state']!='pending':
                 raise AssistantStoreError('occurrence_not_ready')
             if calendar_consent is None:
                 if not occurrence.get('recording_authorized'):
@@ -614,7 +703,7 @@ class AssistantStore(TargetConsentMixin, PostmeetingStoreMixin, MeetingStore):
                 raise AssistantStoreError('meeting_slot_busy')
             if self._capture_interlocks_db(db):
                 raise AssistantStoreError('capture_cleanup_review_required')
-            if db.execute('SELECT 1 FROM assistant_runs WHERE occurrence_id=?',(occurrence_id,)).fetchone():
+            if not allow_rejoin and db.execute('SELECT 1 FROM assistant_runs WHERE occurrence_id=?',(occurrence_id,)).fetchone():
                 raise AssistantStoreError('occurrence_already_executed')
             session_id = uuid.uuid4().hex
             prior = self._prior_db(db,occurrence['series_id'],occurrence['start_at'] or utc_now())
@@ -679,15 +768,27 @@ class AssistantStore(TargetConsentMixin, PostmeetingStoreMixin, MeetingStore):
             (utc_now(),'interrupted' if end_reason=='service_interrupted' else status,end_reason,error_code,session_id))
         db.execute('UPDATE calendar_occurrences SET state=?,revision=revision+1 WHERE id=?',
             ('interrupted' if end_reason=='service_interrupted' else 'completed' if status in {'completed','stopped'} else 'failed',row['occurrence_id']))
-        self._enqueue_summary(db,self,session_id)
+        if end_reason != 'service_interrupted':
+            self._enqueue_summary(db,self,session_id)
         self._create_postmeeting_snapshot_db(db,session_id)
 
     @staticmethod
     def _enqueue_summary(db, store, session_id):
-        # The operator canceled server-side summaries. Both ordinary sealing and
-        # crash recovery still call this seam, but neither creates model work.
-        # Existing source, published history and historical jobs remain untouched.
-        return None
+        # Server-side post-meeting Codex summary re-authorized by the operator on 2026-11-23.
+        # Only enqueue for ordinary sealed runs with transcript entries (never acceptance-budgeted runs).
+        from .teams_acceptance import POLICY_EVENT
+        if db.execute('SELECT 1 FROM session_events WHERE meeting_id=? AND kind=? LIMIT 1',
+                (session_id, POLICY_EVENT)).fetchone():
+            return None
+        source = store._summary_source(db,session_id)
+        if not source['terminal'] or not (source['events'] or source['segments'] or source['provisionals']):
+            return None
+        now = utc_now()
+        db.execute(
+            "INSERT OR IGNORE INTO summary_jobs(id,session_id,source_sha256,state,error_code,attempts,created_at,updated_at) "
+            "VALUES(?,?,?,'pending',NULL,0,?,?)",
+            (uuid.uuid4().hex,session_id,source['source_sha256'],now,now))
+        return source['source_sha256']
 
     def finish_run(self, lease, status, end_reason, error_code=None):
         if status not in TERMINAL or not re.fullmatch(r'[a-z0-9_]{1,80}',end_reason):
@@ -730,7 +831,9 @@ class AssistantStore(TargetConsentMixin, PostmeetingStoreMixin, MeetingStore):
 
     def list_runs(self, limit=100):
         with self._locked() as db:
-            ids = [row[0] for row in db.execute('SELECT session_id FROM assistant_runs ORDER BY started_at DESC LIMIT ?',
+            ids = [row[0] for row in db.execute(
+                "SELECT r.session_id FROM assistant_runs r JOIN calendar_occurrences o ON o.id=r.occurrence_id "
+                "WHERE o.state!='deleted' ORDER BY r.started_at DESC LIMIT ?",
                 (min(max(int(limit),1),1000),))]
         return [self.get_run(ident) for ident in ids]
 
@@ -893,7 +996,30 @@ class AssistantStore(TargetConsentMixin, PostmeetingStoreMixin, MeetingStore):
             db.execute("UPDATE execution_leases SET state='completed' WHERE lease_id=?",(lease['id'],))
 
     def retry_summary(self, session_id, actor='admin'):
-        raise AssistantStoreError('summary_service_disabled')
+        with self._locked() as db, db:
+            self._row(db,'assistant_runs','session_id',session_id)
+            source = self._summary_source(db,session_id)
+            if not source['terminal'] or not (source['events'] or source['segments'] or source['provisionals']):
+                raise AssistantStoreError('summary_source_unavailable')
+            if db.execute(
+                    "SELECT 1 FROM execution_leases WHERE kind='summary' AND session_id=? AND state='active'",
+                    (session_id,)).fetchone():
+                raise AssistantStoreError('summary_already_running')
+            now = utc_now()
+            existing = db.execute(
+                'SELECT id FROM summary_jobs WHERE session_id=? AND source_sha256=?',
+                (session_id,source['source_sha256'])).fetchone()
+            if existing:
+                db.execute(
+                    "UPDATE summary_jobs SET state='pending',error_code=NULL,updated_at=? WHERE id=?",
+                    (now,existing['id']))
+            else:
+                db.execute(
+                    "INSERT INTO summary_jobs(id,session_id,source_sha256,state,error_code,attempts,created_at,updated_at) "
+                    "VALUES(?,?,?,'pending',NULL,0,?,?)",
+                    (uuid.uuid4().hex,session_id,source['source_sha256'],now,now))
+            self._audit(db,actor,'summary_retry_requested',session_id)
+            return {'session_id':session_id,'state':'pending','source_sha256':source['source_sha256']}
 
     def list_summary_jobs(self, limit=100):
         with self._locked() as db:

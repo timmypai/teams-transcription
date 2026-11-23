@@ -192,6 +192,7 @@ class AssistantDaemonTests(unittest.IsolatedAsyncioTestCase):
         await self.until(self.started.is_set)
         self.finished.set()
         await self.until(lambda:self.store.get_run(joined['session_id'])['state']!='running')
+        await self.daemon.close()
         legacy_job(self.store,joined['session_id'])
         # Capture has already finished: do not change its real boot/lease clock.
         with patch.object(MeetingStore,'_lease_clock',side_effect=lambda:('summary-fixture-boot',lease_now[0])), \
@@ -225,12 +226,13 @@ class AssistantDaemonTests(unittest.IsolatedAsyncioTestCase):
             original(*args)
         self.daemon.settings = self.settings.model_copy(update={'summary_lease_seconds':.6})
         self.daemon.summarizer = stalled_summary
+        occurrence = self.store.list_occurrences()[0]
+        joined = await self.daemon.join(occurrence['id'])
+        await self.until(self.started.is_set)
+        self.finished.set()
+        await self.until(lambda:self.store.get_run(joined['session_id'])['state']!='running')
+        await self.daemon.close()
         with patch.object(self.store,'heartbeat_summary',side_effect=heartbeat_summary):
-            occurrence = self.store.list_occurrences()[0]
-            joined = await self.daemon.join(occurrence['id'])
-            await self.until(self.started.is_set)
-            self.finished.set()
-            await self.until(lambda:self.store.get_run(joined['session_id'])['state']!='running')
             legacy_job(self.store,joined['session_id'])
             lease=self.store.claim_summary('explicit-legacy-publisher')
             publisher=Session(self.root,joined['session_id'],lease=lease)
@@ -242,7 +244,7 @@ class AssistantDaemonTests(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone(self.store.summary_state(joined['session_id']))
         self.assertTrue(Session(self.root,joined['session_id']).summary_source()['entries'])
 
-    async def test_paused_scheduler_requires_policy_then_capture_continues_without_summary(self):
+    async def test_paused_scheduler_requires_policy_then_capture_enqueues_and_publishes_summary(self):
         await asyncio.sleep(.05)
         self.assertEqual(self.store.list_runs(),[])
         self.store.update_settings({'scheduler_paused':False})
@@ -252,7 +254,8 @@ class AssistantDaemonTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(row['occurrence']['event_id'],'event-one')
         self.finished.set()
         await self.until(lambda:self.store.get_run(row['session_id'])['state']!='running')
-        self.assertEqual(self.store.list_summary_jobs(),[])
+        await self.until(lambda:self.store.list_summary_jobs() and self.store.list_summary_jobs()[0]['state']=='published')
+        self.assertEqual(self.store.summary_state(row['session_id'])['revision'],1)
         self.assertEqual(self.store.get_run(row['session_id'])['state'],'stopped')
         self.assertTrue(any(request.url.path.endswith('/events/event-one') for request in self.requests))
         self.assertEqual(list(self.root.rglob('*.md')),[])
@@ -375,15 +378,14 @@ class AssistantDaemonTests(unittest.IsolatedAsyncioTestCase):
         restarted = AssistantDaemon(self.settings,store=self.store,runner=forbidden,summarizer=forbidden)
         await restarted.start()
         try:
-            await asyncio.sleep(.05)
-            self.assertEqual(self.store.list_summary_jobs()[0]['state'],'pending')
+            await self.until(lambda:self.store.list_summary_jobs()[0]['state']=='published')
             self.assertEqual(self.store.get_run(session.ident)['state'],'stopped')
             self.assertEqual(self.store.summary_state(session.ident)['revision'],1)
             self.assertIsNone(restarted.status()['active_session_id'])
         finally:
             await restarted.close()
 
-    async def test_restart_leaves_unpublished_legacy_job_inert_and_retry_disabled(self):
+    async def test_restart_processes_pending_summary_and_supports_manual_retry(self):
         await self.daemon.close()
         calendar=self.store.get_calendar(self.calendar_row['id'])
         self.store.save_calendar({**calendar,'enabled':False})
@@ -396,18 +398,22 @@ class AssistantDaemonTests(unittest.IsolatedAsyncioTestCase):
         session.append_text('Preserved synthetic transcript.',0)
         session.update(state='stopped',cleanup_status='cleaned')
         self.store.finish_run(lease,'stopped','operator_stop')
-        legacy_job(self.store,session.ident)
-        original=self.store.list_summary_jobs()
         called=[]
-        async def forbidden(*args):called.append(True);raise AssertionError('disabled model service')
-        restarted=AssistantDaemon(self.settings,store=self.store,runner=forbidden,summarizer=forbidden)
+        async def failing_first(*args):
+            called.append(True)
+            if len(called)==1:
+                raise AssistantStoreError('controlled_summary_failure')
+            return await controlled_summary(*args)
+        async def forbidden(*args):raise AssertionError('must not rejoin capture on restart')
+        restarted=AssistantDaemon(self.settings,store=self.store,runner=forbidden,summarizer=failing_first)
         await restarted.start()
         try:
-            await asyncio.sleep(.05)
-            self.assertEqual(self.store.list_summary_jobs(),original)
-            self.assertEqual(called,[])
-            with self.assertRaisesRegex(AssistantStoreError,'summary_service_disabled'):
-                await restarted.retry_summary(session.ident)
+            await self.until(lambda:self.store.list_summary_jobs()[0]['state']=='failed')
+            self.assertEqual(len(called),1)
+            await restarted.retry_summary(session.ident)
+            await self.until(lambda:self.store.list_summary_jobs()[0]['state']=='published')
+            self.assertEqual(len(called),2)
+            self.assertEqual(self.store.summary_state(session.ident)['revision'],1)
             self.assertEqual([row['text'] for row in session.entries()],['Preserved synthetic transcript.'])
         finally:
             await restarted.close()

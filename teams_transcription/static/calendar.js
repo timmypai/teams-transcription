@@ -205,6 +205,13 @@
     if (data.last_error) connection.push('服務有待處理錯誤，請查看設定');
     if (data.undated_count > 0) connection.push(`${data.undated_count} 場日期待確認，請至排程檢查`);
     text($('connection-status'), connection.join(' · '));
+    const schedBtn = $('toggle-scheduler');
+    if (schedBtn) {
+      schedBtn.hidden = false;
+      schedBtn.disabled = state.mutating || (data.scheduler_paused && Boolean(data.capture_interlock));
+      schedBtn.classList.toggle('is-active', !data.scheduler_paused);
+      text(schedBtn, data.scheduler_paused ? '啟用自動入會' : '暫停自動入會');
+    }
   }
   function renderTasks(detail) {
     const series = detail.series_state;
@@ -283,11 +290,14 @@
     const session = detail.session_id;
     const actions = [];
     if (controls.join) actions.push({name: 'join', id: detail.meeting.id, label: '加入會議', className: 'primary'});
+    if (controls.rejoin) actions.push({name: 'rejoin', id: detail.meeting.id, label: '重新加入會議', className: 'primary'});
     if (controls.skip) actions.push({name: 'skip', id: detail.meeting.id, label: '略過這場'});
     if (controls.stop && session) actions.push({name: 'stop', id: session, label: '讓助理離開', className: 'danger'});
     if (controls.output && session && detail.response) actions.push({name: 'output', id: session,
       enabled: String(!detail.response.output_enabled), label: detail.response.output_enabled ? '停用語音輸出' : '啟用語音輸出'});
-    if (controls.retry_summary && session) actions.push({name: 'retry-summary', id: session, label: '重試摘要'});
+    if (controls.retry_summary && session) actions.push({name: 'retry-summary', id: session,
+      label: detail.summary_job ? '重試摘要' : '產生摘要'});
+    if (controls.delete) actions.push({name: 'delete', id: detail.meeting.id, label: '刪除會議', className: 'danger'});
     list($('meeting-actions'), actions, action => action.name, (button, action) => {
       button.type = 'button'; button.className = action.className || ''; button.dataset.action = action.name;
       button.dataset.target = action.id;
@@ -311,9 +321,19 @@
     $('meeting-state').classList.toggle('is-live', Boolean(meeting.is_live));
     text($('meeting-kind'), meeting.kind === 'series' ? `系列會議 · ${meeting.series_name || '未命名系列'}` : '單場會議');
     text($('meeting-time'), `${meetingTime(meeting)} · ${timezone}`);
+    if ($('meeting-auto-join')) text($('meeting-auto-join'), detail.auto_join?.label || '');
     text($('meeting-updated'), detail.updated_at ? `記錄更新於 ${timestamp(detail.updated_at)}` : '尚無記錄更新時間');
     $('source-detail').hidden = !detail.session_id;
     if (detail.session_id) $('source-detail').href = historyURL(detail.session_id);
+    const runsBox = $('meeting-runs');
+    if (runsBox) {
+      const runs = detail.runs || [];
+      runsBox.hidden = runs.length <= 1;
+      list(runsBox, runs.length > 1 ? runs : [], row => row.session_id, (link, row, index) => {
+        link.href = historyURL(row.session_id);
+        text(link, `第 ${runs.length - index} 次入會（${timestamp(row.started_at)} · ${row.state_label || row.state}）`);
+      }, 'a');
+    }
     $('cleanup-warning').hidden = !detail.cleanup_review_required;
     $('qa-warning').hidden = detail.response?.question_activity?.state !== 'unavailable';
     renderControls(detail);
@@ -339,15 +359,30 @@
     const completeness = {complete: '來源記錄完整', partial: '來源記錄不完整', unavailable: '來源記錄不可用'};
     text($('source-version'), `${detail.source_version != null ? '來源版本 ' + detail.source_version : '尚無來源版本'}${detail.completeness ? ' · ' + (completeness[detail.completeness] || '完整度未確認') : ''}`);
     const transcript = detail.transcript || [];
-    text($('transcript-count'), transcript.length);
-    text($('transcript-note'), transcript.length ? '保留原始來源品質，不推測發言者姓名。' : meeting.is_live ? '會議進行中，尚未收到可顯示的逐字稿。' : detail.session_id ? '此工作階段沒有已記錄的逐字稿。' : '尚未建立會議工作階段，沒有逐字稿。');
-    list($('transcript-list'), transcript, row => row.id, (item, row) => {
-      item.id = `transcript-${row.id}`;
-      const quality = row.quality && row.quality !== row.source_state ? ' · ' + humanState(row.quality) : '';
-      text(part(item, 'meta', 'p', 'row-meta'), `${timestamp(row.timestamp)} · ${humanState(row.source_state)}${quality} · 修訂 ${row.revision ?? '未提供'}`);
-      text(part(item, 'text'), row.text);
-      sources(item, [row.id], detail.session_id);
-    }, 'article', 'transcript-row');
+    const paragraphs = Array.isArray(detail.transcript_paragraphs) ? detail.transcript_paragraphs : [];
+    text($('transcript-count'), paragraphs.length || transcript.length);
+    text($('transcript-note'), transcript.length ? `以段落呈現（共 ${paragraphs.length || transcript.length} 段，${transcript.length} 筆原始來源）；保留原始來源品質，不推測發言者姓名。` : meeting.is_live ? '會議進行中，尚未收到可顯示的逐字稿。' : detail.session_id ? '此工作階段沒有已記錄的逐字稿。' : '尚未建立會議工作階段，沒有逐字稿。');
+    if (paragraphs.length) {
+      list($('transcript-list'), paragraphs, row => row.id, (item, row) => {
+        item.id = `transcript-${row.id}`;
+        const quality = row.quality && row.quality !== row.source_state ? ' · ' + humanState(row.quality) : '';
+        const startLabel = timestamp(row.start_timestamp);
+        const endLabel = row.end_timestamp && row.end_timestamp !== row.start_timestamp ? ' – ' + timestamp(row.end_timestamp) : '';
+        text(part(item, 'meta', 'p', 'row-meta'), `${startLabel}${endLabel} · ${humanState(row.source_state)}${quality}${row.segment_count > 1 ? ` · ${row.segment_count} 片段` : ''}`);
+        text(part(item, 'text', 'p', 'paragraph-text'), row.text);
+        const details = part(item, 'source-details', 'details', 'paragraph-sources');
+        text(part(details, 'summary', 'summary'), row.segment_count > 1 ? `查看原始來源（${row.segment_count}）` : '查看原始來源');
+        sources(details, row.source_ids || [row.id], detail.session_id);
+      }, 'article', 'transcript-paragraph');
+    } else {
+      list($('transcript-list'), transcript, row => row.id, (item, row) => {
+        item.id = `transcript-${row.id}`;
+        const quality = row.quality && row.quality !== row.source_state ? ' · ' + humanState(row.quality) : '';
+        text(part(item, 'meta', 'p', 'row-meta'), `${timestamp(row.timestamp)} · ${humanState(row.source_state)}${quality} · 修訂 ${row.revision ?? '未提供'}`);
+        text(part(item, 'text'), row.text);
+        sources(item, [row.id], detail.session_id);
+      }, 'article', 'transcript-row');
+    }
     const qa = detail.qa || [];
     text($('qa-count'), qa.length);
     text($('qa-note'), qa.length ? '依實際記錄順序呈現；暫定文字可能繼續修訂。' : detail.session_id ? '尚無問答活動記錄；較早的工作階段可能未保存問答日誌。這不代表從未發生問答。' : '尚無問答活動記錄。');
@@ -366,7 +401,7 @@
         text(part(association, 'identity', 'code'), row.request_id);
       }
     }, 'article', 'qa-item');
-    const job = detail.postmeeting?.[0] || detail.summary_job;
+    const job = detail.summary_job || detail.postmeeting?.[0];
     const summaryStates = {ready: '摘要等待外部整理', pending: '摘要等待處理', running: '摘要產生中', processing: '摘要產生中', failed: '摘要產生失敗', completed: '摘要已發佈', published: '摘要已發佈', notified: '摘要已發佈', stale: '來源已有變更，摘要待更新'};
     text($('summary-note'), `${job ? summaryStates[job.state] || '摘要狀態待確認' : detail.summary ? '已儲存的本次摘要' : '尚無已發佈的本次摘要'}${job?.error_code ? ' · 請查看來源與診斷記錄' : ''}。摘要不取代原始來源。`);
     const sections = detail.summary ? ['重點', '決策', '待辦', '未決問題'] : [];
@@ -383,7 +418,11 @@
   }
   const errorLabels = {admin_csrf_rejected: '安全驗證已失效，請重新整理後再試。', admin_origin_rejected: '此操作來源未通過安全驗證。',
     capture_cleanup_review_required: '請先完成人工擷取清理確認。', revision_conflict: '資料已被其他操作更新，請重新整理。',
-    meeting_not_found: '找不到這場會議。', occurrence_not_found: '找不到這場會議。', invalid_task_status: '待辦狀態不被接受。'};
+    meeting_not_found: '找不到這場會議。', occurrence_not_found: '找不到這場會議。', invalid_task_status: '待辦狀態不被接受。',
+    occurrence_not_rejoinable: '此會議目前狀態無法重新加入。', meeting_running_cannot_delete: '進行中的會議不能直接刪除，請先讓助理離開。',
+    delete_confirmation_required: '請先確認刪除，再送出操作。',
+    summary_source_unavailable: '此場次尚無可摘要的逐字來源。', summary_already_running: '此場次摘要正在產生中，請稍候。',
+    postmeeting_active_cannot_delete: '會後整理仍在執行或受阻，暫時無法刪除。'};
   async function requestJSON(url, options = {}) {
     const response = await fetch(url, {credentials: 'same-origin', cache: 'no-store', ...options,
       headers: {Accept: 'application/json', ...options.headers}});
@@ -508,23 +547,41 @@
     if (state.mutating) return;
     if (action === 'stop' && !window.confirm('讓助理離開這場會議並停止擷取？這只會讓助理離開，不會結束其他人的會議。')) return;
     if (action === 'skip' && !window.confirm('略過這場排程？助理將不會自動加入這一場會議。')) return;
+    if (action === 'delete') {
+      if (!window.confirm('確定刪除此會議？手動場次將連同逐字稿與摘要紀錄一併移除；Google 行事曆場次會在本機隱藏且不再顯示。')) return;
+      extras = {...extras, confirmed: 'true'};
+    }
     const selected = state.selected;
     state.mutating = true;
     text($('action-status'), '正在送出操作…'); $('action-status').removeAttribute('data-error');
     if (state.detail) { renderControls(state.detail); renderTasks(state.detail); }
+    renderCalendar();
     try {
       const result = await requestJSON(`/actions/${encodeURIComponent(action)}`, {method: 'POST',
         body: new URLSearchParams({csrf, id: target, ...extras})});
       if (result.ok !== true) throw new Error('伺服器未確認操作完成，請重新整理檢查。');
-      if (selected === state.selected) text($('action-status'), '操作已受理，正在重新讀取實際狀態。');
-      calendarPoll.refresh(); detailPoll.refresh();
+      if (action === 'delete' && selected === state.selected) {
+        detailPoll.pause();
+        state.selected = null; state.detail = null; setExpanded(false);
+        renderDetail();
+        text($('detail-status'), '會議已刪除。');
+        calendarPoll.refresh();
+      } else {
+        if (selected === state.selected) text($('action-status'), '操作已受理，正在重新讀取實際狀態。');
+        calendarPoll.refresh(); detailPoll.refresh();
+      }
     } catch (error) {
       if (selected === state.selected) { text($('action-status'), error.message); $('action-status').dataset.error = 'true'; }
     } finally {
       state.mutating = false;
       if (state.detail) { renderControls(state.detail); renderTasks(state.detail); }
+      renderCalendar();
     }
   }
+  $('toggle-scheduler')?.addEventListener('click', () => {
+    if (!state.calendar) return;
+    mutate('scheduler', 'settings', {paused: state.calendar.scheduler_paused ? 'false' : 'true'});
+  });
   $('prev-week').addEventListener('click', () => changeDate(addDays(state.date, -7)));
   $('next-week').addEventListener('click', () => changeDate(addDays(state.date, 7)));
   $('today').addEventListener('click', () => changeDate(localToday()));

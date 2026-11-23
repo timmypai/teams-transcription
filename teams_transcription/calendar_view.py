@@ -11,11 +11,15 @@ _MEETINGS = '''SELECT o.*, s.name AS series_name,
      OR NULLIF(json_extract(o.value,'$.series_id'),'') IS NOT NULL
      OR s.series_key != o.identity_key
      OR EXISTS (SELECT 1 FROM calendar_occurrences sibling
-                WHERE sibling.series_id=o.series_id AND sibling.id!=o.id)) AS grouped,
+                WHERE sibling.series_id=o.series_id AND sibling.id!=o.id AND sibling.state!='deleted')) AS grouped,
     r.session_id, r.state AS run_state, rt.status_json,
     l.state AS lease_state, l.boot_id, l.expires_boottime
     FROM calendar_occurrences o JOIN meeting_series s ON s.id=o.series_id
-    LEFT JOIN assistant_runs r ON r.occurrence_id=o.id
+    LEFT JOIN assistant_runs r ON r.session_id=(
+        SELECT latest.session_id FROM assistant_runs latest
+        WHERE latest.occurrence_id=o.id
+        ORDER BY latest.started_at DESC, latest.rowid DESC LIMIT 1
+    )
     LEFT JOIN session_runtime rt ON rt.meeting_id=r.session_id
     LEFT JOIN execution_leases l ON l.lease_id=r.session_id AND l.kind='capture' '''
 
@@ -95,13 +99,13 @@ def calendar_view(store, start, end, timezone):
     zone = _zone(timezone)
     first, last = _range(start,end,zone)
     with store._locked() as db:
-        rows = db.execute(_MEETINGS + '''WHERE julianday(o.start_at)<julianday(?)
+        rows = db.execute(_MEETINGS + '''WHERE o.state!='deleted' AND julianday(o.start_at)<julianday(?)
             AND (julianday(o.end_at)>julianday(?) OR
                  (o.end_at IS NULL AND julianday(o.start_at)>=julianday(?)))
             ORDER BY julianday(o.start_at),o.id''',(last,first,first))
         meetings = [_meeting(store,row,zone) for row in rows]
         series = {item['series_id']:item['series_name'] for item in meetings if item['kind']=='series'}
-        undated = db.execute('SELECT COUNT(*) FROM calendar_occurrences WHERE start_at IS NULL').fetchone()[0]
+        undated = db.execute("SELECT COUNT(*) FROM calendar_occurrences WHERE state!='deleted' AND start_at IS NULL").fetchone()[0]
     return dict(meetings=meetings,series=[dict(id=ident,name=name) for ident,name in
         sorted(series.items(),key=lambda item:(item[1],item[0]))],undated_count=undated)
 
@@ -128,7 +132,100 @@ def _previous(store, db, row, run, zone):
 
 
 
-def _controls(store, db, row, meeting, status, job):
+_SENTENCE_ENDINGS = frozenset('。！？.!?')
+
+
+def _join_fragment(current, piece):
+    if not current:
+        return piece
+    if not piece:
+        return current
+    if current[-1].isascii() and current[-1].isalnum() and piece[0].isascii() and piece[0].isalnum():
+        return current + ' ' + piece
+    return current + piece
+
+
+def group_transcript_paragraphs(transcript, *, pause_seconds=4.0, soft_max_chars=260, hard_max_chars=500):
+    """Project canonical transcript entries into readable paragraphs without mutating SQLite provenance."""
+    paragraphs = []
+    current = None
+    last_instant = None
+    for entry in transcript or ():
+        piece = entry.get('text') or ''
+        state = entry.get('source_state') or 'unknown'
+        quality = entry.get('quality')
+        ts = entry.get('timestamp')
+        parsed = _instant(ts)
+        split = current is None
+        if not split:
+            if state != current['source_state']:
+                split = True
+            elif parsed is not None and last_instant is not None:
+                if abs((parsed - last_instant).total_seconds()) > pause_seconds:
+                    split = True
+            elif (parsed is None) != (last_instant is None):
+                split = True
+            elif len(current['text']) >= hard_max_chars:
+                split = True
+            elif (len(current['text']) >= soft_max_chars
+                    and current['text'].rstrip() and current['text'].rstrip()[-1] in _SENTENCE_ENDINGS):
+                split = True
+        if split:
+            current = {
+                'id': entry['id'],
+                'start_timestamp': ts,
+                'end_timestamp': ts,
+                'source_state': state,
+                'quality': quality,
+                'text': piece,
+                'segment_count': 1,
+                'source_ids': [entry['id']],
+            }
+            paragraphs.append(current)
+        else:
+            current['text'] = _join_fragment(current['text'], piece)
+            if ts:
+                if not current['start_timestamp']:
+                    current['start_timestamp'] = ts
+                current['end_timestamp'] = ts
+            current['segment_count'] += 1
+            current['source_ids'].append(entry['id'])
+            if quality and quality != current['quality'] and current['quality'] == 'provider_final':
+                current['quality'] = quality
+        last_instant = parsed
+    return paragraphs
+
+
+def _auto_join_status(db, row):
+    value = json.loads(row['value'])
+    policy_row = db.execute('SELECT value FROM assistant_settings WHERE id=0').fetchone()
+    scheduler_paused = bool(json.loads(policy_row[0]).get('scheduler_paused', True)) if policy_row else True
+    calendar = db.execute('SELECT value FROM assistant_calendars WHERE id=?', (row['calendar_ref'],)).fetchone()
+    cal = json.loads(calendar['value']) if calendar else None
+    if value.get('status') == 'cancelled' or row['state'] == 'cancelled':
+        return dict(enabled=False, ready=False, reason='cancelled', label='會議已取消，不會自動入會')
+    if value.get('link_status') != 'valid' or value.get('all_day'):
+        return dict(enabled=False, ready=False, reason='invalid_link', label='缺少有效 Teams 連結或為全天事件，無法自動入會')
+    if row['calendar_ref']:
+        if not cal or not cal.get('enabled'):
+            return dict(enabled=False, ready=False, reason='calendar_disabled', label='所屬行事曆未啟用，不會自動入會')
+        if not cal.get('recording_authorized'):
+            return dict(enabled=False, ready=False, reason='recording_not_authorized',
+                label='未開啟行事曆錄音授權，不會自動入會（請至設定開啟）')
+    elif not value.get('recording_authorized'):
+        return dict(enabled=False, ready=False, reason='recording_not_authorized',
+            label='此手動場次未勾選錄音授權，不會自動入會')
+    if scheduler_paused:
+        return dict(enabled=True, ready=False, reason='scheduler_paused',
+            label='已授權自動入會（全域自動排程目前暫停中）')
+    if row['state'] != 'pending':
+        return dict(enabled=True, ready=False, reason='already_processed',
+            label='已授權自動入會（此場次已執行或已略過）')
+    return dict(enabled=True, ready=True, reason='ready', label='已授權自動入會（時間到將自動加入）')
+
+
+def _controls(store, db, row, meeting, status, job, source=None):
+    from .meeting_store import TERMINAL
     value = json.loads(row['value'])
     calendar = db.execute('SELECT value FROM assistant_calendars WHERE id=?',(row['calendar_ref'],)).fetchone()
     policy = json.loads(calendar['value']) if calendar else None
@@ -147,15 +244,41 @@ def _controls(store, db, row, meeting, status, job):
     response = status.get('response_status')
     speaking = (policy.get('enabled') and policy.get('recording_authorized') and policy.get('speaking_authorized')
         if policy else not row['calendar_ref'] and authorized and value.get('speaking_authorized'))
+    interlocks = set(store._capture_interlocks_db(db))
+    occ_runs = [item['session_id'] for item in db.execute(
+        'SELECT session_id FROM assistant_runs WHERE occurrence_id=?',(row['id'],)).fetchall()]
+    occ_running = bool(row['state']=='running' or row['run_state']=='running' or active)
+    occ_interlocked = any(sid in interlocks for sid in occ_runs)
+    occ_summary_busy = False
+    if occ_runs:
+        placeholders = ','.join('?' for _ in occ_runs)
+        occ_summary_busy = bool(
+            db.execute(f"SELECT 1 FROM summary_jobs WHERE session_id IN ({placeholders}) AND state='running' LIMIT 1",occ_runs).fetchone()
+            or db.execute(f"SELECT 1 FROM postmeeting_jobs WHERE session_id IN ({placeholders}) AND state IN ('running','blocked') LIMIT 1",occ_runs).fetchone())
+    has_sources = bool(source and source.get('sources'))
+    has_summary = bool(source and source.get('summary'))
+    can_retry_summary = bool(
+        row['session_id'] and row['run_state'] in TERMINAL | {'interrupted'}
+        and has_sources
+        and (job is None or job['state'] != 'running')
+        and (not has_summary or (job is not None and job['state'] == 'failed')))
+    can_rejoin = bool(
+        row['session_id'] and row['state'] in {'completed','stopped','failed','interrupted','skipped'}
+        and authorized and value.get('link_status')=='valid' and not value.get('all_day')
+        and value.get('status')!='cancelled' and not busy and not interlocks)
+    can_delete = bool(
+        row['state']!='deleted' and not occ_running and not occ_interlocked and not occ_summary_busy)
     return dict(
         join=bool(row['state']=='pending' and not row['session_id'] and authorized and join_window
             and value.get('link_status')=='valid' and not value.get('all_day')
-            and not busy and not store._capture_interlocks_db(db)),
+            and not busy and not interlocks),
+        rejoin=can_rejoin,
         skip=bool(not row['session_id'] and row['state'] in {'pending','needs_review'}),
+        delete=can_delete,
         stop=active,
         output=bool(active and isinstance(response,dict) and response.get('state') not in {'failed','stopped'}
             and (speaking or response.get('output_enabled'))),
-        retry_summary=False)
+        retry_summary=can_retry_summary)
 
 
 def _latest(values):
@@ -167,12 +290,17 @@ def meeting_view(store, occurrence_id, timezone):
     from .assistant_store import AssistantStoreError
     zone = _zone(timezone)
     with store._locked() as db:
-        row = db.execute(_MEETINGS+'WHERE o.id=?',(occurrence_id,)).fetchone()
+        row = db.execute(_MEETINGS+"WHERE o.id=? AND o.state!='deleted'",(occurrence_id,)).fetchone()
         if row is None:
             raise AssistantStoreError('record_not_found')
         meeting = _meeting(store,row,zone)
         session_id = row['session_id']
         run = db.execute('SELECT * FROM assistant_runs WHERE session_id=?',(session_id,)).fetchone() if session_id else None
+        all_runs = [dict(session_id=item['session_id'],state=item['state'],
+            state_label=_STATE_LABELS.get(item['state'],'狀態待確認'),
+            started_at=item['started_at'],ended_at=item['ended_at'],end_reason=item['end_reason'])
+            for item in db.execute('SELECT session_id,state,started_at,ended_at,end_reason FROM assistant_runs '
+                'WHERE occurrence_id=? ORDER BY started_at DESC,rowid DESC',(occurrence_id,)).fetchall()]
         status = json.loads(row['status_json']) if row['status_json'] else {}
         source = store._publish(db,session_id,materialize=True) if session_id else None
         job = db.execute('SELECT state,error_code,updated_at FROM summary_jobs WHERE session_id=? '
@@ -181,14 +309,14 @@ def meeting_view(store, occurrence_id, timezone):
         series_state = store._series_state_db(db,row['series_id'])
         task_workspace = store._task_workspace_db(db,row['series_id'],zone=timezone)
         latest_recorded = db.execute('SELECT o.start_at,r.session_id FROM calendar_occurrences o '
-            'JOIN assistant_runs r ON r.occurrence_id=o.id WHERE o.series_id=? AND r.ended_at IS NOT NULL '
+            "JOIN assistant_runs r ON r.occurrence_id=o.id WHERE o.series_id=? AND o.state!='deleted' AND r.ended_at IS NOT NULL "
             'ORDER BY julianday(o.start_at) DESC,r.ended_at DESC LIMIT 1',(row['series_id'],)).fetchone()
         postmeeting = store._postmeeting_jobs_db(db,session_id) if session_id else []
         postmeeting_summary = store._postmeeting_summary_db(db,session_id) if session_id else None
         tasks = [{key:task[key] for key in ('id','text','owner','date','status','origin_session_id')}
             for task in store._tasks_db(db,row['series_id'])]
         series_meetings = ([_meeting(store,other,zone) for other in db.execute(
-            _MEETINGS+'WHERE o.series_id=? ORDER BY julianday(o.start_at),o.id',(row['series_id'],))]
+            _MEETINGS+"WHERE o.series_id=? AND o.state!='deleted' ORDER BY julianday(o.start_at),o.id",(row['series_id'],))]
             if meeting['kind']=='series' else [])
         # Keep canonical source IDs, provenance and grouped stream order;
         # the calendar workspace only selects its display fields.
@@ -196,6 +324,7 @@ def meeting_view(store, occurrence_id, timezone):
             source_state=entry['source_state'],quality=entry.get('quality'),
             revision=entry.get('revision',entry.get('source_revision')) or 0)
             for entry in source['sources']] if source else []
+        transcript_paragraphs = group_transcript_paragraphs(transcript)
         snapshot = status.get('response_status')
         response = (dict(state=snapshot.get('state','unknown'),output_enabled=bool(snapshot.get('output_enabled')),
             output_muted=bool(snapshot.get('output_muted',True)),error_code=snapshot.get('error_code'))
@@ -203,15 +332,17 @@ def meeting_view(store, occurrence_id, timezone):
         if response is not None and isinstance(snapshot.get('question_activity'),dict):
             response['question_activity'] = {key:snapshot['question_activity'].get(key)
                 for key in ('state','error_code')}
-        detail = dict(meeting=meeting,session_id=session_id,run_state=row['run_state'],
+        detail = dict(meeting=meeting,session_id=session_id,run_state=row['run_state'],runs=all_runs,
+            auto_join=_auto_join_status(db,row),
             response=response,previous=previous,tasks=tasks,series_meetings=series_meetings,
             series_state=series_state,task_workspace=task_workspace,postmeeting=postmeeting,
             latest_recorded_meeting=dict(latest_recorded) if latest_recorded else None,
-            transcript=transcript,summary=postmeeting_summary or (source['summary'] if source else None),
+            transcript=transcript,transcript_paragraphs=transcript_paragraphs,
+            summary=postmeeting_summary or (source['summary'] if source else None),
             summary_job=dict(state=job['state'],error_code=job['error_code']) if job else None,
             source_version=source['version'] if source else None,
             completeness=source['completeness'] if source else None,
-            controls=_controls(store,db,row,meeting,status,job),
+            controls=_controls(store,db,row,meeting,status,job,source=source),
             cleanup_review_required=bool(run and store._cleanup_review_metadata(
                 db,run,row['status_json'],worker_status='unknown')['required']))
         observed = [status.get('updated_at'),status.get('created_at'),

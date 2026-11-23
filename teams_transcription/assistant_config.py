@@ -39,7 +39,7 @@ class AssistantSettings(BaseModel):
         'teams.microsoft.com', 'teams.cloud.microsoft', 'teams.live.com'])
     summary_model: str | None = None
     display_name: str = Field(default='小白會議助理', min_length=1, max_length=100)
-    timezone: str = 'UTC'
+    timezone: str = 'Asia/Taipei'
     live_provider: str = 'codex_live'
     live_model: str = 'gpt-live-1-codex'
     live_cost_policy: str = 'no_new_cost'

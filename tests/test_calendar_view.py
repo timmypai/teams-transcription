@@ -102,7 +102,9 @@ class CalendarViewTests(unittest.TestCase):
         self.assertEqual([item['text'] for item in detail['transcript']],['Current only'])
         self.assertEqual(detail['session_id'],current.ident)
         self.assertEqual(detail['qa'],[])
-        self.assertFalse(detail['controls']['retry_summary'])
+        self.assertTrue(detail['controls']['retry_summary'])
+        self.assertTrue(detail['controls']['rejoin'])
+        self.assertTrue(detail['controls']['delete'])
 
     def test_standalone_is_isolated_and_recurring_identity_survives_narrow_range(self):
         earlier = self.occurrence('weekly-one','2026-10-01T01:00:00Z','2026-10-01T02:00:00Z',
@@ -174,7 +176,8 @@ class CalendarViewTests(unittest.TestCase):
         self.assertEqual(failed['meeting']['state'],'failed')
         self.assertEqual(failed['run_state'],'failed')
         self.assertFalse(failed['meeting']['is_live'])
-        self.assertFalse(any(failed['controls'].values()))
+        self.assertEqual(failed['controls'],dict(join=False,rejoin=True,skip=False,delete=True,
+            stop=False,output=False,retry_summary=False))
         self.assertIsNone(failed['summary_job'])
         self.assertEqual(failed['completeness'],'unavailable')
 
