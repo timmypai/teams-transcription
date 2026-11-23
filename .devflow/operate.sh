@@ -30,7 +30,6 @@ if [[ -n $private_helper ]]; then
                  --label "io.devflow.teams.private-browser=$private_helper")
   envf=$(mktemp "${DEVFLOW_PRIVATE_RESULT%/*}/password.XXXXXX")
 else
-  helper=devflow-teams-transcription-operate-${GITHUB_RUN_ID:?}-${GITHUB_RUN_ATTEMPT:?}
   envf=$(mktemp)
 fi
 chmod 600 "$envf"
@@ -89,6 +88,8 @@ if [[ -n $private_helper ]]; then
   # response was lost. Persist before submission, under the inherited lock.
   mkdir "${DEVFLOW_PRIVATE_RESULT%/*}/creating"
   sync -f "${DEVFLOW_PRIVATE_RESULT%/*}"
+else
+  helper=devflow-teams-transcription-operate-${GITHUB_RUN_ID:?}-${GITHUB_RUN_ATTEMPT:?}
 fi
 # Container UID != host UID under rootless Docker. Keep private evidence inside
 # its namespace, then stream from that live namespace to host-owned private files.
