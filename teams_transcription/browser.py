@@ -21,6 +21,42 @@ _TEAMS_LOBBY_MESSAGES = (
 
 # Reuse meeting-lifecycle's semantic regions; chat/captions are meeting data,
 # never evidence that admission, removal or meeting completion occurred.
+_TEAMS_ALLOWED_ORIGINS = frozenset({'teams.microsoft.com', 'teams.cloud.microsoft', 'teams.live.com'})
+_TEAMS_STANDALONE_BLOCKER_MESSAGES = (
+    'Meeting has ended', 'This meeting has ended', '會議已結束',
+    "Sorry, we couldn't connect you", 'Sorry, we couldn’t connect you',
+    'Something went wrong', "We couldn't join the meeting", 'We couldn’t join the meeting',
+    'Meeting not found', 'This meeting link is invalid', 'This meeting link has expired',
+    'The meeting has expired', "This meeting doesn't exist", "We couldn't find this meeting",
+    "We can't find this meeting",
+    "We couldn't sign you in", 'We couldn’t sign you in',
+    "We can't sign you in", 'We can’t sign you in',
+    "You don't have permission", 'You do not have permission',
+    'Sign in to join', 'Only people with access', 'Sign in with your work',
+    'You need to sign in', '需要登入',
+    "This browser isn't supported", 'This browser is not supported',
+    "Your browser isn't supported", 'Your browser is not supported',
+    'Unsupported browser', 'Try a different browser', 'Use a different browser',
+    '此瀏覽器不受支援', '不支援此瀏覽器',
+    'Allow third-party cookies', 'Enable third-party cookies',
+    'Cookies are blocked', 'Third-party cookies are disabled',
+    *_TEAMS_LOBBY_MESSAGES,
+)
+
+
+def _is_strict_teams_origin(url):
+    if not isinstance(url, str) or not url:
+        return False
+    parsed = urlsplit(url)
+    if parsed.scheme.lower() != 'https':
+        return False
+    try:
+        port = parsed.port
+    except ValueError:
+        return False
+    return parsed.hostname in _TEAMS_ALLOWED_ORIGINS and port in (None, 443)
+
+
 _MEETING_STATUS_REGIONS = '[role="status"], [role="alert"], [role="dialog"]'
 _MEETING_SOURCE_NAMES = ('chat', 'caption', 'transcript', 'conversation', '字幕', '聊天')
 _MEETING_SOURCE_ATTRIBUTES = ('aria-label', 'aria-labelledby', 'data-tid', 'data-testid', 'id')
@@ -1276,14 +1312,16 @@ class MeetingBrowser:
         if (self._join_state or {}).get('join_dispatch_started'):
             return False
         self._response_read_guard(deadline,stopped,roster=roster,stage='preview_scan')
-        from urllib.parse import urlsplit
-        if urlsplit(getattr(self.page,'url','')).hostname not in {
-                'teams.microsoft.com','teams.cloud.microsoft','teams.live.com'}:
+        if not _is_strict_teams_origin(getattr(self.page,'url','')):
             return False
         label=re.compile(r'^Continue without audio or video$',re.I)
         join_label=re.compile(r'^(?:join now|join meeting|join|立即加入|加入會議|加入)$',re.I)
         device_label=re.compile(r'(?:mic(?:rophone)? and camera|camera and mic(?:rophone)?)',re.I)
-        dialogs=[];global_buttons=0;background_controls=False
+        blocker_label=re.compile(
+            '(?:' + '|'.join(re.escape(m) for m in _TEAMS_STANDALONE_BLOCKER_MESSAGES) + ')',
+            re.I,
+        )
+        dialogs=[];global_buttons=0;button_frame=None;background_controls=False
         for frame in roster:
             self._response_read_guard(deadline,stopped,frame=frame,roster=roster,stage='preview_scan')
             # Background controls are safe only behind a proven modal dialog.
@@ -1294,6 +1332,8 @@ class MeetingBrowser:
                 background_controls=background_controls or bool(count)
             count=await frame.get_by_role('button',name=label).count()
             self._response_read_guard(deadline,stopped,frame=frame,roster=roster,stage='preview_scan')
+            if count:
+                button_frame=frame
             global_buttons+=count
             if global_buttons>1:return False
             matches=frame.get_by_role('dialog')
@@ -1306,37 +1346,90 @@ class MeetingBrowser:
                 self._response_read_guard(deadline,stopped,frame=frame,roster=roster,stage='preview_scan')
                 if shown:dialogs.append((dialog,frame))
                 if len(dialogs)>1:return False
-        if len(dialogs)!=1 or global_buttons!=1:return False
-        dialog,frame=dialogs[0]
-        if not hasattr(dialog,'get_by_text') or not hasattr(dialog,'get_by_role'):return False
-        if background_controls:
-            modal=await dialog.get_attribute('aria-modal')
+        if global_buttons!=1:return False
+        if len(dialogs)==1:
+            dialog,frame=dialogs[0]
+            if not hasattr(dialog,'get_by_text') or not hasattr(dialog,'get_by_role'):return False
+            if background_controls:
+                modal=await dialog.get_attribute('aria-modal')
+                self._response_read_guard(deadline,stopped,frame=frame,roster=roster,stage='preview_scan')
+                if modal!='true':return False
+            for role,name in [('radio',None),('button',join_label)]:
+                controls=dialog.get_by_role(role,name=name) if name is not None else dialog.get_by_role(role)
+                count=await controls.count()
+                self._response_read_guard(deadline,stopped,frame=frame,roster=roster,stage='preview_scan')
+                if count:return False
+            message=dialog.get_by_text(device_label)
+            count=await message.count()
             self._response_read_guard(deadline,stopped,frame=frame,roster=roster,stage='preview_scan')
-            if modal!='true':return False
-        for role,name in [('radio',None),('button',join_label)]:
-            controls=dialog.get_by_role(role,name=name) if name is not None else dialog.get_by_role(role)
-            count=await controls.count()
+            if not 1<=count<=16:return False
+            shown_message=False
+            for index in range(count):
+                shown=await message.nth(index).is_visible()
+                self._response_read_guard(deadline,stopped,frame=frame,roster=roster,stage='preview_scan')
+                shown_message=shown_message or shown
+            if not shown_message:return False
+            matches=dialog.get_by_role('button',name=label)
+            count=await matches.count()
             self._response_read_guard(deadline,stopped,frame=frame,roster=roster,stage='preview_scan')
-            if count:return False
-        message=dialog.get_by_text(device_label)
-        count=await message.count()
-        self._response_read_guard(deadline,stopped,frame=frame,roster=roster,stage='preview_scan')
-        if not 1<=count<=16:return False
-        shown_message=False
-        for index in range(count):
-            shown=await message.nth(index).is_visible()
+            if count!=1:return False
+            button=matches.nth(0)
+        elif len(dialogs)==0:
+            # Real Teams Web can render the device-permission interstitial as a
+            # standalone full-page view without ARIA role="dialog": visible
+            # heading + sole "Continue without audio or video" button, with no
+            # other buttons, radios, textboxes, switches, links, or blockers.
+            if background_controls or button_frame is None:
+                return False
+            total_buttons=0
+            for scan_frame in roster:
+                self._response_read_guard(deadline,stopped,frame=scan_frame,roster=roster,stage='preview_scan')
+                for role in ('textbox','switch','link'):
+                    count=await scan_frame.get_by_role(role).count()
+                    self._response_read_guard(deadline,stopped,frame=scan_frame,roster=roster,stage='preview_scan')
+                    if count:return False
+                bcount=await scan_frame.get_by_role('button').count()
+                self._response_read_guard(deadline,stopped,frame=scan_frame,roster=roster,stage='preview_scan')
+                total_buttons+=bcount
+                if total_buttons>1:return False
+            if total_buttons!=1:return False
+            frame=button_frame
+            if not _is_strict_teams_origin(getattr(frame,'url','')):return False
+            headings=frame.get_by_role('heading')
+            hcount=await headings.count()
             self._response_read_guard(deadline,stopped,frame=frame,roster=roster,stage='preview_scan')
-            shown_message=shown_message or shown
-        if not shown_message:return False
-        matches=dialog.get_by_role('button',name=label)
-        count=await matches.count()
-        self._response_read_guard(deadline,stopped,frame=frame,roster=roster,stage='preview_scan')
-        if count!=1:return False
-        button=matches.nth(0)
+            if not 1<=hcount<=4:return False
+            shown_heading=False
+            for index in range(hcount):
+                shown=await headings.nth(index).is_visible()
+                self._response_read_guard(deadline,stopped,frame=frame,roster=roster,stage='preview_scan')
+                shown_heading=shown_heading or shown
+            if not shown_heading:return False
+            lookup=getattr(frame,'get_by_text',None)
+            if not callable(lookup):return False
+            blockers=lookup(blocker_label)
+            bmsg_count=await blockers.count()
+            self._response_read_guard(deadline,stopped,frame=frame,roster=roster,stage='preview_scan')
+            if bmsg_count>16:return False
+            for index in range(bmsg_count):
+                if await blockers.nth(index).is_visible():
+                    self._response_read_guard(deadline,stopped,frame=frame,roster=roster,stage='preview_scan')
+                    return False
+                self._response_read_guard(deadline,stopped,frame=frame,roster=roster,stage='preview_scan')
+            matches=frame.get_by_role('button',name=label)
+            count=await matches.count()
+            self._response_read_guard(deadline,stopped,frame=frame,roster=roster,stage='preview_scan')
+            if count!=1:return False
+            button=matches.nth(0)
+        else:
+            return False
+        if not _is_strict_teams_origin(getattr(frame,'url','')):return False
         shown=await button.is_visible()
         self._response_read_guard(deadline,stopped,frame=frame,roster=roster,stage='preview_scan')
         enabled=await button.is_enabled()
         self._response_action_guard(deadline,stopped,frame=frame,roster=roster,stage='preview_dispatch')
+        if not _is_strict_teams_origin(getattr(self.page,'url','')) or not _is_strict_teams_origin(getattr(frame,'url','')):
+            return False
         if not shown or not enabled:return False
         self._join_phase('preview_navigation')
         self._join_control('audio_continue',True)

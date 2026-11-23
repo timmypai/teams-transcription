@@ -144,8 +144,118 @@ class PreviewNavigationTests(unittest.IsolatedAsyncioTestCase):
                 await meeting._response_computer_audio(select=False,deadline=time.monotonic()+.04,stopped=lambda:False)
             self.assertEqual(page.trace,[])
         finally:await meeting.close()
+    async def test_standalone_full_page_preview_without_dialog_navigates_then_verifies_computer_audio(self):
+        page=PreviewPage()
+        heading=ui.Element(page,"Teams can't access your camera or mic","heading")
+        page.elements=[heading,page.button]
+        meeting=self.meeting(page)
+        try:
+            await ui.ResponseComputerAudioUITests().join(meeting,.3)
+            self.assertEqual(page.trace.count('Continue without audio or video'),1)
+            self.assertEqual(page.trace.count('Computer audio'),1)
+            self.assertLess(page.trace.index('Continue without audio or video'),page.trace.index('Computer audio'))
+            self.assertLess(page.trace.index('Computer audio'),page.trace.index('Join now'))
+            self.assertTrue(meeting._response_computer_audio_verified)
+            receipt=meeting.join_diagnostic()
+            self.assertTrue(receipt['preview_navigation_dispatched'])
+            self.assertTrue(receipt['preview_navigation_completed'])
+        finally:await meeting.close()
+    async def test_standalone_preview_rejects_extra_controls_missing_heading_or_blocker_text(self):
+        for kind in [
+            'extra_button','textbox','switch','link','radio','join','no_heading','hidden_heading',
+            'blocker_text','generic_error','blocker_over_16','missing_text_lookup',
+            'non_teams_origin','http_origin','nonstandard_port','foreign_child_frame',
+        ]:
+            page=PreviewPage()
+            heading=ui.Element(page,"Teams can't access your camera or mic","heading")
+            page.elements=[heading,page.button]
+            if kind=='extra_button':page.elements.append(ui.Element(page,'Cancel','button'))
+            elif kind=='textbox':page.elements.append(ui.Element(page,'name','textbox'))
+            elif kind=='switch':page.elements.append(ui.Element(page,'microphone','switch'))
+            elif kind=='link':page.elements.append(ui.Element(page,'Sign in','link'))
+            elif kind=='radio':page.elements.append(ui.Element(page,'Computer audio','radio'))
+            elif kind=='join':page.elements.append(ui.Element(page,'Join now','button'))
+            elif kind=='no_heading':page.elements=[page.button]
+            elif kind=='hidden_heading':heading.visible=False
+            elif kind=='blocker_text':heading.label='Sign in to join'
+            elif kind=='generic_error':page.elements.append(ui.Element(page,'Something went wrong','text'))
+            elif kind=='blocker_over_16':
+                for idx in range(17):
+                    el=ui.Element(page,'Sign in to join','text');el.visible=(idx==16)
+                    page.elements.append(el)
+            elif kind=='missing_text_lookup':page.get_by_text=None
+            elif kind=='non_teams_origin':page.url='https://example.com/meeting'
+            elif kind=='http_origin':page.url='http://teams.microsoft.com/meeting'
+            elif kind=='nonstandard_port':page.url='https://teams.microsoft.com:8443/meeting'
+            elif kind=='foreign_child_frame':
+                child=PreviewPage();child.url='https://example.org/embed'
+                child.elements=[heading,page.button];page.elements=[];page.frames.append(child)
+            meeting=self.meeting(page)
+            try:
+                result=await meeting._response_preview_navigation(time.monotonic()+1,lambda:False,tuple(page.frames))
+                self.assertFalse(result,kind)
+                self.assertEqual(page.trace,[],kind)
+                self.assertFalse(meeting._response_computer_audio_verified)
+            finally:await meeting.close()
 @unittest.skipUnless(shutil.which('chromium'), 'Chromium fixture unavailable')
 class LatePreviewBrowserTests(unittest.IsolatedAsyncioTestCase):
+    async def test_standalone_interstitial_in_cross_origin_iframe_is_rejected_in_chromium(self):
+        parent_html = '<!doctype html><html><body><iframe src="https://example.org/embed"></iframe></body></html>'
+        child_html = (
+            '<!doctype html><html><body><h1>Teams needs access to your camera and mic</h1>'
+            '<button onclick="window.clicked=true">Continue without audio or video</button></body></html>'
+        )
+        async with Browser() as runtime:
+            context=await runtime.browser.new_context(permissions=[])
+            await context.route('https://teams.microsoft.com/*',lambda route:route.fulfill(content_type='text/html',body=parent_html))
+            await context.route('https://example.org/*',lambda route:route.fulfill(content_type='text/html',body=child_html))
+            page=await context.new_page()
+            await page.goto('https://teams.microsoft.com/synthetic-parent')
+            await page.wait_for_function('() => frames.length === 1')
+            async def event(*args):pass
+            meeting=MeetingBrowser(runtime.browser,None,event,response_mode=True)
+            meeting.page=page;meeting.context=context
+            meeting._join_state=teams_join_diagnostic({'outcome':'in_progress'})
+            try:
+                result=await meeting._response_preview_navigation(time.monotonic()+3,lambda:False,tuple(page.frames))
+                self.assertFalse(result)
+                self.assertFalse(meeting._response_preview_dispatched)
+            finally:
+                await meeting.close()
+
+    async def test_standalone_full_page_interstitial_without_dialog_advances_to_computer_audio_and_joins(self):
+        html = """<!doctype html><html><body>
+        <main id="interstitial">
+          <h1>Teams needs access to your camera and mic</h1>
+          <button id="continue-av" onclick="events.push('preview');
+            document.querySelector('#interstitial').remove();
+            document.querySelector('#prejoin').hidden=false;">Continue without audio or video</button>
+        </main>
+        <section id="prejoin" hidden>
+          <button role="radio" aria-label="Computer audio" aria-checked="false" id="audio"
+            onclick="this.setAttribute('aria-checked','true'); events.push('audio')">Computer audio</button>
+          <input aria-label="name" placeholder="name">
+          <button id="join" onclick="events.push('join');this.hidden=true;
+            document.querySelector('#leave').hidden=false;document.querySelector('#people').hidden=false">Join now</button>
+          <button id="leave" hidden>Leave</button><button id="people" hidden>Participants</button>
+        </section>
+        <script>window.events=[];</script></body></html>"""
+        async with Browser() as runtime:
+            context=await runtime.browser.new_context(permissions=[])
+            await context.route('**/*',lambda route:route.fulfill(content_type='text/html',body=html))
+            page=await context.new_page()
+            await page.goto('https://teams.microsoft.com/synthetic-standalone-interstitial')
+            async def event(*args):pass
+            meeting=MeetingBrowser(runtime.browser,None,event,response_mode=True)
+            meeting.page=page;meeting.context=context
+            try:
+                await meeting.join('teams','fixture',8,lambda:False)
+                self.assertEqual(await page.evaluate('events'),['preview','audio','join'])
+                self.assertEqual(await page.locator('#audio').get_attribute('aria-checked'),'true')
+                self.assertTrue(await meeting.admitted())
+            finally:
+                await meeting.close()
+
     async def test_modal_after_audio_selection_is_dismissed_before_single_join(self):
         await self.check_late_modal('audio')
 
