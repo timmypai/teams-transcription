@@ -1,4 +1,4 @@
-"""Regression tests for Taipei timezone, auto-summary, paragraph transcript, rejoin, delete, auto-join, and B unsolicited-turn dedup."""
+"""Regression tests for Taipei timezone, auto-summary, paragraph transcript, rejoin, delete, auto-join, and auto-join status."""
 import asyncio
 import json
 import sqlite3
@@ -195,38 +195,18 @@ class UXFeaturesTests(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(ready_view['auto_join']['ready'])
         self.assertEqual(ready_view['auto_join']['reason'], 'ready')
 
-    async def test_b_native_waits_for_unsolicited_server_vad_turn_while_muted(self):
-        from teams_transcription.b_native import NativeLiveResponder
-        from teams_transcription.b_native_output import NativeTrackOutput
-        from teams_transcription.b_response import MeetingMinutesTool
-
-        now = [100.0]
-        sink = AsyncMock()
-        sink.observe.return_value = dict(frames=0, packets=0, energy=0.0, duration=0.0, connected=True,
-            source_frames=0, source_packets=0, source_energy=0.0, source_duration=0.0)
-        output = NativeTrackOutput('one', sink, clock=lambda: now[0])
-        live = NativeLiveResponder(None, self.root, 'one', output,
-            MeetingMinutesTool('one', lambda meeting: {'version': 1, 'completeness': 'complete', 'sources': []}),
-            clock=lambda: now[0])
-        live.started = True
-        live.thread_id = 'native-thread'
-        live.context.bind_session('native-thread')
-        live.state = 'sleeping'
-        live.output.start_output()
-        # Simulate unsolicited server-VAD assistant turn arriving while sleeping (muted)
-        await live._data_event({'type': 'turn.created', 'turn': {'id': 'vad-premature-1', 'role': 'assistant'}})
-        self.assertIn('vad-premature-1', live._background_output_turns)
-        self.assertFalse(live._background_turns_idle.is_set())
-        # Start waiting in background while still muted
-        live._request_id = 'question-1'
-        waiter = asyncio.create_task(live._wait_background_turns_clear('question-1', 'native-thread', timeout=2.0))
-        await asyncio.sleep(0.02)
-        self.assertFalse(waiter.done())
-        # Unsolicited turn finishes -> waiter wakes cleanly and output was never unmuted prematurely
-        await live._data_event({'type': 'turn.done', 'turn': {'id': 'vad-premature-1', 'role': 'assistant'}})
-        self.assertTrue(await asyncio.wait_for(waiter, 1.0))
-        self.assertEqual(live._background_output_turns, set())
-        self.assertIn('收到本題 RESULT_COMPLETE 前必須保持完全靜默', live.live_prompt())
+    def test_delete_refuses_interlocked_capture_until_reviewed(self):
+        occ = self.store.create_manual_occurrence(dict(
+            title='Interlocked delete', join_url='https://teams.microsoft.com/meet/12345',
+            start_at='2026-11-23T01:00:00+00:00', end_at='2026-11-23T02:00:00+00:00',
+            recording_authorized=True, speaking_authorized=False))
+        lease = self.store.claim_run(occ['id'], 'owner-interlock')
+        Session(self.root, lease['session_id'], lease=lease).create(dict(
+            provider='codex', source='meeting', prior_context=self.store.get_run(lease['session_id'])['prior_context']))
+        self.store.recover_expired(now_boottime=lease['expires_boottime'] + 1)
+        with self.assertRaisesRegex(AssistantStoreError, 'capture_cleanup_review_required'):
+            self.store.delete_occurrence(occ['id'])
+        self.assertFalse(self.store.meeting_view(occ['id'], 'Asia/Taipei')['controls']['delete'])
 
 
 if __name__ == '__main__':

@@ -2,7 +2,7 @@
 
 Google Calendar → Teams 自主入會 → GPT Live A 保存逐字稿 → GPT Live B 回答「小白小白」。提供登入管理頁面；SQLite 是唯一資料來源，不使用 MCP、Page 或會議 Markdown。
 
-依使用者取消決定，服務端不自動產生會後摘要：來源封存不排摘要 outbox，daemon 不啟動摘要 worker，管理頁不能重試摘要。逐字來源與既有歷史摘要／待辦仍保留可讀，供既有授權的後續資料使用；本修正不新增 dot 整合或替代摘要服務。
+2026-11-23 操作者明確重新授權服務端會後 Codex 自動摘要與手動重試：正常結束且含逐字來源的場次自動排入 `summary_jobs`，由 daemon 的 `_summary_loop` 產生可引用衍生摘要，亦可在管理頁手動重試；崩潰恢復（`service_interrupted`）與 acceptance 預算場次不自動觸發摘要。逐字來源與歷史摘要／待辦維持原有 provenance、citation 與 fenced lease 安全邊界，不新增 dot 整合或替代摘要服務。
 
 本目錄是 WSL2 來源移轉套件，不是已核准部署。先讀 [接續規則](docs/HANDOFF.md)、[原移轉記錄](TRANSFER.md) 與 [實測界線](evidence/RESULTS.md)。`TRANSFER-MANIFEST.json` 保留原始 provenance，不會因本次修改重寫；目前工作目錄不再是 pristine transfer。
 
@@ -13,8 +13,8 @@ Google Calendar → Teams 自主入會 → GPT Live A 保存逐字稿 → GPT Li
 - A 經 sandboxed Chromium 的原生音軌／本機 WebRTC relay 送入隔離 Live peer，不走 Python PCM 送音 queue 或自訂時鐘估速。PCM 回呼只供 B／音訊觀測及明確啟用的 WAV；SQLite 分別保留 provider final、application segments 與未定稿來源。
 - 核准的全域／系列人名及術語在入會時凍結，透過 A `initialItems` 提供參考；不改寫 provider 原文。
 - B 有獨立 native Live 通道，每題讀本場 SQLite 與凍結的前次摘要／待辦。同一句「小白小白＋問題」不要求重問。兩個本機接收段只解碼實際收到的 Opus，不使用 PLC 延續舊音；缺樣由持續原生音軌輸出靜音，再經本機 WebRTC relay 接 owned Teams sender。沒有 Python PCM 或分塊播放器。完整來源交付後、marker dispatch 前核對授權並開通；正常完成需真實來源 quiet 與播放 quiet 都成立。缺樣靜音不是來源 quiet，遠端 Teams 的 PLC／drain 不在本機保證範圍內。
-- 停止、drain、清理後封存來源；依取消決定，不排 summary outbox、不啟動摘要 worker／重試。保留既有歷史摘要／待辦可讀；省略舊待辦不代表完成。
-- 重啟不恢復已取消摘要服務、不自動重入中斷場次。清理不明或中斷 capture 留下持久 interlock；可透過歷史頁的[人工清理審查](docs/CALENDAR-RUNTIME.md#中斷後的人工清理審查)確認舊資源停止／助理離會，不改寫原失敗，也不自動入會。
+- 停止、drain、清理後封存來源；正常結束且含逐字來源時自動排入 `summary_jobs` 由 `_summary_loop` 產生 Codex 衍生摘要（管理頁亦支援手動重試）。保留既有歷史摘要／待辦可讀；省略舊待辦不代表完成。
+- 重啟不自動重入中斷場次，也不對崩潰恢復（`service_interrupted`）自動觸發模型摘要。清理不明或中斷 capture 留下持久 interlock；可透過歷史頁的[人工清理審查](docs/CALENDAR-RUNTIME.md#中斷後的人工清理審查)確認舊資源停止／助理離會，不改寫原失敗，也不自動入會。
 
 詳見 [執行契約](docs/ABC-RUNTIME.md)、[SQLite](docs/MEETING-STORE.md)、[Calendar](docs/CALENDAR-RUNTIME.md)、[詞庫](docs/GLOSSARY-RUNTIME.md)、[B](docs/B-LIVE-NATIVE.md)、[摘要](docs/SUMMARY-RUNTIME.md)。
 
