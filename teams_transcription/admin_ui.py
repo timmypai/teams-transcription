@@ -46,7 +46,7 @@ def calendar_page(session, timezone, *, initial_occurrence_id=None):
     body = '''<main id="main-content">
 <section class="page-intro"><div><p class="eyebrow">會議與記錄</p><h1 id="page-title">行事曆</h1></div>
 <div class="intro-note"><p id="today-label"></p><p id="timezone-label"></p></div></section>
-<section class="connection-strip" aria-label="服務狀態"><span id="connection-status">正在讀取服務狀態…</span><a href="/settings">連線與設定</a></section>
+<section class="connection-strip" aria-label="服務狀態"><span id="connection-status">正在讀取服務狀態…</span><div class="connection-actions"><button id="toggle-scheduler" type="button" hidden></button><a href="/settings">連線與設定</a></div></section>
 <div class="refresh-strip"><p id="calendar-status" role="status">正在載入行事曆…</p><button id="refresh" class="text-button" type="button">重新整理</button></div>
 <div class="workspace" id="workspace">
 <section class="calendar-pane" aria-label="週行事曆">
@@ -61,7 +61,7 @@ def calendar_page(session, timezone, *, initial_occurrence_id=None):
 <div class="inspector-label"><span id="inspector-kicker">會議預覽</span><button id="expand-meeting" type="button" disabled aria-expanded="false" aria-controls="detail-body">展開會議 ↗</button></div>
 <p class="detail-status" id="detail-status" role="status">選擇一場會議，閱讀會議脈絡與本次記錄。</p>
 <div id="meeting-content" hidden>
-<header class="detail-header"><div class="meeting-badges"><span class="badge" id="meeting-state"></span><span class="badge" id="meeting-kind"></span></div><h2 id="meeting-title"></h2><p id="meeting-time" class="meta-line"></p><p id="meeting-updated" class="meta-line"></p><div class="meeting-actions" id="meeting-actions"></div><p id="response-status" class="notice"></p><p id="action-status" role="status"></p><a id="source-detail" hidden>來源與診斷記錄 ↗</a><p class="warning" id="cleanup-warning" hidden>擷取清理仍待人工確認；請至來源與診斷記錄檢查。此狀態不表示助理已安全離開。</p></header>
+<header class="detail-header"><div class="meeting-badges"><span class="badge" id="meeting-state"></span><span class="badge" id="meeting-kind"></span></div><h2 id="meeting-title"></h2><p id="meeting-time" class="meta-line"></p><p id="meeting-auto-join" class="meta-line"></p><p id="meeting-updated" class="meta-line"></p><div class="meeting-actions" id="meeting-actions"></div><div id="meeting-runs" class="run-history" hidden></div><p id="response-status" class="notice"></p><p id="action-status" role="status"></p><a id="source-detail" hidden>來源與診斷記錄 ↗</a><p class="warning" id="cleanup-warning" hidden>擷取清理仍待人工確認；請至來源與診斷記錄檢查。此狀態不表示助理已安全離開。</p></header>
 <p class="warning" id="qa-warning" hidden>問答記錄目前無法保存；下方內容可能不完整，不能據此判定是否有人提問或助理是否回覆。請查看來源與診斷記錄。</p>
 <div class="detail-body" id="detail-body">
 <section class="context-panel" aria-label="系列最新結論與待辦"><div class="section-heading"><h3>系列最新狀態</h3><span id="series-revision" class="small-date"></span></div><p id="series-state-note" class="notice"></p><a id="series-state-link" hidden>查看本版來源 ↗</a><div id="series-conclusions"></div><div id="series-changes-section" hidden><h4>本次必要變更</h4><div id="series-changes"></div></div>

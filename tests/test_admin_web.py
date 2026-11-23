@@ -87,14 +87,27 @@ class AdminWebTests(unittest.IsolatedAsyncioTestCase):
         token = token or csrf(await self.client.get('/'))
         return await self.client.post('/actions/'+action,data={'csrf':token,**values},headers={'Origin':origin})
 
-    async def test_authenticated_retry_cannot_restart_canceled_summary_service(self):
+    async def test_authenticated_retry_summary_rejects_unknown_and_accepts_sealed_source(self):
         token=await self.login()
-        response=await self.client.post('/actions/retry-summary',
+        missing=await self.client.post('/actions/retry-summary',
             data={'csrf':token,'id':'a'*32},headers={'Origin':ORIGIN,'Accept':'application/json'})
-        self.assertEqual(response.status_code,422)
-        self.assertEqual(response.json(),{'error':'summary_service_disabled'})
-        self.assertEqual(self.daemon.store.list_summary_jobs(),[])
-        self.assertNotIn('/actions/retry-summary',(await self.client.get('/diagnostics')).text)
+        self.assertEqual(missing.status_code,404)
+        self.assertEqual(missing.json(),{'error':'record_not_found'})
+        occ=self.daemon.store.create_manual_occurrence(dict(title='Summary fixture',
+            join_url='https://teams.microsoft.com/meet/12345',
+            start_at='2026-11-23T01:00:00+00:00',end_at='2026-11-23T02:00:00+00:00',
+            recording_authorized=True,speaking_authorized=False))
+        lease=self.daemon.store.claim_run(occ['id'],'summary-web-fixture')
+        session=Session(self.settings.data_root,lease['session_id'],lease=lease).create(dict(
+            provider='mock',source='synthetic',prior_context=self.daemon.store.get_run(lease['session_id'])['prior_context']))
+        session.append_text('Synthetic transcript for summary.',0)
+        self.daemon.store.finish_run(lease,'stopped','operator_stop')
+        response=await self.client.post('/actions/retry-summary',
+            data={'csrf':token,'id':session.ident},headers={'Origin':ORIGIN,'Accept':'application/json'})
+        self.assertEqual(response.status_code,200)
+        self.assertTrue(response.json()['ok'])
+        self.assertEqual(self.daemon.store.list_summary_jobs()[0]['session_id'],session.ident)
+        self.assertIn('/actions/retry-summary',(await self.client.get('/history/'+session.ident)).text)
 
     def interrupted_capture(self, *, signature='12345', recover=True):
         calendar = self.daemon.store.save_calendar(dict(account_id='cleanup-fixture',

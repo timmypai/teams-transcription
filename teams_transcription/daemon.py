@@ -92,8 +92,7 @@ class AssistantDaemon:
             self._started = True
             self._spawn(self._calendar_loop())
             self._spawn(self._schedule_loop())
-            # Server-side summary generation was canceled by the operator.
-            # Do not consume historical pending outbox rows on startup/restart.
+            self._spawn(self._summary_loop())
         except BaseException:
             os.close(fd)
             self._lock_fd = None
@@ -251,6 +250,41 @@ class AssistantDaemon:
             return {'session_id':session.ident,'occurrence_id':occurrence_id,'state':'starting',
                 **({'acceptance_request':acceptance['request_sha256']} if acceptance is not None else {})}
 
+    async def rejoin(self, occurrence_id, actor='admin'):
+        """Explicit operator rejoin for a previously ended/stopped/failed/skipped occurrence."""
+        async with self._join_lock:
+            if self.auth_operation_in_progress:
+                raise AssistantStoreError('codex_auth_operation_in_progress')
+            await self._refresh_capture_interlock()
+            if not self._started or self.closing.is_set() or self._capture_interlock:
+                raise AssistantStoreError('capture_unavailable')
+            if self._capture is not None:
+                raise AssistantStoreError('meeting_slot_busy')
+            if (Path(self.settings.data_root) / '.deployment-maintenance').exists():
+                raise AssistantStoreError('deployment_maintenance')
+            occurrence = await asyncio.to_thread(self.store.get_occurrence,occurrence_id)
+            if occurrence['state'] == 'deleted':
+                raise AssistantStoreError('record_not_found')
+            if occurrence['calendar_ref']:
+                calendar = await asyncio.to_thread(self.store.get_calendar,occurrence['calendar_ref'])
+                fresh = await self.calendar.get_event(calendar['calendar_id'],occurrence['event_id'])
+                await asyncio.to_thread(self.store.sync_occurrences,calendar['id'],[fresh])
+                occurrence = await asyncio.to_thread(self.store.get_occurrence,occurrence_id)
+            validate_teams_url(occurrence.get('join_url'))
+            if (Path(self.settings.data_root) / '.deployment-maintenance').exists():
+                raise AssistantStoreError('deployment_maintenance')
+            await self._admission()
+            lease = await asyncio.to_thread(self.store.claim_run,occurrence_id,self.owner,self.settings.lease_seconds,
+                allow_rejoin=True)
+            end_at = occurrence.get('end_at')
+            if not end_at or datetime.fromisoformat(end_at).timestamp() <= self.clock():
+                lease['rejoin_overtime'] = True
+            session = Session(self.settings.data_root,lease['session_id'],lease=lease)
+            await asyncio.to_thread(self.store.audit_control,actor,'meeting_rejoin_requested',session.ident)
+            self._session, self._lease = session,lease
+            self._capture = self._spawn(self._execute(session,lease,occurrence))
+            return {'session_id':session.ident,'occurrence_id':occurrence_id,'state':'starting','rejoin':True}
+
     async def review_capture_cleanup(self, session_id, expected_stamp, *, resources_stopped, assistant_left, actor='admin'):
         async with self._join_lock:
             if self.closing.is_set():
@@ -307,9 +341,11 @@ class AssistantDaemon:
         from .teams_acceptance import is_owner_immediate
         approved = output_approved = False
         scoped = 'target_calendar_consent' in lease
-        deadline = None if is_owner_immediate(occurrence) else datetime.fromisoformat(occurrence['end_at']).timestamp()
-        if deadline is not None and self.settings.max_duration_seconds is not None:
-            deadline = min(deadline, self.clock()+self.settings.max_duration_seconds)
+        deadline = (None if is_owner_immediate(occurrence) or lease.get('rejoin_overtime') or not occurrence.get('end_at')
+            else datetime.fromisoformat(occurrence['end_at']).timestamp())
+        if not is_owner_immediate(occurrence) and self.settings.max_duration_seconds is not None:
+            cap = self.clock()+self.settings.max_duration_seconds
+            deadline = cap if deadline is None else min(deadline, cap)
         while not task.done():
             await asyncio.to_thread(self.store.heartbeat_run,lease,self.settings.lease_seconds)
             state = await asyncio.to_thread(session.status)

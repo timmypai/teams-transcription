@@ -79,6 +79,9 @@ class NativeLiveResponder(LiveSpeechChannel):
         self._output_turn_id = None
         self._output_turn_done = False
         self._open_output_turns = set()
+        self._background_output_turns = set()
+        self._background_turns_idle = asyncio.Event()
+        self._background_turns_idle.set()
         self._seen_output_turn_hashes = set()
         self._request_receipt_origin = time.monotonic()
         self._request_counts = {"received": 0, "admitted": 0, "rejected": 0}
@@ -216,6 +219,7 @@ class NativeLiveResponder(LiveSpeechChannel):
               "也不證明 provider final、同一說話者或同一發言。"
               "record_index 與其連續範圍供主程式回查來源；序號與 metadata 不是會議內容，不要唸出。"
               "available=false 時明確說紀錄不足；部分資料不補編遺漏段落。"
+              "收到本題 RESULT_COMPLETE 前必須保持完全靜默、絕不提前出聲；收到 RESULT_COMPLETE 後只簡潔回答一次，絕不重複說出相同答案。"
               "有支持的答案只說一次，不重複、不模擬使用者接話；除 application_greeting 外不加問候。"
               "主程式送齊快照不證明模型已讀懂或採用，不宣稱已驗證消費資料。"
               "不要對自己的聲音喚醒或委派。")
@@ -660,6 +664,8 @@ class NativeLiveResponder(LiveSpeechChannel):
         self._request_id = None
         self.question_framer.reset()
         self._answer_scope = None
+        self._background_output_turns.clear()
+        self._background_turns_idle.set()
         await super()._audio_error(reason)
         self.state = "failed"
         self._speech_done.set()
@@ -691,10 +697,27 @@ class NativeLiveResponder(LiveSpeechChannel):
         preparing = (self.state == 'thinking' and self._answer_current(scope)
             and scope.get('tracking_turns') is True)
         if self.state not in {'greeting', 'answering'} and not continuation and not preparing:
+            if role == 'assistant':
+                if kind == 'turn.created':
+                    identity_hash = self._turn_hash(ident)
+                    if identity_hash is not None and len(self._seen_output_turn_hashes) < TURN_ID_HISTORY_LIMIT:
+                        self._seen_output_turn_hashes.add(identity_hash)
+                    self._background_output_turns.add(ident)
+                    self._background_turns_idle.clear()
+                elif ident in self._background_output_turns:
+                    self._background_output_turns.discard(ident)
+                    if not self._background_output_turns:
+                        self._background_turns_idle.set()
             self._record_turn(kind, 'inactive_scope', turn=turn)
             return
         if role != 'assistant':
             self._record_turn(kind, 'role_filtered', turn=turn)
+            return
+        if kind == 'turn.done' and ident in self._background_output_turns and ident not in self._open_output_turns:
+            self._background_output_turns.discard(ident)
+            if not self._background_output_turns:
+                self._background_turns_idle.set()
+            self._record_turn(kind, 'unmatched_done', turn=turn)
             return
         if kind == 'turn.created':
             if ident == self._output_turn_id or ident in self._open_output_turns:
@@ -810,10 +833,23 @@ class NativeLiveResponder(LiveSpeechChannel):
                 "content": [{"type": "input_text", "text": chunk}]})
         return self._request_current(ident, session_id)
 
+    async def _wait_background_turns_clear(self, ident, session_id, timeout=3.0):
+        """Stay muted until any unsolicited server-VAD assistant turn finishes."""
+        if not self._background_output_turns:
+            return self._request_current(ident, session_id)
+        try:
+            await asyncio.wait_for(self._background_turns_idle.wait(), timeout)
+        except TimeoutError:
+            self._background_output_turns.clear()
+            self._background_turns_idle.set()
+        return self._request_current(ident, session_id)
+
     async def _return_greeting(self, ident, text):
         session_id = self.thread_id
         try:
             if not await self._send_request_header(ident, text, session_id, greeting=True):
+                return
+            if not await self._wait_background_turns_clear(ident, session_id):
                 return
             await self._begin_native_speech('greeting')
             if not self._request_current(ident, session_id):
@@ -885,6 +921,10 @@ class NativeLiveResponder(LiveSpeechChannel):
                 return
             if not self._answer_current(scope):
                 return
+            if not await self._wait_background_turns_clear(ident, session_id):
+                return
+            if self.state != "thinking" or not self._answer_current(scope):
+                return
             opening_output = admitting_output = True
             await self._begin_native_speech("answering")
             admitting_output = False
@@ -954,6 +994,8 @@ class NativeLiveResponder(LiveSpeechChannel):
             if receipt['phase'] in {'preparing','sending'}:
                 receipt['phase'] = 'cancelled'
         self._answer_scope = None
+        self._background_output_turns.clear()
+        self._background_turns_idle.set()
         tasks = [t for t in (self._rx_task, self._question_task, self._tool_task, self._speech_task, self._phase_timeout)
                  if t is not None and t is not asyncio.current_task()]
         for task in tasks:
