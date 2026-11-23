@@ -513,12 +513,32 @@ def create_admin_app(daemon, settings, *, local_teams_control=False):
                 controls += form(session,'assign-series',hidden('id',row['id'])+
                     select_field('series_id','指定系列',choices[1:],row['series_id']),'分組')
             if row['state'] != 'running':
-                controls += control(session,'delete',row['id'],'刪除')
+                controls += ' <a href="/schedule/'+h(quote(row['id'],safe=''))+'/delete">刪除…</a>'
             times = '<br>'.join('<time data-edge="'+edge+'" datetime="'+h(row.get(edge+'_at'))+'">'+
                 h(readable_time(row.get(edge+'_at')))+'</time>' for edge in ('start','end'))
             body += ('<tr data-occurrence-id="'+h(row['id'])+'" data-state="'+h(row['state'])+'" data-discoverable="'+str(discoverable).lower()+'" data-joinable="'+str(joinable).lower()+'"><td>'+h(row['title'])+'<br><a href="/series/'+h(row['series_id'])+'">系列記憶</a></td><td>'+times+
                 '<br><span class="small">'+h(row.get('link_status'))+'</span></td><td>'+h(row['state'])+'</td><td>'+controls+'</td></tr>')
         return page('排程與人工入會',body+'</table></section>',session,active='schedule')
+
+    async def schedule_delete_confirm(request):
+        session = authenticated(request)
+        ident = request.path_params['occurrence_id']
+        row = await asyncio.to_thread(daemon.store.get_occurrence,ident)
+        if row['state'] == 'deleted':
+            raise AssistantStoreError('record_not_found')
+        warning = ('此為 Google 行事曆同步場次。確認刪除後將在本機隱藏且下次輪詢不會恢復顯示，不會修改遠端 Google 行事曆。'
+            if row.get('calendar_ref') else
+            '此為手動建立的會議。確認刪除後將永久移除此場次及所有已封存的逐字稿與摘要紀錄，無法復原。')
+        body = '<section><h2>確認刪除會議</h2><p><strong>'+h(row['title'])+'</strong></p>'
+        body += '<p>時間：'+h(readable_time(row.get('start_at')))+' – '+h(readable_time(row.get('end_at')))+'</p>'
+        body += '<p class="warning">'+h(warning)+'</p>'
+        if row['state'] == 'running':
+            body += '<p class="error">進行中的會議不能直接刪除，請先讓助理離開。</p>'
+        else:
+            fields = hidden('id',row['id'])+checkbox('confirm_delete','我已了解上述影響，確認刪除此會議',False)
+            body += form(session,'delete',fields,'確認刪除會議')
+        body += '<p><a href="/schedule">取消並返回排程</a></p></section>'
+        return page('確認刪除會議',body,session,active='schedule')
 
     async def history(request):
         session = authenticated(request)
@@ -910,6 +930,10 @@ def create_admin_app(daemon, settings, *, local_teams_control=False):
             result=await daemon.rejoin(target)
             destination = '/?meeting='+quote(target or '',safe='')
         elif name=='delete':
+            confirmed = (values.get('confirm_delete') == 'on'
+                or ('application/json' in request.headers.get('accept','') and values.get('confirmed') == 'true'))
+            if not confirmed:
+                raise AdminError('delete_confirmation_required')
             result=await asyncio.to_thread(daemon.store.delete_occurrence,target)
             destination = '/schedule'
         elif name=='skip':
@@ -1161,6 +1185,7 @@ def create_admin_app(daemon, settings, *, local_teams_control=False):
             'capture_cleanup_review_required':'上次離會狀態尚未確認，請先完成清理確認。',
             'occurrence_not_rejoinable':'這場會議目前狀態不允許重新加入。',
             'meeting_running_cannot_delete':'進行中的會議不能直接刪除，請先讓助理離開。',
+            'delete_confirmation_required':'請先勾選明確確認，才會刪除此會議。',
             'summary_source_unavailable':'此場次尚無可摘要的逐字來源。',
             'summary_already_running':'此場次摘要正在產生中，請稍候。',
             'postmeeting_active_cannot_delete':'會後整理仍在執行或受阻，暫時無法刪除。',
@@ -1182,7 +1207,8 @@ def create_admin_app(daemon, settings, *, local_teams_control=False):
             await daemon.close()
 
     routes = [Route('/login',login,methods=['GET','POST']),Route('/logout',logout,methods=['POST']),
-        Route('/',dashboard),Route('/settings',settings_page),Route('/schedule',schedule),Route('/diagnostics',diagnostics),
+        Route('/',dashboard),Route('/settings',settings_page),Route('/schedule',schedule),
+        Route('/schedule/{occurrence_id}/delete',schedule_delete_confirm),Route('/diagnostics',diagnostics),
         Route('/history',history),Route('/history/{session_id}',history_detail),Route('/series/{series_id}',series_page),
         Route('/tasks/{series_id}/{task_id}',task_edit),
         Route('/glossary',glossary_page),Route('/glossary/{entry_id}',glossary_edit),Route('/audit',audit_page),

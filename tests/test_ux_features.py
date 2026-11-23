@@ -209,5 +209,93 @@ class UXFeaturesTests(unittest.IsolatedAsyncioTestCase):
         self.assertFalse(self.store.meeting_view(occ['id'], 'Asia/Taipei')['controls']['delete'])
 
 
+class DeleteConfirmationWebTests(unittest.IsolatedAsyncioTestCase):
+    async def asyncSetUp(self):
+        import test_admin_web as fixture
+        await fixture.AdminWebTests.asyncSetUp(self)
+
+    async def login(self):
+        import test_admin_web as fixture
+        return await fixture.AdminWebTests.login(self)
+
+    async def test_schedule_delete_requires_confirmation_page_and_explicit_checkbox(self):
+        from test_admin_web import Forms, ORIGIN
+        token = await self.login()
+        store = self.daemon.store
+        occ = store.create_manual_occurrence(dict(
+            title='Confirm delete manual', join_url='https://teams.microsoft.com/meet/12345',
+            start_at='2026-11-23T01:00:00+00:00', end_at='2026-11-23T02:00:00+00:00',
+            recording_authorized=True, speaking_authorized=False))
+        lease = store.claim_run(occ['id'], 'confirm-owner')
+        session = Session(self.settings.data_root, lease['session_id'], lease=lease).create(dict(
+            provider='mock', source='synthetic', prior_context=store.get_run(lease['session_id'])['prior_context']))
+        session.append_text('Sealed manual source.', 0)
+        store.finish_run(lease, 'stopped', 'operator_stop')
+
+        # /schedule has NO direct POST /actions/delete form — only a safe link to confirmation page
+        sched = await self.client.get('/schedule')
+        self.assertEqual(sched.status_code, 200)
+        direct_delete_forms = [f for f in Forms(sched.text).forms if f['attrs'].get('action') == '/actions/delete']
+        self.assertEqual(direct_delete_forms, [])
+        self.assertIn(f'/schedule/{occ["id"]}/delete', sched.text)
+
+        # GET confirmation page warns about irreversible manual deletion and renders unchecked checkbox without deleting
+        confirm_page = await self.client.get(f'/schedule/{occ["id"]}/delete')
+        self.assertEqual(confirm_page.status_code, 200)
+        self.assertIn('永久移除', confirm_page.text)
+        confirm_forms = [f for f in Forms(confirm_page.text).forms if f['attrs'].get('action') == '/actions/delete']
+        self.assertEqual(len(confirm_forms), 1)
+        inputs = {item['name']: item for item in confirm_forms[0]['inputs']}
+        self.assertEqual(inputs['confirm_delete']['type'], 'checkbox')
+        self.assertNotIn('checked', inputs['confirm_delete'])
+        self.assertEqual(store.get_occurrence(occ['id'])['id'], occ['id'])
+
+        # Submitting without confirm_delete='on' fails closed (422) and preserves data
+        unconfirmed = await self.client.post('/actions/delete',
+            data={'csrf': token, 'id': occ['id']}, headers={'Origin': ORIGIN})
+        self.assertEqual(unconfirmed.status_code, 422)
+        self.assertEqual(store.read(session.ident)['sources'][0]['text'], 'Sealed manual source.')
+
+        # Explicit confirm_delete='on' deletes the manual occurrence and sealed source
+        confirmed = await self.client.post('/actions/delete',
+            data={'csrf': token, 'id': occ['id'], 'confirm_delete': 'on'}, headers={'Origin': ORIGIN})
+        self.assertEqual(confirmed.status_code, 303)
+        self.assertEqual(confirmed.headers['location'], '/schedule')
+        with self.assertRaisesRegex(AssistantStoreError, 'record_not_found'):
+            store.get_occurrence(occ['id'])
+
+    async def test_workspace_json_delete_requires_confirmed_true_and_tombstones_google_event(self):
+        from test_admin_web import ORIGIN
+        token = await self.login()
+        store = self.daemon.store
+        cal = store.save_calendar(dict(account_id='acct', calendar_id='primary', name='Main',
+            enabled=True, recording_authorized=True, speaking_authorized=True))
+        occ = store.sync_occurrences(cal['id'], [dict(
+            event_id='gcal-confirm-1', title='Confirm Google Hide',
+            start_at='2026-11-23T03:00:00+00:00', end_at='2026-11-23T04:00:00+00:00',
+            status='confirmed', link_status='valid', all_day=False,
+            join_url='https://teams.microsoft.com/meet/54321')])[0]
+
+        # Confirmation page clearly states Google local hiding
+        confirm_page = await self.client.get(f'/schedule/{occ["id"]}/delete')
+        self.assertEqual(confirm_page.status_code, 200)
+        self.assertIn('不會修改遠端 Google 行事曆', confirm_page.text)
+
+        # JSON delete without confirmed='true' fails closed (422)
+        rejected = await self.client.post('/actions/delete',
+            data={'csrf': token, 'id': occ['id']},
+            headers={'Origin': ORIGIN, 'Accept': 'application/json'})
+        self.assertEqual(rejected.status_code, 422)
+        self.assertEqual(rejected.json(), {'error': 'delete_confirmation_required'})
+
+        # JSON delete with confirmed='true' tombstones locally
+        accepted = await self.client.post('/actions/delete',
+            data={'csrf': token, 'id': occ['id'], 'confirmed': 'true'},
+            headers={'Origin': ORIGIN, 'Accept': 'application/json'})
+        self.assertEqual(accepted.status_code, 200)
+        self.assertTrue(accepted.json()['ok'])
+        self.assertTrue(accepted.json()['result']['tombstoned'])
+
+
 if __name__ == '__main__':
     unittest.main()

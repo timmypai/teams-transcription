@@ -420,6 +420,7 @@
     capture_cleanup_review_required: '請先完成人工擷取清理確認。', revision_conflict: '資料已被其他操作更新，請重新整理。',
     meeting_not_found: '找不到這場會議。', occurrence_not_found: '找不到這場會議。', invalid_task_status: '待辦狀態不被接受。',
     occurrence_not_rejoinable: '此會議目前狀態無法重新加入。', meeting_running_cannot_delete: '進行中的會議不能直接刪除，請先讓助理離開。',
+    delete_confirmation_required: '請先確認刪除，再送出操作。',
     summary_source_unavailable: '此場次尚無可摘要的逐字來源。', summary_already_running: '此場次摘要正在產生中，請稍候。',
     postmeeting_active_cannot_delete: '會後整理仍在執行或受阻，暫時無法刪除。'};
   async function requestJSON(url, options = {}) {
@@ -546,7 +547,10 @@
     if (state.mutating) return;
     if (action === 'stop' && !window.confirm('讓助理離開這場會議並停止擷取？這只會讓助理離開，不會結束其他人的會議。')) return;
     if (action === 'skip' && !window.confirm('略過這場排程？助理將不會自動加入這一場會議。')) return;
-    if (action === 'delete' && !window.confirm('確定刪除此會議？手動場次將連同逐字稿與摘要紀錄一併移除；Google 行事曆場次會在本機隱藏且不再顯示。')) return;
+    if (action === 'delete') {
+      if (!window.confirm('確定刪除此會議？手動場次將連同逐字稿與摘要紀錄一併移除；Google 行事曆場次會在本機隱藏且不再顯示。')) return;
+      extras = {...extras, confirmed: 'true'};
+    }
     const selected = state.selected;
     state.mutating = true;
     text($('action-status'), '正在送出操作…'); $('action-status').removeAttribute('data-error');
