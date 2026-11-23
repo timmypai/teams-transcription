@@ -48,6 +48,7 @@ Web 授權沿用自己的 daemon reservation/cleanup，不要求把常駐 daemon
 
 - `view`／`output-disable`／`stop` 均只帶固定 `operation`。Runner 私下核對同 actor、同部署與同一 run 的 binding；不輸出 session handle。`output-disable` 先持久撤回該場發聲，再停用輸出。Calendar refresh 及 monitor 不能恢復此拒絕。
 - `stop` 沿用原正常停止，不強殺或重啟。最多等待 12 秒觀測同一 binding 的 durable cleanup：work-finished、cleaned、terminal、capture lease 已釋放、沒有 unknown/interrupted。確認後清除 runner 槽內的會議識別與 binding，只保留結果；重查可冪等成功。沒有證據不算清理成功。
+- 若尚未 dispatch、而 `preview` 或簽發 binding 的 browser helper 清理不明，runner 會保留私有 interlock；逾時、程序重啟或重送同意均不能解除。原 actor 可用同一固定 `stop` 操作核實並只清理該 helper。`browser_cleanup_verified=true` 只確認 helper 清理，不是會議停止證據；若需再試，必須從新 preview 與新鮮同意開始，不接續舊 binding。
 - cleanup unknown時保留原capture interlock與paused，不自動清除、重Join、改為cleaned或啟摘要。人工審查另由既有受控程序完成，不改寫原失敗。
 
 所有 real control/OAuth/Join/遠端收音與清理驗收由既有 SHIP t_12402f67 在本卡獨立 review/合併/手動部署後接續；本文及hosted evidence不能關閉AC-4/5真人要求。

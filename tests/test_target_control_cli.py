@@ -47,7 +47,7 @@ class ManualControl:
         if 'session_id' in raw:self.secrets.append(raw['session_id'])
         return subprocess.CompletedProcess(args,status,stream.getvalue(),'lowercaseprivatestderr')
 
-    def browser(self, controller, op, args, env):
+    def browser(self, controller, op, args, env, *, owner):
         ident = self.test.occurrence['id']
         self.browser_args.append((op,args))
         if op == 'calendar-occurrences':

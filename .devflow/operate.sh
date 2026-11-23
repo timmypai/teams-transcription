@@ -20,12 +20,25 @@ mkdir -p "$(dirname "$E")"
 mkdir "$E"
 chmod 700 "$E"
 export DEVFLOW_OPERATION_EVIDENCE="$E"
-envf=$(mktemp)
+private_helper=${DEVFLOW_PRIVATE_HELPER:-}
+helper_labels=()
+if [[ -n $private_helper ]]; then
+  [[ $private_helper =~ ^[a-f0-9]{32}$ && -n ${DEVFLOW_PRIVATE_RESULT:-} ]]
+  helper=devflow-teams-transcription-private-browser-$private_helper
+  [[ ${DEVFLOW_PRIVATE_RESULT%/*} == */"$helper" ]]
+  helper_labels=(--label io.devflow.owner=timmypai/teams-transcription
+                 --label "io.devflow.teams.private-browser=$private_helper")
+  envf=$(mktemp "${DEVFLOW_PRIVATE_RESULT%/*}/password.XXXXXX")
+else
+  helper=devflow-teams-transcription-operate-${GITHUB_RUN_ID:?}-${GITHUB_RUN_ATTEMPT:?}
+  envf=$(mktemp)
+fi
 chmod 600 "$envf"
 created=0
 cleanup() {
   rm -f "$envf"
-  if [[ $created == 1 ]] && ! docker "${docker_args[@]}" rm -f "$helper" >/dev/null 2>&1; then
+  # Managed helpers are reconciled by the controller against its durable slot.
+  if [[ -z $private_helper && $created == 1 ]] && ! docker "${docker_args[@]}" rm -f "$helper" >/dev/null 2>&1; then
     rm -f "$E/look.png"
     if [[ -n ${DEVFLOW_PRIVATE_RESULT:-} ]]; then rm -f "$DEVFLOW_PRIVATE_RESULT"; fi
     printf '%s\n' '{"ok":false,"code":"operation_cleanup_unverified"}' > "$E/result.json"
@@ -71,10 +84,15 @@ image=$(docker "${docker_args[@]}" inspect "$app" --format '{{.Image}}' 2>/dev/n
 installed=$(docker "${docker_args[@]}" image inspect "$image" --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' 2>/dev/null)
 test "$installed" = "${GITHUB_SHA:?reviewed deployed SHA required}"
 v=$(python3 -c 'import json;print(json.load(open(".devflow/ui/package.json"))["devDependencies"]["@playwright/test"])')
-helper=devflow-teams-transcription-operate-${GITHUB_RUN_ID:?}-${GITHUB_RUN_ATTEMPT:?}
+if [[ -n $private_helper ]]; then
+  # Distinguish never-attempted from a possibly accepted Docker create whose
+  # response was lost. Persist before submission, under the inherited lock.
+  mkdir "${DEVFLOW_PRIVATE_RESULT%/*}/creating"
+  sync -f "${DEVFLOW_PRIVATE_RESULT%/*}"
+fi
 # Container UID != host UID under rootless Docker. Keep private evidence inside
 # its namespace, then stream from that live namespace to host-owned private files.
-docker "${docker_args[@]}" create --name "$helper" --user 10001:10001 --read-only --log-driver none \
+docker "${docker_args[@]}" create --name "$helper" "${helper_labels[@]}" --user 10001:10001 --read-only --log-driver none \
   --cap-drop ALL --security-opt no-new-privileges --security-opt "seccomp=$PWD/docker/chromium-seccomp.json" \
   --network "container:$app" --shm-size=256m --tmpfs /tmp:rw,nosuid,nodev,size=512m \
   --tmpfs /work:rw,nosuid,nodev,size=512m,mode=700,uid=10001,gid=10001 \

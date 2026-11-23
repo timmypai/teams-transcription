@@ -9,15 +9,19 @@ import json
 import os
 from pathlib import Path
 import re
+import shutil
 import subprocess
 import tempfile
 import time
+from uuid import uuid4
 
 from tools.target_admission import REPO, require
 from teams_transcription.calendar_readback import validate_operation
 
 TTL = 300
 ACTIONS = ('preview', 'join-confirmed-present-and-media', 'view', 'output-disable', 'stop')
+HELPER_LABEL = 'io.devflow.teams.private-browser'
+HELPER_OWNER = 'io.devflow.owner'
 
 
 def dispatch_identity(api, sha, run, attempt):
@@ -34,23 +38,90 @@ def dispatch_identity(api, sha, run, attempt):
     return actor, start
 
 
-def browser(c, operation, args, ops_env):
+def control_slot(c):
+    path = c.root/'single-control.json'
+    return c.read(path) if path.exists() or path.is_symlink() else {}
+
+
+def helper_name(pending):
+    nonce = pending['helper_nonce']
+    require(re.fullmatch('[0-9a-f]{32}', nonce), 'operation_cleanup_unverified')
+    return 'devflow-teams-transcription-private-browser-'+nonce
+
+
+def tracked_browser(pending, row):
+    labels = row.get('Config', {}).get('Labels') or {}
+    return (pending.get('phase') == 'browser-cleanup'
+            and row['Name'] == '/'+helper_name(pending)
+            and labels.get(HELPER_OWNER) == REPO
+            and labels.get(HELPER_LABEL) == pending['helper_nonce']
+            and re.fullmatch('[0-9a-f]{64}', row['Id']) is not None
+            and row['Id'] == pending.get('helper_id', row['Id']))
+
+
+def clean_browser(c, slot, pending):
+    c.failures.cleanup = 'unknown'
+    name = helper_name(pending)
+    folder = c.root/name
+
+    def matching(expected_id):
+        # A failed inspect is not proof of absence. Require a successful daemon
+        # inventory, including stopped containers and full immutable IDs.
+        rows = c.docker('container', 'ls', '--all', '--no-trunc', '--format', '{{.ID}} {{.Names}}')
+        return [(cid, label) for cid, label in map(str.split, rows.splitlines())
+                if label == name or cid == expected_id]
+
+    try:
+        found = matching(pending.get('helper_id'))
+        if found:
+            [(cid, label)] = found
+            require(label == name and re.fullmatch('[0-9a-f]{64}', cid), 'operation_cleanup_unverified')
+            [row] = json.loads(c.docker('container', 'inspect', cid))
+            require(row['Id'] == cid and tracked_browser(pending, row), 'operation_cleanup_unverified')
+            # Journal this ID before removal: a crash after rm can then verify
+            # absence without mistaking an unacknowledged create for cleanup.
+            atomic_slot(c, slot, {**pending, 'helper_id':cid})
+            c.docker('rm', '-f', cid)
+            require(not matching(cid), 'operation_cleanup_unverified')
+        else:
+            require('helper_id' in pending or not (folder/'creating').exists(), 'operation_cleanup_unverified')
+        if folder.exists():
+            shutil.rmtree(folder)
+        atomic_slot(c, slot, {k:pending[k] for k in ('actor','source','container')} | dict(phase='consumed'))
+    except Exception:
+        raise ValueError('operation_cleanup_unverified') from None
+    c.failures.cleanup = 'verified'
+
+
+def browser(c, operation, args, ops_env, *, owner):
     from deploy.target_deploy import ROOT
-    with tempfile.TemporaryDirectory(dir=c.root, prefix='browser-') as folder:
-        output = Path(folder)/'private.json'
-        env = {k: os.environ[k] for k in ('PATH', 'HOME', 'GITHUB_SHA', 'GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT')}
-        env.update(DEVFLOW_OP=operation, DEVFLOW_OP_ARGS=json.dumps(args), DEVFLOW_OPS_ENV=ops_env,
-                   DEVFLOW_PRIVATE_RESULT=str(output))
-        run = subprocess.run(['bash', str(ROOT/'.devflow/operate.sh')], cwd=ROOT, env=env,
-                             stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    from deploy.target_diagnostics import CONTROL_CODES
+    slot = c.root/'single-control.json'
+    pending = {**owner, 'phase':'browser-cleanup', 'helper_nonce':uuid4().hex}
+    folder = c.root/helper_name(pending)
+    atomic_slot(c, slot, pending)
+    c.failures.cleanup = 'unknown'
+    folder.mkdir(mode=0o700)
+    output = folder/'private.json'
+    env = {k: os.environ[k] for k in ('PATH', 'HOME', 'GITHUB_SHA', 'GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT')}
+    env.update(DEVFLOW_OP=operation, DEVFLOW_OP_ARGS=json.dumps(args), DEVFLOW_OPS_ENV=ops_env,
+               DEVFLOW_PRIVATE_RESULT=str(output), DEVFLOW_PRIVATE_HELPER=pending['helper_nonce'])
+    # A canceled controller must not release its lock while the browser
+    # shell / Docker CLI can still create or start this helper. Reconcile only
+    # once the subprocess has returned; interruption leaves the journal intact.
+    run = subprocess.run(['bash', str(ROOT/'.devflow/operate.sh')], cwd=ROOT, env=env,
+                         pass_fds=(c.operation_lock,),
+                         stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    try:
         if run.returncode:
-            from deploy.target_diagnostics import CONTROL_CODES
             try:
                 code = c.read(output.parent/'projection/result.json')['code']
             except (OSError, ValueError, TypeError, KeyError):
                 code = None
             raise ValueError(code if isinstance(code, str) and code in CONTROL_CODES else 'control_browser_failed')
         return c.read(output)
+    finally:
+        clean_browser(c, slot, pending)
 
 
 def atomic_slot(c, path, value):
@@ -78,12 +149,20 @@ def private_runtime(c, action, **fields):
 def run_control(c, action, sha, container, dispatch, ops_env):
     actor, submitted = dispatch
     slot = c.root/'single-control.json'
-    saved = c.read(slot) if slot.exists() or slot.is_symlink() else {}
+    saved = control_slot(c)
+    owner = dict(actor=actor, source=sha, container=container)
+    if saved.get('phase') == 'browser-cleanup':
+        c.failures.cleanup = 'unknown'
+        require(action not in {'preview','join-confirmed-present-and-media'}, 'control_slot_occupied')
+        require(action == 'stop' and all(saved[key] == value for key, value in owner.items()),
+                'control_slot_unavailable')
+        clean_browser(c, slot, saved)
+        return dict(ok=True, browser_cleanup_verified=True)
     now = time.time()
     if action == 'preview':
         require(not saved or saved['phase'] in {'cleaned','consumed'}
                 or (saved['phase'] == 'preview' and now >= saved['expires_at']), 'control_slot_occupied')
-        value = browser(c, 'calendar-occurrences', {}, ops_env)
+        value = browser(c, 'calendar-occurrences', {}, ops_env, owner=owner)
         validate_operation(value)
         rows = [row for row in value['occurrences'] if row['joinable'] is True]
         require(value['ready'] and len(rows) == 1, 'control_unique_occurrence_required')
@@ -103,7 +182,7 @@ def run_control(c, action, sha, container, dispatch, ops_env):
         # or replay a confirmation when a UI/read/runtime response is lost.
         atomic_slot(c, slot, dict(phase='consumed', actor=actor, source=sha, container=container))
         binding = browser(c, 'issue-binding', {k:v for k,v in selection.items() if k!='joinable'} |
-                          dict(present=True, media=True), ops_env)
+                          dict(present=True, media=True), ops_env, owner=owner)
         request = binding.get('request_sha256')
         require(binding.get('ok') is True and binding['occurrence_id'] == ident
                 and binding['revision'] == selection['revision'] + 1

@@ -24,12 +24,13 @@ sys.path.insert(0,str(ROOT))
 from tools.target_admission import collect, require, REPO
 from tools.pr_policy_github import GitHub
 from deploy.target_diagnostics import Failures, public_command
-from deploy.private_control import ACTIONS as PRIVATE_CONTROL_ACTIONS, dispatch_identity, run_control
+from deploy.private_control import (ACTIONS as PRIVATE_CONTROL_ACTIONS, HELPER_OWNER as OWNER, control_slot,
+                                    dispatch_identity, run_control, tracked_browser)
 
 PROJECT='devflow-teams-transcription'
 APP=PROJECT+'-app'
 VOLUME=PROJECT+'-data'
-OWNER='io.devflow.owner'
+
 IMAGE=re.compile('sha256:[0-9a-f]{64}\\Z')
 RUNTIME='/opt/meeting/devflow_runtime.py'
 
@@ -93,6 +94,8 @@ class Audit:
 
 
 class Controller:
+    operation_lock: int
+
     def __init__(self,state_root,run_id,attempt,*,command=execute):
         self.root=Path(state_root);self.run_id=run_id;self.attempt=attempt;self.command=command
         self.helper=f'{PROJECT}-helper-{run_id}-{attempt}'
@@ -196,7 +199,9 @@ class Controller:
         """Ownership/port seam, also exercised on disposable hosted Docker."""
         all_containers=self.containers()
         owned=[c for c in all_containers if c.get('Config',{}).get('Labels',{}).get(OWNER)==REPO]
-        require(not any(c['Name'].lstrip('/')!=APP for c in owned),'stale_helper_or_unknown_resource')
+        pending=control_slot(self)
+        require(all(c['Name']=='/'+APP or tracked_browser(pending,c) for c in owned),
+                'stale_helper_or_unknown_resource')
         app=next((c for c in all_containers if c['Name'].lstrip('/')==APP),None)
         if app:
             collision('container',APP,app,state.get('container_id') if state else None)
@@ -393,6 +398,10 @@ def main():
         lock=os.open(root/'operation.lock',os.O_CREAT|os.O_RDWR|os.O_NOFOLLOW,0o600)
         with os.fdopen(lock,'r+b') as fd:
             fcntl.flock(fd,fcntl.LOCK_EX|fcntl.LOCK_NB)
+            c.operation_lock=fd.fileno()
+            if args.action not in PRIVATE_CONTROL_ACTIONS and control_slot(c).get('phase')=='browser-cleanup':
+                failures.cleanup='unknown'
+                raise ValueError('control_slot_occupied')
             state=c.read(root/'state.json') if (root/'state.json').exists() else None
             require(state is None or state.get('phase')=='healthy','interrupted_switch_requires_review')
             before=c.preflight(state)

@@ -126,26 +126,32 @@ class Harness:
 import os,sys,json,subprocess
 from pathlib import Path
 args=sys.argv[1:]
-assert args[:2]==['--host','unix:///run/user/'+str(os.getuid())+'/docker.sock']
-args[:2]=['--host=unix:///var/run/docker.sock']
-args=[os.environ['PROOF_APP'] if x=='devflow-teams-transcription-app' else
-      'container:'+os.environ['PROOF_APP'] if x=='container:devflow-teams-transcription-app' else x for x in args]
-if args[1:3]==['rm','-f'] and os.environ.get('PROOF_CLEANUP_FAIL')=='yes':
-    subprocess.run([os.environ['PROOF_DOCKER'],*args],capture_output=True,check=True)
-    print(os.environ['DEVFLOW_OPS_ENV'], file=sys.stderr)
+folder=Path(__file__).parent
+config=json.loads((folder/'config.json').read_text())
+rootless='--host=unix:///run/user/'+str(os.getuid())+'/docker.sock'
+if args[:1]==[rootless]: args[:1]=['--host=unix:///var/run/docker.sock']
+else:
+    assert args[:2]==['--host',rootless.split('=',1)[1]]
+    args[:2]=['--host=unix:///var/run/docker.sock']
+args=[config['app'] if x=='devflow-teams-transcription-app' else
+      'container:'+config['app'] if x=='container:devflow-teams-transcription-app' else x for x in args]
+if args[1:3]==['rm','-f'] and (folder/'refuse-removal').exists():
+    print(config['canary'], file=sys.stderr)
     raise SystemExit(1)
 if len(args)>1 and args[1]=='cp':
     helper=args[2].split(':')[0]
     def read(*parts):
-        return subprocess.run([os.environ['PROOF_DOCKER'],args[0],'exec',helper,*parts],capture_output=True,check=True).stdout
+        return subprocess.run([config['docker'],args[0],'exec',helper,*parts],capture_output=True,check=True).stdout
     result=json.loads(read('cat','/evidence/result.json'))
     size=int(read('stat','-c','%s','/evidence/look.png'))
-    Path(os.environ['PROOF_SOURCE']).write_text(json.dumps(dict(ok=result.get('ok'),path=result.get('path'),png_bytes=size)))
-os.execv(os.environ['PROOF_DOCKER'],[os.environ['PROOF_DOCKER'],*args])
+    Path(config['source']).write_text(json.dumps(dict(ok=result.get('ok'),path=result.get('path'),png_bytes=size)))
+os.execv(config['docker'],[config['docker'],*args])
 '''
         (self.bin/'docker').write_text(wrapper); (self.bin/'docker').chmod(0o755)
+        (self.bin/'config.json').write_text(json.dumps(dict(app=self.app,docker=DOCKER,
+            source=str(self.scratch/'source.json'),canary='synthetic-private-docker-error')))
 
-    def prepare(self, source_sha=None):
+    def prepare(self, source_sha=None, *, single=False):
         assert docker('inspect', self.app, check=False).returncode != 0
         docker('run','-d','--name',self.app,'--user','10001:10001','--read-only',
                '--cap-drop','ALL','--security-opt','no-new-privileges',
@@ -154,6 +160,9 @@ os.execv(os.environ['PROOF_DOCKER'],[os.environ['PROOF_DOCKER'],*args])
                '--entrypoint','sleep',self.image,'1800')
         self.app_created = True
         fixture=(ROOT/'.devflow/ui/fixture.py').read_text().replace('port=18081','port=8080')
+        if single:
+            fixture=fixture.replace("[('current',-60), ('soon',60), ('expired',-7200), ('late',-600), ('later',7200)]",
+                                    "[('current',-60)]")
         archive=io.BytesIO()
         with tarfile.open(fileobj=archive,mode='w') as bundle:
             for name,data in [('fixture.py',fixture.encode()),('devflow-fixture-password',self.password.encode())]:
@@ -183,16 +192,15 @@ os.execv(os.environ['PROOF_DOCKER'],[os.environ['PROOF_DOCKER'],*args])
             shutil.copytree(ROOT/'teams_transcription',target/'teams_transcription',ignore=shutil.ignore_patterns('__pycache__'))
         return target
 
-    def operate(self, target, label, op='look', args=None, private_result=None, cleanup_fail=False):
+    def operate(self, target, label, op='look', args=None, private_result=None):
         env={**os.environ,'PATH':str(self.bin)+os.pathsep+os.environ['PATH'],
-             'PROOF_DOCKER':DOCKER,'PROOF_APP':self.app,'PROOF_SOURCE':str(self.scratch/'source.json'),'DEVFLOW_OP':op,
+             'DEVFLOW_OP':op,
              'DEVFLOW_OP_ARGS':json.dumps(args or {}),'DEVFLOW_OPS_ENV':'ADMIN_PASSWORD='+self.password,
              'GITHUB_SHA':self.sha,'GITHUB_RUN_ID':os.environ['GITHUB_RUN_ID']+'-'+label,
              'GITHUB_RUN_ATTEMPT':os.environ['GITHUB_RUN_ATTEMPT']}
         if private_result is not None:
             env['DEVFLOW_PRIVATE_RESULT'] = str(private_result)
-        if cleanup_fail:
-            env['PROOF_CLEANUP_FAIL'] = 'yes'
+
         p=subprocess.run(['bash',str(target/'.devflow/operate.sh')],cwd=target,env=env,
                          capture_output=True,timeout=180)
         # The raw process output can include secrets/DOM on the broken base.
@@ -238,6 +246,76 @@ async def main():
 asyncio.run(main())
 '''
         docker('exec','-i',self.app,'python','-c',decode,data=base64.b64encode(path.read_bytes()))
+
+    def prove_control_cleanup(self):
+        target = self.checkout('control-head')
+        (target/'home').mkdir(mode=0o700)
+        cid = docker('inspect','--format','{{.Id}}',self.app).stdout.decode().strip()
+        run_id = int(os.environ['GITHUB_RUN_ID'])*100
+        refuse = self.bin/'refuse-removal'
+        selector = ['--filter','label=io.devflow.teams.private-browser']
+        public = []
+        private = {self.password, 'synthetic-private-docker-error', 'PRIVATE-current',
+                   'https://teams.microsoft.com/meet/12345'}
+
+        def helpers():
+            return docker('container','ls','--all','--quiet','--no-trunc',*selector).stdout.decode().split()
+
+        def call(action, *, actor=17, error=None):
+            nonlocal run_id
+            run_id += 1
+            env = {**os.environ, 'PATH':str(self.bin)+os.pathsep+os.environ['PATH'], 'PYTHONPATH':str(ROOT),
+                   'DEVFLOW_OPS_ENV':'ADMIN_PASSWORD='+self.password,
+                   'GITHUB_SHA':self.sha, 'GITHUB_RUN_ID':str(run_id), 'GITHUB_RUN_ATTEMPT':'1'}
+            # A fresh controller process uses real Docker, Playwright, host
+            # lock, on-disk slot and public receipt writers on every call.
+            result = subprocess.run([sys.executable,'-B',str(ROOT/'.devflow/control_cleanup_probe.py'),
+                action,str(target),self.image,cid,str(actor)],env=env,capture_output=True,timeout=180)
+            folder = target/f'.devflow/evidence-deploy-{run_id}-1'
+            name = 'failure.json' if error else 'receipt.json'
+            assert result.returncode == (1 if error else 0) and folder.is_dir(), 'controller_unexpected_outcome'
+            assert {p.name for p in folder.iterdir()} == {name}, 'unexpected_control_artifact'
+            raw = (folder/name).read_bytes()
+            public.extend([result.stdout,result.stderr,raw])
+            result = json.loads(raw)
+            if error:
+                assert result['primary_failure']['code'] == error, 'controller_wrong_failure'
+                assert result['cleanup'] == 'unknown', 'controller_lost_unknown_cleanup'
+                return None
+            return result['result']
+
+        assert not helpers(), 'hosted_helper_collision'
+        try:
+            for action in ('preview','join-confirmed-present-and-media'):
+                refuse.touch()
+                call(action,error='operation_cleanup_unverified')
+                [helper] = helpers()
+                assert docker('inspect','--format','{{.State.Running}}',helper).stdout.strip() == b'true'
+                raw = json.loads(docker('exec',helper,'cat','/evidence/result.json').stdout)
+                assert raw['ok'] is True, 'browser_did_not_reach_success_before_cleanup'
+                for key in ('poll_id','occurrence_id','request_sha256'):
+                    if key in raw: private.add(raw[key])
+                private.update(row['occurrence_id'] for row in raw.get('occurrences',[]))
+                private.add(helper)
+                if action != 'preview':
+                    assert raw['expires_in_seconds'] == 300 and len(raw['request_sha256']) == 64
+                call('preview',error='control_slot_occupied')
+                call('join-confirmed-present-and-media',error='control_slot_occupied')
+                call('stop',actor=18,error='control_slot_unavailable')
+                call('stop',error='operation_cleanup_unverified')
+                assert helpers() == [helper], 'blocked_controls_touched_the_helper'
+                refuse.unlink()
+                assert call('stop') == dict(ok=True,browser_cleanup_verified=True)
+                assert not helpers(), 'verified_stop_left_helper'
+                assert call('preview') == dict(ok=True,unique_occurrence_staged=True,confirmation_window_seconds=300)
+                assert not helpers(), 'successful_preview_left_helper'
+                self.records.append(dict(case=f'{action}-helper-cleanup-interlock',assertion='GREEN',
+                    helper_remained_running=True,restarted_controls_blocked=True,recovered_same_helper=True))
+            assert not any(word.encode() in blob for word in private for blob in public), 'private_control_canary_leaked'
+        finally:
+            refuse.unlink(missing_ok=True)
+            for helper in helpers():
+                docker('rm','-f',helper)
 
     def assert_readonly_calendar(self, target, label, *, legacy=False):
         rc, folder = self.operate(target,label,'calendar-settings')
@@ -337,12 +415,7 @@ asyncio.run(main())
         self.records.append(dict(case='private-only-binding',assertion='GREEN'))
         self.records.append(dict(case='readonly-calendar-settings-unchanged',assertion='GREEN'))
         self.refuse_invalid_binding(head, binding_args)
-        with tempfile.TemporaryDirectory(dir=self.scratch) as tmp:
-            private = Path(tmp)/'private.json'
-            rc, folder = self.operate(head,'cleanup-failed','calendar-occurrences',private_result=private,cleanup_fail=True)
-            assert rc != 0 and not private.exists() and {p.name for p in folder.iterdir()} == {'result.json'}
-            assert json.loads((folder/'result.json').read_text()) == dict(ok=False,code='operation_cleanup_unverified')
-            self.records.append(dict(case='private-helper-cleanup-failure',assertion='refused'))
+
         rc,folder=self.operate(head,'calendar-settings-save','calendar-settings',
             dict(calendar_ref='primary',revision=0,enabled=True))
         assert rc==0, 'calendar_settings_save_operation_failed'
@@ -456,15 +529,20 @@ def main():
         media_scratch = scratch/'media'; media_scratch.mkdir()
         base = Harness(media_scratch,evidence)
         h=Harness(scratch,evidence)
+        cleanup_scratch = scratch/'cleanup'; cleanup_scratch.mkdir()
+        cleanup = Harness(cleanup_scratch,evidence)
         try:
             base.prepare(MEDIA_BASE);base.prove_media_base()
+            cleanup.prepare(single=True);cleanup.prove_control_cleanup()
             h.prepare();h.prove()
         finally:
             if h.app_created:
                 docker('rm','-f',h.app)
             if base.app_created:
                 docker('rm','-f',base.app)
-            receipt=dict(base_sha=BASE,media_base_sha=MEDIA_BASE,head_sha=h.sha,cases=base.records+h.records,
+            if cleanup.app_created:
+                docker('rm','-f',cleanup.app)
+            receipt=dict(base_sha=BASE,media_base_sha=MEDIA_BASE,head_sha=h.sha,cases=base.records+cleanup.records+h.records,
                          daemon='hosted-rootful-socket-adapter; production-rootless-unchanged',
                          real_join=False,oauth_or_model=False)
             (evidence/'proof.json').write_text(json.dumps(receipt,indent=2)+'\n');(evidence/'proof.json').chmod(0o600)
