@@ -1,0 +1,9 @@
+id = "L-0021"
+title = "Track unsolicited assistant turns while muted before opening B speech output"
+event = "Live Teams Q&A run observed GPT Live server-side VAD emit an unsolicited assistant turn before the host 1.5s quiet timer admitted the question, causing unmuted tail audio and a duplicate second answer."
+root_cause = "NativeLiveResponder._data_event discarded assistant turn.created/turn.done events while sleeping/muted, so _return_tool unmuted the output track before the unsolicited server-VAD turn finished and then triggered a second answer on RESULT_COMPLETE. Track background assistant turns while muted and wait for them to settle before opening output."
+category = "verification"
+
+[enforcement]
+kind = "test"
+ref = "tests/test_ux_features_and_voice_dedup.py::test_b_native_waits_for_unsolicited_server_vad_turn_while_muted"
