@@ -18,9 +18,16 @@ MAX_LINE_BYTES=2048
 MAX_EVENTS=0
 MAX_SECONDARY=8
 PHASES=frozenset({'prepare_contexts','image_build','audit','cleanup','unknown',
-    'control_view','control_join','control_output-disable','control_stop','control_prepare-home'})
+    'control_view','control_join-confirmed-present-and-media','control_preview','control_output-disable',
+    'control_stop','control_prepare-home'})
+CONTROL_CODES=frozenset({'control_dispatch_rejected','control_slot_occupied','control_slot_unavailable',
+    'control_unique_occurrence_required','control_confirmation_stale','control_browser_failed',
+    'control_dispatch_unverified','control_bound_view_required','control_output_unverified',
+    'binding_result_invalid','binding_selection_changed','binding_form_required','pending_occurrence_required',
+    'target_occurrence_not_authorized','occurrence_outside_join_window','operation_cleanup_unverified',
+    'missing_ADMIN_PASSWORD','stop_cleanup_unverified'})
 CODES=frozenset({'command_failed','command_timeout','output_limit','command_start_failed',
-    'unknown','audit_failed','snapshot_failed','cleanup_failed','evidence_write_failed'})
+    'unknown','audit_failed','snapshot_failed','cleanup_failed','evidence_write_failed'}) | CONTROL_CODES
 PUBLIC_PHASES=frozenset({'prepare_contexts','image_build'})
 
 
@@ -97,6 +104,7 @@ def failure(exc,phase='unknown',code='unknown'):
     row: dict = dict(phase=phase if phase in PHASES else 'unknown',code=code if code in CODES else 'unknown',exit_status=None)
     from deploy.target_runtime import SAFE_FAILURE_CODES
     if type(exc) is ValueError and len(exc.args)==1 and type(exc.args[0]) is str:
+        if exc.args[0] in CONTROL_CODES:row['code']=exc.args[0]
         if exc.args[0] in {'target_runtime_rejected:'+code for code in SAFE_FAILURE_CODES}:
             from teams_transcription.control_errors import SAFE_CONTROL_FAILURE_CODES
             runtime_code=exc.args[0].removeprefix('target_runtime_rejected:')

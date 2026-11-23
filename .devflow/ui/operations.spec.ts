@@ -1,6 +1,6 @@
 import { test, expect, type Locator } from '@playwright/test';
 import { calendarOccurrences, calendarSettings, issueBinding, login, OperationError } from './operations';
-import { readFileSync, mkdirSync } from 'node:fs';
+import { existsSync, readFileSync, mkdirSync } from 'node:fs';
 import { runOperation } from './ops/run';
 process.env.ADMIN_PASSWORD = readFileSync(process.env.DEVFLOW_FIXTURE_PASSWORD_FILE || '/tmp/devflow-fixture-password', 'utf8').trim();
 
@@ -159,7 +159,7 @@ test('calendar refuses absent, malformed, stale or inconsistent evidence and uns
   }
 });
 
-test('production settings runner creates primary read-only and exports only safe JSON/heading PNG', async ({page}) => {
+test('production settings runner creates primary read-only without recording an authenticated screenshot', async ({page}) => {
   await login(page);
   const evidence = process.env.DEVFLOW_UI_EVIDENCE || '/tmp/devflow-evidence';
   mkdirSync(evidence,{recursive:true});
@@ -177,7 +177,7 @@ test('production settings runner creates primary read-only and exports only safe
     expect(result).toMatchObject({ok:true,saved:true,scheduler_paused:true});
     expect(primary).toMatchObject({revision:1,enabled:true,recording_authorized:false,speaking_authorized:false});
     expect(JSON.stringify(result)).not.toMatch(/PRIVATE|synthetic|password|csrf|@|https?:/);
-    expect(readFileSync(evidence+'/calendar-settings.png').subarray(0,8).toString('hex')).toBe('89504e470d0a1a0a');
+    expect(existsSync(evidence+'/calendar-settings.png')).toBe(false);
   } finally {
     if (previousOrigin === undefined) delete process.env.BASE_URL; else process.env.BASE_URL = previousOrigin;
     if (previousResult === undefined) delete process.env.DEVFLOW_OP_RESULT; else process.env.DEVFLOW_OP_RESULT = previousResult;

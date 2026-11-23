@@ -40,21 +40,31 @@ def docker(*args, data=None, check=True):
     return p
 
 
-def assert_success(folder, op):
+def assert_success(folder, op, *, legacy=False):
     result = json.loads((folder/'result.json').read_text())
     assert result.get('ok') is True, 'host_export_not_success'
     if op == 'look':
         assert result == dict(ok=True, path='/login', status=200, title='管理登入')
     elif op == 'calendar-settings':
         from teams_transcription.calendar_readback import validate_settings_operation
-        validate_settings_operation(result)
+        if legacy:
+            validate_settings_operation(result)
+        else:
+            assert all('calendar_ref' not in row for row in result['calendars'])
+            validate_settings_operation({**result,'calendars':[
+                {**row,'calendar_ref':f'{index:032x}'} for index,row in enumerate(result['calendars'])]})
+    elif not legacy:
+        if op == 'calendar-occurrences':
+            assert set(result) == {'ok','google','enabled_calendar_count','read','error_codes','ready','joinable_count'}
+        else:
+            assert result == dict(ok=True,binding_staged=True,expires_in_seconds=300)
     else:
         assert 'PRIVATE' not in json.dumps(result)
         assert result.get('timezone') == 'Asia/Taipei' if op == 'calendar-occurrences' else result.get('expires_in_seconds') == 300
-    assert (folder/(op+'.png')).is_file(), 'host_screenshot_missing'
+    expected = {'result.json', op+'.png'} if legacy or op == 'look' else {'result.json'}
     assert stat.S_IMODE(folder.stat().st_mode) == 0o700
     assert all(stat.S_IMODE(p.stat().st_mode) == 0o600 for p in folder.iterdir() if p.is_file())
-    assert {p.name for p in folder.iterdir()} == {'result.json', op+'.png'}, 'unexpected_export'
+    assert {p.name for p in folder.iterdir()} == expected, 'unexpected_export'
     return result
 
 
@@ -96,6 +106,10 @@ class BaseBindingDenied(Exception):
     """The browser rejection was corroborated by the same authenticated form test."""
 
 
+class BaseBindingPublic(Exception):
+    """The successful browser export contains the binding in isolated scratch."""
+
+
 class Harness:
     def __init__(self, scratch, evidence):
         self.scratch, self.evidence = scratch, evidence
@@ -116,6 +130,10 @@ assert args[:2]==['--host','unix:///run/user/'+str(os.getuid())+'/docker.sock']
 args[:2]=['--host=unix:///var/run/docker.sock']
 args=[os.environ['PROOF_APP'] if x=='devflow-teams-transcription-app' else
       'container:'+os.environ['PROOF_APP'] if x=='container:devflow-teams-transcription-app' else x for x in args]
+if args[1:3]==['rm','-f'] and os.environ.get('PROOF_CLEANUP_FAIL')=='yes':
+    subprocess.run([os.environ['PROOF_DOCKER'],*args],capture_output=True,check=True)
+    print(os.environ['DEVFLOW_OPS_ENV'], file=sys.stderr)
+    raise SystemExit(1)
 if len(args)>1 and args[1]=='cp':
     helper=args[2].split(':')[0]
     def read(*parts):
@@ -165,12 +183,16 @@ os.execv(os.environ['PROOF_DOCKER'],[os.environ['PROOF_DOCKER'],*args])
             shutil.copytree(ROOT/'teams_transcription',target/'teams_transcription',ignore=shutil.ignore_patterns('__pycache__'))
         return target
 
-    def operate(self, target, label, op='look', args=None):
+    def operate(self, target, label, op='look', args=None, private_result=None, cleanup_fail=False):
         env={**os.environ,'PATH':str(self.bin)+os.pathsep+os.environ['PATH'],
              'PROOF_DOCKER':DOCKER,'PROOF_APP':self.app,'PROOF_SOURCE':str(self.scratch/'source.json'),'DEVFLOW_OP':op,
              'DEVFLOW_OP_ARGS':json.dumps(args or {}),'DEVFLOW_OPS_ENV':'ADMIN_PASSWORD='+self.password,
              'GITHUB_SHA':self.sha,'GITHUB_RUN_ID':os.environ['GITHUB_RUN_ID']+'-'+label,
              'GITHUB_RUN_ATTEMPT':os.environ['GITHUB_RUN_ATTEMPT']}
+        if private_result is not None:
+            env['DEVFLOW_PRIVATE_RESULT'] = str(private_result)
+        if cleanup_fail:
+            env['PROOF_CLEANUP_FAIL'] = 'yes'
         p=subprocess.run(['bash',str(target/'.devflow/operate.sh')],cwd=target,env=env,
                          capture_output=True,timeout=180)
         # The raw process output can include secrets/DOM on the broken base.
@@ -178,8 +200,30 @@ os.execv(os.environ['PROOF_DOCKER'],[os.environ['PROOF_DOCKER'],*args])
         folder=target/'.devflow/evidence/operate'/(env['GITHUB_RUN_ID']+'-'+env['GITHUB_RUN_ATTEMPT'])
         helper='devflow-teams-transcription-operate-'+env['GITHUB_RUN_ID']+'-'+env['GITHUB_RUN_ATTEMPT']
         assert docker('inspect',helper,check=False).returncode != 0, 'owned_helper_not_cleaned'
-        assert self.password.encode() not in p.stdout+p.stderr, 'credential_in_process_output'
+        forbidden=[self.password]
+        public=private_result.parent/'projection' if private_result is not None else folder
+        if private_result is not None:
+            forbidden += [v for k,v in (args or {}).items() if k=='occurrence_id']
+        if private_result is not None and private_result.exists():
+            assert stat.S_IMODE(private_result.stat().st_mode) == 0o600
+            private = json.loads(private_result.read_text())
+            forbidden += [v for k,v in private.items() if k in {'occurrence_id','request_sha256','poll_id'}]
+            forbidden += [row['occurrence_id'] for row in private.get('occurrences',[])]
+        evidence = p.stdout+p.stderr+b''.join(f.read_bytes() for f in public.iterdir() if f.is_file())
+        assert not any(v.encode() in evidence for v in forbidden), 'private_value_in_public_output'
+        if private_result is not None:
+            assert not folder.exists(), 'private_operation_in_actions_upload_root'
+            folder=public
         return p.returncode, folder
+
+    def private_operate(self, target, label, op, args=None):
+        with tempfile.TemporaryDirectory(dir=self.scratch) as tmp:
+            path = Path(tmp)/'private.json'
+            rc, folder = self.operate(target,label,op,args,path)
+            if not rc:
+                return rc, assert_success(folder,op), json.loads(path.read_text())
+            assert not path.exists() and {p.name for p in folder.iterdir()} == {'result.json'}
+            return rc, json.loads((folder/'result.json').read_text()), None
 
     def decode_screenshot(self, path):
         decode = '''import asyncio,base64,sys
@@ -195,42 +239,51 @@ asyncio.run(main())
 '''
         docker('exec','-i',self.app,'python','-c',decode,data=base64.b64encode(path.read_bytes()))
 
-    def assert_readonly_calendar(self, target, label):
+    def assert_readonly_calendar(self, target, label, *, legacy=False):
         rc, folder = self.operate(target,label,'calendar-settings')
         assert rc == 0, 'readonly_calendar_settings_unavailable'
-        result = assert_success(folder,'calendar-settings')
+        result = assert_success(folder,'calendar-settings',legacy=legacy)
         assert result['scheduler_paused'] and len(result['calendars']) == 1
         row = result['calendars'][0]
         assert row['enabled'] is True and row['recording_authorized'] is False and row['speaking_authorized'] is False
         return row
 
-    def select_readonly_occurrence(self, target, *, baseline):
-        row = self.assert_readonly_calendar(target, 'media-settings')
-        rc, folder = self.operate(target,'media-occurrences','calendar-occurrences')
-        assert rc == 0, 'media_calendar_selection_not_ready'
-        args = select_binding_args(assert_success(folder,'calendar-occurrences'))
-        if baseline:
+    def select_readonly_occurrence(self, target, *, legacy):
+        row = self.assert_readonly_calendar(target, 'media-settings', legacy=legacy)
+        if legacy:
+            rc, folder = self.operate(target,'media-occurrences','calendar-occurrences')
+            assert rc == 0, 'media_calendar_selection_not_ready'
+            selected = assert_success(folder,'calendar-occurrences',legacy=True)
+        else:
+            rc, _, selected = self.private_operate(target,'media-occurrences','calendar-occurrences')
+            assert rc == 0, 'media_calendar_selection_not_ready'
+        args = select_binding_args(selected)
+        if legacy:
             # The old selector did not export revision for this untouched fixture.
             args.setdefault('revision', 1)
         assert args['revision'] == 1
         return row, args
 
-    def refuse_invalid_binding(self, target, args):
+    def refuse_invalid_binding(self, target, args, *, legacy=False):
         for label, attempt, expected in [
             ('binding-string-args',{**args,'revision':'1','present':'true'},'invalid_binding_args'),
             ('binding-stale-selection',args,'binding_selection_changed'),
         ]:
-            rc, folder = self.operate(target,label,'issue-binding',attempt)
-            assert rc != 0 and json.loads((folder/'result.json').read_text()) == {'ok':False,'code':expected}
-            assert not list(folder.glob('*.png'))
+            if legacy:
+                rc, folder = self.operate(target,label,'issue-binding',attempt)
+                result = json.loads((folder/'result.json').read_text())
+                assert not list(folder.glob('*.png'))
+            else:
+                rc, result, _ = self.private_operate(target,label,'issue-binding',attempt)
+            assert rc != 0 and result == {'ok':False,'code':expected}
             self.records.append(dict(case=label,exit=rc,assertion='refused',code=expected))
 
     def prove_media_base(self):
         base = self.checkout('media-base',MEDIA_BASE)
-        self.assert_readonly_calendar(base,'media-base-settings')
+        self.assert_readonly_calendar(base,'media-base-settings',legacy=True)
         rc, folder = self.operate(base,'media-base-occurrences','calendar-occurrences')
         assert rc == 0, 'base_calendar_selection_not_ready'
-        args = select_binding_args(assert_success(folder,'calendar-occurrences'))
+        args = select_binding_args(assert_success(folder,'calendar-occurrences',legacy=True))
         # The fixed-base selector did not export revision; this untouched fixture
         # is revision 1. Its production operation ignores the extra exact fields.
         args['revision'] = 1
@@ -256,32 +309,40 @@ asyncio.run(main())
             self.records.append(dict(source=source,case='base-look',exit=rc,assertion='RED',code=str(exc),png_count=len(list(folder.glob('*.png')))))
         else: raise AssertionError('base_must_be_red')
         head=self.checkout('head')
-        binding_args = {}
         readonly_before = None
-        for op in ['look','calendar-occurrences','calendar-settings','issue-binding']:
-            args=binding_args if op=='issue-binding' else {}
-            rc,folder=self.operate(head,op,op,args)
+        for op in ['look','calendar-occurrences','calendar-settings']:
+            rc,folder=self.operate(head,op,op)
             if rc:
                 self.records.append(dict(case=op,exit=rc,assertion='failed',
                     code=json.loads((folder/'result.json').read_text())['code']))
             assert rc==0, op+'_operation_failed'
             result=assert_success(folder,op)
-            self.decode_screenshot(folder/(op+'.png'))
+            if op == 'look':self.decode_screenshot(folder/(op+'.png'))
             if op=='calendar-occurrences':
-                binding_args = select_binding_args(result)
-                assert binding_args['revision'] == 1
+                assert result['ready'] and result['joinable_count'] > 0
             if op=='calendar-settings':
                 assert result['scheduler_paused'] and len(result['calendars']) == 1
                 row = result['calendars'][0]
                 assert row['enabled'] is True and row['recording_authorized'] is False and row['speaking_authorized'] is False
                 readonly_before = row
-            if op=='issue-binding':
-                assert result['revision'] == binding_args['revision']+1
             dest=self.evidence/op;shutil.copytree(folder,dest)
             self.records.append(dict(case=op,exit=rc,assertion='GREEN'))
+        rc, _, selected = self.private_operate(head,'head-private-selection','calendar-occurrences')
+        assert rc==0 and selected is not None
+        binding_args = select_binding_args(selected)
+        assert binding_args['revision'] == 1
+        rc, _, binding = self.private_operate(head,'head-private-binding','issue-binding',binding_args)
+        assert rc==0 and binding is not None and binding['revision']==binding_args['revision']+1
         assert self.assert_readonly_calendar(head,'media-head-settings-after-binding') == readonly_before
+        self.records.append(dict(case='private-only-binding',assertion='GREEN'))
         self.records.append(dict(case='readonly-calendar-settings-unchanged',assertion='GREEN'))
         self.refuse_invalid_binding(head, binding_args)
+        with tempfile.TemporaryDirectory(dir=self.scratch) as tmp:
+            private = Path(tmp)/'private.json'
+            rc, folder = self.operate(head,'cleanup-failed','calendar-occurrences',private_result=private,cleanup_fail=True)
+            assert rc != 0 and not private.exists() and {p.name for p in folder.iterdir()} == {'result.json'}
+            assert json.loads((folder/'result.json').read_text()) == dict(ok=False,code='operation_cleanup_unverified')
+            self.records.append(dict(case='private-helper-cleanup-failure',assertion='refused'))
         rc,folder=self.operate(head,'calendar-settings-save','calendar-settings',
             dict(calendar_ref='primary',revision=0,enabled=True))
         assert rc==0, 'calendar_settings_save_operation_failed'
@@ -289,7 +350,7 @@ asyncio.run(main())
         primary=next(row for row in result['calendars'] if row['primary'])
         assert result['saved'] is True and primary['enabled'] is True and primary['revision']==1
         assert primary['recording_authorized'] is False and primary['speaking_authorized'] is False
-        self.decode_screenshot(folder/'calendar-settings.png')
+
         shutil.copytree(folder,self.evidence/'calendar-settings-save')
         self.records.append(dict(case='calendar-settings-save',exit=rc,assertion='GREEN'))
         # A valid browser PNG and exit zero must not publish extra private keys.
@@ -341,35 +402,46 @@ def run_media_scenario(record, scratch, evidence, *, baseline):
     def given():
         harness.prepare()
         state['checkout'] = harness.checkout('media', harness.sha if baseline else None)
-        state['calendar'], state['args'] = harness.select_readonly_occurrence(state['checkout'], baseline=baseline)
+        state['legacy'] = 'binding_private_only' not in (state['checkout']/'.devflow/operate.sh').read_text()
+        state['calendar'], state['args'] = harness.select_readonly_occurrence(state['checkout'], legacy=state['legacy'])
         state['source'] = state['checkout'] if baseline else ROOT
         if baseline:
             copy_claim_test(state['source'])
 
     def when():
         target, args = state['checkout'], state['args']
-        rc, folder = harness.operate(target,'media-issue','issue-binding',args)
+        binding = None
+        if state['legacy']:
+            rc, folder = harness.operate(target,'media-issue','issue-binding',args)
+            result = json.loads((folder/'result.json').read_text())
+            if not rc:
+                binding = assert_success(folder,'issue-binding',legacy=True)
+                leaks = any(binding[key].encode() in p.read_bytes() for p in folder.iterdir()
+                            for key in ('occurrence_id','request_sha256'))
+                if leaks:
+                    assert run_media_claim(state['source'], CLAIM_POSITIVE).returncode == 0
+                    raise BaseBindingPublic('single_use_binding_not_private')
+            else:
+                assert not list(folder.glob('*.png'))
+        else:
+            rc, result, binding = harness.private_operate(target,'media-issue','issue-binding',args)
         if rc != 0:
-            assert json.loads((folder/'result.json').read_text()) == {'ok':False,'code':MEDIA_DENIED}
-            assert not list(folder.glob('*.png'))
+            assert result == {'ok':False,'code':MEDIA_DENIED}
             assert_media_claim_red(state['source'])
             raise BaseBindingDenied(MEDIA_DENIED)
-        state['binding'] = assert_success(folder,'issue-binding')
-        state['png'] = folder/'issue-binding.png'
+        assert binding is not None
+        state['binding'] = binding
 
     def then():
         target, args = state['checkout'], state['args']
         assert state['binding']['revision'] == args['revision'] + 1
-        assert harness.assert_readonly_calendar(target,'media-settings-after') == state['calendar']
-        harness.refuse_invalid_binding(target,args)
+        assert harness.assert_readonly_calendar(target,'media-settings-after',legacy=state['legacy']) == state['calendar']
+        harness.refuse_invalid_binding(target,args,legacy=state['legacy'])
         assert run_media_claim(state['source'], CLAIM_SUITE).returncode == 0, 'single_calendar_claim_suite_failed'
-        harness.decode_screenshot(state['png'])
-        shots = evidence/'shots'
-        shots.mkdir(exist_ok=True)
-        shutil.copyfile(state['png'], shots/(MEDIA_SCENARIO.replace('/','__')+'.png'))
+
 
     try:
-        record(MEDIA_SCENARIO, given, when, then, expected_base_red=BaseBindingDenied)
+        record(MEDIA_SCENARIO, given, when, then, expected_base_red=(BaseBindingDenied,BaseBindingPublic))
     finally:
         if harness.app_created:
             docker('rm','-f',harness.app)

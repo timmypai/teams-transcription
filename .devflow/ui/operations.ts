@@ -131,12 +131,11 @@ export async function calendarSettings(page: Page, args: Record<string,unknown>)
   const before = await settingsReadback(page);
   if (!writing) return {...before,saved:false};
   requireValue(before.scheduler_paused, 'calendar_settings_not_quiescent');
-  const old = before.calendars.find(row => row.calendar_ref === args.calendar_ref);
-  requireValue(args.calendar_ref === 'primary' ? args.revision === 0 && !before.calendars.some(row => row.primary) :
-    old && old.revision === args.revision, 'calendar_revision_changed');
+  const old = before.calendars.find(row => args.calendar_ref === 'primary' ? row.primary : row.calendar_ref === args.calendar_ref);
+  requireValue(old ? old.revision === args.revision : args.calendar_ref === 'primary' && args.revision === 0, 'calendar_revision_changed');
   if (old && old.enabled === args.enabled) return {...before,saved:false};
   const form = page.locator('form[action="/actions/calendar-readonly"]').filter({
-    has:page.locator(`input[name="calendar_ref"][value="${args.calendar_ref}"]`),
+    has:page.locator(`input[name="calendar_ref"][value="${old?.calendar_ref ?? args.calendar_ref}"]`),
   });
   requireValue(await form.count() === 1 && await form.locator('input[name="revision"]').inputValue() === String(args.revision),
     'calendar_revision_changed');

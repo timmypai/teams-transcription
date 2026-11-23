@@ -32,4 +32,5 @@ class SettingsExportTests(unittest.TestCase):
                 result = json.loads((Path(folder)/'result.json').read_text())
                 self.assertEqual(code,0 if defect=='none' else 1)
                 self.assertNotIn('canary',json.dumps(result))
-                self.assertEqual((Path(folder)/'calendar-settings.png').exists(),defect=='none')
+                self.assertFalse((Path(folder)/'calendar-settings.png').exists())
+                if defect=='none':self.assertNotIn('calendar_ref',result['calendars'][0])

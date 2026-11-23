@@ -10,6 +10,7 @@ import tempfile
 
 ROOT=Path(__file__).resolve().parents[1]
 BASE='cfc5493eec7c3f85707399a67fff5665db482839'
+LEGACY_TEST='168e8ea81409bd6f71e789ce7be394532f4855e7:tests/test_target_join_failure.py'
 TESTS={
     'test_target_join_window':'TargetJoinWindowTests.test_expired_binding_is_refused_without_revision_or_consent_write',
     'test_target_consent_ui':'TargetConsentUITests.test_schedule_expired_consent_shows_reason_and_does_not_write_binding',
@@ -34,6 +35,9 @@ def main():
             source.extractall(base,filter='data')
         for module in TESTS:
             (base/'tests'/(module+'.py')).write_bytes((ROOT/'tests'/(module+'.py')).read_bytes())
+        # The historical adapter takes argv. Only the isolated baseline runs
+        # its fixed-era test; head exercises the private adapter.
+        (base/'tests/test_target_join_failure.py').write_bytes(subprocess.check_output(['git','show',LEGACY_TEST],cwd=ROOT))
         runner=root/'runner.py';runner.write_text(RUNNER)
         names=json.dumps([module+'.'+test for module,test in TESTS.items()])
         env={key:value for key,value in os.environ.items() if not key.startswith('ASSISTANT_')

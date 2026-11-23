@@ -5,10 +5,10 @@ on:
       op:
         description: Reviewed UI operation
         type: choice
-        options: [look, calendar-occurrences, calendar-settings, issue-binding]
+        options: [look, calendar-occurrences, calendar-settings]
         required: true
       args:
-        description: Nonsecret JSON object; binding requires fresh present/media true
+        description: Public JSON only (look path or primary Calendar read switch); no identifiers or consent
         type: string
         default: '{}'
       request:
@@ -45,7 +45,9 @@ jobs:
           DEVFLOW_OP: ${{ inputs.op }}
           DEVFLOW_OP_ARGS: ${{ inputs.args }}
           DEVFLOW_OPS_ENV: ${{ secrets.DEVFLOW_OPS_ENV }}
-        run: bash .devflow/operate.sh
+        run: |
+          case "$DEVFLOW_OP" in look|calendar-occurrences|calendar-settings) ;; *) exit 2;; esac
+          bash .devflow/operate.sh
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:

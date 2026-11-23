@@ -215,7 +215,7 @@ async def control_lifespan(daemon,settings,enabled=False):
         yield
 
 
-async def request(root,message):
+async def request(root,message,*,before_send=None):
     path=socket_path(root)
     private_directory(path.parent)
     info=path.lstat()
@@ -227,6 +227,7 @@ async def request(root,message):
         reader,writer=await asyncio.open_unix_connection(path,limit=MAX_RESPONSE+1)
         try:
             if peer_uid(writer.get_extra_info('socket'))!=os.getuid():raise LocalControlError()
+            if before_send is not None:before_send()
             writer.write(raw);await writer.drain()
             result=await reader.readline()
             if not result.endswith(b'\n') or len(result)>MAX_RESPONSE:raise LocalControlError()
