@@ -25,9 +25,8 @@ class OperateEntrypointTests(unittest.TestCase):
     def test_missing_secret_fails_with_actionable_safe_result(self):
         process, result = self.run_preflight('{}')
         self.assertNotEqual(process.returncode, 0)
-        self.assertEqual(result['ok'], False)
-        self.assertEqual(result['code'], 'missing_ADMIN_PASSWORD')
-        self.assertIn('DEVFLOW_OPS_ENV', result['reason'])
+        self.assertEqual(result, dict(ok=False, code='missing_ADMIN_PASSWORD'))
+        self.assertIn('DEVFLOW_OPS_ENV', process.stderr)
 
     def test_invalid_args_do_not_echo_private_input(self):
         process, result = self.run_preflight('SYNTHETIC-PRIVATE-INPUT')

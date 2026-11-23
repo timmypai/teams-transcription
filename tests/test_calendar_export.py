@@ -38,7 +38,8 @@ class CalendarExportTests(unittest.TestCase):
         occurrence = dict(occurrence_id='a'*32, revision=1, joinable=True,
             start_at='2030-01-01T09:00:00+00:00', end_at='2030-01-01T10:00:00+00:00')
         value = {**valid(), 'occurrences':[occurrence]}
-        self.assertEqual(self.export(value), (0,value,True))
+        public = {k:v for k,v in value.items() if k not in {'timezone','poll_id','occurrences'}}
+        self.assertEqual(self.export(value), (0,{**public,'joinable_count':1},False))
         missing = {key:item for key,item in occurrence.items() if key!='revision'}
         for row in [missing, *[{**occurrence,'revision':revision} for revision in (True,'1',0,2**53)]]:
             with self.subTest(row=row):
@@ -69,5 +70,6 @@ class CalendarExportTests(unittest.TestCase):
                 value.update(ready=False,enabled_calendar_count=0,read=dict(attempted=0,succeeded=0,failed=0,event_count=0,completed=True))
             code, result, screenshot = self.export(value)
             self.assertEqual(code,0)
-            self.assertEqual(result,value)
-            self.assertTrue(screenshot)
+            public = {k:v for k,v in value.items() if k not in {'timezone','poll_id','occurrences'}}
+            self.assertEqual(result,{**public,'joinable_count':0})
+            self.assertFalse(screenshot)

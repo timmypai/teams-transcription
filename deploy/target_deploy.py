@@ -24,11 +24,13 @@ sys.path.insert(0,str(ROOT))
 from tools.target_admission import collect, require, REPO
 from tools.pr_policy_github import GitHub
 from deploy.target_diagnostics import Failures, public_command
+from deploy.private_control import (ACTIONS as PRIVATE_CONTROL_ACTIONS, HELPER_OWNER as OWNER, control_slot,
+                                    dispatch_identity, run_control, tracked_browser)
 
 PROJECT='devflow-teams-transcription'
 APP=PROJECT+'-app'
 VOLUME=PROJECT+'-data'
-OWNER='io.devflow.owner'
+
 IMAGE=re.compile('sha256:[0-9a-f]{64}\\Z')
 RUNTIME='/opt/meeting/devflow_runtime.py'
 
@@ -92,6 +94,8 @@ class Audit:
 
 
 class Controller:
+    operation_lock: int
+
     def __init__(self,state_root,run_id,attempt,*,command=execute):
         self.root=Path(state_root);self.run_id=run_id;self.attempt=attempt;self.command=command
         self.helper=f'{PROJECT}-helper-{run_id}-{attempt}'
@@ -144,11 +148,10 @@ class Controller:
         return self.command(prefix+self.docker_prefix+['compose','-p',PROJECT,'-f',str(release/'compose.yml'),
             '--env-file',str(release/'config.env'),*args],timeout=180)
 
-    def runtime(self,action,*,image=None,ident=None,request_sha=None,revision=None,input=None):
+    def runtime(self,action,*,image=None,ident=None,input=None):
         args=[action]
         if ident:args+=['--id',ident]
-        if request_sha:args+=['--request-sha',request_sha]
-        if revision is not None:args+=['--revision',str(revision)]
+
         if image:
             release=self.release
             require(release is not None and IMAGE.fullmatch(image),'helper_release_required')
@@ -196,7 +199,9 @@ class Controller:
         """Ownership/port seam, also exercised on disposable hosted Docker."""
         all_containers=self.containers()
         owned=[c for c in all_containers if c.get('Config',{}).get('Labels',{}).get(OWNER)==REPO]
-        require(not any(c['Name'].lstrip('/')!=APP for c in owned),'stale_helper_or_unknown_resource')
+        pending=control_slot(self)
+        require(all(c['Name']=='/'+APP or tracked_browser(pending,c) for c in owned),
+                'stale_helper_or_unknown_resource')
         app=next((c for c in all_containers if c['Name'].lstrip('/')==APP),None)
         if app:
             collision('container',APP,app,state.get('container_id') if state else None)
@@ -363,8 +368,8 @@ def manual_environment():
 
 def main():
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('action',choices=['deploy','view','join','output-disable','stop','prepare-home','verify','install-google-client'])
-    p.add_argument('--id');p.add_argument('--request-sha');p.add_argument('--revision',type=int);args=p.parse_args()
+    p.add_argument('action',choices=['deploy','prepare-home','verify','install-google-client',*PRIVATE_CONTROL_ACTIONS])
+    args=p.parse_args()
     failures=Failures();sha=None;run=None;attempt=None;evidence=None
     try:
         os.umask(0o077)
@@ -393,6 +398,10 @@ def main():
         lock=os.open(root/'operation.lock',os.O_CREAT|os.O_RDWR|os.O_NOFOLLOW,0o600)
         with os.fdopen(lock,'r+b') as fd:
             fcntl.flock(fd,fcntl.LOCK_EX|fcntl.LOCK_NB)
+            c.operation_lock=fd.fileno()
+            if control_slot(c).get('phase')=='browser-cleanup':
+                failures.cleanup='unknown'
+                require(args.action in PRIVATE_CONTROL_ACTIONS,'control_slot_occupied')
             state=c.read(root/'state.json') if (root/'state.json').exists() else None
             require(state is None or state.get('phase')=='healthy','interrupted_switch_requires_review')
             before=c.preflight(state)
@@ -414,7 +423,6 @@ def main():
                     require(state and state['source_sha']==sha,'deployed_revision_required')
                     c.release=root/'releases'/state['release'];c.verify_release(c.release)
                     if args.action=='install-google-client':
-                        require(not args.id and not args.request_sha and args.revision is None,'control_arguments_rejected')
                         result=c.install_google_client(state,os.environ.pop('TEAMS_GOOGLE_CLIENT_JSON',''))
                     elif args.action=='verify':
                         info=json.loads(c.docker('inspect',APP))[0]
@@ -435,10 +443,18 @@ def main():
                             'deployed_container_changed')
                         c.health(state['image'])
                         result.update(container_id=ident,image=state['image'],uid=10001,source_sha=sha)
-                    else:
-                        if args.action in {'view','join','prepare-home'}:c.health(state['image'])
+                    elif args.action in PRIVATE_CONTROL_ACTIONS:
                         with failures.stage('control_'+args.action):
-                            result=c.runtime(args.action,ident=args.id,request_sha=args.request_sha,revision=args.revision)
+                            actor=dispatch_identity(api,sha,run,attempt)
+                            # resources() already verifies exact container identity.
+                            # Stop/mute must still work when the app is unhealthy.
+                            if args.action in {'preview','join-confirmed-present-and-media'}:c.health(state['image'])
+                            result=run_control(c,args.action,sha,state['container_id'],actor,
+                                os.environ.pop('DEVFLOW_OPS_ENV',''))
+                    else:
+                        c.health(state['image'])
+                        with failures.stage('control_'+args.action):
+                            result=c.runtime(args.action)
                         if args.action=='prepare-home':
                             installed=json.loads(c.docker('inspect',APP))[0]
                             writable=any(m.get('Type')=='volume' and m.get('Name')==VOLUME
@@ -457,11 +473,12 @@ def main():
                     c.write(root/f'audit-{run}-{attempt}.json',json.dumps(report))
                     evidence=ROOT/f'.devflow/evidence-deploy-{run}-{attempt}'
                     evidence.mkdir(parents=True,exist_ok=True)
-                    (evidence/'audit.json').write_text(json.dumps(report,indent=2)+'\n')
-                    for phase in ('candidate','rollback'):
-                        diagnostic=root/f'diagnostics-{run}-{attempt}-{phase}.json'
-                        if diagnostic.exists():
-                            (evidence/(phase+'.json')).write_text(diagnostic.read_text())
+                    if args.action not in PRIVATE_CONTROL_ACTIONS:
+                        (evidence/'audit.json').write_text(json.dumps(report,indent=2)+'\n')
+                        for phase in ('candidate','rollback'):
+                            diagnostic=root/f'diagnostics-{run}-{attempt}-{phase}.json'
+                            if diagnostic.exists():
+                                (evidence/(phase+'.json')).write_text(diagnostic.read_text())
                 except Exception as exc:
                     failures.record(exc,'audit','audit_failed')
                     raise
@@ -472,10 +489,11 @@ def main():
                 # an already healthy installed service into an unsafe rollback.
                 require(verified,'oracle_smoke_unverified')
             require(report['foreign_unchanged'],'foreign_snapshot_changed')
-            (evidence/'receipt.json').write_text(json.dumps({**receipt,'operation':args.action,'result':result,
+            public_receipt = dict(repository=REPO,source_sha=sha) if args.action in PRIVATE_CONTROL_ACTIONS else receipt
+            (evidence/'receipt.json').write_text(json.dumps({**public_receipt,'operation':args.action,'result':result,
                 'deploy_run_url':f'https://github.com/{REPO}/actions/runs/{run}',
                 'scope':'oracle-manual' if args.action=='deploy' else 'same-deployment-local-control',
-                'audit':report},indent=2)+'\n')
+                'audit':dict(foreign_unchanged=True) if args.action in PRIVATE_CONTROL_ACTIONS else report},indent=2)+'\n')
         return 0
     except Exception as exc:
         failures.record(exc)

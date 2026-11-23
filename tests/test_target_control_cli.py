@@ -1,6 +1,7 @@
-"""Manual CLI -> real Controller argv -> installed main -> real Unix/daemon/DB.
+"""Fixed host CLI and private stdin -> installed CLI -> Unix/daemon/SQLite.
 
-Only GitHub admission/Docker/host identity are injected. Never Oracle or model.
+GitHub, Docker and browser results are injected here; the hosted browser
+journey separately exercises the real authenticated form and exporter.
 """
 import asyncio
 import contextlib
@@ -8,13 +9,93 @@ import io
 import json
 import os
 from pathlib import Path
+import subprocess
 import sys
 import tempfile
+import time
 import unittest
 from unittest.mock import patch
-import yaml
-from deploy import target_deploy as deploy, target_runtime as runtime
+
+from deploy import private_control, target_deploy as deploy, target_runtime as runtime
+from test_calendar_export import valid
 import test_teams_local_control as fixture
+
+
+class ManualControl:
+    def __init__(self, test, host):
+        self.test, self.host = test, host
+        self.source = host/'source'
+        self.source.mkdir()
+        self.sha, self.image, self.cid = 'c'*40, 'sha256:'+'d'*64, 'e'*64
+        self.slot = host/'.devflow-live'/deploy.PROJECT.replace('devflow-', 'timmypai-')/'single-control.json'
+        self.calls, self.secrets = [], []
+        self.actor, self.run = 123, 100
+        self.browser_args = []
+        self.extra_rows = []
+        self.wrong_binding_identity = False
+
+    def process(self, args, **kwargs):
+        self.test.assertEqual(args, ['docker','--host=unix://'+f'/run/user/{os.getuid()}/docker.sock',
+            'exec','-i',deploy.APP,'python',deploy.RUNTIME,'bound-control'])
+        self.calls.append(json.loads(kwargs['input']))
+        stream = io.StringIO()
+        with patch.object(runtime,'Path',side_effect=lambda value:self.test.root if value=='/data' else Path(value)), \
+                patch.object(sys,'argv',['target_runtime.py','bound-control']), \
+                patch.object(sys,'stdin',io.StringIO(kwargs['input'])),contextlib.redirect_stdout(stream):
+            status = runtime.main()
+        raw = json.loads(stream.getvalue())
+        if 'session_id' in raw:self.secrets.append(raw['session_id'])
+        return subprocess.CompletedProcess(args,status,stream.getvalue(),'lowercaseprivatestderr')
+
+    def browser(self, controller, op, args, env, *, owner):
+        ident = self.test.occurrence['id']
+        self.browser_args.append((op,args))
+        if op == 'calendar-occurrences':
+            return dict(valid(),occurrences=[dict(occurrence_id=ident,revision=1,joinable=True,
+                start_at='2030-01-01T09:00:00+00:00',end_at='2030-01-01T10:00:00+00:00'),*self.extra_rows])
+        self.test.assertEqual(op, 'issue-binding')
+        self.test.assertIs(args['present'], True)
+        self.test.assertIs(args['media'], True)
+        issued = self.test.store.issue_target_consent(ident,args['revision'],present=args['present'],media=args['media'])
+        self.secrets.append(issued['request_sha256'])
+        return dict(issued,ok=True,occurrence_id='9'*32 if self.wrong_binding_identity else ident)
+
+    def invoke(self, action, *, submitted=None, attempt=1):
+        self.run += 1
+        run = self.run
+        original = deploy.Controller
+        def factory(*args,**kwargs):
+            controller = original(*args,**kwargs)
+            controller.write(controller.root/'state.json',json.dumps(dict(phase='healthy',source_sha=self.sha,
+                image=self.image,container_id=self.cid,release='fixture')))
+            controller.preflight=lambda state:[]
+            controller.verify_release=lambda release:dict(image=self.image,source_sha=self.sha)
+            controller.containers=lambda:[]
+            controller.health=lambda image:(self.cid,dict(health=True))
+            return controller
+        from datetime import datetime, timezone
+        row = dict(id=run,run_attempt=attempt,event='workflow_dispatch',path='.github/workflows/control.yml',
+            head_branch='main',head_sha=self.sha, repository=dict(full_name=deploy.REPO),
+            head_repository=dict(full_name=deploy.REPO), actor=dict(id=self.actor),triggering_actor=dict(id=self.actor),
+            created_at=datetime.fromtimestamp(time.time() if submitted is None else submitted,timezone.utc).isoformat())
+        env = dict(GITHUB_RUN_ID=str(run),GITHUB_RUN_ATTEMPT=str(attempt),DEVFLOW_OPS_ENV='fixtureonly')
+        stream = io.StringIO()
+        with patch.object(deploy,'ROOT',self.source),patch.object(deploy.Path,'home',return_value=self.host), \
+                patch.object(deploy,'Controller',side_effect=factory),patch.object(deploy.subprocess,'run',side_effect=self.process), \
+                patch.object(deploy,'manual_environment',return_value=self.sha), \
+                patch.object(deploy,'collect',return_value=dict(repository=deploy.REPO,source_sha=self.sha)), \
+                patch.object(deploy,'GitHub') as github,patch.object(private_control,'browser',side_effect=self.browser), \
+                patch.dict(os.environ,env),patch.object(sys,'argv',['target_deploy.py',action]), \
+                contextlib.redirect_stdout(stream),contextlib.redirect_stderr(stream):
+            github.return_value.request.return_value=(row,{})
+            code=deploy.main()
+        evidence = self.source/f'.devflow/evidence-deploy-{run}-{attempt}'
+        public = stream.getvalue().encode() + b''.join(p.read_bytes() for p in evidence.rglob('*') if p.is_file())
+        for secret in [self.test.occurrence['title'],self.test.occurrence['join_url'],self.test.occurrence['id'],
+                       'lowercaseprivatestderr','fixtureonly',*self.secrets]:
+            self.test.assertFalse(secret.encode() in public, 'private value in complete public control evidence')
+        self.test.assertEqual({p.name for p in evidence.iterdir()}, {'receipt.json'} if code==0 else {'failure.json'})
+        return code,json.loads((evidence/('receipt.json' if code==0 else 'failure.json')).read_text())
 
 
 class TargetControlCLITests(unittest.IsolatedAsyncioTestCase):
@@ -36,68 +117,79 @@ class TargetControlCLITests(unittest.IsolatedAsyncioTestCase):
             while not session.stopped():await asyncio.sleep(.01)
             session.update(state='stopped',cleanup_status='cleaned');session.event(FINISHED_EVENT,{})
         self.daemon.runner=runner
-        consent=self.store.issue_target_consent(self.occurrence['id'],1,present=True,media=True)
-        menu=yaml.load((deploy.ROOT/'.github/workflows/control.yml').read_text(),Loader=yaml.BaseLoader)
-        self.assertEqual(menu['on']['workflow_dispatch']['inputs']['operation']['options'],
-            ['view','join','output-disable','stop','prepare-home'])
-        self.assertEqual(set(menu['on']),{'workflow_dispatch'})
-        with tempfile.TemporaryDirectory() as temporary:
-            host=Path(temporary);source=host/'source';source.mkdir()
-            sha='c'*40;image='sha256:'+'d'*64;cid='e'*64
-            original=deploy.Controller;calls=[]
-            def command(args,**kwargs):
-                prefix=['docker','--host=unix://'+f'/run/user/{os.getuid()}/docker.sock',
-                    'exec',deploy.APP,'python',deploy.RUNTIME]
-                self.assertEqual(args[:len(prefix)],prefix)
-                action=args[len(prefix):];calls.append(action)
-                stream=io.StringIO()
-                with patch.object(runtime,'Path',side_effect=lambda value: self.root if value=='/data' else Path(value)),\
-                        patch.object(sys,'argv',['target_runtime.py',*action]),contextlib.redirect_stdout(stream):
-                    code=runtime.main()
-                if code:raise ValueError('injected-docker-runtime-nonzero')
-                return stream.getvalue()
-            def factory(*args,**kwargs):
-                controller=original(*args,command=command,**kwargs)
-                controller.write(controller.root/'state.json',json.dumps(dict(phase='healthy',source_sha=sha,
-                    image=image,container_id=cid,release='fixture')))
-                controller.preflight=lambda state:[]
-                controller.verify_release=lambda release:dict(image=image,source_sha=sha)
-                controller.containers=lambda:[]
-                controller.health=lambda image:(cid,dict(health=True))
-                return controller
-            env=dict(GITHUB_RUN_ID='123',GITHUB_RUN_ATTEMPT='1')
-            def invoke(action,ident,request='',revision=None):
-                argv=['target_deploy.py',action,'--id',ident,'--request-sha',request]
-                if revision is not None:argv+=['--revision',str(revision)]
-                with patch.object(deploy,'ROOT',source),patch.object(deploy.Path,'home',return_value=host),\
-                    patch.object(deploy,'Controller',side_effect=factory),\
-                    patch.object(deploy,'manual_environment',return_value=sha),\
-                    patch.object(deploy,'collect',return_value=dict(repository=deploy.REPO,source_sha=sha)),\
-                    patch.object(deploy,'GitHub'),patch.dict(os.environ,env),\
-                    patch.object(sys,'argv',argv),contextlib.redirect_stdout(io.StringIO()):
-                    code=deploy.main()
-                evidence=source/'.devflow/evidence-deploy-123-1'
-                return code,json.loads((evidence/('receipt.json' if code==0 else 'failure.json')).read_text())
+        with tempfile.TemporaryDirectory() as folder:
+            cli=ManualControl(self,Path(folder))
             async with fixture.LocalTeamsControl(self.daemon,self.settings):
-                code,receipt=await asyncio.to_thread(invoke,'join',self.occurrence['id'],
-                    consent['request_sha256'],consent['revision'])
-                self.assertEqual(code,0,receipt)
-                ident=receipt['result']['result']['session_id']
-                await asyncio.wait_for(self.started.wait(),2)
-                code,_=await asyncio.to_thread(invoke,'join',self.occurrence['id'],
-                    consent['request_sha256'],consent['revision'])
+                async def run(action, **kw):return await asyncio.to_thread(cli.invoke,action,**kw)
+                code,_=await run('join-confirmed-present-and-media')
                 self.assertEqual(code,1)
-                # Runner-start is not completed output admission. Test the
-                # intended ready -> revoke -> stop path, not startup revocation.
+                code,receipt=await run('preview')
+                self.assertEqual(code,0,receipt)
+                self.assertEqual(cli.slot.stat().st_mode & 0o777,0o600)
+                cli.actor+=1
+                self.assertEqual((await run('join-confirmed-present-and-media'))[0],1)
+                cli.actor-=1
+                self.assertEqual((await run('join-confirmed-present-and-media',attempt=2))[0],1)
+                self.assertEqual((await run('join-confirmed-present-and-media',submitted=time.time()-301))[0],1)
+                self.assertEqual(cli.calls,[])
+                self.assertEqual([op for op,_ in cli.browser_args],['calendar-occurrences'])
+                start=time.time()
+                code,receipt=await run('join-confirmed-present-and-media')
+                self.assertEqual(code,0,receipt)
+                self.assertGreaterEqual(receipt['result']['dispatch_at'],start)
+                self.assertLessEqual(receipt['result']['dispatch_at'],time.time())
+                self.assertTrue(0 <= receipt['result']['issue_to_dispatch_ms'] < 300000)
+                ident=cli.secrets[-1]
+                await asyncio.wait_for(self.started.wait(),2)
+                self.assertEqual((await run('join-confirmed-present-and-media'))[0],1)
+                self.assertEqual((await run('preview'))[0],1)
+                code,receipt=await run('view')
+                self.assertEqual(code,0,receipt)
+                self.assertTrue(receipt['result']['authorized_view'])
                 await self.until(lambda:any(row['action']=='speech_enabled' and row['target']==ident
                     for row in self.store.audit()))
                 self.assertTrue(output.enabled)
-                code,receipt=await asyncio.to_thread(invoke,'output-disable',ident,consent['request_sha256'])
+                code,receipt=await run('output-disable')
                 self.assertEqual(code,0,receipt)
                 self.assertFalse(output.enabled)
-                code,receipt=await asyncio.to_thread(invoke,'stop',ident,consent['request_sha256'])
-                self.assertEqual(code,0,receipt)
-                self.assertTrue(receipt['result']['cleanup_verified'])
+                for _ in range(2):
+                    code,receipt=await run('stop')
+                    self.assertEqual(code,0,receipt)
+                    self.assertTrue(receipt['result']['cleanup_verified'])
                 self.assertEqual(len(self.store.list_runs()),1)
-                self.assertIn('--revision',calls[0])
-                self.assertEqual(calls[0][-1],str(consent['revision']))
+                self.assertFalse(any(v in cli.slot.read_text() for v in cli.secrets))
+                self.assertEqual([row['operation'] for row in cli.calls],
+                    ['join','view','view','output-disable','view','stop'])
+
+    async def test_ambiguous_or_mismatched_selection_cannot_dispatch(self):
+        with tempfile.TemporaryDirectory() as folder:
+            cli=ManualControl(self,Path(folder))
+            cli.extra_rows=[dict(occurrence_id='9'*32,revision=4,joinable=True,
+                start_at='2030-01-01T09:00:00+00:00',end_at='2030-01-01T10:00:00+00:00')]
+            self.assertEqual((await asyncio.to_thread(cli.invoke,'preview'))[0],1)
+            cli.extra_rows=[]
+            self.assertEqual((await asyncio.to_thread(cli.invoke,'preview'))[0],0)
+            cli.wrong_binding_identity=True
+            code, failure=await asyncio.to_thread(cli.invoke,'join-confirmed-present-and-media')
+            self.assertEqual(code,1)
+            self.assertEqual(failure['primary_failure']['code'],'binding_result_invalid')
+            self.assertEqual((await asyncio.to_thread(cli.invoke,'join-confirmed-present-and-media'))[0],1)
+            self.assertEqual(cli.calls,[])
+
+    async def test_unknown_cleanup_leaves_private_interlock(self):
+        from teams_transcription.teams_acceptance import FINISHED_EVENT
+        async def runner(session):
+            session.update(state='recording');self.started.set()
+            while not session.stopped():await asyncio.sleep(.01)
+            session.update(state='stopped',cleanup_status='unknown');session.event(FINISHED_EVENT,{})
+        self.daemon.runner=runner
+        with tempfile.TemporaryDirectory() as folder:
+            cli=ManualControl(self,Path(folder))
+            async with fixture.LocalTeamsControl(self.daemon,self.settings):
+                self.assertEqual((await asyncio.to_thread(cli.invoke,'preview'))[0],0)
+                self.assertEqual((await asyncio.to_thread(cli.invoke,'join-confirmed-present-and-media'))[0],0)
+                await asyncio.wait_for(self.started.wait(),2)
+                self.assertEqual((await asyncio.to_thread(cli.invoke,'stop'))[0],1)
+                self.assertTrue(self.store.capture_interlocks())
+                self.assertEqual(json.loads(cli.slot.read_text())['phase'],'active')
+                self.assertEqual((await asyncio.to_thread(cli.invoke,'preview'))[0],1)

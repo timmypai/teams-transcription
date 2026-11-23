@@ -15,6 +15,7 @@ import re
 import sqlite3
 import stat
 import sys
+import time
 
 from teams_transcription.control_errors import SAFE_CONTROL_FAILURE_CODES
 
@@ -30,6 +31,7 @@ SAFE_FAILURE_CODES=frozenset({'daemon_identity_unknown','daemon_identity_mismatc
     'authenticated_data_visible','anonymous_control_state_changed','codex_home_scope_unverified',
     'anonymous_deployment_mismatch','control_binding_required','control_revision_required',
     'control_arguments_rejected','stop_cleanup_unverified','authorized_occurrence_required',
+    'control_confirmation_stale','control_dispatch_unverified','control_bound_view_required',
     'codex_home_private_required','codex_home_not_writable','runtime_not_quiescent'}) | SAFE_CONTROL_FAILURE_CODES
 
 
@@ -134,7 +136,7 @@ def maintenance(root,operation,backup_id=None):
         return value
 
 
-async def control(root,operation,ident,request_sha=None,*,revision=None):
+async def control(root,operation,ident,request_sha=None,*,revision=None,dispatch=None,bound_view=None):
     from teams_transcription.teams_local_control import request, LocalControlError
     require(operation in {'view','join','output-disable','stop'},'control_operation_rejected')
     require(operation=='join' or revision is None,'control_arguments_rejected')
@@ -150,7 +152,8 @@ async def control(root,operation,ident,request_sha=None,*,revision=None):
     if operation=='output-disable':fields['enabled']='false'
     failure=None;result={}
     try:
-        result=await request(root,dict(operation='output' if operation=='output-disable' else operation,fields=fields))
+        result=await request(root,dict(operation='output' if operation=='output-disable' else operation,fields=fields),
+            **({'before_send':dispatch} if dispatch is not None else {}))
     except LocalControlError as exc:
         if operation!='stop':raise
         failure=exc  # already-stopped retries still need the exact durable proof
@@ -159,7 +162,6 @@ async def control(root,operation,ident,request_sha=None,*,revision=None):
     if operation=='stop':
         # Stop-return alone is NOT cleanup. Wait boundedly for the real durable
         # worker receipt + terminal run + released capture lease; never force it.
-        import time
         from teams_transcription.teams_acceptance import receipt
         def cleanup_proof():
             with contextlib.closing(sqlite3.connect((Path(root)/'.meeting-store.sqlite3').as_uri()+'?mode=ro',uri=True)) as db:
@@ -185,10 +187,41 @@ async def control(root,operation,ident,request_sha=None,*,revision=None):
         return dict(ok=True,cleanup_verified=True)
     # A claimed single-Calendar run remains observable after revocation/stop.
     # Its receipt is not an authorization to Join or enable output.
-    scoped = (result.get('acceptance') or {}).get('target_calendar_claimed') is True
+    acceptance = result.get('acceptance') or {}
+    if bound_view is not None:
+        require(acceptance.get('request_sha256')==bound_view,'control_bound_view_required')
+        return result
+    scoped = acceptance.get('target_calendar_claimed') is True
     require(scoped or (result.get('recording_authorized') is True
         and result.get('speaking_authorized') is True),'authorized_occurrence_required')
     return result
+
+
+async def bound_control(root, raw):
+    """Installed helper: private stdin and private stdout to the host adapter."""
+    from teams_transcription.teams_local_control import decode_message
+    require(len(raw.encode()) <= 4096, 'control_arguments_rejected')
+    value=decode_message(raw)
+    require(isinstance(value,dict),'control_arguments_rejected')
+    operation=value.get('operation')
+    keys={'operation','id','request_sha'}
+    require(operation in ('join','view','output-disable','stop') and
+            set(value)==keys | ({'revision','not_after'} if operation=='join' else set()),'control_arguments_rejected')
+    ident,request_sha=value['id'],value['request_sha']
+    require(isinstance(ident,str) and isinstance(request_sha,str) and
+            re.fullmatch('[a-f0-9]{64}',request_sha),'control_binding_required')
+    if operation=='join':
+        deadline=value['not_after']; sent=None
+        def dispatch():
+            nonlocal sent
+            sent=time.time()
+            require(type(deadline) in (int,float) and 0<deadline-sent<=300,'control_confirmation_stale')
+        result=await control(root,operation,ident,request_sha,revision=value['revision'],dispatch=dispatch)
+        require(result.get('ok') is True,'control_dispatch_unverified')
+        return dict(session_id=result['result']['session_id'],dispatch_at=sent)
+    if operation=='view':
+        return await control(root,operation,ident,bound_view=request_sha)
+    return await control(root,operation,ident,request_sha)
 
 
 def smoke():
@@ -651,12 +684,12 @@ def install_google_client(root, raw):
 
 def main():
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('action',choices=['init','state','enable','disable','backup','smoke','sandbox','view','join','output-disable','stop','prepare-home','verify','entrypoint','login','metadata','install-google-client'])
-    p.add_argument('--id');p.add_argument('--request-sha');p.add_argument('--revision',type=int);args=p.parse_args()
+    p.add_argument('action',choices=['init','state','enable','disable','backup','smoke','sandbox','bound-control','prepare-home','verify','entrypoint','login','metadata','install-google-client'])
+    p.add_argument('--id');args=p.parse_args()
     try:
         root=Path('/data')
         if args.action=='install-google-client':
-            require(not args.id and not args.request_sha and args.revision is None,'control_arguments_rejected')
+            require(not args.id,'control_arguments_rejected')
             value=install_google_client(root,sys.stdin.read(65537))
         elif args.action in {'init','verify'}:
             raw=sys.stdin.read(4097)
@@ -674,12 +707,14 @@ def main():
             value=asyncio.run(anonymous_login(root))
         elif args.action=='metadata':value=runtime_metadata(root)
         elif args.action=='prepare-home':
-            require(not args.id and not args.request_sha and args.revision is None,'control_arguments_rejected')
+            require(not args.id,'control_arguments_rejected')
             require(database_state(root)['quiescent'],'runtime_not_quiescent')
             value=prepare_home(root)
         elif args.action=='state':value=database_state(root)
         elif args.action in {'enable','disable','backup'}:value=maintenance(root,args.action,args.id)
-        elif args.action in {'view','join','output-disable','stop'}:value=asyncio.run(control(root,args.action,args.id,args.request_sha,revision=args.revision))
+        elif args.action=='bound-control':
+            require(not args.id,'control_arguments_rejected')
+            value=asyncio.run(bound_control(root,sys.stdin.read(4097)))
         elif args.action=='sandbox':value=sandbox()
         else:value=smoke()
         print(json.dumps(value));return 0

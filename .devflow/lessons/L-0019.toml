@@ -1,0 +1,9 @@
+id = "L-0019"
+title = "Keep meeting controls off public workflow inputs and artifacts"
+event = "t_46ded1b5"
+root_cause = "The authenticated browser result was reused as both a private control grant and a public Actions artifact, then used as public dispatch arguments. Keep the grant in the runner-local control chain; publish only operation-specific allowlisted projections. Prove the actual exporter and dispatch schema with synthetic canaries, including refusal and cleanup paths."
+category = "security"
+
+[enforcement]
+kind = "test"
+ref = "tests/test_runner_public_boundary.py::test_actual_binding_export_does_not_publish_private_payload_or_image"

@@ -15,7 +15,7 @@
 
 ## 先準備有效空私有 Codex home（SHIP 才執行）
 
-合併/手動部署新版本後，在 GitHub Actions **Manual same-deployment control** 選 `prepare-home`，`id`、`request_sha`、`revision` 全空。CLI 等價：
+合併/手動部署新版本後，在 GitHub Actions **Manual same-deployment control** 選 `prepare-home`。CLI 等價：
 
 ```bash
 gh workflow run control.yml -R timmypai/teams-transcription --ref main -f operation=prepare-home
@@ -39,16 +39,16 @@ Web 授權沿用自己的 daemon reservation/cleanup，不要求把常駐 daemon
 
 ## 當次本人同意 → Hermes 單次 Join
 
-1. **Bot**先依[Google／Calendar 安全設定](GOOGLE-CALENDAR-SETUP.zh-TW.md)完成本target client/Calendar前置與本次真Google讀取，再經已審正式 `calendar-occurrences` 操作選擇既有合法pending occurrence，核對實際時間與join window；不能借舊DB、clone terminal場次或請本人抄ID。
-2. Hermes 先通知準備單次加入，取得本人當次新鮮在場、加入、錄音、逐字保存與發聲同意後，才由 Bot 執行 `devflow operate teams-transcription issue-binding --args "$BINDING_ARGS"`；不用本人操作管理頁或轉貼 binding。Bot 用剛選定的 `occurrence_id`、整數 `revision`、原樣 `start_at`／`end_at`，加上布林值 `present: true`、`media: true` 組成 JSON。不要用一律傳字串的 `--arg`。操作核對表單版本及起訖，經同源登入與 CSRF 簽發；不 Join、不啟排程。同時段若分不清場次，不猜另一場。
-3. Bot在同一已準備run消費回傳 `occurrence_id`、revision、request_sha256、issued_at/expires_at。TTL固定300秒（工程新鮮度政策，不是會議長度），綁boot/boottime及wall clock；重啟、倒退、超時或freshness不明均拒絕。記錄簽發到Join dispatch實測秒數，不在中間block/resume，不延TTL，也不恢復本人轉貼流程。
-4. Hermes 手動 dispatch `control.yml`（僅 main 最新已審已部署 SHA），operation=join、id/revision/request_sha 使用剛收到的 binding。300 秒只限簽發至單次 claim，不是會議時限。即使唯讀 Calendar 的錄音與發聲旗標皆為 false，此 binding 也只授權選定且有效的單場；不改 Calendar、系列或一般排程授權。daemon 重讀 Calendar，並在 SQLite claim 內重查場次、時間窗、Calendar 設定版本、暫停狀態、租約和清理 interlock。取消、改期或授權來源變更不能用舊 binding 重試，也不會恢復已撤回的發聲。
-5. 正常回覆只表示 claim/starting，仍要觀測實際准入、授權媒體及本人遠端聽驗；不以HTTP/UI Join或Hermes自答代替。不要再次 dispatch Join；斷線/不確定先 view該合法occurrence及持久run，unknown留interlock。
+1. Bot 先完成[本 target 的 Google／Calendar 前置](GOOGLE-CALENDAR-SETUP.zh-TW.md)，用固定 `control.yml` 的 `operation=preview` 在 VM 私下選擇唯一符合入會時間窗的既有 pending 場次。零場、多場或無法確定唯一場次就是本人要測的場次時，不發 Join。預覽不是授權。不可借舊 DB、clone terminal 場次或請本人抄 ID。
+2. Hermes 通知準備加入，在同一已準備的操作中確認本人現在就在該場、且明確同意單次加入、錄音、逐字保存與助理發聲，才由同一 GitHub actor dispatch `operation=join-confirmed-present-and-media`。這個固定選項是 Hermes 對上述人類確認的聲明，不是任意 input 或自動推定。只送 `operation`；不帶會議或授權資訊，不 block/resume、不重跑 Actions attempt。
+3. Runner 驗證預覽／dispatch 的 300 秒新鮮度與同部署身分，經原管理表單重查同一場次、revision 及起訖，再簽發一次；私下立即透過已安裝 helper 的 stdin 交接。既有 binding TTL、boot fence、SQLite 單次 claim、Calendar 設定版本、暫停狀態與清理 interlock 保持不變。300 秒不是會議時限，不必為單場打開整個 Calendar 的媒體旗標。
+4. 去敏 receipt 的 `dispatch_at` 是 helper 寫入 Unix socket 前量得的時間，`issue_to_dispatch_ms` 是同次簽發到送出的耗時。它不是實際入會或遠端聽驗收據。缺值或結果不明時不猜、不重試 Join；僅使用同一控制槽的 `view` 查證。無法證明已清理時保留 interlock，走既有人工清理審查。
 
 ## 撤發聲與正常停止
 
-- `output-disable`：id=當次 session、request_sha=同次request，revision空白。只 disable，沒有 enable/grant-speaking。先在同SQLite持久撤回該occurrence speaking，再呼叫原輸出停用；Calendar refresh及monitor不能恢復此拒絕。它不撤回已錄文字，也不代表全部資源已離會。
-- `stop`：同session與request，revision空白。沿用原正常stop/輸出停用，不殺外部程序或重啟服務。helper最多等待12秒**cleanup觀測**（不是會議/回答時限）；必須同binding work-finished、cleanup=cleaned、run terminal、capture lease已釋放且無capture_cleanup_unknown/service_interrupted，才 `cleanup_verified=true`。欠proof/timeout/unknown回失敗，不能以stop-return/terminal單獨當PASS。已乾淨結束的同binding重查可冪等成功；錯binding仍拒絕。
+- `view`／`output-disable`／`stop` 均只帶固定 `operation`。Runner 私下核對同 actor、同部署與同一 run 的 binding；不輸出 session handle。`output-disable` 先持久撤回該場發聲，再停用輸出。Calendar refresh 及 monitor 不能恢復此拒絕。
+- `stop` 沿用原正常停止，不強殺或重啟。最多等待 12 秒觀測同一 binding 的 durable cleanup：work-finished、cleaned、terminal、capture lease 已釋放、沒有 unknown/interrupted。確認後清除 runner 槽內的會議識別與 binding，只保留結果；重查可冪等成功。沒有證據不算清理成功。
+- 若尚未 dispatch、而 `preview` 或簽發 binding 的 browser helper 清理不明，runner 會保留私有 interlock；逾時、程序重啟或重送同意均不能解除。原 actor 可用同一固定 `stop` 操作核實並只清理該 helper。`browser_cleanup_verified=true` 只確認 helper 清理，不是會議停止證據；若需再試，必須從新 preview 與新鮮同意開始，不接續舊 binding。
 - cleanup unknown時保留原capture interlock與paused，不自動清除、重Join、改為cleaned或啟摘要。人工審查另由既有受控程序完成，不改寫原失敗。
 
 所有 real control/OAuth/Join/遠端收音與清理驗收由既有 SHIP t_12402f67 在本卡獨立 review/合併/手動部署後接續；本文及hosted evidence不能關閉AC-4/5真人要求。

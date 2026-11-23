@@ -3,23 +3,11 @@ on:
   workflow_dispatch:
     inputs:
       operation:
-        description: Bound single Join, read view, disable output, verified stop or empty private home; no grant
+        description: Stage the only eligible occurrence, attest fresh presence and media consent, or control the bound run
         type: choice
-        options: [view, join, output-disable, stop, prepare-home]
-        default: view
+        options: [preview, join-confirmed-present-and-media, view, output-disable, stop, prepare-home]
+        default: preview
         required: true
-      id:
-        description: Existing occurrence (view/join) or session (output-disable/stop), 32 lowercase hex; empty for prepare-home
-        type: string
-        required: false
-      request_sha:
-        description: Owner-issued fresh request for Join, same run binding for output-disable/stop; not a grant
-        type: string
-        default: ''
-      revision:
-        description: Owner-issued occurrence revision for Join only; empty otherwise
-        type: string
-        default: ''
 permissions:
   contents: read
   actions: read
@@ -48,13 +36,10 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           OPERATION: ${{ inputs.operation }}
-          TARGET_ID: ${{ inputs.id }}
-          REQUEST_SHA: ${{ inputs.request_sha }}
-          REVISION: ${{ inputs.revision }}
+          DEVFLOW_OPS_ENV: ${{ (inputs.operation == 'preview' || inputs.operation == 'join-confirmed-present-and-media') && secrets.DEVFLOW_OPS_ENV || '' }}
         run: |
-          args=("$OPERATION" --id "$TARGET_ID" --request-sha "$REQUEST_SHA")
-          if [[ -n "$REVISION" ]]; then args+=(--revision "$REVISION"); fi
-          python3 deploy/target_deploy.py "${args[@]}"
+          case "$OPERATION" in preview|join-confirmed-present-and-media|view|output-disable|stop|prepare-home) ;; *) exit 2;; esac
+          python3 -B deploy/target_deploy.py "$OPERATION"
       - if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:

@@ -12,12 +12,9 @@ export async function runOperation(page: Page, name: string, action: () => Promi
   const deadline = setTimeout(() => page.close(), 20000);
   try {
     const result = await action();
-    // Only visible safe metadata, never full DOM, inputs, titles or binding.
-    const section = page.locator('section[data-timezone]');
-    if (await section.count()) {
-      await section.screenshot({ path: join(evidence, `${name}.png`), timeout: 5000,
-        mask: [section.locator('td:first-child'), section.locator('td:nth-child(4)')] });
-    } else {
+    // Only the fixed anonymous login heading is an exportable image. Never
+    // record any pixels from authenticated operations, even with a DOM mask.
+    if (name === 'look') {
       await page.locator('h1').screenshot({ path: join(evidence, `${name}.png`), timeout: 5000 });
     }
     writeFileSync(target, JSON.stringify({ ok: true, ...result as object }), { mode: 0o600 });

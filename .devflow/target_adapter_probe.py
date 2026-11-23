@@ -143,7 +143,7 @@ with sqlite3.connect('file:/data/.meeting-store.sqlite3?mode=ro',uri=True) as db
             assert json.loads(c.docker('exec','-i',APP,'python','-',input=check))['preserved']
             assert c.runtime('state')['quiescent']
             # Real opt-in socket exists; no fabricated production occurrence.
-            try:c.runtime('view',ident='0'*32)
+            try:c.runtime('bound-control',input=json.dumps(dict(operation='view',id='0'*32,request_sha='0'*64)))
             except ValueError:pass
             else:raise AssertionError('nonexistent occurrence accepted')
             report.update(rollback_healthy=True,exact_previous_compose=True,data_preserved=True,
