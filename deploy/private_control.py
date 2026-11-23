@@ -101,7 +101,7 @@ def run_control(c, action, sha, container, dispatch, ops_env):
         ident = selection['occurrence_id']
         # Consume the preview even on refusal. Never substitute a new occurrence
         # or replay a confirmation when a UI/read/runtime response is lost.
-        atomic_slot(c, slot, {**saved, 'phase':'consumed'})
+        atomic_slot(c, slot, dict(phase='consumed', actor=actor, source=sha, container=container))
         binding = browser(c, 'issue-binding', {k:v for k,v in selection.items() if k!='joinable'} |
                           dict(present=True, media=True), ops_env)
         request = binding.get('request_sha256')
@@ -143,11 +143,13 @@ def run_control(c, action, sha, container, dispatch, ops_env):
         require(result.get('ok') is True, 'control_output_unverified')
         return dict(ok=True, output_disabled=True)
     require(action == 'stop', 'control_dispatch_rejected')
+    c.failures.cleanup = 'unknown'
     result = private_runtime(c, 'stop', id=session, request_sha=saved['request_sha256'])
     require(result.get('ok') is True and result.get('cleanup_verified') is True, 'stop_cleanup_unverified')
     # Keep only the sanitized outcome once durable cleanup is verified.
     atomic_slot(c, slot, dict(phase='cleaned', actor=actor, source=sha, container=container,
                               view=dict(ok=True, authorized_view=True, cleanup_verified=True)))
+    c.failures.cleanup = 'verified'
     return dict(ok=True, cleanup_verified=True)
 
 
@@ -163,6 +165,8 @@ def project_view(view):
                 response_ready=view.get('response_ready') is True,
                 egress_allows_target_host=view.get('egress_allows_target_host') is True,
                 joined=acceptance.get('joined') is True, active_lease=view.get('active_lease') is True,
+                target_calendar_claimed=acceptance.get('target_calendar_claimed') is True,
+                summary_disabled=acceptance.get('summary_disabled') is True,
                 capture_interlock=view.get('capture_interlock') is True,
                 source_rx_packets=count('source_rx_packets'), B_tx_packets=count('B_tx_packets'),
                 B_tx_frames=count('B_tx_frames'), B_tx_energy=count('B_tx_energy'),

@@ -52,22 +52,22 @@ callback 沿既有 private credential 機制寫 `/data/config/google-credentials
 devflow operate teams-transcription calendar-settings
 ```
 
-去敏結果只含 `scheduler_paused` 與各設定的本地 `calendar_ref`（32hex，不是 Google Calendar ID）、revision、是否 default/primary、enabled、既有錄音/發聲旗標及時間窗。沒有帳號、Calendar ID、名稱、cookie／CSRF。原生截圖只取「設定」標題，不截私有表單。
+去敏結果只含 `scheduler_paused` 與各設定的 revision、primary、enabled、既有錄音／發聲旗標及時間窗。不匯出 Calendar ref、帳號、名稱、cookie、CSRF 或登入後截圖。
 
-Bot 依**剛讀回**的精確 ref/revision，只調整 Calendar 讀取開關：
+Bot 依**剛讀回**的主日曆 revision，只調整 Calendar 讀取開關：
 
 ```bash
 # 本 target 本人帳號的主日曆尚未配置：固定 primary，revision 必須為0。
 devflow operate teams-transcription calendar-settings \
   --args '{"calendar_ref":"primary","revision":0,"enabled":true}'
-# 已配置者：用上一次安全讀回的 local ref/revision，絕非 Google ID。
+# 已配置者：仍用 primary 公開別名，revision 帶上一次安全讀回的整數。
 devflow operate teams-transcription calendar-settings \
   --args "$CALENDAR_SETTINGS_ARGS"
 ```
 
-`CALENDAR_SETTINGS_ARGS` 由 Bot 以當次讀回的資料組成 JSON：`calendar_ref` 是字串、`revision` 是整數、`enabled` 是布林值。`--arg` 一律傳字串，不用於整數或布林參數。
+`CALENDAR_SETTINGS_ARGS` 由 Bot 以當次讀回的資料組成 JSON：`calendar_ref` 固定為 `"primary"`、`revision` 是整數、`enabled` 是布林值。`--arg` 一律傳字串，不用於整數或布林參數。
 
-`primary` 明確指本人授權帳號的主日曆，不能猜成其他人的 Calendar。若本人指定非主日曆，只能選**已存在**設定的安全 local ref；本入口不接收聊天／args 中的任意 Calendar ID，也不使用 CalendarList scope 去枚舉所有日曆。若所需非主日曆尚未配置，先回報「缺該 Calendar 的受審私有設定入口；現有安全交付位置尚未提供」，交原 orchestrator 補入口，**不要索取 ID、請本人代操作管理頁或把值塞密碼 secret**；不能以任意新 secret 宣稱已有 consumer。這是刻意 fail-closed 的範圍界線，不假裝已支援任意新增。
+`primary` 明確指本人授權帳號的主日曆。公開入口不讀出或接收 Calendar ID／local ref，不使用 CalendarList scope 枚舉日曆。若需要變更非主日曆，交原 orchestrator 補已審私有入口，不索取 ID、不請本人代操作或把值塞進密碼 secret。
 
 操作只走 `/settings` 的同源、已登入、CSRF 表單 `/actions/calendar-readonly`。server 在 daemon Join lock 與 store claim lock下重查 paused/active lease、精確revision；變更期間已啟排程／有會議／授權作業／stale revision 均拒絕。只保存 enabled，既有 identity、錄音／發聲授權及時間窗不變；新 primary 為錄音=false／發聲=false。保存後再次 GET 設定，核對改動及其餘設定不變；未通過不得回報成功。沒有 POST poll、OAuth、Join、binding 或 scheduler，也不自動選會議。相同 ref/revision/讀取值可直接回覆未改動；stale重放不猜新revision。
 
@@ -77,7 +77,7 @@ devflow operate teams-transcription calendar-settings \
 devflow operate teams-transcription calendar-occurrences
 ```
 
-核對本次新 `poll_id`、Google configured/authorized/error_code、enabled_calendar_count、read.attempted/succeeded/failed/event_count/completed、ready。零Calendar/零attempted仍是 **未讀取**；client installed或UI ok也不是 Google成功。真 Google成功至少須本部署真授權、啟用Calendar>0、本次全部讀取完成且成功；空 events可以成功，但不能憑空製造會議。hosted fixture 的 mock GET僅測工程投影。
+核對當次 run 的 Google configured/authorized/error_code、enabled_calendar_count、read.attempted/succeeded/failed/event_count/completed、ready。`poll_id` 只用於私下驗證讀取新鮮度。零Calendar/零attempted仍是 **未讀取**；client installed或UI ok也不是 Google成功。真 Google成功至少須本部署真授權、啟用Calendar>0、本次全部讀取完成且成功；空 events可以成功，但不能憑空製造會議。hosted fixture 的 mock GET僅測工程投影。
 
 只有實際取回合法場次、同部署前置條件齊全後，才集中取得本人當次新鮮在場、加入、錄音、逐字保存與發聲同意。**主日曆的錄音與發聲旗標維持 false**；Bot 用[單次控制流程](TARGET-CONTROL-OAUTH.zh-TW.md)為選定場次簽發 binding。唯讀 OAuth 不是媒體同意，單次 binding 也不授權整個 Calendar、系列或一般排程。
 
