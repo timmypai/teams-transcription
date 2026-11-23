@@ -112,16 +112,19 @@ def browser(c, operation, args, ops_env, *, owner):
     run = subprocess.run(['bash', str(ROOT/'.devflow/operate.sh')], cwd=ROOT, env=env,
                          pass_fds=(c.operation_lock,),
                          stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    phase = 'control_preview' if operation == 'calendar-occurrences' else 'control_join-confirmed-present-and-media'
     try:
-        if run.returncode:
-            try:
-                code = c.read(output.parent/'projection/result.json')['code']
-            except (OSError, ValueError, TypeError, KeyError):
-                code = None
-            raise ValueError(code if isinstance(code, str) and code in CONTROL_CODES else 'control_browser_failed')
-        return c.read(output)
+        with c.failures.stage(phase):
+            if run.returncode:
+                try:
+                    code = c.read(output.parent/'projection/result.json')['code']
+                except (OSError, ValueError, TypeError, KeyError):
+                    code = None
+                raise ValueError(code if isinstance(code, str) and code in CONTROL_CODES else 'control_browser_failed')
+            return c.read(output)
     finally:
-        clean_browser(c, slot, pending)
+        with c.failures.stage('cleanup'):
+            clean_browser(c, slot, pending)
 
 
 def atomic_slot(c, path, value):

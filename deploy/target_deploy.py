@@ -399,9 +399,9 @@ def main():
         with os.fdopen(lock,'r+b') as fd:
             fcntl.flock(fd,fcntl.LOCK_EX|fcntl.LOCK_NB)
             c.operation_lock=fd.fileno()
-            if args.action not in PRIVATE_CONTROL_ACTIONS and control_slot(c).get('phase')=='browser-cleanup':
+            if control_slot(c).get('phase')=='browser-cleanup':
                 failures.cleanup='unknown'
-                raise ValueError('control_slot_occupied')
+                require(args.action in PRIVATE_CONTROL_ACTIONS,'control_slot_occupied')
             state=c.read(root/'state.json') if (root/'state.json').exists() else None
             require(state is None or state.get('phase')=='healthy','interrupted_switch_requires_review')
             before=c.preflight(state)

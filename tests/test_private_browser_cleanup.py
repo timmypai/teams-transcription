@@ -79,6 +79,7 @@ class BrowserCleanupTests(unittest.TestCase):
         # Each call creates a new controller; only the private host disk survives.
         self.run_id += 1
         controller = deploy.Controller(self.root,self.run_id,1)
+        self.last_failures = controller.failures
         real_time = time.time
         with (self.root/'operation.lock').open('ab') as lock, \
                 patch.dict(os.environ,{**self.env,'GITHUB_RUN_ID':str(self.run_id)}), \
@@ -123,6 +124,9 @@ class BrowserCleanupTests(unittest.TestCase):
     def test_absence_after_unacknowledged_create_does_not_prove_cleanup(self):
         (self.root/'unacknowledged-create').touch()
         self.assertEqual(self.invoke('preview'),'operation_cleanup_unverified')
+        self.assertEqual(self.last_failures.primary['code'],'control_browser_failed')
+        self.assertEqual(self.last_failures.secondary[0]['code'],'operation_cleanup_unverified')
+        self.assertEqual(self.last_failures.cleanup,'unknown')
         self.assertEqual(self.invoke('stop'),'operation_cleanup_unverified')
         self.assertEqual(self.invoke('preview',clock_shift=301),'control_slot_occupied')
 
