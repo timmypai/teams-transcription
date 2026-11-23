@@ -21,6 +21,42 @@ _TEAMS_LOBBY_MESSAGES = (
 
 # Reuse meeting-lifecycle's semantic regions; chat/captions are meeting data,
 # never evidence that admission, removal or meeting completion occurred.
+_TEAMS_ALLOWED_ORIGINS = frozenset({'teams.microsoft.com', 'teams.cloud.microsoft', 'teams.live.com'})
+_TEAMS_STANDALONE_BLOCKER_MESSAGES = (
+    'Meeting has ended', 'This meeting has ended', '會議已結束',
+    "Sorry, we couldn't connect you", 'Sorry, we couldn’t connect you',
+    'Something went wrong', "We couldn't join the meeting", 'We couldn’t join the meeting',
+    'Meeting not found', 'This meeting link is invalid', 'This meeting link has expired',
+    'The meeting has expired', "This meeting doesn't exist", "We couldn't find this meeting",
+    "We can't find this meeting",
+    "We couldn't sign you in", 'We couldn’t sign you in',
+    "We can't sign you in", 'We can’t sign you in',
+    "You don't have permission", 'You do not have permission',
+    'Sign in to join', 'Only people with access', 'Sign in with your work',
+    'You need to sign in', '需要登入',
+    "This browser isn't supported", 'This browser is not supported',
+    "Your browser isn't supported", 'Your browser is not supported',
+    'Unsupported browser', 'Try a different browser', 'Use a different browser',
+    '此瀏覽器不受支援', '不支援此瀏覽器',
+    'Allow third-party cookies', 'Enable third-party cookies',
+    'Cookies are blocked', 'Third-party cookies are disabled',
+    *_TEAMS_LOBBY_MESSAGES,
+)
+
+
+def _is_strict_teams_origin(url):
+    if not isinstance(url, str) or not url:
+        return False
+    parsed = urlsplit(url)
+    if parsed.scheme.lower() != 'https':
+        return False
+    try:
+        port = parsed.port
+    except ValueError:
+        return False
+    return parsed.hostname in _TEAMS_ALLOWED_ORIGINS and port in (None, 443)
+
+
 _MEETING_STATUS_REGIONS = '[role="status"], [role="alert"], [role="dialog"]'
 _MEETING_SOURCE_NAMES = ('chat', 'caption', 'transcript', 'conversation', '字幕', '聊天')
 _MEETING_SOURCE_ATTRIBUTES = ('aria-label', 'aria-labelledby', 'data-tid', 'data-testid', 'id')
@@ -1276,23 +1312,13 @@ class MeetingBrowser:
         if (self._join_state or {}).get('join_dispatch_started'):
             return False
         self._response_read_guard(deadline,stopped,roster=roster,stage='preview_scan')
-        from urllib.parse import urlsplit
-        if urlsplit(getattr(self.page,'url','')).hostname not in {
-                'teams.microsoft.com','teams.cloud.microsoft','teams.live.com'}:
+        if not _is_strict_teams_origin(getattr(self.page,'url','')):
             return False
         label=re.compile(r'^Continue without audio or video$',re.I)
         join_label=re.compile(r'^(?:join now|join meeting|join|立即加入|加入會議|加入)$',re.I)
         device_label=re.compile(r'(?:mic(?:rophone)? and camera|camera and mic(?:rophone)?)',re.I)
         blocker_label=re.compile(
-            r'(?:meeting has ended|this meeting has ended|會議已結束|'
-            r"sorry, we couldn['’]t connect you|we couldn['’]t join the meeting|"
-            r'meeting not found|this meeting link is invalid|this meeting link has expired|the meeting has expired|'
-            r"this meeting doesn['’]t exist|we couldn['’]t find this meeting|"
-            r"we couldn['’]t sign you in|we can['’]t sign you in|sign in to join|only people with access|"
-            r'sign in with your work|you need to sign in|需要登入|'
-            r"this browser isn['’]t supported|this browser is not supported|unsupported browser|"
-            r'cookies are blocked|third-party cookies are disabled|'
-            + '|'.join(re.escape(m) for m in _TEAMS_LOBBY_MESSAGES) + ')',
+            '(?:' + '|'.join(re.escape(m) for m in _TEAMS_STANDALONE_BLOCKER_MESSAGES) + ')',
             re.I,
         )
         dialogs=[];global_buttons=0;button_frame=None;background_controls=False
@@ -1368,6 +1394,7 @@ class MeetingBrowser:
                 if total_buttons>1:return False
             if total_buttons!=1:return False
             frame=button_frame
+            if not _is_strict_teams_origin(getattr(frame,'url','')):return False
             headings=frame.get_by_role('heading')
             hcount=await headings.count()
             self._response_read_guard(deadline,stopped,frame=frame,roster=roster,stage='preview_scan')
@@ -1379,15 +1406,16 @@ class MeetingBrowser:
                 shown_heading=shown_heading or shown
             if not shown_heading:return False
             lookup=getattr(frame,'get_by_text',None)
-            if callable(lookup):
-                blockers=lookup(blocker_label)
-                bmsg_count=await blockers.count()
-                self._response_read_guard(deadline,stopped,frame=frame,roster=roster,stage='preview_scan')
-                for index in range(min(bmsg_count,16)):
-                    if await blockers.nth(index).is_visible():
-                        self._response_read_guard(deadline,stopped,frame=frame,roster=roster,stage='preview_scan')
-                        return False
+            if not callable(lookup):return False
+            blockers=lookup(blocker_label)
+            bmsg_count=await blockers.count()
+            self._response_read_guard(deadline,stopped,frame=frame,roster=roster,stage='preview_scan')
+            if bmsg_count>16:return False
+            for index in range(bmsg_count):
+                if await blockers.nth(index).is_visible():
                     self._response_read_guard(deadline,stopped,frame=frame,roster=roster,stage='preview_scan')
+                    return False
+                self._response_read_guard(deadline,stopped,frame=frame,roster=roster,stage='preview_scan')
             matches=frame.get_by_role('button',name=label)
             count=await matches.count()
             self._response_read_guard(deadline,stopped,frame=frame,roster=roster,stage='preview_scan')
@@ -1395,10 +1423,13 @@ class MeetingBrowser:
             button=matches.nth(0)
         else:
             return False
+        if not _is_strict_teams_origin(getattr(frame,'url','')):return False
         shown=await button.is_visible()
         self._response_read_guard(deadline,stopped,frame=frame,roster=roster,stage='preview_scan')
         enabled=await button.is_enabled()
         self._response_action_guard(deadline,stopped,frame=frame,roster=roster,stage='preview_dispatch')
+        if not _is_strict_teams_origin(getattr(self.page,'url','')) or not _is_strict_teams_origin(getattr(frame,'url','')):
+            return False
         if not shown or not enabled:return False
         self._join_phase('preview_navigation')
         self._join_control('audio_continue',True)

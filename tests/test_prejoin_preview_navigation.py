@@ -161,7 +161,11 @@ class PreviewNavigationTests(unittest.IsolatedAsyncioTestCase):
             self.assertTrue(receipt['preview_navigation_completed'])
         finally:await meeting.close()
     async def test_standalone_preview_rejects_extra_controls_missing_heading_or_blocker_text(self):
-        for kind in ['extra_button','textbox','switch','link','radio','join','no_heading','hidden_heading','blocker_text','non_teams_origin']:
+        for kind in [
+            'extra_button','textbox','switch','link','radio','join','no_heading','hidden_heading',
+            'blocker_text','generic_error','blocker_over_16','missing_text_lookup',
+            'non_teams_origin','http_origin','nonstandard_port','foreign_child_frame',
+        ]:
             page=PreviewPage()
             heading=ui.Element(page,"Teams can't access your camera or mic","heading")
             page.elements=[heading,page.button]
@@ -174,7 +178,18 @@ class PreviewNavigationTests(unittest.IsolatedAsyncioTestCase):
             elif kind=='no_heading':page.elements=[page.button]
             elif kind=='hidden_heading':heading.visible=False
             elif kind=='blocker_text':heading.label='Sign in to join'
+            elif kind=='generic_error':page.elements.append(ui.Element(page,'Something went wrong','text'))
+            elif kind=='blocker_over_16':
+                for idx in range(17):
+                    el=ui.Element(page,'Sign in to join','text');el.visible=(idx==16)
+                    page.elements.append(el)
+            elif kind=='missing_text_lookup':page.get_by_text=None
             elif kind=='non_teams_origin':page.url='https://example.com/meeting'
+            elif kind=='http_origin':page.url='http://teams.microsoft.com/meeting'
+            elif kind=='nonstandard_port':page.url='https://teams.microsoft.com:8443/meeting'
+            elif kind=='foreign_child_frame':
+                child=PreviewPage();child.url='https://example.org/embed'
+                child.elements=[heading,page.button];page.elements=[];page.frames.append(child)
             meeting=self.meeting(page)
             try:
                 result=await meeting._response_preview_navigation(time.monotonic()+1,lambda:False,tuple(page.frames))
@@ -184,6 +199,30 @@ class PreviewNavigationTests(unittest.IsolatedAsyncioTestCase):
             finally:await meeting.close()
 @unittest.skipUnless(shutil.which('chromium'), 'Chromium fixture unavailable')
 class LatePreviewBrowserTests(unittest.IsolatedAsyncioTestCase):
+    async def test_standalone_interstitial_in_cross_origin_iframe_is_rejected_in_chromium(self):
+        parent_html = '<!doctype html><html><body><iframe src="https://example.org/embed"></iframe></body></html>'
+        child_html = (
+            '<!doctype html><html><body><h1>Teams needs access to your camera and mic</h1>'
+            '<button onclick="window.clicked=true">Continue without audio or video</button></body></html>'
+        )
+        async with Browser() as runtime:
+            context=await runtime.browser.new_context(permissions=[])
+            await context.route('https://teams.microsoft.com/*',lambda route:route.fulfill(content_type='text/html',body=parent_html))
+            await context.route('https://example.org/*',lambda route:route.fulfill(content_type='text/html',body=child_html))
+            page=await context.new_page()
+            await page.goto('https://teams.microsoft.com/synthetic-parent')
+            await page.wait_for_function('() => frames.length === 1')
+            async def event(*args):pass
+            meeting=MeetingBrowser(runtime.browser,None,event,response_mode=True)
+            meeting.page=page;meeting.context=context
+            meeting._join_state=teams_join_diagnostic({'outcome':'in_progress'})
+            try:
+                result=await meeting._response_preview_navigation(time.monotonic()+3,lambda:False,tuple(page.frames))
+                self.assertFalse(result)
+                self.assertFalse(meeting._response_preview_dispatched)
+            finally:
+                await meeting.close()
+
     async def test_standalone_full_page_interstitial_without_dialog_advances_to_computer_audio_and_joins(self):
         html = """<!doctype html><html><body>
         <main id="interstitial">
