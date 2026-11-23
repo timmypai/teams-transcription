@@ -43,8 +43,10 @@ page／frame／roster；只有已證明 frame 快照失效、且尚未派送預�
 Teams 的裝置權限提示可能在電腦音訊選取或姓名填入後才出現，遮住底下的控制項。
 每次選取前、選取後與姓名填入後都檢查已知裝置預覽對話框，不只在找不到 radio 時處理。
 只允許唯一、可見、內容符合裝置預覽、且具有唯一 enabled
-`Continue without audio or video` 按鈕的 dialog；若背後仍有 radio／Join，
-該 dialog 還必須明確具有 `aria-modal=true`，且 dialog 本身不能包含 radio／Join。
+`Continue without audio or video` 按鈕的 dialog（若背後仍有 radio／Join，
+該 dialog 還必須明確具有 `aria-modal=true`，且 dialog 本身不能包含 radio／Join）；
+或在精確 Teams origin 上無任何 dialog／radio／textbox／switch／link／其他按鈕及終態阻塞訊息、
+且具有可見標題與唯一 enabled `Continue without audio or video` 按鈕的獨立裝置前置頁。
 這是關閉預覽提示，不是核准無音訊入會；成功關閉後作廢舊 audio proof，
 使用新 frame roster 重新掃描、選取及讀回電腦音訊。已開始 Join 或不確定的預覽點擊
 不重試；不授予實體麥克風權限、不使用強制點擊、不延長 admission deadline。

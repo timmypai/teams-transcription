@@ -1283,7 +1283,19 @@ class MeetingBrowser:
         label=re.compile(r'^Continue without audio or video$',re.I)
         join_label=re.compile(r'^(?:join now|join meeting|join|立即加入|加入會議|加入)$',re.I)
         device_label=re.compile(r'(?:mic(?:rophone)? and camera|camera and mic(?:rophone)?)',re.I)
-        dialogs=[];global_buttons=0;background_controls=False
+        blocker_label=re.compile(
+            r'(?:meeting has ended|this meeting has ended|會議已結束|'
+            r"sorry, we couldn['’]t connect you|we couldn['’]t join the meeting|"
+            r'meeting not found|this meeting link is invalid|this meeting link has expired|the meeting has expired|'
+            r"this meeting doesn['’]t exist|we couldn['’]t find this meeting|"
+            r"we couldn['’]t sign you in|we can['’]t sign you in|sign in to join|only people with access|"
+            r'sign in with your work|you need to sign in|需要登入|'
+            r"this browser isn['’]t supported|this browser is not supported|unsupported browser|"
+            r'cookies are blocked|third-party cookies are disabled|'
+            + '|'.join(re.escape(m) for m in _TEAMS_LOBBY_MESSAGES) + ')',
+            re.I,
+        )
+        dialogs=[];global_buttons=0;button_frame=None;background_controls=False
         for frame in roster:
             self._response_read_guard(deadline,stopped,frame=frame,roster=roster,stage='preview_scan')
             # Background controls are safe only behind a proven modal dialog.
@@ -1294,6 +1306,8 @@ class MeetingBrowser:
                 background_controls=background_controls or bool(count)
             count=await frame.get_by_role('button',name=label).count()
             self._response_read_guard(deadline,stopped,frame=frame,roster=roster,stage='preview_scan')
+            if count:
+                button_frame=frame
             global_buttons+=count
             if global_buttons>1:return False
             matches=frame.get_by_role('dialog')
@@ -1306,33 +1320,81 @@ class MeetingBrowser:
                 self._response_read_guard(deadline,stopped,frame=frame,roster=roster,stage='preview_scan')
                 if shown:dialogs.append((dialog,frame))
                 if len(dialogs)>1:return False
-        if len(dialogs)!=1 or global_buttons!=1:return False
-        dialog,frame=dialogs[0]
-        if not hasattr(dialog,'get_by_text') or not hasattr(dialog,'get_by_role'):return False
-        if background_controls:
-            modal=await dialog.get_attribute('aria-modal')
+        if global_buttons!=1:return False
+        if len(dialogs)==1:
+            dialog,frame=dialogs[0]
+            if not hasattr(dialog,'get_by_text') or not hasattr(dialog,'get_by_role'):return False
+            if background_controls:
+                modal=await dialog.get_attribute('aria-modal')
+                self._response_read_guard(deadline,stopped,frame=frame,roster=roster,stage='preview_scan')
+                if modal!='true':return False
+            for role,name in [('radio',None),('button',join_label)]:
+                controls=dialog.get_by_role(role,name=name) if name is not None else dialog.get_by_role(role)
+                count=await controls.count()
+                self._response_read_guard(deadline,stopped,frame=frame,roster=roster,stage='preview_scan')
+                if count:return False
+            message=dialog.get_by_text(device_label)
+            count=await message.count()
             self._response_read_guard(deadline,stopped,frame=frame,roster=roster,stage='preview_scan')
-            if modal!='true':return False
-        for role,name in [('radio',None),('button',join_label)]:
-            controls=dialog.get_by_role(role,name=name) if name is not None else dialog.get_by_role(role)
-            count=await controls.count()
+            if not 1<=count<=16:return False
+            shown_message=False
+            for index in range(count):
+                shown=await message.nth(index).is_visible()
+                self._response_read_guard(deadline,stopped,frame=frame,roster=roster,stage='preview_scan')
+                shown_message=shown_message or shown
+            if not shown_message:return False
+            matches=dialog.get_by_role('button',name=label)
+            count=await matches.count()
             self._response_read_guard(deadline,stopped,frame=frame,roster=roster,stage='preview_scan')
-            if count:return False
-        message=dialog.get_by_text(device_label)
-        count=await message.count()
-        self._response_read_guard(deadline,stopped,frame=frame,roster=roster,stage='preview_scan')
-        if not 1<=count<=16:return False
-        shown_message=False
-        for index in range(count):
-            shown=await message.nth(index).is_visible()
+            if count!=1:return False
+            button=matches.nth(0)
+        elif len(dialogs)==0:
+            # Real Teams Web can render the device-permission interstitial as a
+            # standalone full-page view without ARIA role="dialog": visible
+            # heading + sole "Continue without audio or video" button, with no
+            # other buttons, radios, textboxes, switches, links, or blockers.
+            if background_controls or button_frame is None:
+                return False
+            total_buttons=0
+            for scan_frame in roster:
+                self._response_read_guard(deadline,stopped,frame=scan_frame,roster=roster,stage='preview_scan')
+                for role in ('textbox','switch','link'):
+                    count=await scan_frame.get_by_role(role).count()
+                    self._response_read_guard(deadline,stopped,frame=scan_frame,roster=roster,stage='preview_scan')
+                    if count:return False
+                bcount=await scan_frame.get_by_role('button').count()
+                self._response_read_guard(deadline,stopped,frame=scan_frame,roster=roster,stage='preview_scan')
+                total_buttons+=bcount
+                if total_buttons>1:return False
+            if total_buttons!=1:return False
+            frame=button_frame
+            headings=frame.get_by_role('heading')
+            hcount=await headings.count()
             self._response_read_guard(deadline,stopped,frame=frame,roster=roster,stage='preview_scan')
-            shown_message=shown_message or shown
-        if not shown_message:return False
-        matches=dialog.get_by_role('button',name=label)
-        count=await matches.count()
-        self._response_read_guard(deadline,stopped,frame=frame,roster=roster,stage='preview_scan')
-        if count!=1:return False
-        button=matches.nth(0)
+            if not 1<=hcount<=4:return False
+            shown_heading=False
+            for index in range(hcount):
+                shown=await headings.nth(index).is_visible()
+                self._response_read_guard(deadline,stopped,frame=frame,roster=roster,stage='preview_scan')
+                shown_heading=shown_heading or shown
+            if not shown_heading:return False
+            lookup=getattr(frame,'get_by_text',None)
+            if callable(lookup):
+                blockers=lookup(blocker_label)
+                bmsg_count=await blockers.count()
+                self._response_read_guard(deadline,stopped,frame=frame,roster=roster,stage='preview_scan')
+                for index in range(min(bmsg_count,16)):
+                    if await blockers.nth(index).is_visible():
+                        self._response_read_guard(deadline,stopped,frame=frame,roster=roster,stage='preview_scan')
+                        return False
+                    self._response_read_guard(deadline,stopped,frame=frame,roster=roster,stage='preview_scan')
+            matches=frame.get_by_role('button',name=label)
+            count=await matches.count()
+            self._response_read_guard(deadline,stopped,frame=frame,roster=roster,stage='preview_scan')
+            if count!=1:return False
+            button=matches.nth(0)
+        else:
+            return False
         shown=await button.is_visible()
         self._response_read_guard(deadline,stopped,frame=frame,roster=roster,stage='preview_scan')
         enabled=await button.is_enabled()
