@@ -36,7 +36,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           OPERATION: ${{ inputs.operation }}
-          DEVFLOW_OPS_ENV: ${{ secrets.DEVFLOW_OPS_ENV }}
+          DEVFLOW_OPS_ENV: ${{ (inputs.operation == 'preview' || inputs.operation == 'join-confirmed-present-and-media') && secrets.DEVFLOW_OPS_ENV || '' }}
         run: |
           case "$OPERATION" in preview|join-confirmed-present-and-media|view|output-disable|stop|prepare-home) ;; *) exit 2;; esac
           python3 -B deploy/target_deploy.py "$OPERATION"

@@ -104,10 +104,15 @@ class TargetDeployTests(unittest.TestCase):
             self.assertEqual(checkout['with']['ref'],'${{ github.sha }}')
             self.assertEqual(checkout['with']['persist-credentials'],'false')
             self.assertIn('target_admission.py',job['steps'][1]['run'])
+        # Only the new private browser branch receives the existing operations
+        # secret, and never before the fixed default-tip admission step.
         control=(ROOT/'.github/workflows/control.yml').read_text()
-        self.assertNotIn('secrets.',control)
-        self.assertNotIn('inputs.shell',control)
-        self.assertNotIn('inputs.url',control)
+        self.assertEqual(control.count('secrets.'),1)
+        steps=workflow['jobs']['control']['steps']
+        self.assertNotIn('DEVFLOW_OPS_ENV',steps[1]['env'])
+        self.assertEqual(steps[2]['env']['DEVFLOW_OPS_ENV'],
+            "${{ (inputs.operation == 'preview' || inputs.operation == 'join-confirmed-present-and-media') && secrets.DEVFLOW_OPS_ENV || '' }}")
+        self.assertEqual(set(workflow['on']['workflow_dispatch']['inputs']),{'operation'})
 
     def test_product_compose_has_fixed_scope_no_auth_or_host_socket_mount(self):
         compose=yaml.load((ROOT/'deploy/compose.yml').read_text(),Loader=yaml.BaseLoader)
