@@ -775,7 +775,11 @@ class AssistantStore(TargetConsentMixin, PostmeetingStoreMixin, MeetingStore):
     @staticmethod
     def _enqueue_summary(db, store, session_id):
         # Server-side post-meeting Codex summary re-authorized by the operator on 2026-11-23.
-        # Only enqueue when the sealed source contains saved transcript entries.
+        # Only enqueue for ordinary sealed runs with transcript entries (never acceptance-budgeted runs).
+        from .teams_acceptance import POLICY_EVENT
+        if db.execute('SELECT 1 FROM session_events WHERE meeting_id=? AND kind=? LIMIT 1',
+                (session_id, POLICY_EVENT)).fetchone():
+            return None
         source = store._summary_source(db,session_id)
         if not source['terminal'] or not (source['events'] or source['segments'] or source['provisionals']):
             return None

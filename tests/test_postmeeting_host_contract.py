@@ -41,7 +41,7 @@ class PostmeetingHostContractTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual([task['text'] for task in state['open_tasks']],['Prepare report'])
         self.assertEqual(len(self.store.list_postmeeting_notifications()),1)
         self.assertEqual(len(self.store.list_runs()),1)
-        self.assertEqual(self.store.list_summary_jobs(),[])
+        self.assertEqual(len(self.store.list_summary_jobs()),1)
         self.assertEqual(self.store.list_postmeeting_jobs(self.session_id)[0]['state'],'published')
 
     async def test_unknown_external_cleanup_remains_blocked_without_publication_or_retry(self):

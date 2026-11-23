@@ -633,9 +633,5 @@ class MeetingStore(IncrementalStoreMixin):
                 db.execute("UPDATE transcript_captures SET state='sealed',reason=COALESCE(reason,'application_stop'),"
                     'ended_at=COALESCE(ended_at,?) WHERE meeting_id=?',
                     (datetime.now(timezone.utc).isoformat(),meeting_id))
-                if db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='assistant_runs'").fetchone():
-                    if db.execute('SELECT 1 FROM assistant_runs WHERE session_id=?',(meeting_id,)).fetchone():
-                        from .assistant_store import AssistantStore
-                        AssistantStore._enqueue_summary(db,self,meeting_id)
             return self._publish(db,meeting_id)
 
