@@ -28,6 +28,13 @@ codex_home: /data/codex
 chromium: /usr/bin/chromium
 storage_state: null
 summary_model: null
+# Teams screen-share visual context (opt-in): off | on_demand (Phase 1) | watch_and_cache (Phase 2)
+screen_context_mode: off
+vision_model: null
+screen_poll_seconds: 2.5
+screen_min_analyze_interval_seconds: 6.0
+screen_frame_cache_limit: 16
+screen_include_in_summary: true
 display_name: 小白會議助理
 timezone: Asia/Taipei
 live_provider: codex_live

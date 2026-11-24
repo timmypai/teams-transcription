@@ -27,6 +27,48 @@ def canonical_json(value):
 def source_id(value):
     return value if re.fullmatch(r'S\d{4,}', value) else 'S' + hashlib.sha256(value.encode()).hexdigest()[:16]
 
+
+def screen_source_id(value):
+    return value if re.fullmatch(r'V\d{4,}', value) else 'V' + hashlib.sha256(value.encode()).hexdigest()[:16]
+
+
+SCREEN_KINDS = frozenset({
+    'slide', 'document', 'spreadsheet', 'code', 'diagram',
+    'dashboard', 'whiteboard', 'webpage', 'other',
+})
+SCREEN_CAPTURE_METHODS = frozenset({'webrtc_video_frame', 'teams_stage_dom'})
+MAX_SCREEN_SUMMARY_BYTES = 32768
+MAX_SCREEN_STRUCTURED_BYTES = 65536
+
+
+def screen_observation_summary_entry(row):
+    """Project one durable visual observation into a clearly labeled summary source."""
+    parts = [f"[分享畫面 #{row['capture_seq']} | {row['screen_kind']}]"]
+    if row.get('title'):
+        parts.append(f"標題：{row['title']}")
+    parts.append(row['summary_text'])
+    structured = row.get('structured') if isinstance(row.get('structured'), dict) else {}
+    metrics = structured.get('metrics_or_numbers') or []
+    if metrics:
+        parts.append('數據：' + '；'.join(str(x) for x in metrics))
+    excerpt = structured.get('visible_text_excerpt') or ''
+    if excerpt:
+        parts.append('可見文字：' + str(excerpt))
+    return {
+        'id': row['id'],
+        'observation_id': row['observation_id'],
+        'capture_seq': row['capture_seq'],
+        'text': '\n'.join(parts),
+        'timestamp': row['captured_at'],
+        'source_state': 'screen_observation',
+        'provider_final': False,
+        'quality': 'derived_visual',
+        'ordering': 'capture_sequence',
+        'screen_kind': row['screen_kind'],
+        'title': row['title'],
+        'vision_model': row['vision_model'],
+    }
+
 SCHEMA_VERSION = 1
 TERMINAL = {"completed", "failed", "stopped"}
 
@@ -108,6 +150,18 @@ class MeetingStore(IncrementalStoreMixin):
                 UNIQUE(meeting_id,activity_id));
               CREATE INDEX IF NOT EXISTS question_activity_meeting
                 ON question_activity(meeting_id,capture_order);
+              CREATE TABLE IF NOT EXISTS screen_observations (
+                meeting_id TEXT NOT NULL, observation_id TEXT NOT NULL,
+                capture_seq INTEGER NOT NULL, frame_sha256 TEXT NOT NULL,
+                dhash TEXT NOT NULL, capture_method TEXT NOT NULL,
+                width INTEGER NOT NULL, height INTEGER NOT NULL,
+                captured_at TEXT NOT NULL, analyzed_at TEXT NOT NULL,
+                vision_model TEXT NOT NULL, screen_kind TEXT NOT NULL,
+                title TEXT NOT NULL DEFAULT '', summary_text TEXT NOT NULL,
+                structured_json TEXT NOT NULL,
+                PRIMARY KEY(meeting_id,observation_id));
+              CREATE INDEX IF NOT EXISTS screen_observations_meeting
+                ON screen_observations(meeting_id,capture_seq);
             """)
             db.executescript("""
               CREATE TABLE IF NOT EXISTS session_runtime (
@@ -256,6 +310,110 @@ class MeetingStore(IncrementalStoreMixin):
                 'WHERE meeting_id=? AND resolved=0 ORDER BY rowid', (meeting_id,)):
             yield dict(value)
 
+    def _screen_observations(self, db, meeting_id):
+        for value in db.execute(
+                'SELECT observation_id,capture_seq,frame_sha256,dhash,capture_method,'
+                'width,height,captured_at,analyzed_at,vision_model,screen_kind,'
+                'title,summary_text,structured_json '
+                'FROM screen_observations WHERE meeting_id=? ORDER BY capture_seq,rowid',
+                (meeting_id,)):
+            row = dict(value)
+            structured = json.loads(row.pop('structured_json'))
+            row['structured'] = structured
+            row['id'] = screen_source_id(row['observation_id'])
+            yield row
+
+    @staticmethod
+    def _validate_screen_observation(observation):
+        if not isinstance(observation, dict):
+            raise MeetingStoreError('invalid_screen_observation')
+        obs_id = observation.get('observation_id')
+        seq = observation.get('capture_seq')
+        frame_sha = observation.get('frame_sha256')
+        dhash = observation.get('dhash')
+        method = observation.get('capture_method')
+        width = observation.get('width')
+        height = observation.get('height')
+        vision_model = observation.get('vision_model')
+        screen_kind = observation.get('screen_kind')
+        title = observation.get('title', '')
+        summary_text = observation.get('summary_text')
+        structured = observation.get('structured')
+        if (not isinstance(obs_id, str) or not re.fullmatch(r'[A-Za-z0-9_.:-]{1,200}', obs_id)
+                or type(seq) is not int or seq < 1
+                or not isinstance(frame_sha, str) or not re.fullmatch(r'[0-9a-f]{64}', frame_sha)
+                or not isinstance(dhash, str) or not re.fullmatch(r'[0-9a-f]{16}', dhash)
+                or method not in SCREEN_CAPTURE_METHODS
+                or type(width) is not int or not 1 <= width <= 16384
+                or type(height) is not int or not 1 <= height <= 16384
+                or not isinstance(vision_model, str) or not 1 <= len(vision_model) <= 128
+                or screen_kind not in SCREEN_KINDS
+                or not isinstance(title, str) or len(title.encode()) > 2048
+                or not isinstance(summary_text, str) or not summary_text.strip()
+                or len(summary_text.encode()) > MAX_SCREEN_SUMMARY_BYTES
+                or not isinstance(structured, dict)):
+            raise MeetingStoreError('invalid_screen_observation')
+        stamps = {}
+        for field in ('captured_at', 'analyzed_at'):
+            raw = observation.get(field)
+            try:
+                parsed = datetime.fromisoformat(raw.replace('Z', '+00:00'))
+                if parsed.tzinfo is None:
+                    raise ValueError()
+            except (ValueError, TypeError, AttributeError):
+                raise MeetingStoreError('invalid_screen_observation') from None
+            stamps[field] = parsed.astimezone(timezone.utc).isoformat()
+        try:
+            structured_json = canonical_json(structured)
+        except (TypeError, ValueError):
+            raise MeetingStoreError('invalid_screen_observation') from None
+        if len(structured_json.encode()) > MAX_SCREEN_STRUCTURED_BYTES:
+            raise MeetingStoreError('invalid_screen_observation')
+        return {
+            'observation_id': obs_id, 'capture_seq': seq, 'frame_sha256': frame_sha,
+            'dhash': dhash, 'capture_method': method, 'width': width, 'height': height,
+            'captured_at': stamps['captured_at'], 'analyzed_at': stamps['analyzed_at'],
+            'vision_model': vision_model, 'screen_kind': screen_kind,
+            'title': title.strip(), 'summary_text': summary_text.strip(),
+            'structured_json': structured_json,
+        }
+
+    def record_screen_observation(self, meeting_id, observation):
+        """Persist derived screen-share text meaning under capture lease fence."""
+        row = self._validate_screen_observation(observation)
+        with self._locked(mutating=True, kind='capture', meeting_id=meeting_id) as db:
+            meeting = self._meeting(db, meeting_id)
+            old = db.execute(
+                'SELECT * FROM screen_observations WHERE meeting_id=? AND observation_id=?',
+                (meeting_id, row['observation_id']),
+            ).fetchone()
+            if old is not None:
+                same = all(old[key] == row[key] for key in row)
+                if not same:
+                    raise MeetingStoreError('screen_observation_conflict')
+                return self._publish(db, meeting_id)
+            if meeting['status'] in TERMINAL:
+                raise MeetingStoreError('meeting_finalized')
+            with db:
+                db.execute(
+                    'INSERT INTO screen_observations ('
+                    'meeting_id,observation_id,capture_seq,frame_sha256,dhash,capture_method,'
+                    'width,height,captured_at,analyzed_at,vision_model,screen_kind,'
+                    'title,summary_text,structured_json) '
+                    'VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+                    (meeting_id, row['observation_id'], row['capture_seq'], row['frame_sha256'],
+                     row['dhash'], row['capture_method'], row['width'], row['height'],
+                     row['captured_at'], row['analyzed_at'], row['vision_model'], row['screen_kind'],
+                     row['title'], row['summary_text'], row['structured_json']),
+                )
+                db.execute('UPDATE meetings SET version=version+1 WHERE meeting_id=?', (meeting_id,))
+            return self._publish(db, meeting_id)
+
+    def list_screen_observations(self, meeting_id):
+        with self._locked() as db:
+            self._meeting(db, meeting_id)
+            return list(self._screen_observations(db, meeting_id))
+
     def _transcript_state(self, db, meeting_id, row):
         finals = db.execute('SELECT COUNT(*) FROM finals WHERE meeting_id=?', (meeting_id,)).fetchone()[0]
         legacy = db.execute('SELECT COUNT(*) FROM provisionals WHERE meeting_id=? AND resolved=0', (meeting_id,)).fetchone()[0]
@@ -301,20 +459,25 @@ class MeetingStore(IncrementalStoreMixin):
                 'quality':'legacy_truncated' if entry['truncated'] else 'unfinalized',
                 'ordering':'grouped_source_streams'} for entry in provisionals)
             result.update(prior_context=self._prior_context(row['prior_minutes']),events=events,
-                segments=segments,provisionals=provisionals,increments=increments,captures=captures,sources=sources)
+                segments=segments,provisionals=provisionals,increments=increments,captures=captures,
+                sources=sources,screen_observations=list(self._screen_observations(db, meeting_id)))
             result['sha256'] = self._summary_source(db, meeting_id)['source_sha256']
         return result
 
-    def _summary_source(self, db, meeting_id):
+    def _summary_source(self, db, meeting_id, *, include_screen=True):
         row = self._meeting(db, meeting_id)
         segments = list(self._iter_segments(db, meeting_id))
+        screen = list(self._screen_observations(db, meeting_id)) if include_screen else []
         source = dict(meeting_id=meeting_id, prior_minutes=row['prior_minutes'],
                       events=list(self._final_events(db, meeting_id)), segments=segments,
                       provisionals=list(self._legacy_provisionals(db, meeting_id)))
+        if screen:
+            source['screen_observations'] = screen
         digest = hashlib.sha256(json.dumps(source, ensure_ascii=False,
             sort_keys=True, separators=(',', ':')).encode()).hexdigest()
         return {'meeting_id':meeting_id,'prior_context':self._prior_context(row['prior_minutes']),
                 'events':source['events'],'segments':segments,'provisionals':source['provisionals'],
+                'screen_observations':screen,
                 'version':row['version'],'terminal':row['status'] in TERMINAL,
                 'source_sha256':digest}
 
@@ -346,10 +509,10 @@ class MeetingStore(IncrementalStoreMixin):
             status.update(summary_provider='codex', summary_model=metadata['model'])
         return status
 
-    def summary_source(self, meeting_id):
+    def summary_source(self, meeting_id, *, include_screen=True):
         """Capture one scoped source snapshot before invoking the model."""
         with self._locked() as db:
-            return self._summary_source(db, meeting_id)
+            return self._summary_source(db, meeting_id, include_screen=include_screen)
 
     def list_question_activity(self, meeting_id):
         """Private B observations, never transcript or summary source material."""
@@ -402,7 +565,7 @@ class MeetingStore(IncrementalStoreMixin):
 
 
     def publish_summary(self, meeting_id, value, *, expected_version,
-                        expected_source_sha256, generation_mode):
+                        expected_source_sha256, generation_mode, include_screen=True):
         """Atomically publish a validated canonical JSON revision, never files."""
         from .summary import SECTIONS, source_quality, validate_summary, validate_codex_summary_model
         from .source_contract import SummaryState
@@ -411,7 +574,7 @@ class MeetingStore(IncrementalStoreMixin):
         if type(expected_version) is not int or expected_version < 0:
             raise MeetingStoreError('invalid_result_summary')
         with self._locked(mutating=True, kind='summary', meeting_id=meeting_id) as db:
-            source = self._summary_source(db, meeting_id)
+            source = self._summary_source(db, meeting_id, include_screen=include_screen)
             if not source['terminal']:
                 raise MeetingStoreError('summary_requires_terminal')
             if source['version'] != expected_version or source['source_sha256'] != expected_source_sha256:
@@ -424,6 +587,8 @@ class MeetingStore(IncrementalStoreMixin):
                         'quality':'legacy_truncated' if event['truncated'] else 'unfinalized',
                         'ordering':'grouped_source_streams','timestamp':None}
                 entries.append({**event,'id':source_id(ident)})
+            for screen_obs in source.get('screen_observations', []):
+                entries.append(screen_observation_summary_entry(screen_obs))
             if not entries:
                 raise MeetingStoreError('summary_source_empty')
             fields = {*SECTIONS,'source_quality'} | ({'model'} if generation_mode=='codex' else set())

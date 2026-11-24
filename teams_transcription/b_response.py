@@ -255,7 +255,11 @@ class MeetingStoreMinutesReader:
                 summary_item_counts={'重點':0,'決策':len(state['conclusions']),
                     '待辦':len(state['open_tasks']),'未決問題':0},
                 series_open_task_count=len(state['open_tasks']))
+        screen_observations = result.get('screen_observations', [])
+        if not isinstance(screen_observations, list):
+            raise ValueError('MeetingStore returned invalid screen observations')
         return {**({'series_snapshot':series_identity} if series_identity is not None else {}),
+            **({'screen_observations':screen_observations} if screen_observations else {}),
             'meeting_id':meeting_id,'records':records,'application_segments':result.get('segments',[]),
             'version':result['version'],'finalized':result['finalized'],'completeness':result['completeness'],
             'transcript_state':result['transcript_state'],'history_truncated':bool(prior.get('truncated',False)),
@@ -309,9 +313,12 @@ class MeetingMinutesTool:
         query_hits = sum(any(term in row["text"].casefold() for term in terms) for row in selected) + bool(boundary_match)
         literal_hits = sum(any(needle in row["text"].casefold() for needle in literals) for row in selected)
         literal_hits += bool(boundary_match and boundary_match['needle'] in literals)
+        screen_observations = result.get('screen_observations', [])
+        if not isinstance(screen_observations, list):
+            raise ValueError('Context reader returned invalid screen observations')
         history_truncated = bool(result.get('history_truncated'))
         partial = not query_hits or history_truncated
-        value = {"meeting_id": self.meeting_id, "available": bool(selected),
+        value = {"meeting_id": self.meeting_id, "available": bool(selected) or bool(screen_observations),
                 "context": selected, "truncated": history_truncated,
                 "coverage": "partial" if partial else "complete",
                 "query_hit_count": query_hits, "query_match_kind":
@@ -323,6 +330,8 @@ class MeetingMinutesTool:
                     for row in selected if row["record_index"] in locators],
                 "version":result.get("version"), "finalized":result.get("finalized"),
                 "completeness":result.get("completeness", "unknown")}
+        if screen_observations:
+            value['screen_observations'] = list(screen_observations)
         if 'series_snapshot' in result:
             value['series_snapshot'] = dict(result['series_snapshot'])
         if "transcript_state" in result:

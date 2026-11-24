@@ -309,12 +309,25 @@ class AssistantDaemon:
         if runtime.is_symlink() or directory.is_symlink() or runtime.stat().st_mode&0o077:
             raise AssistantStoreError('private_runtime_required')
         directory.mkdir(mode=0o700,exist_ok=False)
+        stored_policy = self.store.settings() if callable(getattr(self.store, 'settings', None)) else {}
+        screen_mode = stored_policy.get('screen_context_mode', settings.screen_context_mode)
+        if screen_mode not in {'off', 'on_demand', 'watch_and_cache'}:
+            screen_mode = settings.screen_context_mode
+        screen_summary = stored_policy.get('screen_include_in_summary', settings.screen_include_in_summary)
+        if type(screen_summary) is not bool:
+            screen_summary = settings.screen_include_in_summary
         config = dict(provider='codex',source='meeting',meeting_url=occurrence['join_url'],
             name=settings.display_name,duration=settings.max_duration_seconds,join_timeout=settings.join_timeout_seconds,
             audio_timeout=settings.audio_timeout_seconds,drain_seconds=settings.drain_seconds,save_audio=False,
             codex_bin=settings.codex_bin,chromium=settings.chromium,storage_state=settings.storage_state,
             runtime_dir=str(directory),response_enabled=True,response_output_enabled=False,rx_session_contract=True,
             rx_owner_principal=self.owner,allowed_egress_hosts=list(settings.allowed_egress_hosts),
+            screen_context_mode=screen_mode,
+            vision_model=settings.vision_model if settings.vision_model is not None else settings.summary_model,
+            screen_poll_seconds=settings.screen_poll_seconds,
+            screen_min_analyze_interval_seconds=settings.screen_min_analyze_interval_seconds,
+            screen_frame_cache_limit=settings.screen_frame_cache_limit,
+            screen_include_in_summary=screen_summary,
             prior_context=run['prior_context'],glossary_snapshot=run['glossary_snapshot'])
         if run.get('acceptance_policy') is not None:
             policy=run['acceptance_policy']
