@@ -585,6 +585,12 @@ def failure_diagnostic(exc, phase):
 
 SCREEN_CONTEXT_MODES = {'off', 'on_demand', 'watch_and_cache'}
 SCREEN_CAPTURE_METHOD_LABELS = {'webrtc_video_frame', 'teams_stage_dom', 'none'}
+SCREEN_CAPTURE_MATCH_REASONS = {
+    'explicit_share', 'label_share', 'track_share',
+    'stage_video', 'stage_dominant_video', 'stage_dom_candidate',
+    'blank_video', 'no_video', 'below_size', 'camera_excluded',
+    'unmatched_video', 'evaluate_error', 'page_unavailable',
+}
 SCREEN_ERROR_CODES = {
     'vision_account_denied', 'vision_model_invalid', 'vision_image_invalid',
     'vision_turn_failed', 'vision_response_invalid', 'vision_timeout',
@@ -614,6 +620,22 @@ def screen_context_diagnostic(value):
             'max_frames': count(cache.get('max_frames'), 1024),
             'closed': cache.get('closed') is True,
         }
+    probe = value.get('probe')
+    probe_diag = None
+    if isinstance(probe, dict):
+        reason = probe.get('match_reason')
+        probe_diag = {
+            'frames_checked': count(probe.get('frames_checked'), 256),
+            'videos_total': count(probe.get('videos_total'), 1024),
+            'videos_ready': count(probe.get('videos_ready'), 1024),
+            'videos_excluded_camera': count(probe.get('videos_excluded_camera'), 1024),
+            'videos_unmatched': count(probe.get('videos_unmatched'), 1024),
+            'max_video_width': count(probe.get('max_video_width'), 16384),
+            'max_video_height': count(probe.get('max_video_height'), 16384),
+            'max_rect_width': count(probe.get('max_rect_width'), 16384),
+            'max_rect_height': count(probe.get('max_rect_height'), 16384),
+            'match_reason': reason if isinstance(reason, str) and reason in SCREEN_CAPTURE_MATCH_REASONS else 'unknown',
+        }
     return {
         'mode': mode if isinstance(mode, str) and mode in SCREEN_CONTEXT_MODES else 'unknown',
         'started': value.get('started') is True,
@@ -629,5 +651,6 @@ def screen_context_diagnostic(value):
         'last_frame_width': count(value.get('last_frame_width'), 16384) if value.get('last_frame_width') is not None else None,
         'last_frame_height': count(value.get('last_frame_height'), 16384) if value.get('last_frame_height') is not None else None,
         'cache': cache_diag,
+        'probe': probe_diag,
         'cleanup_status': cleanup if isinstance(cleanup, str) and cleanup in SCREEN_CLEANUP_LABELS else 'unknown',
     }

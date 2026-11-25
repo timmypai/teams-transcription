@@ -4,6 +4,7 @@ Captures only active incoming screen-share frames (WebRTC <video> first,
 Teams stage DOM/canvas fallback for PowerPoint Live / Whiteboard). Never
 enables local camera/video senders or writes images to persistent storage.
 """
+import asyncio
 from collections import OrderedDict
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -201,7 +202,7 @@ class ScreenFrameCache:
         return not self._dir.exists()
 
 
-CAPTURE_SHARE_VIDEO_JS = r"""() => {
+CAPTURE_SHARE_VIDEO_JS = r"""(stageDomSelectors = []) => {
   const hook = window.__meeting;
   if (hook && Array.isArray(hook.peers)) {
     for (const pc of hook.peers) {
@@ -214,28 +215,131 @@ CAPTURE_SHARE_VIDEO_JS = r"""() => {
   }
   const shareSelectors = [
     '[data-tid*="screen-share" i]', '[data-tid*="screenshare" i]',
-    '[data-tid*="sharing" i]', '[data-tid*="share-stage" i]',
-    '[data-tid*="content-sharing" i]', '[aria-label*="screen share" i]',
-    '[aria-label*="sharing" i]', '[aria-label*="分享畫面" i]', '[aria-label*="共享" i]'
+    '[data-tid*="screen_share" i]', '[data-tid*="sharing" i]',
+    '[data-tid*="share-stage" i]', '[data-tid*="content-sharing" i]',
+    '[data-tid*="shared-content" i]', '[data-tid*="presentation" i]',
+    '[data-tid*="content-stage" i]', '[data-tid*="calling-screen" i]',
+    '[data-tid*="stage-screen" i]',
+    '[data-stream-type*="screen" i]', '[data-stream-type*="sharing" i]',
+    '[data-stream-type*="content" i]',
+    '[data-cid*="screen" i]', '[data-cid*="sharing" i]',
+    '[aria-label*="screen share" i]', '[aria-label*="shared screen" i]',
+    '[aria-label*="sharing" i]', '[aria-label*="presenting" i]',
+    '[aria-label*="presentation" i]',
+    '[aria-label*="分享畫面" i]', '[aria-label*="共用畫面" i]',
+    '[aria-label*="共享" i]', '[aria-label*="簡報" i]'
+  ];
+  const stageSelectors = [
+    '[data-tid*="stage" i]', '[data-tid*="content" i]', '[role="main"]'
   ];
   const cameraExclude = [
     '[data-tid*="participant-video" i]', '[data-tid*="video-tile" i]',
     '[data-tid*="camera" i]', '[data-tid*="self-video" i]',
     '[role="log"]', '[role="feed"]'
   ];
-  const isInside = (el, selectors) => selectors.some(sel => {
-    try { return Boolean(el.closest(sel)); } catch (_) { return false; }
+  const matchesAny = (el, selectors) => selectors.some(sel => {
+    try { return Boolean(el && typeof el.matches === 'function' && el.matches(sel)); } catch (_) { return false; }
   });
+  const closestAcrossShadow = (el, selectors) => {
+    let cur = el, depth = 0;
+    while (cur && depth < 24) {
+      if (matchesAny(cur, selectors)) return true;
+      if (cur.parentElement) {
+        cur = cur.parentElement;
+      } else {
+        const root = typeof cur.getRootNode === 'function' ? cur.getRootNode() : null;
+        cur = root && root.host ? root.host : null;
+      }
+      depth++;
+    }
+    return false;
+  };
+  const collectVideos = () => {
+    const videos = [];
+    const seenVideos = new Set();
+    const stack = [[document, 0]];
+    let rootsVisited = 0;
+    let nodesVisited = 0;
+    while (stack.length && rootsVisited < 256 && nodesVisited < 8000) {
+      const [root, depth] = stack.pop();
+      if (!root || depth > 12) continue;
+      rootsVisited++;
+      for (const v of root.querySelectorAll('video')) {
+        if (!seenVideos.has(v)) {
+          seenVideos.add(v);
+          videos.push(v);
+        }
+      }
+      if (depth < 12) {
+        const all = root.querySelectorAll('*');
+        for (let i = 0; i < all.length && nodesVisited < 8000; i++) {
+          nodesVisited++;
+          const sr = all[i].shadowRoot;
+          if (sr) stack.push([sr, depth + 1]);
+        }
+      }
+    }
+    return videos;
+  };
+  const findStageDomCandidate = () => {
+    if (!Array.isArray(stageDomSelectors)) return -1;
+    for (let i = 0; i < stageDomSelectors.length; i++) {
+      try {
+        const el = document.querySelector(stageDomSelectors[i]);
+        if (!el) continue;
+        const style = window.getComputedStyle(el);
+        if (!style || style.display === 'none' || style.visibility === 'hidden') continue;
+        const rect = el.getBoundingClientRect();
+        if (rect.width >= 160 && rect.height >= 90) return i;
+      } catch (_) {}
+    }
+    return -1;
+  };
+
+  const probe = {
+    videos_total: 0,
+    videos_ready: 0,
+    videos_excluded_camera: 0,
+    videos_unmatched: 0,
+    max_video_width: 0,
+    max_video_height: 0,
+    max_rect_width: 0,
+    max_rect_height: 0,
+    match_reason: 'no_video',
+  };
+  const vw = Math.max(1, window.innerWidth || document.documentElement?.clientWidth || 1280);
+  const vh = Math.max(1, window.innerHeight || document.documentElement?.clientHeight || 720);
   const candidates = [];
-  for (const video of document.querySelectorAll('video')) {
+  let sawBelowSize = false;
+  for (const video of collectVideos()) {
+    probe.videos_total++;
     if (video.readyState < 2 || !video.videoWidth || !video.videoHeight) continue;
-    if (video.videoWidth < 320 || video.videoHeight < 180) continue;
+    probe.videos_ready++;
+    if (video.videoWidth > probe.max_video_width) probe.max_video_width = Math.round(video.videoWidth);
+    if (video.videoHeight > probe.max_video_height) probe.max_video_height = Math.round(video.videoHeight);
     const rect = video.getBoundingClientRect();
-    if (rect.width < 160 || rect.height < 90) continue;
-    if (isInside(video, cameraExclude) && !isInside(video, shareSelectors)) continue;
-    const explicitShare = isInside(video, shareSelectors);
-    const label = ((video.getAttribute('aria-label') || '') + ' ' + (video.getAttribute('data-tid') || '')).toLowerCase();
-    const labelShare = /screen|share|present|slide|content|分享|簡報|投影片/.test(label);
+    const rw = Math.max(0, Math.round(rect.width || 0));
+    const rh = Math.max(0, Math.round(rect.height || 0));
+    if (rw > probe.max_rect_width) probe.max_rect_width = rw;
+    if (rh > probe.max_rect_height) probe.max_rect_height = rh;
+    if (video.videoWidth < 320 || video.videoHeight < 180 || rect.width < 160 || rect.height < 90) {
+      sawBelowSize = true;
+      continue;
+    }
+    const explicitShare = closestAcrossShadow(video, shareSelectors);
+    const inCameraExclude = closestAcrossShadow(video, cameraExclude);
+    if (inCameraExclude && !explicitShare) {
+      probe.videos_excluded_camera++;
+      continue;
+    }
+    const label = [
+      video.getAttribute('aria-label') || '',
+      video.getAttribute('data-tid') || '',
+      video.getAttribute('data-stream-type') || '',
+      video.getAttribute('data-cid') || '',
+      video.getAttribute('title') || '',
+    ].join(' ').toLowerCase();
+    const labelShare = /screen|share|present|slide|content|分享|共用|簡報|投影片/.test(label);
     const trackLabel = (() => {
       try {
         const tracks = video.srcObject?.getVideoTracks?.() || [];
@@ -243,17 +347,42 @@ CAPTURE_SHARE_VIDEO_JS = r"""() => {
       } catch (_) { return ''; }
     })();
     const trackShare = /screen|share|detail|text|desktop|window|monitor/.test(trackLabel);
-    if (!explicitShare && !labelShare && !trackShare) continue;
+    const inStage = !inCameraExclude && closestAcrossShadow(video, stageSelectors);
+    const stageVideo = inStage && video.videoWidth >= 640 && video.videoHeight >= 360
+      && rect.width >= 400 && rect.height >= 225;
+    const dominantVideo = !inCameraExclude && video.videoWidth >= 960 && video.videoHeight >= 540
+      && rect.width >= 480 && rect.height >= 270
+      && (rect.width * rect.height) >= (vw * vh * 0.20);
+    if (!explicitShare && !labelShare && !trackShare && !stageVideo && !dominantVideo) {
+      probe.videos_unmatched++;
+      continue;
+    }
+    const reason = explicitShare ? 'explicit_share'
+      : labelShare ? 'label_share'
+      : trackShare ? 'track_share'
+      : stageVideo ? 'stage_video'
+      : 'stage_dominant_video';
     candidates.push({
       video,
-      priority: (explicitShare ? 4 : 0) + (labelShare ? 2 : 0) + (trackShare ? 1 : 0),
+      reason,
+      priority: (explicitShare ? 16 : 0) + (labelShare ? 8 : 0) + (trackShare ? 4 : 0)
+        + (stageVideo ? 2 : 0) + (dominantVideo ? 1 : 0),
       area: video.videoWidth * video.videoHeight,
     });
   }
-  if (!candidates.length) return null;
+  if (!candidates.length) {
+    const stageIdx = findStageDomCandidate();
+    probe.match_reason = stageIdx >= 0 ? 'stage_dom_candidate'
+      : probe.videos_excluded_camera > 0 ? 'camera_excluded'
+      : probe.videos_unmatched > 0 ? 'unmatched_video'
+      : sawBelowSize ? 'below_size'
+      : 'no_video';
+    return {matched: false, blank: false, stage_selector_index: stageIdx, probe};
+  }
   candidates.sort((a, b) => (b.priority - a.priority) || (b.area - a.area));
-  const best = candidates[0].video;
-  const srcW = best.videoWidth, srcH = best.videoHeight;
+  const best = candidates[0];
+  const bestVideo = best.video;
+  const srcW = bestVideo.videoWidth, srcH = bestVideo.videoHeight;
   const scale = Math.min(1, 1920 / srcW, 1080 / srcH);
   const outW = Math.max(1, Math.round(srcW * scale));
   const outH = Math.max(1, Math.round(srcH * scale));
@@ -262,7 +391,7 @@ CAPTURE_SHARE_VIDEO_JS = r"""() => {
   const small = document.createElement('canvas');
   small.width = 9; small.height = 8;
   const sg = small.getContext('2d', {willReadFrequently: true});
-  sg.drawImage(best, 0, 0, 9, 8);
+  sg.drawImage(bestVideo, 0, 0, 9, 8);
   const rgba = sg.getImageData(0, 0, 9, 8).data;
   const luma = [];
   let minL = 255, maxL = 0;
@@ -272,22 +401,32 @@ CAPTURE_SHARE_VIDEO_JS = r"""() => {
     if (y < minL) minL = y;
     if (y > maxL) maxL = y;
   }
-  if (maxL - minL < 3 && maxL < 8) return {blank: true};
+  if (maxL - minL < 3 && maxL < 8) {
+    const stageIdx = findStageDomCandidate();
+    probe.match_reason = stageIdx >= 0 ? 'stage_dom_candidate' : 'blank_video';
+    return {matched: false, blank: true, stage_selector_index: stageIdx, probe};
+  }
 
   const full = document.createElement('canvas');
   full.width = outW; full.height = outH;
   const fg = full.getContext('2d');
-  fg.drawImage(best, 0, 0, outW, outH);
+  fg.drawImage(bestVideo, 0, 0, outW, outH);
   const dataUrl = full.toDataURL('image/jpeg', 0.85);
   const comma = dataUrl.indexOf(',');
-  if (comma < 0) return null;
+  if (comma < 0) {
+    probe.match_reason = 'evaluate_error';
+    return {matched: false, blank: false, stage_selector_index: -1, probe};
+  }
+  probe.match_reason = best.reason;
   return {
+    matched: true,
     blank: false,
     mime: 'image/jpeg',
     data: dataUrl.slice(comma + 1),
     width: outW,
     height: outH,
     luma,
+    probe,
   };
 }"""
 
@@ -313,19 +452,48 @@ COMPUTE_IMAGE_LUMA_JS = r"""async ({mime, data}) => {
 _STAGE_SELECTORS = (
     '[data-tid*="screen-share" i]',
     '[data-tid*="screenshare" i]',
+    '[data-tid*="screen_share" i]',
     '[data-tid*="powerpoint" i]',
     '[data-tid*="whiteboard" i]',
     '[data-tid*="share-stage" i]',
     '[data-tid*="content-sharing" i]',
+    '[data-tid*="shared-content" i]',
+    '[data-tid*="calling-screen-sharing" i]',
+    '[data-tid*="presentation" i]',
+    '[data-stream-type*="screen" i]',
+    '[data-stream-type*="sharing" i]',
+    '[data-cid*="screen-share" i]',
+    '[data-cid*="sharing" i]',
 )
+
+_REASON_PRIORITY = {
+    'explicit_share': 10,
+    'label_share': 9,
+    'track_share': 8,
+    'stage_video': 7,
+    'stage_dominant_video': 6,
+    'stage_dom_candidate': 5,
+    'blank_video': 4,
+    'camera_excluded': 3,
+    'unmatched_video': 2,
+    'below_size': 1,
+    'no_video': 0,
+    'evaluate_error': 0,
+    'page_unavailable': 0,
+}
 
 
 class ScreenShareCapturer:
     """Captures active Teams screen-share frames (WebRTC <video> or stage DOM)."""
 
-    def __init__(self, meeting_or_page, *, clock=None):
+    def __init__(self, meeting_or_page, *, clock=None, evaluate_timeout=2.0):
         self._source = meeting_or_page
         self._clock = clock
+        self._evaluate_timeout = evaluate_timeout
+        self._last_probe = None
+
+    def probe_status(self):
+        return dict(self._last_probe) if self._last_probe is not None else None
 
     def _page(self):
         page = getattr(self._source, 'page', self._source)
@@ -336,66 +504,112 @@ class ScreenShareCapturer:
     def _now_iso(self):
         return datetime.now(timezone.utc).isoformat()
 
+    @staticmethod
+    def _merge_probe(agg, item):
+        if not isinstance(item, dict):
+            return
+        for key in ('videos_total', 'videos_ready', 'videos_excluded_camera', 'videos_unmatched'):
+            val = item.get(key)
+            if type(val) is int and val >= 0:
+                agg[key] += val
+        for key in ('max_video_width', 'max_video_height', 'max_rect_width', 'max_rect_height'):
+            val = item.get(key)
+            if type(val) is int and val > agg[key]:
+                agg[key] = val
+        reason = item.get('match_reason')
+        if isinstance(reason, str) and _REASON_PRIORITY.get(reason, -1) > _REASON_PRIORITY.get(agg['match_reason'], -1):
+            agg['match_reason'] = reason
+
     async def capture(self):
         page = self._page()
         if page is None:
+            self._last_probe = {
+                'frames_checked': 0, 'videos_total': 0, 'videos_ready': 0,
+                'videos_excluded_camera': 0, 'videos_unmatched': 0,
+                'max_video_width': 0, 'max_video_height': 0,
+                'max_rect_width': 0, 'max_rect_height': 0,
+                'match_reason': 'page_unavailable',
+            }
             return None
         frames = list(getattr(page, 'frames', None) or [page])
-        # 1) Primary path: WebRTC share <video> native resolution frame
+        agg = {
+            'frames_checked': 0, 'videos_total': 0, 'videos_ready': 0,
+            'videos_excluded_camera': 0, 'videos_unmatched': 0,
+            'max_video_width': 0, 'max_video_height': 0,
+            'max_rect_width': 0, 'max_rect_height': 0,
+            'match_reason': 'no_video',
+        }
+        stage_candidates = []
+        stage_selectors = list(_STAGE_SELECTORS)
+        # 1) Single-pass lightweight JS evaluation per frame: WebRTC <video> + stage DOM candidate probe
         for frame in frames:
             if callable(getattr(frame, 'is_detached', None)) and frame.is_detached():
                 continue
+            agg['frames_checked'] += 1
             try:
-                result = await frame.evaluate(CAPTURE_SHARE_VIDEO_JS)
+                result = await asyncio.wait_for(
+                    frame.evaluate(CAPTURE_SHARE_VIDEO_JS, stage_selectors),
+                    timeout=self._evaluate_timeout,
+                )
             except Exception as exc:
                 if 'outgoing_video_sender_enabled' in str(exc):
                     raise RuntimeError('outgoing_video_sender_enabled') from None
+                if agg['match_reason'] == 'no_video':
+                    agg['match_reason'] = 'evaluate_error'
                 continue
-            if not isinstance(result, dict) or result.get('blank') is True:
+            if not isinstance(result, dict):
                 continue
-            raw = base64.b64decode(result['data'], validate=True)
-            if not 0 < len(raw) <= MAX_FRAME_BYTES:
-                continue
-            dhash = compute_dhash(result['luma'])
-            return CapturedFrame(
-                image_bytes=raw,
-                mime=result.get('mime', 'image/jpeg'),
-                width=int(result['width']),
-                height=int(result['height']),
-                dhash=dhash,
-                frame_sha256=hashlib.sha256(raw).hexdigest(),
-                capture_method='webrtc_video_frame',
-                captured_at=self._now_iso(),
-            )
+            self._merge_probe(agg, result.get('probe'))
+            if result.get('matched') is True and result.get('blank') is not True:
+                raw = base64.b64decode(result['data'], validate=True)
+                if 0 < len(raw) <= MAX_FRAME_BYTES:
+                    dhash = compute_dhash(result['luma'])
+                    self._last_probe = agg
+                    return CapturedFrame(
+                        image_bytes=raw,
+                        mime=result.get('mime', 'image/jpeg'),
+                        width=int(result['width']),
+                        height=int(result['height']),
+                        dhash=dhash,
+                        frame_sha256=hashlib.sha256(raw).hexdigest(),
+                        capture_method='webrtc_video_frame',
+                        captured_at=self._now_iso(),
+                    )
+            stage_idx = result.get('stage_selector_index')
+            if type(stage_idx) is int and 0 <= stage_idx < len(_STAGE_SELECTORS):
+                stage_candidates.append((frame, _STAGE_SELECTORS[stage_idx]))
 
-        # 2) Fallback path: PowerPoint Live / Whiteboard / stage DOM container
-        for frame in frames:
+        # 2) Fallback path: ONLY screenshot a stage DOM element already confirmed visible by JS
+        for frame, selector in stage_candidates:
             if callable(getattr(frame, 'is_detached', None)) and frame.is_detached():
                 continue
-            for selector in _STAGE_SELECTORS:
-                try:
-                    locator = frame.locator(selector).first
-                    if await locator.count() == 0 or not await locator.is_visible():
-                        continue
-                    box = await locator.bounding_box()
-                    if not box or box.get('width', 0) < 160 or box.get('height', 0) < 90:
-                        continue
-                    raw = await locator.screenshot(type='jpeg', quality=85, timeout=3000)
-                except Exception:
-                    continue
-                if not raw or len(raw) > MAX_FRAME_BYTES:
-                    continue
-                encoded = base64.b64encode(raw).decode('ascii')
-                meta = await page.evaluate(COMPUTE_IMAGE_LUMA_JS, {'mime': 'image/jpeg', 'data': encoded})
-                dhash = compute_dhash(meta['luma'])
-                return CapturedFrame(
-                    image_bytes=raw,
-                    mime='image/jpeg',
-                    width=int(meta['width']),
-                    height=int(meta['height']),
-                    dhash=dhash,
-                    frame_sha256=hashlib.sha256(raw).hexdigest(),
-                    capture_method='teams_stage_dom',
-                    captured_at=self._now_iso(),
+            try:
+                locator = frame.locator(selector).first
+                raw = await locator.screenshot(type='jpeg', quality=85, timeout=3000)
+            except Exception:
+                continue
+            if not raw or len(raw) > MAX_FRAME_BYTES:
+                continue
+            encoded = base64.b64encode(raw).decode('ascii')
+            try:
+                meta = await asyncio.wait_for(
+                    page.evaluate(COMPUTE_IMAGE_LUMA_JS, {'mime': 'image/jpeg', 'data': encoded}),
+                    timeout=self._evaluate_timeout,
                 )
+                dhash = compute_dhash(meta['luma'])
+            except Exception:
+                continue
+            agg['match_reason'] = 'stage_dom_candidate'
+            self._last_probe = agg
+            return CapturedFrame(
+                image_bytes=raw,
+                mime='image/jpeg',
+                width=int(meta['width']),
+                height=int(meta['height']),
+                dhash=dhash,
+                frame_sha256=hashlib.sha256(raw).hexdigest(),
+                capture_method='teams_stage_dom',
+                captured_at=self._now_iso(),
+            )
+        self._last_probe = agg
         return None

@@ -252,6 +252,7 @@ class ResponseStartDiagnosticsTests(unittest.IsolatedAsyncioTestCase):
                     self.assertFalse(any(e['type'] == 'response_ready' for e in session_events(controller.session)))
                     release.set()
                     self.assertTrue(await task)
+                    self.assertEqual(controller.policy.timeout, 5)
                     self.assertTrue(controller.capture_ready())
                     self.assertFalse(controller.native.output.enabled)
                 finally:

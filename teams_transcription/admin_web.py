@@ -377,7 +377,9 @@ def create_admin_app(daemon, settings, *, local_teams_control=False):
             response = status.get('response')
             if response is not None:
                 visible = {key:response.get(key) for key in
-                    ('state','error_code','startup_phase','output_enabled','output_muted','progress')}
+                    ('state','error_code','startup_phase','output_enabled','output_muted',
+                     'startup_error','capture_policy_failure','runtime_failure',
+                     'sender_selection','progress','screen_context')}
                 body += '<h3>語音 B</h3><pre>'+h(json.dumps(visible,ensure_ascii=False,indent=2))+'</pre>'
             body += ('<div class="controls">'+control(session,'stop',run['session_id'],'停止入會')+
                 control(session,'output',run['session_id'],'靜音',enabled='false')+
@@ -627,7 +629,9 @@ def create_admin_app(daemon, settings, *, local_teams_control=False):
         response = run['status'].get('response_status')
         if isinstance(response,dict):
             visible = {key:response.get(key) for key in
-                ('state','error_code','startup_phase','output_enabled','output_muted','progress','screen_context')}
+                ('state','error_code','startup_phase','output_enabled','output_muted',
+                 'startup_error','capture_policy_failure','runtime_failure',
+                 'sender_selection','progress','screen_context')}
             body += '<h2>語音 B 已保存快照</h2><p>觀測時間：'+h(readable_time(run['status'].get('response_snapshot_at')))+'</p><pre>'+h(
                 json.dumps(visible,ensure_ascii=False,indent=2))+'</pre><p>本機送音或 drain 不代表遠端可聽。</p>'
         glossary = run['glossary_snapshot']

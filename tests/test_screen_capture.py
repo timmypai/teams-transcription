@@ -78,7 +78,7 @@ class ScreenCaptureBrowserTests(unittest.IsolatedAsyncioTestCase):
         async with Browser(executable=exe) as runtime:
             assert runtime.browser is not None
             ctx = await runtime.browser.new_context(viewport={'width': 1280, 'height': 720})
-            # 1) Page with ONLY a participant webcam tile -> must NOT capture
+            # 1) Page with ONLY a participant webcam tile -> must NOT capture and must not invoke locator RPCs
             page1 = await ctx.new_page()
             await page1.set_content("""
             <html><body>
@@ -102,7 +102,21 @@ class ScreenCaptureBrowserTests(unittest.IsolatedAsyncioTestCase):
               </script>
             </body></html>""")
             await page1.wait_for_function("document.getElementById('camVideo').readyState >= 2")
-            self.assertIsNone(await ScreenShareCapturer(_FakeMeeting(page1)).capture())
+            cap1 = ScreenShareCapturer(_FakeMeeting(page1))
+            orig_locator = page1.locator
+            locator_calls = []
+            def _tracked_locator(*args, **kwargs):
+                locator_calls.append(args)
+                return orig_locator(*args, **kwargs)
+            page1.locator = _tracked_locator
+            self.assertIsNone(await cap1.capture())
+            self.assertEqual(locator_calls, [])
+            probe1 = cap1.probe_status()
+            self.assertIsNotNone(probe1)
+            self.assertEqual(probe1['videos_total'], 1)
+            self.assertEqual(probe1['videos_ready'], 1)
+            self.assertEqual(probe1['videos_excluded_camera'], 1)
+            self.assertEqual(probe1['match_reason'], 'camera_excluded')
             await page1.close()
 
             # 2) Page with Teams sharing stage <video> -> captures webrtc_video_frame
@@ -171,7 +185,136 @@ class ScreenCaptureBrowserTests(unittest.IsolatedAsyncioTestCase):
             self.assertIsNotNone(f3)
             self.assertEqual(f3.capture_method, 'teams_stage_dom')
             self.assertGreater(len(f3.image_bytes), 500)
+            await page3.close()
+
+            # 4) Teams Web v2 stage <video> with generic data-tid="calling-stage" (no "screen" keyword)
+            page4 = await ctx.new_page()
+            await page4.set_content("""
+            <html><body>
+              <div data-tid="calling-stage">
+                <canvas id="stageCanvas" width="1280" height="720"></canvas>
+                <video id="stageVideo" autoplay muted playsinline style="width:960px;height:540px"></video>
+              </div>
+              <script>
+                (() => {
+                  const c = document.getElementById('stageCanvas'), g = c.getContext('2d');
+                  const paint = () => {
+                    g.fillStyle = '#0f172a'; g.fillRect(0, 0, 1280, 720);
+                    g.fillStyle = '#38bdf8'; g.fillRect(80, 80, 1120, 180);
+                    g.fillStyle = '#f8fafc'; g.fillRect(80, 300, 720, 240);
+                  };
+                  paint();
+                  const v = document.getElementById('stageVideo');
+                  v.srcObject = c.captureStream(10);
+                  setInterval(paint, 50);
+                  v.play().catch(() => {});
+                })();
+              </script>
+            </body></html>""")
+            await page4.wait_for_function("document.getElementById('stageVideo').readyState >= 2")
+            cap4 = ScreenShareCapturer(_FakeMeeting(page4))
+            f4 = await cap4.capture()
+            self.assertIsNotNone(f4)
+            self.assertEqual(f4.capture_method, 'webrtc_video_frame')
+            self.assertEqual((f4.width, f4.height), (1280, 720))
+            self.assertEqual(cap4.probe_status()['match_reason'], 'stage_video')
+            await page4.close()
+
+            # 5) Open Shadow DOM <video> inside a Teams share container
+            page5 = await ctx.new_page()
+            await page5.set_content("""
+            <html><body>
+              <div data-stream-type="ScreenSharing" id="host"></div>
+              <canvas id="shadowCanvas" width="960" height="540" style="display:none"></canvas>
+              <script>
+                (() => {
+                  const host = document.getElementById('host');
+                  const sr = host.attachShadow({mode: 'open'});
+                  const v = document.createElement('video');
+                  v.id = 'shadowVideo';
+                  v.autoplay = true; v.muted = true; v.playsInline = true;
+                  v.style.width = '640px'; v.style.height = '360px';
+                  sr.appendChild(v);
+                  const c = document.getElementById('shadowCanvas'), g = c.getContext('2d');
+                  const paint = () => {
+                    g.fillStyle = '#1e293b'; g.fillRect(0, 0, 960, 540);
+                    g.fillStyle = '#22c55e'; g.fillRect(100, 100, 760, 280);
+                  };
+                  paint();
+                  v.srcObject = c.captureStream(10);
+                  setInterval(paint, 50);
+                  v.play().catch(() => {});
+                  window.__shadowVideo = v;
+                })();
+              </script>
+            </body></html>""")
+            await page5.wait_for_function("window.__shadowVideo && window.__shadowVideo.readyState >= 2")
+            cap5 = ScreenShareCapturer(_FakeMeeting(page5))
+            f5 = await cap5.capture()
+            self.assertIsNotNone(f5)
+            self.assertEqual(f5.capture_method, 'webrtc_video_frame')
+            self.assertEqual(cap5.probe_status()['match_reason'], 'explicit_share')
+            await page5.close()
+
+            # 6) Dominant high-res unlabelled <video> (plain container, not in cameraExclude)
+            page6 = await ctx.new_page()
+            await page6.set_content("""
+            <html><body style="margin:0">
+              <div>
+                <canvas id="domCanvas" width="1280" height="720" style="display:none"></canvas>
+                <video id="domVideo" autoplay muted playsinline style="width:960px;height:540px"></video>
+              </div>
+              <script>
+                (() => {
+                  const c = document.getElementById('domCanvas'), g = c.getContext('2d');
+                  const paint = () => {
+                    g.fillStyle = '#ffffff'; g.fillRect(0, 0, 1280, 720);
+                    g.fillStyle = '#1d4ed8'; g.fillRect(60, 60, 1160, 200);
+                  };
+                  paint();
+                  const v = document.getElementById('domVideo');
+                  v.srcObject = c.captureStream(10);
+                  setInterval(paint, 50);
+                  v.play().catch(() => {});
+                })();
+              </script>
+            </body></html>""")
+            await page6.wait_for_function("document.getElementById('domVideo').readyState >= 2")
+            cap6 = ScreenShareCapturer(_FakeMeeting(page6))
+            f6 = await cap6.capture()
+            self.assertIsNotNone(f6)
+            self.assertEqual(f6.capture_method, 'webrtc_video_frame')
+            self.assertEqual(cap6.probe_status()['match_reason'], 'stage_dominant_video')
+            await page6.close()
+
             await ctx.close()
+
+    def test_screen_context_diagnostic_allowlists_probe_without_leaking_raw_strings(self):
+        from teams_transcription.diagnostics import screen_context_diagnostic
+        diag = screen_context_diagnostic({
+            'mode': 'watch_and_cache',
+            'started': True,
+            'share_active': False,
+            'cleanup_status': 'idle',
+            'probe': {
+                'frames_checked': 2,
+                'videos_total': 3,
+                'videos_ready': 2,
+                'videos_excluded_camera': 1,
+                'videos_unmatched': 1,
+                'max_video_width': 1920,
+                'max_video_height': 1080,
+                'max_rect_width': 1280,
+                'max_rect_height': 720,
+                'match_reason': 'PRIVATE https://secret.invalid/dom',
+                'raw_dom': 'MUST_NOT_APPEAR',
+            },
+        })
+        self.assertEqual(diag['probe']['match_reason'], 'unknown')
+        self.assertEqual(diag['probe']['max_video_width'], 1920)
+        self.assertNotIn('raw_dom', diag['probe'])
+        self.assertNotIn('PRIVATE', str(diag))
+        self.assertNotIn('MUST_NOT_APPEAR', str(diag))
 
 
 if __name__ == '__main__':
