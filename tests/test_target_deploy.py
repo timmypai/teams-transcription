@@ -92,18 +92,25 @@ class TargetDeployTests(unittest.TestCase):
             self.assertEqual((release/'compose.yml').read_text(),'modified')
 
     def test_manual_workflows_are_readonly_main_latest_and_separate_from_ci(self):
-        for name in ('deploy','control'):
-            workflow=yaml.load((ROOT/f'.github/workflows/{name}.yml').read_text(),Loader=yaml.BaseLoader)
-            self.assertEqual(set(workflow['on']),{'workflow_dispatch'})
-            self.assertEqual(set(workflow['permissions'].values()),{'read'})
-            self.assertEqual(workflow['concurrency']['group'],'manual-target-teams-transcription')
-            job=workflow['jobs'][name]
-            self.assertEqual(job['runs-on'],['self-hosted','devflow'])
-            self.assertIn("github.ref == 'refs/heads/main'",job['if'])
-            checkout=job['steps'][0]
-            self.assertEqual(checkout['with']['ref'],'${{ github.sha }}')
-            self.assertEqual(checkout['with']['persist-credentials'],'false')
-            self.assertIn('target_admission.py',job['steps'][1]['run'])
+        deploy_wf=yaml.load((ROOT/'.github/workflows/deploy.yml').read_text(),Loader=yaml.BaseLoader)
+        self.assertEqual(set(deploy_wf['on']),{'workflow_dispatch'})
+        self.assertEqual(deploy_wf['concurrency']['group'],'deploy-${{ github.repository }}')
+        djob=deploy_wf['jobs']['deploy']
+        self.assertEqual(djob['runs-on'],['self-hosted','devflow'])
+        self.assertTrue(any('default_branch' in str(s.get('env',{})) and 'git ls-remote' in s.get('run','') for s in djob['steps']))
+        self.assertTrue(any('bash .devflow/deploy.sh' in s.get('run','') for s in djob['steps']))
+
+        workflow=yaml.load((ROOT/'.github/workflows/control.yml').read_text(),Loader=yaml.BaseLoader)
+        self.assertEqual(set(workflow['on']),{'workflow_dispatch'})
+        self.assertEqual(set(workflow['permissions'].values()),{'read'})
+        self.assertEqual(workflow['concurrency']['group'],'manual-target-teams-transcription')
+        job=workflow['jobs']['control']
+        self.assertEqual(job['runs-on'],['self-hosted','devflow'])
+        self.assertIn("github.ref == 'refs/heads/main'",job['if'])
+        checkout=job['steps'][0]
+        self.assertEqual(checkout['with']['ref'],'${{ github.sha }}')
+        self.assertEqual(checkout['with']['persist-credentials'],'false')
+        self.assertIn('target_admission.py',job['steps'][1]['run'])
         # Only the new private browser branch receives the existing operations
         # secret, and never before the fixed default-tip admission step.
         control=(ROOT/'.github/workflows/control.yml').read_text()

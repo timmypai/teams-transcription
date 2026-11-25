@@ -255,6 +255,8 @@ class Controller:
                             ('chromium-seccomp.json',ROOT/'docker/chromium-seccomp.json'),
                             ('config.env',ROOT/'.devflow/config.env')]:
             self.write(release/name,source.read_text())
+        (release/'docker').mkdir(parents=True,exist_ok=True)
+        self.write(release/'docker'/'chromium-seccomp.json',(ROOT/'docker/chromium-seccomp.json').read_text())
         info={**receipt,'image':image,'deploy_run_id':self.run_id,'deploy_run_attempt':self.attempt,
             'files':{n:hashlib.sha256((release/n).read_bytes()).hexdigest() for n in ['compose.yml','config.env','chromium-seccomp.json']}}
         self.write(release/'release.json',json.dumps(info))

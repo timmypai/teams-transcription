@@ -9,7 +9,7 @@ services:
     cap_drop: [ALL]
     security_opt:
       - no-new-privileges:true
-      - seccomp:${DEVFLOW_RELEASE_DIR:?release_required}/chromium-seccomp.json
+      - seccomp:${DEVFLOW_RELEASE_DIR:?release_required}/docker/chromium-seccomp.json
     labels:
       io.devflow.owner: timmypai/teams-transcription
       io.devflow.source: ${DEVFLOW_SOURCE_SHA:?source_required}
