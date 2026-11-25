@@ -101,13 +101,52 @@ class ScreenContextController:
         if inspect.isawaitable(result):
             await result
 
+    def _ensure_target_frame_cached(self, record_meta, live_frame=None):
+        """Return the cached /dev/shm frame matching record_meta, never a different SHA."""
+        if record_meta is None:
+            return None
+        cache = self._ensure_cache()
+        target_sha = record_meta['frame_sha256']
+        cached = cache.get(target_sha)
+        if cached is not None and cached.frame_sha256 == target_sha:
+            return cached
+        if live_frame is None or not live_frame.image_bytes:
+            return None
+        same_target = (
+            live_frame.frame_sha256 == target_sha
+            or (record_meta.get('dhash') is not None
+                and hamming_distance(live_frame.dhash, record_meta['dhash'])
+                < self.change_hamming_threshold)
+        )
+        if not same_target:
+            return None
+        return cache.put(
+            live_frame.image_bytes,
+            capture_seq=record_meta['capture_seq'],
+            frame_sha256=live_frame.frame_sha256,
+            dhash=live_frame.dhash,
+            width=live_frame.width,
+            height=live_frame.height,
+            capture_method=live_frame.capture_method,
+            captured_at=live_frame.captured_at,
+            mime=live_frame.mime,
+        )
+
     async def _analyze_and_persist(self, frame):
         """Cache raw frame in /dev/shm, analyze with Codex vision, persist text to SQLite."""
         if frame.frame_sha256 in self._analyzed_by_sha:
-            return self._analyzed_by_sha[frame.frame_sha256]
+            existing = self._analyzed_by_sha[frame.frame_sha256]
+            self._ensure_target_frame_cached(existing, frame)
+            self._last_analyzed_sha = existing['frame_sha256']
+            self._last_analyzed_dhash = existing['dhash']
+            return existing
         async with self._analyze_lock:
             if frame.frame_sha256 in self._analyzed_by_sha:
-                return self._analyzed_by_sha[frame.frame_sha256]
+                existing = self._analyzed_by_sha[frame.frame_sha256]
+                self._ensure_target_frame_cached(existing, frame)
+                self._last_analyzed_sha = existing['frame_sha256']
+                self._last_analyzed_dhash = existing['dhash']
+                return existing
             cache = self._ensure_cache()
             next_seq = self._capture_seq + 1
             cached = cache.put(
@@ -306,19 +345,22 @@ class ScreenContextController:
                     self._analyzed_by_sha.get(target_frame.frame_sha256)
                     or self._analyzed_by_sha.get(self._last_analyzed_sha)
                 )
+                if record_meta is not None:
+                    self._last_analyzed_sha = record_meta['frame_sha256']
+                    self._last_analyzed_dhash = record_meta['dhash']
                 cache_hit = True
                 self._cache_hits += 1
             else:
                 record_meta = await self._analyze_and_persist(target_frame)
 
             focused = None
+            deep_look_unavailable = None
             want_focused = (
                 self.mode == 'on_demand'
                 or _needs_deep_look(question, record_meta)
             )
             if want_focused and record_meta is not None:
-                cache = self._ensure_cache()
-                cached = cache.get(record_meta['frame_sha256']) or cache.latest()
+                cached = self._ensure_target_frame_cached(record_meta, target_frame)
                 if cached is not None:
                     self._deep_look_calls += 1
                     self._vision_calls += 1
@@ -328,13 +370,15 @@ class ScreenContextController:
                         detail='high',
                         prior_summary=record_meta.get('summary_text'),
                     )
+                else:
+                    deep_look_unavailable = 'target_frame_evicted'
 
             freshness = (
                 max(0.0, round(self.clock() - record_meta['analyzed_at_mono'], 2))
                 if record_meta and record_meta.get('analyzed_at_mono') is not None
                 else 0.0
             )
-            return {
+            result = {
                 'mode': self.mode,
                 'available': True,
                 'share_active_now': self._share_active,
@@ -344,6 +388,9 @@ class ScreenContextController:
                 'wake_slide_changed': wake_slide_changed,
                 'question_focused_vision': focused,
             }
+            if deep_look_unavailable is not None:
+                result['deep_look_unavailable'] = deep_look_unavailable
+            return result
         except asyncio.CancelledError:
             raise
         except ScreenVisionError as exc:

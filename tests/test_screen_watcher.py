@@ -220,6 +220,104 @@ class ScreenWatcherTests(unittest.IsolatedAsyncioTestCase):
         finally:
             await ctrl2.close()
 
+    async def test_evicted_frame_a_b_a_re_caches_exact_a_and_never_substitutes_b(self):
+        slide_a = _frame('SLIDE_A', '0000000000000000')
+        slide_b = _frame('SLIDE_B', 'ffffffffffffffff')
+        current = [slide_a]
+
+        class _SwitchableCapturer:
+            async def capture(self):
+                return current[0]
+
+        class _ContentIdentifyingAnalyzer(FakeAnalyzer):
+            async def analyze_frame(self, image_path, *, detail='high'):
+                content = Path(image_path).read_bytes().decode('utf-8')
+                res = await super().analyze_frame(image_path, detail=detail)
+                res['title'] = content
+                res['summary_text'] = f'SUMMARY:{content}'
+                return res
+
+            async def analyze_question(self, image_path, question, *, detail='high', prior_summary=None):
+                content = Path(image_path).read_bytes().decode('utf-8')
+                res = await super().analyze_question(image_path, question, detail=detail, prior_summary=prior_summary)
+                res['answer_relevant_findings'] = f'DEEP:{content}'
+                return res
+
+        analyzer = _ContentIdentifyingAnalyzer()
+        saved = []
+        cache = ScreenFrameCache(max_frames=1)
+        ctrl = ScreenContextController(
+            'm-evict-aba', mode='watch_and_cache', capturer=_SwitchableCapturer(),
+            analyzer=analyzer, persist_observation=saved.append, frame_cache=cache,
+            poll_seconds=10.0, min_analyze_interval_seconds=0.0, max_frames=1,
+        )
+        await ctrl.start()
+        try:
+            # 1) Ask on slide A
+            r1 = await ctrl.resolve_for_question('請看這頁細節')
+            self.assertEqual(r1['current_capture_seq'], 1)
+            self.assertEqual(r1['question_focused_vision']['answer_relevant_findings'], 'DEEP:JPEG-SLIDE_A')
+
+            # 2) Switch to slide B -> evicts A from max_frames=1 ring cache
+            current[0] = slide_b
+            r2 = await ctrl.resolve_for_question('請看這頁細節')
+            self.assertEqual(r2['current_capture_seq'], 2)
+            self.assertEqual(r2['question_focused_vision']['answer_relevant_findings'], 'DEEP:JPEG-SLIDE_B')
+            self.assertIsNone(cache.get(slide_a.frame_sha256))
+            self.assertIsNotNone(cache.get(slide_b.frame_sha256))
+
+            # 3) Switch back to slide A -> hits metadata for A (seq=1), MUST re-cache & analyze A, never B
+            current[0] = slide_a
+            r3 = await ctrl.resolve_for_question('請看這頁細節')
+            self.assertTrue(r3['cache_hit'])
+            self.assertEqual(r3['current_capture_seq'], 1)
+            self.assertEqual(r3['question_focused_vision']['answer_relevant_findings'], 'DEEP:JPEG-SLIDE_A')
+            self.assertNotIn('SLIDE_B', r3['question_focused_vision']['answer_relevant_findings'])
+            self.assertIsNotNone(cache.get(slide_a.frame_sha256))
+        finally:
+            await ctrl.close()
+
+    async def test_evicted_older_slide_never_falls_back_to_other_sha_in_cache(self):
+        slide_a = _frame('SLIDE_A', '0000000000000000')
+        slide_b = _frame('SLIDE_B', 'ffffffffffffffff')
+        current = [slide_a]
+
+        class _SwitchableCapturer:
+            async def capture(self):
+                return current[0]
+
+        analyzer = FakeAnalyzer()
+        cache = ScreenFrameCache(max_frames=1)
+        ctrl = ScreenContextController(
+            'm-evict-no-fallback', mode='watch_and_cache', capturer=_SwitchableCapturer(),
+            analyzer=analyzer, persist_observation=lambda obs: None, frame_cache=cache,
+            poll_seconds=10.0, min_analyze_interval_seconds=0.0, max_frames=1,
+        )
+        await ctrl.start()
+        try:
+            await ctrl.resolve_for_question('先看第一頁')
+            current[0] = slide_b
+            await ctrl.resolve_for_question('再看第二頁')
+            # A is evicted; only B remains in cache
+            meta_a = ctrl._analyzed_by_sha[slide_a.frame_sha256]
+            self.assertIsNone(cache.get(slide_a.frame_sha256))
+            self.assertIsNotNone(cache.latest())
+            self.assertEqual(cache.latest().frame_sha256, slide_b.frame_sha256)
+
+            # Without matching live frame A, helper MUST refuse cross-SHA fallback to B
+            self.assertIsNone(ctrl._ensure_target_frame_cached(meta_a, live_frame=None))
+            self.assertIsNone(ctrl._ensure_target_frame_cached(meta_a, live_frame=slide_b))
+
+            # If deep look target frame cannot be obtained (evicted & not live), report unavailable and skip analyze_question
+            calls_before = len(analyzer.question_calls)
+            ctrl._ensure_target_frame_cached = lambda meta, live_frame=None: None
+            r = await ctrl.resolve_for_question('請看這頁細節')
+            self.assertEqual(len(analyzer.question_calls), calls_before)
+            self.assertIsNone(r['question_focused_vision'])
+            self.assertEqual(r['deep_look_unavailable'], 'target_frame_evicted')
+        finally:
+            await ctrl.close()
+
 
 if __name__ == '__main__':
     unittest.main()

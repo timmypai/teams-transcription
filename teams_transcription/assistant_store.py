@@ -509,6 +509,7 @@ class AssistantStore(TargetConsentMixin, PostmeetingStoreMixin, MeetingStore):
                         'postmeeting_snapshots','summary_jobs','capture_cleanup_reviews','execution_leases','assistant_runs'):
                     db.execute(f'DELETE FROM {table} WHERE session_id IN ({placeholders})',session_ids)
                 for table in ('summary_revisions','summary_publication_recovery','question_activity',
+                        'screen_observations',
                         'session_runtime','session_stop_requests','session_events','transcript_increments',
                         'transcript_captures','finals','revisions','final_aliases','provisionals','meetings'):
                     db.execute(f'DELETE FROM {table} WHERE meeting_id IN ({placeholders})',session_ids)

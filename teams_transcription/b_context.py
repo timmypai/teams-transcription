@@ -291,6 +291,8 @@ class MeetingQuestionContext:
             context['error_code'] = live['error_code']
         if isinstance(live.get('question_focused_vision'), dict):
             context['question_focused_vision'] = live['question_focused_vision']
+        if live.get('deep_look_unavailable'):
+            context['deep_look_unavailable'] = live['deep_look_unavailable']
         return context
 
     def _wire_payload(self, result, request):

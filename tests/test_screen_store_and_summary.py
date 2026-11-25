@@ -156,6 +156,70 @@ class ScreenStoreAndSummaryTests(unittest.TestCase):
             optout_entries = session_optout.summary_source()['entries']
             self.assertFalse(any(e.get('source_state') == 'screen_observation' for e in optout_entries))
 
+    def test_manual_delete_occurrence_removes_all_attempt_screen_observations_and_preserves_other_meetings(self):
+        import sqlite3
+        from teams_transcription.assistant_store import AssistantStore
+
+        with tempfile.TemporaryDirectory() as root:
+            astore = AssistantStore(root)
+            mstore = MeetingStore(root)
+            occ_del = astore.create_manual_occurrence({
+                'title': '待刪除手動會議',
+                'join_url': 'https://teams.microsoft.com/l/meetup-join/del-1',
+                'start_at': '2026-11-24T13:00:00+08:00',
+                'end_at': '2026-11-24T14:00:00+08:00',
+                'recording_authorized': True,
+                'speaking_authorized': True,
+            })
+            occ_keep = astore.create_manual_occurrence({
+                'title': '保留手動會議',
+                'join_url': 'https://teams.microsoft.com/l/meetup-join/keep-1',
+                'start_at': '2026-11-24T15:00:00+08:00',
+                'end_at': '2026-11-24T16:00:00+08:00',
+                'recording_authorized': True,
+                'speaking_authorized': True,
+            })
+
+            # Attempt 1 & Attempt 2 (rejoin) on occ_del, both with lease-fenced screen observations
+            lease_del_1 = astore.claim_run(occ_del['id'], 'worker-1', 60)
+            MeetingStore(root, lease=lease_del_1).record_screen_observation(
+                lease_del_1['session_id'],
+                _sample_observation(1, title='機密頁 1', frame_seed=b'del-1'))
+            MeetingStore(root, lease=lease_del_1).finalize(lease_del_1['session_id'], 'completed')
+            astore.finish_run(lease_del_1, 'completed', 'meeting_ended')
+
+            lease_del_2 = astore.claim_run(occ_del['id'], 'worker-1', 60, allow_rejoin=True)
+            MeetingStore(root, lease=lease_del_2).record_screen_observation(
+                lease_del_2['session_id'],
+                _sample_observation(1, title='機密頁 2', frame_seed=b'del-2'))
+            MeetingStore(root, lease=lease_del_2).finalize(lease_del_2['session_id'], 'completed')
+            astore.finish_run(lease_del_2, 'completed', 'meeting_ended')
+
+            # Separate meeting that MUST survive deletion of occ_del
+            lease_keep = astore.claim_run(occ_keep['id'], 'worker-1', 60)
+            MeetingStore(root, lease=lease_keep).record_screen_observation(
+                lease_keep['session_id'],
+                _sample_observation(1, title='其他會議畫面', frame_seed=b'keep-1'))
+            MeetingStore(root, lease=lease_keep).finalize(lease_keep['session_id'], 'completed')
+            astore.finish_run(lease_keep, 'completed', 'meeting_ended')
+
+            res = astore.delete_occurrence(occ_del['id'])
+            self.assertTrue(res['deleted'])
+            self.assertFalse(res['tombstoned'])
+
+            with astore._locked() as db:
+                del_ids = (lease_del_1['session_id'], lease_del_2['session_id'])
+                del_meetings = db.execute(
+                    'SELECT COUNT(*) FROM meetings WHERE meeting_id IN (?, ?)', del_ids).fetchone()[0]
+                del_screens = db.execute(
+                    'SELECT COUNT(*) FROM screen_observations WHERE meeting_id IN (?, ?)', del_ids).fetchone()[0]
+                keep_screens = db.execute(
+                    'SELECT COUNT(*) FROM screen_observations WHERE meeting_id = ?',
+                    (lease_keep['session_id'],)).fetchone()[0]
+            self.assertEqual(del_meetings, 0)
+            self.assertEqual(del_screens, 0)
+            self.assertEqual(keep_screens, 1)
+
 
 if __name__ == '__main__':
     unittest.main()
