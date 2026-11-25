@@ -235,12 +235,13 @@ CAPTURE_SHARE_VIDEO_JS = r"""(stageDomSelectors = []) => {
     '[data-tid*="camera" i]', '[data-tid*="self-video" i]',
     '[role="log"]', '[role="feed"]'
   ];
+  const chatSelectors = ['[role="log"]', '[role="feed"]'];
   const matchesAny = (el, selectors) => selectors.some(sel => {
     try { return Boolean(el && typeof el.matches === 'function' && el.matches(sel)); } catch (_) { return false; }
   });
   const closestAcrossShadow = (el, selectors) => {
     let cur = el, depth = 0;
-    while (cur && depth < 24) {
+    while (cur && depth < 32) {
       if (matchesAny(cur, selectors)) return true;
       if (cur.parentElement) {
         cur = cur.parentElement;
@@ -249,6 +250,30 @@ CAPTURE_SHARE_VIDEO_JS = r"""(stageDomSelectors = []) => {
         cur = root && root.host ? root.host : null;
       }
       depth++;
+    }
+    return false;
+  };
+  const hasDescendantAcrossShadow = (el, selectors) => {
+    if (!el) return false;
+    const stack = [[el, 0]];
+    let visited = 0;
+    while (stack.length && visited < 4000) {
+      const [root, depth] = stack.pop();
+      if (!root || depth > 12) return true;  // fail closed on excessive depth
+      for (const sel of selectors) {
+        try { if (root.querySelector && root.querySelector(sel)) return true; } catch (_) { return true; }
+      }
+      if (root.shadowRoot) {
+        if (matchesAny(root.shadowRoot.host, selectors)) return true;
+        stack.push([root.shadowRoot, depth + 1]);
+      }
+      const nodes = root.querySelectorAll ? root.querySelectorAll('*') : [];
+      for (let i = 0; i < nodes.length; i++) {
+        visited++;
+        if (visited >= 4000) return true;  // fail closed on huge DOM
+        const sr = nodes[i].shadowRoot;
+        if (sr) stack.push([sr, depth + 1]);
+      }
     }
     return false;
   };
@@ -297,7 +322,8 @@ CAPTURE_SHARE_VIDEO_JS = r"""(stageDomSelectors = []) => {
         for (let j = 0; j < list.length; j++) {
           const el = list[j];
           if (!el || el.tagName === 'IFRAME') continue;
-          if (closestAcrossShadow(el, ['[role="log"]', '[role="feed"]'])) continue;
+          if (closestAcrossShadow(el, chatSelectors)) continue;
+          if (hasDescendantAcrossShadow(el, chatSelectors)) continue;
           const style = window.getComputedStyle(el);
           if (!style || style.display === 'none' || style.visibility === 'hidden') continue;
           const rect = el.getBoundingClientRect();
@@ -501,6 +527,77 @@ _REASON_PRIORITY = {
 }
 
 
+_ELEMENT_NOT_IN_CHAT_JS = r"""el => {
+  let cur = el, depth = 0;
+  while (cur) {
+    if (depth >= 32) return false;
+    try {
+      if (typeof cur.matches === 'function' && cur.matches('[role="log"],[role="feed"]')) return false;
+    } catch (_) {
+      return false;
+    }
+    if (cur.parentElement) {
+      cur = cur.parentElement;
+    } else {
+      const root = typeof cur.getRootNode === 'function' ? cur.getRootNode() : null;
+      cur = root && root.host ? root.host : null;
+    }
+    depth++;
+  }
+  return true;
+}"""
+
+_STAGE_CONTAINER_CHECK_JS = r"""el => {
+  if (!el || el.tagName === 'IFRAME') return {allowed: false, iframeCount: 0};
+  const isChat = node => {
+    try { return typeof node?.matches === 'function' && node.matches('[role="log"],[role="feed"]'); }
+    catch (_) { return true; }
+  };
+  let cur = el, ancDepth = 0;
+  while (cur) {
+    if (ancDepth >= 32 || isChat(cur)) return {allowed: false, iframeCount: 0};
+    if (cur.parentElement) cur = cur.parentElement;
+    else {
+      const root = typeof cur.getRootNode === 'function' ? cur.getRootNode() : null;
+      cur = root && root.host ? root.host : null;
+    }
+    ancDepth++;
+  }
+  let shadowIframe = false;
+  let chatDescendant = false;
+  const stack = [[el, 0, false]];
+  let visited = 0;
+  while (stack.length && !shadowIframe && !chatDescendant) {
+    const [root, depth, inShadow] = stack.pop();
+    if (!root || depth > 12) return {allowed: false, iframeCount: 0};
+    try {
+      if (root.querySelector && root.querySelector('[role="log"],[role="feed"]')) {
+        chatDescendant = true;
+        break;
+      }
+      if (inShadow && root.querySelector && root.querySelector('iframe')) {
+        shadowIframe = true;
+        break;
+      }
+    } catch (_) {
+      return {allowed: false, iframeCount: 0};
+    }
+    if (root.shadowRoot) stack.push([root.shadowRoot, depth + 1, true]);
+    const nodes = root.querySelectorAll ? root.querySelectorAll('*') : [];
+    for (let i = 0; i < nodes.length; i++) {
+      visited++;
+      if (visited >= 4000) return {allowed: false, iframeCount: 0};
+      const sr = nodes[i].shadowRoot;
+      if (sr) stack.push([sr, depth + 1, true]);
+    }
+  }
+  return {
+    allowed: !shadowIframe && !chatDescendant,
+    iframeCount: el.querySelectorAll ? el.querySelectorAll('iframe').length : 0,
+  };
+}"""
+
+
 def _is_powerpoint_live_url(url):
     """Strict allowlist for Microsoft PowerPoint Live / Office Online iframe URLs."""
     if not isinstance(url, str) or not url:
@@ -551,6 +648,36 @@ class ScreenShareCapturer:
 
     def _now_iso(self):
         return datetime.now(timezone.utc).isoformat()
+
+    async def _frame_chain_not_in_chat(self, frame, main_frame):
+        """Walk parent_frame/frame_element chain up to main_frame; fail closed on any chat ancestor or error."""
+        cur = frame
+        seen = set()
+        depth = 0
+        while cur is not None and cur is not main_frame:
+            if id(cur) in seen or depth >= 16:
+                return False
+            seen.add(id(cur))
+            depth += 1
+            if callable(getattr(cur, 'is_detached', None)) and cur.is_detached():
+                return False
+            try:
+                frame_el = await asyncio.wait_for(cur.frame_element(), timeout=self._evaluate_timeout)
+                if frame_el is None:
+                    return False
+                allowed = await asyncio.wait_for(
+                    frame_el.evaluate(_ELEMENT_NOT_IN_CHAT_JS),
+                    timeout=self._evaluate_timeout,
+                )
+                if allowed is not True:
+                    return False
+            except Exception:
+                return False
+            parent = getattr(cur, 'parent_frame', None)
+            if parent is None:
+                return False
+            cur = parent
+        return cur is main_frame
 
     @staticmethod
     def _merge_probe(agg, item):
@@ -619,6 +746,8 @@ class ScreenShareCapturer:
                 continue
             self._merge_probe(agg, result.get('probe'))
             if result.get('matched') is True and result.get('blank') is not True:
+                if frame is not main_frame and not await self._frame_chain_not_in_chat(frame, main_frame):
+                    continue
                 raw = base64.b64decode(result['data'], validate=True)
                 if 0 < len(raw) <= MAX_FRAME_BYTES:
                     dhash = compute_dhash(result['luma'])
@@ -642,14 +771,10 @@ class ScreenShareCapturer:
         for frame in powerpoint_frames:
             if callable(getattr(frame, 'is_detached', None)) and frame.is_detached():
                 continue
+            if not await self._frame_chain_not_in_chat(frame, main_frame):
+                continue
             try:
                 frame_el = await asyncio.wait_for(frame.frame_element(), timeout=self._evaluate_timeout)
-                allowed = await asyncio.wait_for(
-                    frame_el.evaluate("el => !el.closest('[role=\"log\"],[role=\"feed\"]')"),
-                    timeout=self._evaluate_timeout,
-                )
-                if allowed is not True:
-                    continue
                 box = await frame_el.bounding_box()
                 if not box or box.get('width', 0) < 160 or box.get('height', 0) < 90:
                     continue
@@ -681,45 +806,17 @@ class ScreenShareCapturer:
             )
 
         # 3) Fallback path: ONLY screenshot a non-iframe stage DOM element already confirmed visible by JS.
-        #    If the container embeds any <iframe>, every embedded iframe must pass the strict PowerPoint Live URL gate.
+        #    Rejects chat ancestors/descendants across shadow DOM & frame chains; any embedded iframe
+        #    must pass both the strict PowerPoint Live URL gate and full frame-chain chat exclusion.
         for frame, selector, match_idx in stage_candidates:
             if callable(getattr(frame, 'is_detached', None)) and frame.is_detached():
+                continue
+            if frame is not main_frame and not await self._frame_chain_not_in_chat(frame, main_frame):
                 continue
             try:
                 locator = frame.locator(selector).nth(match_idx)
                 check = await asyncio.wait_for(
-                    locator.evaluate(
-                        """el => {
-                          if (el.tagName === 'IFRAME' || el.closest('[role="log"],[role="feed"]')) {
-                            return {allowed: false, iframeCount: 0, shadowIframe: false};
-                          }
-                          let shadowIframe = false;
-                          const stack = [];
-                          const visit = (root, depth) => {
-                            if (!root || depth > 12) return;
-                            for (const node of root.querySelectorAll('*')) {
-                              if (node.shadowRoot) {
-                                if (node.shadowRoot.querySelector('iframe')) shadowIframe = true;
-                                stack.push([node.shadowRoot, depth + 1]);
-                              }
-                            }
-                          };
-                          if (el.shadowRoot) {
-                            if (el.shadowRoot.querySelector('iframe')) shadowIframe = true;
-                            stack.push([el.shadowRoot, 1]);
-                          }
-                          visit(el, 0);
-                          while (stack.length && !shadowIframe) {
-                            const [sr, d] = stack.pop();
-                            visit(sr, d);
-                          }
-                          return {
-                            allowed: !shadowIframe,
-                            iframeCount: el.querySelectorAll('iframe').length,
-                            shadowIframe,
-                          };
-                        }"""
-                    ),
+                    locator.evaluate(_STAGE_CONTAINER_CHECK_JS),
                     timeout=self._evaluate_timeout,
                 )
                 if not isinstance(check, dict) or check.get('allowed') is not True:
@@ -736,7 +833,9 @@ class ScreenShareCapturer:
                             timeout=self._evaluate_timeout,
                         )
                         child = await handle.content_frame() if handle is not None else None
-                        if child is None or not _is_powerpoint_live_url(getattr(child, 'url', '')):
+                        if (child is None
+                                or not _is_powerpoint_live_url(getattr(child, 'url', ''))
+                                or not await self._frame_chain_not_in_chat(child, main_frame)):
                             nested_ok = False
                             break
                     if not nested_ok:

@@ -479,6 +479,105 @@ class ScreenCaptureBrowserTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(probe8['match_reason'], 'powerpoint_live_frame')
             await page8.close()
 
+            # 9) Chat-exclusion bypass regressions (ALL 3 topologies must return None with ZERO screenshots):
+            #    (a1) role="log" -> open Shadow DOM host -> verified PowerPoint Live HTTPS iframe
+            #    (a2) role="log" -> outer iframe -> nested verified PowerPoint Live HTTPS iframe
+            #    (b)  div[data-tid="powerpoint-stage"] > div[role="log"] > verified PowerPoint Live HTTPS iframe
+            chat_bypass_cases = [
+                (
+                    'shadow_chat_ppt_iframe',
+                    '<html><body>'
+                    '<div role="log" aria-label="Chat"><div id="chatHost"></div></div>'
+                    '<script>'
+                    'const sr = document.getElementById("chatHost").attachShadow({mode:"open"});'
+                    'const f = document.createElement("iframe");'
+                    'f.style.width = "800px"; f.style.height = "450px"; f.style.border = "0";'
+                    'f.src = "https://apc-powerpoint.officeapps.live.com/p/PowerPointFrame.aspx?shadow=1";'
+                    'sr.appendChild(f);'
+                    '</script></body></html>',
+                ),
+                (
+                    'ancestor_frame_chat_ppt_iframe',
+                    '<html><body>'
+                    '<div role="feed" aria-label="Chat">'
+                    '<iframe style="width:820px;height:470px;border:0" '
+                    'src="https://teams.microsoft.com/chat-embed-outer"></iframe>'
+                    '</div></body></html>',
+                ),
+                (
+                    'container_wraps_chat_ppt_iframe',
+                    '<html><body>'
+                    '<div data-tid="powerpoint-stage" style="width:820px;height:470px;background:#fff">'
+                    '<div role="log" aria-label="Chat">'
+                    '<iframe style="width:800px;height:450px;border:0" '
+                    'src="https://apc-powerpoint.officeapps.live.com/p/PowerPointFrame.aspx?incontainer=1"></iframe>'
+                    '</div></div></body></html>',
+                ),
+            ]
+            for label, html_body in chat_bypass_cases:
+                with self.subTest(chat_bypass=label):
+                    cb_page = await ctx.new_page()
+                    async def _cb_route(route, *, body=html_body):
+                        url = route.request.url
+                        if url == 'https://teams.microsoft.com/chat-bypass-test':
+                            await route.fulfill(status=200, content_type='text/html', body=body)
+                        elif url == 'https://teams.microsoft.com/chat-embed-outer':
+                            await route.fulfill(status=200, content_type='text/html', body=(
+                                '<html><body style="margin:0">'
+                                '<iframe style="width:800px;height:450px;border:0" '
+                                'src="https://apc-powerpoint.officeapps.live.com/p/PowerPointFrame.aspx?nested=1"></iframe>'
+                                '</body></html>'))
+                        elif url.startswith('https://apc-powerpoint.officeapps.live.com/'):
+                            await route.fulfill(status=200, content_type='text/html', body=(
+                                '<html><body style="margin:0;background:#fff"><h1>Chat Preview PPT</h1></body></html>'))
+                        else:
+                            await route.abort()
+                    await cb_page.route('**/*', _cb_route)
+                    await cb_page.goto('https://teams.microsoft.com/chat-bypass-test', wait_until='load')
+                    await cb_page.wait_for_function(
+                        "() => true",
+                    )
+                    # Wait until child PowerPoint frame has actually loaded so powerpoint_frames_seen >= 1
+                    for _ in range(40):
+                        if any('officeapps.live.com' in f.url for f in cb_page.frames):
+                            break
+                        await cb_page.wait_for_timeout(50)
+                    self.assertTrue(any('officeapps.live.com' in f.url for f in cb_page.frames))
+
+                    screenshot_calls = []
+                    for f in cb_page.frames:
+                        orig_fe = f.frame_element
+                        async def _tracked_fe(_orig=orig_fe, _calls=screenshot_calls):
+                            el = await _orig()
+                            if el is not None:
+                                orig_ss = el.screenshot
+                                async def _el_ss(*a, **kw):
+                                    _calls.append('frame_element')
+                                    return await orig_ss(*a, **kw)
+                                el.screenshot = _el_ss
+                            return el
+                        f.frame_element = _tracked_fe
+                        orig_loc = f.locator
+                        def _tracked_loc(*args, _orig=orig_loc, _calls=screenshot_calls, **kwargs):
+                            loc = _orig(*args, **kwargs)
+                            orig_nth = loc.nth
+                            def _nth(idx):
+                                sub = orig_nth(idx)
+                                orig_ss = sub.screenshot
+                                async def _ss(*a, **kw):
+                                    _calls.append(('locator', args, idx))
+                                    return await orig_ss(*a, **kw)
+                                sub.screenshot = _ss
+                                return sub
+                            loc.nth = _nth
+                            return loc
+                        f.locator = _tracked_loc
+
+                    cap_cb = ScreenShareCapturer(_FakeMeeting(cb_page))
+                    self.assertIsNone(await cap_cb.capture())
+                    self.assertEqual(screenshot_calls, [])
+                    await cb_page.close()
+
             await ctx.close()
 
     def test_screen_context_diagnostic_allowlists_probe_without_leaking_raw_strings(self):
