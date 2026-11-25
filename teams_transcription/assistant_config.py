@@ -1,6 +1,7 @@
 """Standalone daemon/admin configuration; no caller OAuth or MCP settings."""
 import os
 from pathlib import Path
+from typing import Literal
 from urllib.parse import urlsplit
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
@@ -38,6 +39,12 @@ class AssistantSettings(BaseModel):
     allowed_meeting_hosts: list[str] = Field(default_factory=lambda: [
         'teams.microsoft.com', 'teams.cloud.microsoft', 'teams.live.com'])
     summary_model: str | None = None
+    screen_context_mode: Literal['off', 'on_demand', 'watch_and_cache'] = 'off'
+    vision_model: str | None = None
+    screen_poll_seconds: float = Field(default=2.5, ge=1.0, le=30.0)
+    screen_min_analyze_interval_seconds: float = Field(default=6.0, ge=2.0, le=60.0)
+    screen_frame_cache_limit: int = Field(default=16, ge=1, le=64)
+    screen_include_in_summary: bool = True
     display_name: str = Field(default='小白會議助理', min_length=1, max_length=100)
     timezone: str = 'Asia/Taipei'
     live_provider: str = 'codex_live'
@@ -48,8 +55,11 @@ class AssistantSettings(BaseModel):
     @model_validator(mode='before')
     @classmethod
     def strict_policy_booleans(cls, value):
-        if isinstance(value, dict) and 'cookie_secure' in value and type(value['cookie_secure']) is not bool:
-            raise ValueError('invalid_cookie_policy')
+        if isinstance(value, dict):
+            if 'cookie_secure' in value and type(value['cookie_secure']) is not bool:
+                raise ValueError('invalid_cookie_policy')
+            if 'screen_include_in_summary' in value and type(value['screen_include_in_summary']) is not bool:
+                raise ValueError('invalid_screen_summary_policy')
         return value
 
     @model_validator(mode='after')
@@ -86,6 +96,12 @@ class AssistantSettings(BaseModel):
         if self.summary_model is not None:
             from .summary import validate_codex_summary_model
             validate_codex_summary_model(self.summary_model)
+        if self.vision_model is not None:
+            from .summary import SummaryGenerationError, validate_codex_summary_model
+            try:
+                validate_codex_summary_model(self.vision_model)
+            except SummaryGenerationError:
+                raise ValueError('unsupported_vision_model') from None
         try:
             ZoneInfo(self.timezone)
         except (ZoneInfoNotFoundError, ValueError):

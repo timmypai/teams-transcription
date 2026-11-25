@@ -148,7 +148,8 @@ class AssistantStore(TargetConsentMixin, PostmeetingStoreMixin, MeetingStore):
             return json.loads(db.execute('SELECT value FROM assistant_settings WHERE id=0').fetchone()[0])
 
     def update_settings(self, values, actor='admin'):
-        if not isinstance(values,dict) or set(values)-{'scheduler_paused','task_stale_days'}:
+        allowed = {'scheduler_paused', 'task_stale_days', 'screen_context_mode', 'screen_include_in_summary'}
+        if not isinstance(values,dict) or set(values)-allowed:
             raise AssistantStoreError('invalid_settings')
         values = dict(values)
         if 'scheduler_paused' in values:
@@ -156,6 +157,11 @@ class AssistantStore(TargetConsentMixin, PostmeetingStoreMixin, MeetingStore):
         if 'task_stale_days' in values and (type(values['task_stale_days']) is not int
                 or not 0<=values['task_stale_days']<=365):
             raise AssistantStoreError('invalid_settings')
+        if 'screen_context_mode' in values and values['screen_context_mode'] not in {'off', 'on_demand', 'watch_and_cache'}:
+            raise AssistantStoreError('invalid_screen_policy')
+        if 'screen_include_in_summary' in values:
+            if type(values['screen_include_in_summary']) is not bool:
+                raise AssistantStoreError('invalid_screen_policy')
         with self._locked() as db, db:
             current = json.loads(db.execute('SELECT value FROM assistant_settings WHERE id=0').fetchone()[0])
             current.update(values)
@@ -503,6 +509,7 @@ class AssistantStore(TargetConsentMixin, PostmeetingStoreMixin, MeetingStore):
                         'postmeeting_snapshots','summary_jobs','capture_cleanup_reviews','execution_leases','assistant_runs'):
                     db.execute(f'DELETE FROM {table} WHERE session_id IN ({placeholders})',session_ids)
                 for table in ('summary_revisions','summary_publication_recovery','question_activity',
+                        'screen_observations',
                         'session_runtime','session_stop_requests','session_events','transcript_increments',
                         'transcript_captures','finals','revisions','final_aliases','provisionals','meetings'):
                     db.execute(f'DELETE FROM {table} WHERE meeting_id IN ({placeholders})',session_ids)

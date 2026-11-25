@@ -325,6 +325,14 @@ def meeting_view(store, occurrence_id, timezone):
             revision=entry.get('revision',entry.get('source_revision')) or 0)
             for entry in source['sources']] if source else []
         transcript_paragraphs = group_transcript_paragraphs(transcript)
+        screen_observations = [dict(
+            id=obs['id'], observation_id=obs['observation_id'], capture_seq=obs['capture_seq'],
+            captured_at=obs.get('captured_at'), screen_kind=obs.get('screen_kind'),
+            title=obs.get('title', ''), summary_text=obs.get('summary_text', ''),
+            structured=obs.get('structured') if isinstance(obs.get('structured'), dict) else {},
+            capture_method=obs.get('capture_method'), width=obs.get('width'),
+            height=obs.get('height'), vision_model=obs.get('vision_model'),
+        ) for obs in (source.get('screen_observations') or [])] if source else []
         snapshot = status.get('response_status')
         response = (dict(state=snapshot.get('state','unknown'),output_enabled=bool(snapshot.get('output_enabled')),
             output_muted=bool(snapshot.get('output_muted',True)),error_code=snapshot.get('error_code'))
@@ -332,12 +340,16 @@ def meeting_view(store, occurrence_id, timezone):
         if response is not None and isinstance(snapshot.get('question_activity'),dict):
             response['question_activity'] = {key:snapshot['question_activity'].get(key)
                 for key in ('state','error_code')}
+        if response is not None and isinstance(snapshot.get('screen_context'),dict):
+            from .diagnostics import screen_context_diagnostic
+            response['screen_context'] = screen_context_diagnostic(snapshot.get('screen_context'))
         detail = dict(meeting=meeting,session_id=session_id,run_state=row['run_state'],runs=all_runs,
             auto_join=_auto_join_status(db,row),
             response=response,previous=previous,tasks=tasks,series_meetings=series_meetings,
             series_state=series_state,task_workspace=task_workspace,postmeeting=postmeeting,
             latest_recorded_meeting=dict(latest_recorded) if latest_recorded else None,
             transcript=transcript,transcript_paragraphs=transcript_paragraphs,
+            screen_observations=screen_observations,
             summary=postmeeting_summary or (source['summary'] if source else None),
             summary_job=dict(state=job['state'],error_code=job['error_code']) if job else None,
             source_version=source['version'] if source else None,
@@ -349,6 +361,7 @@ def meeting_view(store, occurrence_id, timezone):
             run['started_at'] if run else None,run['ended_at'] if run else None,
             job['updated_at'] if job else None]
         observed.extend(item['timestamp'] for item in transcript)
+        observed.extend(item['captured_at'] for item in screen_observations)
         observed.extend(item['updated_at'] for item in postmeeting)
         if series_state:
             observed.append(series_state['published_at'])

@@ -405,6 +405,18 @@ def create_admin_app(daemon, settings, *, local_teams_control=False):
             form(session,'poll','','更新行事曆')+'</div></section>')
         body += '<section><h2>待辦確認提醒</h2><p>超過幾天沒有明確確認時顯示「待確認」。預設 14 天，可自行調整；0 表示停用久未更新提醒。逾期仍會提示，不會自動完成、建立事項或聯絡他人。</p>'
         body += form(session,'task-policy',input_field('task_stale_days','未確認天數（0–365）',policy.get('task_stale_days',14),'number'),'保存提醒設定')+'</section>'
+        effective_screen_mode = policy.get('screen_context_mode', settings.screen_context_mode)
+        effective_screen_summary = policy.get('screen_include_in_summary', settings.screen_include_in_summary)
+        body += ('<section id="screen-context-settings"><h2>分享畫面理解（GPT Live 畫面問答）</h2>'
+            '<p>僅在取得會議同意後啟用。原圖只暫存於記憶體（/dev/shm）並於會後清除，SQLite 僅保留衍生文字意義；變更將於下一場會議生效。</p>' +
+            form(session, 'screen-policy',
+                select_field('screen_context_mode', '畫面理解模式', [
+                    ('off', '停用（預設；不擷取 Teams 分享畫面）'),
+                    ('on_demand', 'Phase 1：按需擷取（提問時才看畫面，零背景呼叫）'),
+                    ('watch_and_cache', 'Phase 2：換頁背景預解析（提問零延遲自動帶入）'),
+                ], effective_screen_mode) +
+                checkbox('screen_include_in_summary', '將留存於 SQLite 的分享畫面文字意義納入會後自動摘要參考', effective_screen_summary),
+                '保存畫面設定') + '</section>')
         if status['capture_interlock']:
             body += '<section><h2>上次離會需要確認</h2><p>請先確認助理已離會，再恢復新的入會。</p><a href="/history">查看受阻會議與清理確認</a></section>'
         notice = session.pop('google_notice',None)
@@ -462,7 +474,8 @@ def create_admin_app(daemon, settings, *, local_teams_control=False):
                 input_field('max_lateness_seconds','最晚加入秒數',calendar['max_lateness_seconds'],'number'))
             body += '<section><h2>'+h(calendar.get('name') or '新增 Calendar')+'</h2>'+form(session,'calendar',fields)+'</section>'
         safe = {key:getattr(settings,key) for key in ('display_name','timezone','calendar_poll_seconds','lookahead_hours',
-            'max_duration_seconds','join_timeout_seconds','live_model','summary_model')}
+            'max_duration_seconds','join_timeout_seconds','live_model','summary_model','vision_model',
+            'screen_context_mode','screen_include_in_summary')}
         body += '<section><details><summary>進階執行設定</summary><p>由部署設定管理；此處不顯示憑證。</p><pre>'+h(
             json.dumps(safe,ensure_ascii=False,indent=2))+'</pre></details></section>'
         body += ('<section><h2>資料與管理</h2><nav><a href="/glossary">人名與術語</a> '
@@ -614,7 +627,7 @@ def create_admin_app(daemon, settings, *, local_teams_control=False):
         response = run['status'].get('response_status')
         if isinstance(response,dict):
             visible = {key:response.get(key) for key in
-                ('state','error_code','startup_phase','output_enabled','output_muted','progress')}
+                ('state','error_code','startup_phase','output_enabled','output_muted','progress','screen_context')}
             body += '<h2>語音 B 已保存快照</h2><p>觀測時間：'+h(readable_time(run['status'].get('response_snapshot_at')))+'</p><pre>'+h(
                 json.dumps(visible,ensure_ascii=False,indent=2))+'</pre><p>本機送音或 drain 不代表遠端可聽。</p>'
         glossary = run['glossary_snapshot']
@@ -658,6 +671,32 @@ def create_admin_app(daemon, settings, *, local_teams_control=False):
                 body += ('<article class="transcript-paragraph"><p class="row-meta">'+h(time_range)+' · '+
                     h(para['source_state'])+' · '+h(para['segment_count'])+' 片段</p><p class="paragraph-text">'+
                     h(para['text'])+'</p></article>')
+            body += '</section>'
+        screen_observations = snapshot.get('screen_observations') or []
+        if screen_observations:
+            body += ('<section id="screen-observations-section"><h2>分享畫面觀察（衍生視覺文字）</h2>'
+                '<p>此區僅保存分享畫面的衍生視覺文字與結構化重點（不含原始截圖），非與會者口頭發言。</p>')
+            for obs in screen_observations:
+                structured = obs.get('structured') if isinstance(obs.get('structured'), dict) else {}
+                title_label = obs.get('title') or '未命名畫面'
+                body += ('<article id="source-'+h(obs['id'])+'" class="screen-observation"><h3>#'+h(obs['capture_seq'])+
+                    ' · '+h(title_label)+'（'+h(obs['id'])+'）</h3><p class="row-meta">'+
+                    h(readable_time(obs.get('captured_at')))+' · '+h(obs.get('screen_kind'))+' · '+
+                    h(obs.get('capture_method'))+' · '+h(obs.get('width'))+'×'+h(obs.get('height'))+' · '+
+                    h(obs.get('vision_model'))+' · 衍生視覺觀察</p><p>'+h(obs.get('summary_text'))+'</p>')
+                key_items = structured.get('key_items') or []
+                if key_items:
+                    body += '<ul>'+''.join('<li>'+h(item)+'</li>' for item in key_items)+'</ul>'
+                metrics = structured.get('metrics_or_numbers') or []
+                if metrics:
+                    body += '<p><strong>關鍵數據：</strong>'+h('；'.join(str(x) for x in metrics))+'</p>'
+                excerpt = structured.get('visible_text_excerpt') or ''
+                if excerpt:
+                    body += '<details><summary>可見原文摘錄</summary><pre>'+h(excerpt)+'</pre></details>'
+                uncertain = structured.get('uncertain_areas') or []
+                if uncertain:
+                    body += '<p class="warning">看不清或不確定區域：'+h('；'.join(str(x) for x in uncertain))+'</p>'
+                body += '</article>'
             body += '</section>'
         body += '<section><h2>來源記錄</h2><p>原文及 provenance；不以姓名或詞庫覆寫。</p>'
         for source in snapshot['sources']:
@@ -959,6 +998,19 @@ def create_admin_app(daemon, settings, *, local_teams_control=False):
         elif name=='task-policy':
             await asyncio.to_thread(daemon.store.update_settings,dict(task_stale_days=integer(values,'task_stale_days')))
             destination = '/settings'
+        elif name=='screen-policy':
+            if set(values) - {'screen_context_mode', 'screen_include_in_summary'}:
+                raise AdminError('invalid_screen_policy')
+            mode = values.get('screen_context_mode')
+            if mode not in {'off', 'on_demand', 'watch_and_cache'}:
+                raise AdminError('invalid_screen_policy')
+            if 'screen_include_in_summary' in values and values['screen_include_in_summary'] != 'on':
+                raise AdminError('invalid_screen_policy')
+            await asyncio.to_thread(daemon.store.update_settings, dict(
+                screen_context_mode=mode,
+                screen_include_in_summary='screen_include_in_summary' in values,
+            ))
+            destination = '/settings'
         elif name=='task-workflow':
             try:
                 await asyncio.to_thread(daemon.store.apply_task_action,series_id=values.get('series_id'),task_id=target,
@@ -1140,7 +1192,7 @@ def create_admin_app(daemon, settings, *, local_teams_control=False):
         controls['delete'] = controls['delete'] and not active
         if active and isinstance(status.get('response'),dict):
             data['response'] = {key:status['response'].get(key) for key in
-                ('state','output_enabled','output_muted','error_code','question_activity')}
+                ('state','output_enabled','output_muted','error_code','question_activity','screen_context')}
         return JSONResponse(data)
 
     async def asset(request):
@@ -1189,6 +1241,7 @@ def create_admin_app(daemon, settings, *, local_teams_control=False):
             'summary_source_unavailable':'此場次尚無可摘要的逐字來源。',
             'summary_already_running':'此場次摘要正在產生中，請稍候。',
             'postmeeting_active_cannot_delete':'會後整理仍在執行或受阻，暫時無法刪除。',
+            'invalid_screen_policy':'分享畫面模式設定無效，請重新選擇。',
             'record_not_found':'找不到這筆會議或資料。'}
         response = page('操作未完成','<p class="error">'+h(messages.get(code,'操作未完成，請確認目前狀態後再試。'))+
             '</p><details><summary>技術詳情</summary><code>'+h(code)+'</code></details><a href="/">返回行事曆</a>',request.state.admin_session)

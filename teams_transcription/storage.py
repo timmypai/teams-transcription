@@ -129,12 +129,22 @@ class Session:
         return self.store.finalize(self.ident, status, error_code)
 
     def summary_source(self):
-        value = self.store.summary_source(self.ident)
-        return {**value,'entries':self._store_entries(value)}
+        include_screen = bool(self.config().get('screen_include_in_summary', True))
+        value = self.store.summary_source(self.ident, include_screen=include_screen)
+        entries = self._store_entries(value)
+        if include_screen:
+            from .meeting_store import screen_observation_summary_entry
+            entries.extend(screen_observation_summary_entry(obs) for obs in value.get('screen_observations', []))
+        return {**value, 'entries': entries}
 
     def publish_summary(self, value, *, expected_version, expected_source_sha256, generation_mode):
-        return self.store.publish_summary(self.ident,value,expected_version=expected_version,
-            expected_source_sha256=expected_source_sha256,generation_mode=generation_mode)
+        include_screen = bool(self.config().get('screen_include_in_summary', True))
+        return self.store.publish_summary(self.ident, value, expected_version=expected_version,
+            expected_source_sha256=expected_source_sha256, generation_mode=generation_mode,
+            include_screen=include_screen)
+
+    def record_screen_observation(self, observation):
+        return self.store.record_screen_observation(self.ident, observation)
 
     def save_provisional(self, value):
         return self.store.save_provisional(self.ident,value)

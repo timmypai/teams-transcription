@@ -581,3 +581,53 @@ def failure_diagnostic(exc, phase):
             result["source"] = {"file": name, "line": frame.lineno}
             break
     return result
+
+
+SCREEN_CONTEXT_MODES = {'off', 'on_demand', 'watch_and_cache'}
+SCREEN_CAPTURE_METHOD_LABELS = {'webrtc_video_frame', 'teams_stage_dom', 'none'}
+SCREEN_ERROR_CODES = {
+    'vision_account_denied', 'vision_model_invalid', 'vision_image_invalid',
+    'vision_turn_failed', 'vision_response_invalid', 'vision_timeout',
+    'vision_cleanup_unknown', 'vision_tool_forbidden', 'vision_analyzer_closed',
+    'vision_question_invalid', 'screen_watch_failed', 'screen_context_failed',
+    'vision_close_failed', 'frame_cache_close_failed', 'screen_cleanup_unknown',
+}
+SCREEN_CLEANUP_LABELS = {'idle', 'cleaning', 'cleaned', 'unknown'}
+
+
+def screen_context_diagnostic(value):
+    """Allowlisted screen-context status: counts and fixed labels only, never OCR/images."""
+    if not isinstance(value, dict):
+        return None
+    def count(item, maximum=2147483647):
+        return min(item, maximum) if type(item) is int and item >= 0 else 0
+    mode = value.get('mode')
+    method = value.get('capture_method')
+    err = value.get('last_error_code')
+    cleanup = value.get('cleanup_status')
+    cache = value.get('cache')
+    cache_diag = None
+    if isinstance(cache, dict):
+        cache_diag = {
+            'cached_frames': count(cache.get('cached_frames'), 1024),
+            'cached_bytes': count(cache.get('cached_bytes')),
+            'max_frames': count(cache.get('max_frames'), 1024),
+            'closed': cache.get('closed') is True,
+        }
+    return {
+        'mode': mode if isinstance(mode, str) and mode in SCREEN_CONTEXT_MODES else 'unknown',
+        'started': value.get('started') is True,
+        'share_active': value.get('share_active') is True,
+        'capture_method': method if isinstance(method, str) and method in SCREEN_CAPTURE_METHOD_LABELS else None,
+        'observations_saved': count(value.get('observations_saved')),
+        'vision_calls': count(value.get('vision_calls')),
+        'vision_failures': count(value.get('vision_failures')),
+        'cache_hits': count(value.get('cache_hits')),
+        'deep_look_calls': count(value.get('deep_look_calls')),
+        'last_error_code': err if isinstance(err, str) and err in SCREEN_ERROR_CODES else ('unknown' if err else None),
+        'last_capture_seq': count(value.get('last_capture_seq')),
+        'last_frame_width': count(value.get('last_frame_width'), 16384) if value.get('last_frame_width') is not None else None,
+        'last_frame_height': count(value.get('last_frame_height'), 16384) if value.get('last_frame_height') is not None else None,
+        'cache': cache_diag,
+        'cleanup_status': cleanup if isinstance(cleanup, str) and cleanup in SCREEN_CLEANUP_LABELS else 'unknown',
+    }

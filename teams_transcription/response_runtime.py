@@ -13,7 +13,7 @@ from .b_response import MeetingStoreMinutesReader
 from .assistant_store import AssistantStore
 from .qa_activity import QuestionActivityRecorder
 from .runtime_guard import RuntimeLiveGuard
-from .diagnostics import RESPONSE_START_PHASES, response_start_failure, response_start_receipt, sender_selection_diagnostic, response_progress_diagnostic, response_runtime_failure_receipt, response_policy_failure_receipt, response_capture_delivery_receipt
+from .diagnostics import RESPONSE_START_PHASES, response_start_failure, response_start_receipt, sender_selection_diagnostic, response_progress_diagnostic, response_runtime_failure_receipt, response_policy_failure_receipt, response_capture_delivery_receipt, screen_context_diagnostic
 
 
 class _AsyncStore:
@@ -25,9 +25,10 @@ class _AsyncStore:
 
 
 class ProductionResponseController:
-    def __init__(self, session, meeting, browser, config, ice_servers):
+    def __init__(self, session, meeting, browser, config, ice_servers, *, screen_controller=None):
         self.session, self.meeting, self.browser = session, meeting, browser
         self.meeting_id, self.config, self.ice_servers = session.ident, config, ice_servers
+        self.screen_controller = screen_controller
         self.native = None
         self.state = "starting"
         self.error_code = None
@@ -151,7 +152,8 @@ class ProductionResponseController:
                 wake_words=("小白小白","xiaobai xiaobai"),prior_context=self.config.get('prior_context'),
                 **({'before_native_start':lambda stage:self.session.acceptance_budget.claim('B',stage)}
                     if getattr(self.session,'acceptance_budget',None) is not None else {}),
-                activity_recorder=QuestionActivityRecorder(self.session.store, self.meeting_id))
+                activity_recorder=QuestionActivityRecorder(self.session.store, self.meeting_id),
+                screen_controller=self.screen_controller)
             # Output authorization is exclusively an authenticated control action.
             self.startup_phase = 'native_start'
             await self.native.start(enable_output=False)
@@ -221,6 +223,8 @@ class ProductionResponseController:
                 "cleanup_errors":[dict(e) for e in self.cleanup_errors],
                 "question_activity": value.get("question_activity",
                     {"state":"unavailable", "error_code":"question_activity_not_configured"}),
+                "screen_context": screen_context_diagnostic(
+                    self.screen_controller.status() if self.screen_controller is not None else value.get("screen_context")),
                 "native_contract":"v3-host-question",
                 "stop_status":value.get("stop_status", "not_started"),
                 "cleanup_status":value.get("cleanup_status", "idle")}

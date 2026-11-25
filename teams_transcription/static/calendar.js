@@ -308,7 +308,12 @@
     const labels = {idle: '待命', starting: '啟動中', connecting: '連線中', listening: '聆聽中', responding: '回覆中',
       sleeping: '待命', thinking: '思考中', answering: '回覆中', greeting: '問候中',
       speaking: '回覆中', running: '執行中', ready: '就緒', stopped: '已停止', failed: '失敗', disabled: '未啟用'};
-    text($('response-status'), response ? `助理：${labels[response.state] || '狀態待確認'} · 語音輸出${response.output_enabled ? '已啟用' : '已停用'}${response.output_muted ? ' · 目前靜音' : ''}${response.error_code ? ' · 有待處理錯誤，請查看診斷' : ''}。文字狀態不代表遠端已聽見聲音。` : '尚無助理回覆狀態記錄。');
+    const screenCtx = response?.screen_context;
+    const screenModeLabels = {off: '停用', on_demand: 'Phase 1 按需', watch_and_cache: 'Phase 2 預解析'};
+    const screenInfo = screenCtx && screenCtx.mode && screenCtx.mode !== 'off'
+      ? ` · 畫面理解：${screenModeLabels[screenCtx.mode] || screenCtx.mode}（已保存 ${screenCtx.observations_saved ?? 0} 頁${screenCtx.share_active ? '，分享中' : ''}）`
+      : '';
+    text($('response-status'), response ? `助理：${labels[response.state] || '狀態待確認'} · 語音輸出${response.output_enabled ? '已啟用' : '已停用'}${response.output_muted ? ' · 目前靜音' : ''}${screenInfo}${response.error_code ? ' · 有待處理錯誤，請查看診斷' : ''}。文字狀態不代表遠端已聽見聲音。` : '尚無助理回覆狀態記錄。');
   }
   function renderDetail() {
     const detail = state.detail;
@@ -401,6 +406,32 @@
         text(part(association, 'identity', 'code'), row.request_id);
       }
     }, 'article', 'qa-item');
+    const screenObs = Array.isArray(detail.screen_observations) ? detail.screen_observations : [];
+    if ($('screen-count')) text($('screen-count'), screenObs.length);
+    if ($('screen-note')) text($('screen-note'), screenObs.length
+      ? `已保存 ${screenObs.length} 頁分享畫面文字觀察（依擷取順序排列）。`
+      : detail.session_id ? '此場次尚無分享畫面觀察記錄（可能未啟用畫面理解或未偵測到分享畫面）。' : '尚未建立會議工作階段，沒有分享畫面記錄。');
+    if ($('screen-list')) {
+      list($('screen-list'), screenObs, row => row.observation_id || row.id, (item, row) => {
+        const structured = row.structured && typeof row.structured === 'object' ? row.structured : {};
+        text(part(item, 'title', 'strong'), `#${row.capture_seq ?? '?'} · ${row.title || '未命名畫面'}`);
+        text(part(item, 'meta', 'p', 'row-meta'), `${timestamp(row.captured_at)} · ${row.screen_kind || 'other'} · ${row.width && row.height ? `${row.width}×${row.height}` : ''}${row.vision_model ? ' · ' + row.vision_model : ''}`);
+        text(part(item, 'summary', 'p'), row.summary_text || '');
+        const metrics = Array.isArray(structured.metrics_or_numbers) ? structured.metrics_or_numbers.filter(Boolean) : [];
+        const metricsEl = part(item, 'metrics', 'p', 'task-meta');
+        metricsEl.hidden = !metrics.length;
+        text(metricsEl, metrics.length ? `關鍵數據：${metrics.join('；')}` : '');
+        const items = Array.isArray(structured.key_items) ? structured.key_items.filter(Boolean) : [];
+        const itemsEl = part(item, 'items', 'p', 'task-meta');
+        itemsEl.hidden = !items.length;
+        text(itemsEl, items.length ? `重點：${items.join('；')}` : '');
+        const uncertain = Array.isArray(structured.uncertain_areas) ? structured.uncertain_areas.filter(Boolean) : [];
+        const warnEl = part(item, 'uncertain', 'p', 'warning');
+        warnEl.hidden = !uncertain.length;
+        text(warnEl, uncertain.length ? `不確定區域：${uncertain.join('；')}` : '');
+        sources(item, row.id ? [row.id] : [], detail.session_id);
+      }, 'article', 'screen-item');
+    }
     const job = detail.summary_job || detail.postmeeting?.[0];
     const summaryStates = {ready: '摘要等待外部整理', pending: '摘要等待處理', running: '摘要產生中', processing: '摘要產生中', failed: '摘要產生失敗', completed: '摘要已發佈', published: '摘要已發佈', notified: '摘要已發佈', stale: '來源已有變更，摘要待更新'};
     text($('summary-note'), `${job ? summaryStates[job.state] || '摘要狀態待確認' : detail.summary ? '已儲存的本次摘要' : '尚無已發佈的本次摘要'}${job?.error_code ? ' · 請查看來源與診斷記錄' : ''}。摘要不取代原始來源。`);
@@ -510,7 +541,7 @@
     if (id !== state.selected) {
       detailPoll.pause(); state.selected = id; state.detail = null;
       text($('action-status'), ''); $('action-status').removeAttribute('data-error');
-      ['series-conclusions', 'series-changes', 'previous-conclusions', 'task-list', 'series-list', 'transcript-list', 'qa-list', 'summary-list'].forEach(name => $(name).replaceChildren());
+      ['series-conclusions', 'series-changes', 'previous-conclusions', 'task-list', 'series-list', 'transcript-list', 'qa-list', 'screen-list', 'summary-list'].forEach(name => $(name)?.replaceChildren());
       $('previous-section').open = false;
       document.querySelectorAll('.reading-panel').forEach(panel => { panel.scrollTop = 0; });
     }
@@ -536,12 +567,15 @@
   }
   function setTab(name, focus = false) {
     state.tab = name;
-    ['transcript', 'qa', 'summary'].forEach(tab => {
+    ['transcript', 'qa', 'screen', 'summary'].forEach(tab => {
       const active = name === tab;
-      $('tab-' + tab).setAttribute('aria-selected', String(active)); $('tab-' + tab).tabIndex = active ? 0 : -1;
-      $('panel-' + tab).hidden = !active;
+      if ($('tab-' + tab)) {
+        $('tab-' + tab).setAttribute('aria-selected', String(active));
+        $('tab-' + tab).tabIndex = active ? 0 : -1;
+      }
+      if ($('panel-' + tab)) $('panel-' + tab).hidden = !active;
     });
-    if (focus) $('tab-' + name).focus();
+    if (focus && $('tab-' + name)) $('tab-' + name).focus();
   }
   async function mutate(action, target, extras = {}) {
     if (state.mutating) return;
@@ -612,8 +646,8 @@
     }
     if (!event.target.matches('[role="tab"]') || !['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
     event.preventDefault();
-    const tabs = ['transcript', 'qa', 'summary'];
-    const index = event.key === 'Home' ? 0 : event.key === 'End' ? 2 : (tabs.indexOf(state.tab) + (event.key === 'ArrowRight' ? 1 : 2)) % 3;
+    const tabs = ['transcript', 'qa', 'screen', 'summary'];
+    const index = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : (tabs.indexOf(state.tab) + (event.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length;
     setTab(tabs[index], true);
   });
   document.addEventListener('visibilitychange', () => {

@@ -82,6 +82,8 @@ async def _run_session(session, *, install_signals=True, rx_runtime=None):
     provider = None
     meeting = None
     response = None
+    screen_controller = None
+    screen_close = None
     response_start = response_close = None
     audio = None
     frames = 0
@@ -146,6 +148,25 @@ async def _run_session(session, *, install_signals=True, rx_runtime=None):
         if rx_runtime:
             rx_runtime.phase = value
         session.event("phase", {"phase": value})
+
+    async def stop_screen():
+        nonlocal screen_close
+        if screen_controller is None:
+            return
+        if screen_close is None:
+            screen_close = asyncio.create_task(screen_controller.close())
+            if rx_runtime:
+                rx_runtime.track(screen_close)
+        try:
+            result = await perform(asyncio.shield(screen_close), cleanup=True)
+            clean = result == 'cleaned'
+        except Exception:
+            clean = False
+        if not clean:
+            if rx_runtime:
+                rx_runtime.cleanup_unknown = True
+            session.update(cleanup_status='unknown')
+            session.event('screen_cleanup', {'error_code': 'screen_cleanup_unknown'})
 
     async def stop_response():
         nonlocal response_close
@@ -426,6 +447,7 @@ async def _run_session(session, *, install_signals=True, rx_runtime=None):
                     rx_runtime.cleanup_unknown = True
                 session.update(cleanup_status='unknown')
                 raise
+        await stop_screen()
         await stop_response()
         if consumer:
             if not consumer.done():
@@ -529,9 +551,32 @@ async def _run_session(session, *, install_signals=True, rx_runtime=None):
                     if stopped():
                         raise InterruptedError('Stopped before capture')
                     if config.get("response_enabled", False) and config["provider"] == "codex":
+                        screen_mode = config.get("screen_context_mode", "off")
+                        if screen_mode in {"on_demand", "watch_and_cache"}:
+                            from .screen_capture import ScreenShareCapturer
+                            from .screen_vision import ScreenVisionAnalyzer
+                            from .screen_watcher import ScreenContextController
+                            async def _persist_screen_obs(obs):
+                                await asyncio.to_thread(session.record_screen_observation, obs)
+                            screen_controller = ScreenContextController(
+                                session.ident,
+                                mode=screen_mode,
+                                capturer=ScreenShareCapturer(meeting),
+                                analyzer=ScreenVisionAnalyzer(
+                                    Path(config.get("runtime_dir", session.path)) / "screen-vision",
+                                    executable=config["codex_bin"],
+                                    model=config.get("vision_model"),
+                                ),
+                                persist_observation=_persist_screen_obs,
+                                poll_seconds=float(config.get("screen_poll_seconds", 2.5)),
+                                min_analyze_interval_seconds=float(config.get("screen_min_analyze_interval_seconds", 6.0)),
+                                max_frames=int(config.get("screen_frame_cache_limit", 16)),
+                            )
+                            await screen_controller.start()
                         from .response_runtime import ProductionResponseController
                         response = ProductionResponseController(session, meeting, browser.browser, config,
-                            load_ice_servers(config.get("ice_servers_file")))
+                            load_ice_servers(config.get("ice_servers_file")),
+                            screen_controller=screen_controller)
                         if native_input and not pcm_required:
                             # A owns the independent native track. Admit its
                             # optional B-only PCM consumer only after B is ready.
@@ -647,6 +692,7 @@ async def _run_session(session, *, install_signals=True, rx_runtime=None):
                     recording_enabled = False
                     if rx_runtime:
                         rx_runtime.begin_cleanup()
+                    await stop_screen()
                     await stop_response()
                     await perform(meeting.close(), cleanup=True)
                     meeting = None
@@ -712,6 +758,7 @@ async def _run_session(session, *, install_signals=True, rx_runtime=None):
                 if native_input and meeting and meeting.native_audio_failed and cleanup_failure is None:
                     cleanup_failure = (RxContractError('rx_native_source_failed'),
                         primary_failure[1] if primary_failure else phase)
+                await cleanup_step(stop_screen())
                 await cleanup_step(stop_response())
                 if meeting:
                     await cleanup_step(perform(meeting.close(), cleanup=True))

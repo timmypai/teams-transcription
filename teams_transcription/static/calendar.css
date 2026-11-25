@@ -42,3 +42,6 @@
 .expanded .transcript-paragraph .paragraph-text{font-size:15px;line-height:2.05}
 .paragraph-sources{font-size:11px;color:var(--muted)}
 .paragraph-sources>summary{cursor:pointer;color:var(--blue)}
+.screen-item{padding:13px;margin:8px 0;background:#f7fafc;border:1px solid #dfe8ee;border-radius:8px}
+.screen-item strong{display:block;font-size:13px;margin-bottom:4px}
+.screen-item p{white-space:pre-wrap;font-size:13px;line-height:1.85;margin:4px 0}
