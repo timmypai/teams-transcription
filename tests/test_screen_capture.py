@@ -200,7 +200,7 @@ class ScreenCaptureBrowserTests(unittest.IsolatedAsyncioTestCase):
             page3 = await ctx.new_page()
             await page3.set_content("""
             <html><body>
-              <div data-tid="screen-share-stage" style="width:800px;height:450px;background:#ffffff;padding:24px;">
+              <div data-tid="screen-share-stage" style="box-sizing:border-box;width:800px;height:450px;background:#ffffff;padding:24px;">
                 <h1 style="color:#0f172a;">PowerPoint Live Architecture</h1>
                 <div style="width:400px;height:180px;background:#1e3a8a;color:white;padding:16px;">Module A -> Module B</div>
               </div>
@@ -349,36 +349,112 @@ class ScreenCaptureBrowserTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(probe6['match_reason'], 'unmatched_video')
             await page6.close()
 
-            # 7) PowerPoint Live embedded iframe (explicit title/aria-label, ZERO <video>) IS captured,
-            #    while an iframe inside role="log" chat sidebar is ignored
-            page7 = await ctx.new_page()
-            await page7.set_content("""
+            # 7) Spoofed / unverified iframes (srcdoc, HTTP, third-party HTTPS) MUST be rejected
+            #    even with PowerPoint title/aria-label or PowerPoint wrapper data-tid, with ZERO screenshots taken
+            spoof_cases = [
+                (
+                    'srcdoc',
+                    '<html><body>'
+                    '<div data-tid="powerpoint-stage">'
+                    '<iframe title="PowerPoint Live presentation" aria-label="PowerPoint Live" '
+                    'style="width:800px;height:450px;border:0" '
+                    'srcdoc="<html><body style=\'background:#ffffff\'><h1>Spoof srcdoc</h1></body></html>"></iframe>'
+                    '</div></body></html>',
+                    None,
+                ),
+                (
+                    'http_non_tls',
+                    '<html><body>'
+                    '<div data-tid="powerpoint-stage">'
+                    '<iframe title="PowerPoint Live" aria-label="PowerPoint" '
+                    'style="width:800px;height:450px;border:0" '
+                    'src="http://powerpoint.officeapps.live.com/p/PowerPointFrame.aspx"></iframe>'
+                    '</div></body></html>',
+                    'http://powerpoint.officeapps.live.com/p/PowerPointFrame.aspx',
+                ),
+                (
+                    'third_party_https',
+                    '<html><body>'
+                    '<div data-tid="powerpoint-stage">'
+                    '<iframe title="PowerPoint Live" aria-label="PowerPoint" '
+                    'style="width:800px;height:450px;border:0" '
+                    'src="https://evil.example/powerpoint/PowerPointFrame.aspx"></iframe>'
+                    '</div></body></html>',
+                    'https://evil.example/powerpoint/PowerPointFrame.aspx',
+                ),
+            ]
+            for label, html_body, child_url in spoof_cases:
+                with self.subTest(spoof=label):
+                    spoof_page = await ctx.new_page()
+                    if child_url is not None:
+                        async def _spoof_route(route, *, body=html_body, target=child_url):
+                            if route.request.url == 'https://teams.microsoft.com/spoof-test':
+                                await route.fulfill(status=200, content_type='text/html', body=body)
+                            elif route.request.url == target:
+                                await route.fulfill(status=200, content_type='text/html',
+                                    body='<html><body style="background:#fff"><h1>Spoof</h1></body></html>')
+                            else:
+                                await route.abort()
+                        await spoof_page.route('**/*', _spoof_route)
+                        await spoof_page.goto('https://teams.microsoft.com/spoof-test', wait_until='load')
+                    else:
+                        await spoof_page.set_content(html_body)
+                    screenshot_calls = []
+                    orig_locator = spoof_page.locator
+                    def _watch_locator(*args, _orig=orig_locator, _calls=screenshot_calls, **kwargs):
+                        loc = _orig(*args, **kwargs)
+                        orig_nth = loc.nth
+                        def _nth(idx):
+                            sub = orig_nth(idx)
+                            orig_ss = sub.screenshot
+                            async def _ss(*a, **kw):
+                                _calls.append((args, idx))
+                                return await orig_ss(*a, **kw)
+                            sub.screenshot = _ss
+                            return sub
+                        loc.nth = _nth
+                        return loc
+                    spoof_page.locator = _watch_locator
+                    cap_spoof = ScreenShareCapturer(_FakeMeeting(spoof_page))
+                    self.assertIsNone(await cap_spoof.capture())
+                    self.assertEqual(screenshot_calls, [])
+                    self.assertEqual(cap_spoof.probe_status()['powerpoint_frames_seen'], 0)
+                    await spoof_page.close()
+
+            # 7b) Multi-match non-iframe stage DOM skips match inside role="log" and screenshots .nth(1)
+            page7b = await ctx.new_page()
+            await page7b.set_content("""
             <html><body>
               <div role="log" aria-label="Chat">
-                <iframe title="PowerPoint chat preview" style="width:400px;height:250px;border:0"
-                  srcdoc="<html><body style='background:#ef4444'>Chat embed must not capture</body></html>"></iframe>
+                <div data-tid="screen-share-stage" style="width:400px;height:250px;background:#ef4444;">
+                  Chat preview must be skipped
+                </div>
               </div>
-              <iframe id="pptFrame" title="PowerPoint Live presentation" style="width:800px;height:450px;border:0"
-                srcdoc="<html><body style='margin:0;background:#ffffff;padding:24px;font-family:sans-serif'><h1 style='color:#0f172a'>Q4 Roadmap</h1><div style='width:500px;height:200px;background:#1d4ed8;color:#fff;padding:16px'>Milestone 1 -> Milestone 2</div></body></html>"></iframe>
+              <div data-tid="screen-share-stage" style="box-sizing:border-box;width:800px;height:450px;background:#ffffff;padding:24px;">
+                <h1 style="color:#0f172a;">Real Non-Iframe Stage</h1>
+                <div style="width:500px;height:200px;background:#1d4ed8;color:#fff;padding:16px;">Diagram</div>
+              </div>
             </body></html>""")
-            cap7 = ScreenShareCapturer(_FakeMeeting(page7))
-            f7 = await cap7.capture()
-            self.assertIsNotNone(f7)
-            self.assertEqual(f7.capture_method, 'teams_stage_dom')
-            self.assertGreater(len(f7.image_bytes), 500)
-            probe7 = cap7.probe_status()
-            self.assertGreaterEqual(probe7['iframes_total'], 2)
-            self.assertEqual(probe7['match_reason'], 'stage_dom_candidate')
-            await page7.close()
+            cap7b = ScreenShareCapturer(_FakeMeeting(page7b))
+            f7b = await cap7b.capture()
+            self.assertIsNotNone(f7b)
+            self.assertEqual(f7b.capture_method, 'teams_stage_dom')
+            self.assertEqual((f7b.width, f7b.height), (800, 450))
+            self.assertEqual(cap7b.probe_status()['match_reason'], 'stage_dom_candidate')
+            await page7b.close()
 
             # 8) PowerPoint Live child frame routed at https://apc-powerpoint.officeapps.live.com
-            #    with NO data-tid/title on the iframe element -> matched via strict frame.url allowlist
+            #    ignores a PowerPoint iframe inside role="log" chat sidebar and captures the real stage iframe
             page8 = await ctx.new_page()
             async def ppt_route(route):
                 url = route.request.url
                 if url == 'https://teams.microsoft.com/mock-meeting':
                     await route.fulfill(status=200, content_type='text/html', body=(
                         '<html><body style="margin:0">'
+                        '<div role="log" aria-label="Chat">'
+                        '<iframe style="width:400px;height:250px;border:0" '
+                        'src="https://apc-powerpoint.officeapps.live.com/p/PowerPointFrame.aspx?chat=1"></iframe>'
+                        '</div>'
                         '<iframe style="width:800px;height:450px;border:0" '
                         'src="https://apc-powerpoint.officeapps.live.com/p/PowerPointFrame.aspx"></iframe>'
                         '</body></html>'))
@@ -396,9 +472,10 @@ class ScreenCaptureBrowserTests(unittest.IsolatedAsyncioTestCase):
             f8 = await cap8.capture()
             self.assertIsNotNone(f8)
             self.assertEqual(f8.capture_method, 'teams_stage_dom')
+            self.assertEqual((f8.width, f8.height), (800, 450))
             self.assertGreater(len(f8.image_bytes), 500)
             probe8 = cap8.probe_status()
-            self.assertEqual(probe8['powerpoint_frames_seen'], 1)
+            self.assertEqual(probe8['powerpoint_frames_seen'], 2)
             self.assertEqual(probe8['match_reason'], 'powerpoint_live_frame')
             await page8.close()
 

@@ -296,7 +296,7 @@ CAPTURE_SHARE_VIDEO_JS = r"""(stageDomSelectors = []) => {
         const list = document.querySelectorAll(stageDomSelectors[i]);
         for (let j = 0; j < list.length; j++) {
           const el = list[j];
-          if (!el) continue;
+          if (!el || el.tagName === 'IFRAME') continue;
           if (closestAcrossShadow(el, ['[role="log"]', '[role="feed"]'])) continue;
           const style = window.getComputedStyle(el);
           if (!style || style.display === 'none' || style.visibility === 'hidden') continue;
@@ -483,8 +483,6 @@ _STAGE_SELECTORS = (
     '[data-cid*="screen-share" i]',
     '[data-cid*="sharing" i]',
     '[data-cid*="powerpoint" i]',
-    'iframe[title*="powerpoint" i]',
-    'iframe[aria-label*="powerpoint" i]',
 )
 
 _REASON_PRIORITY = {
@@ -682,18 +680,67 @@ class ScreenShareCapturer:
                 captured_at=self._now_iso(),
             )
 
-        # 3) Fallback path: ONLY screenshot a stage DOM element already confirmed visible by JS
+        # 3) Fallback path: ONLY screenshot a non-iframe stage DOM element already confirmed visible by JS.
+        #    If the container embeds any <iframe>, every embedded iframe must pass the strict PowerPoint Live URL gate.
         for frame, selector, match_idx in stage_candidates:
             if callable(getattr(frame, 'is_detached', None)) and frame.is_detached():
                 continue
             try:
                 locator = frame.locator(selector).nth(match_idx)
-                allowed = await asyncio.wait_for(
-                    locator.evaluate("el => !el.closest('[role=\"log\"],[role=\"feed\"]')"),
+                check = await asyncio.wait_for(
+                    locator.evaluate(
+                        """el => {
+                          if (el.tagName === 'IFRAME' || el.closest('[role="log"],[role="feed"]')) {
+                            return {allowed: false, iframeCount: 0, shadowIframe: false};
+                          }
+                          let shadowIframe = false;
+                          const stack = [];
+                          const visit = (root, depth) => {
+                            if (!root || depth > 12) return;
+                            for (const node of root.querySelectorAll('*')) {
+                              if (node.shadowRoot) {
+                                if (node.shadowRoot.querySelector('iframe')) shadowIframe = true;
+                                stack.push([node.shadowRoot, depth + 1]);
+                              }
+                            }
+                          };
+                          if (el.shadowRoot) {
+                            if (el.shadowRoot.querySelector('iframe')) shadowIframe = true;
+                            stack.push([el.shadowRoot, 1]);
+                          }
+                          visit(el, 0);
+                          while (stack.length && !shadowIframe) {
+                            const [sr, d] = stack.pop();
+                            visit(sr, d);
+                          }
+                          return {
+                            allowed: !shadowIframe,
+                            iframeCount: el.querySelectorAll('iframe').length,
+                            shadowIframe,
+                          };
+                        }"""
+                    ),
                     timeout=self._evaluate_timeout,
                 )
-                if allowed is not True:
+                if not isinstance(check, dict) or check.get('allowed') is not True:
                     continue
+                iframe_count = check.get('iframeCount')
+                if type(iframe_count) is not int or iframe_count < 0:
+                    continue
+                if iframe_count > 0:
+                    nested_ok = True
+                    nested_iframes = locator.locator('iframe')
+                    for idx in range(iframe_count):
+                        handle = await asyncio.wait_for(
+                            nested_iframes.nth(idx).element_handle(timeout=1000),
+                            timeout=self._evaluate_timeout,
+                        )
+                        child = await handle.content_frame() if handle is not None else None
+                        if child is None or not _is_powerpoint_live_url(getattr(child, 'url', '')):
+                            nested_ok = False
+                            break
+                    if not nested_ok:
+                        continue
                 raw = await locator.screenshot(type='jpeg', quality=85, timeout=3000)
             except Exception:
                 continue
