@@ -102,7 +102,7 @@ class ScreenContextController:
             await result
 
     def _ensure_target_frame_cached(self, record_meta, live_frame=None):
-        """Return the cached /dev/shm frame matching record_meta, never a different SHA."""
+        """Return the cached /dev/shm frame matching record_meta's exact SHA, never a different SHA."""
         if record_meta is None:
             return None
         cache = self._ensure_cache()
@@ -110,20 +110,14 @@ class ScreenContextController:
         cached = cache.get(target_sha)
         if cached is not None and cached.frame_sha256 == target_sha:
             return cached
-        if live_frame is None or not live_frame.image_bytes:
-            return None
-        same_target = (
-            live_frame.frame_sha256 == target_sha
-            or (record_meta.get('dhash') is not None
-                and hamming_distance(live_frame.dhash, record_meta['dhash'])
-                < self.change_hamming_threshold)
-        )
-        if not same_target:
+        if (live_frame is None
+                or not live_frame.image_bytes
+                or live_frame.frame_sha256 != target_sha):
             return None
         return cache.put(
             live_frame.image_bytes,
             capture_seq=record_meta['capture_seq'],
-            frame_sha256=live_frame.frame_sha256,
+            frame_sha256=target_sha,
             dhash=live_frame.dhash,
             width=live_frame.width,
             height=live_frame.height,
@@ -349,7 +343,6 @@ class ScreenContextController:
                     self._last_analyzed_sha = record_meta['frame_sha256']
                     self._last_analyzed_dhash = record_meta['dhash']
                 cache_hit = True
-                self._cache_hits += 1
             else:
                 record_meta = await self._analyze_and_persist(target_frame)
 
@@ -371,7 +364,11 @@ class ScreenContextController:
                         prior_summary=record_meta.get('summary_text'),
                     )
                 else:
+                    cache_hit = False
                     deep_look_unavailable = 'target_frame_evicted'
+
+            if cache_hit:
+                self._cache_hits += 1
 
             freshness = (
                 max(0.0, round(self.clock() - record_meta['analyzed_at_mono'], 2))

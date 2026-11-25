@@ -315,6 +315,60 @@ class ScreenWatcherTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(len(analyzer.question_calls), calls_before)
             self.assertIsNone(r['question_focused_vision'])
             self.assertEqual(r['deep_look_unavailable'], 'target_frame_evicted')
+            self.assertFalse(r['cache_hit'])
+        finally:
+            await ctrl.close()
+
+    async def test_evicted_frame_rejects_similar_dhash_different_sha_and_reports_unavailable(self):
+        slide_a = _frame('SLIDE_A_100_USD', '0000000000000000')
+        # Same dHash as A, but different image bytes / SHA (e.g. edited metric 999 USD)
+        slide_c = _frame('SLIDE_C_999_USD', '0000000000000000')
+        evictor = _frame('EVICTOR_OTHER', 'ffffffffffffffff')
+        current = [slide_a]
+
+        class _SwitchableCapturer:
+            async def capture(self):
+                return current[0]
+
+        class _ContentAnalyzer(FakeAnalyzer):
+            async def analyze_question(self, image_path, question, *, detail='high', prior_summary=None):
+                content = Path(image_path).read_bytes().decode('utf-8')
+                res = await super().analyze_question(image_path, question, detail=detail, prior_summary=prior_summary)
+                res['answer_relevant_findings'] = f'DEEP:{content}'
+                return res
+
+        analyzer = _ContentAnalyzer()
+        cache = ScreenFrameCache(max_frames=1)
+        ctrl = ScreenContextController(
+            'm-evict-similar-dhash', mode='watch_and_cache', capturer=_SwitchableCapturer(),
+            analyzer=analyzer, persist_observation=lambda obs: None, frame_cache=cache,
+            poll_seconds=10.0, min_analyze_interval_seconds=0.0, max_frames=1,
+        )
+        await ctrl.start()
+        try:
+            r1 = await ctrl.resolve_for_question('看第一頁')
+            self.assertEqual(r1['current_capture_seq'], 1)
+            meta_a = ctrl._analyzed_by_sha[slide_a.frame_sha256]
+
+            # Evict A from ring cache while A remains _last_analyzed_sha
+            cache.put(
+                evictor.image_bytes, capture_seq=99, frame_sha256=evictor.frame_sha256,
+                dhash=evictor.dhash, width=evictor.width, height=evictor.height,
+                capture_method=evictor.capture_method, captured_at=evictor.captured_at, mime=evictor.mime,
+            )
+            self.assertIsNone(cache.get(slide_a.frame_sha256))
+
+            # Present slide C (identical dHash, different SHA)
+            current[0] = slide_c
+            self.assertIsNone(ctrl._ensure_target_frame_cached(meta_a, live_frame=slide_c))
+
+            calls_before = len(analyzer.question_calls)
+            r2 = await ctrl.resolve_for_question('請看這頁細節')
+            self.assertEqual(len(analyzer.question_calls), calls_before)
+            self.assertIsNone(r2['question_focused_vision'])
+            self.assertEqual(r2['deep_look_unavailable'], 'target_frame_evicted')
+            self.assertFalse(r2['cache_hit'])
+            self.assertIsNone(cache.get(slide_c.frame_sha256))
         finally:
             await ctrl.close()
 
