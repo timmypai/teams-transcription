@@ -415,6 +415,11 @@ class ScreenContextController:
 
     def status(self):
         """Allowlisted diagnostics only: never include OCR text, titles or images."""
+        probe = (
+            self.capturer.probe_status()
+            if callable(getattr(self.capturer, 'probe_status', None))
+            else None
+        )
         return {
             'mode': self.mode,
             'started': self.started,
@@ -430,6 +435,7 @@ class ScreenContextController:
             'last_frame_width': self._last_frame_width,
             'last_frame_height': self._last_frame_height,
             'cache': self._frame_cache.status() if self._frame_cache is not None else None,
+            'probe': probe,
             'cleanup_status': self.cleanup_status,
         }
 

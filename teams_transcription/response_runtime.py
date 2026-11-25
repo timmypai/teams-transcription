@@ -128,7 +128,7 @@ class ProductionResponseController:
             self.startup_phase = 'sender_select'
             frame, peer, sender = await self.meeting.response_sender(self.meeting_id)
             self.startup_phase = 'policy_construct'
-            policy = OwnedSenderDualPolicy(frame, self.meeting_id,on_failure=self._policy_failed)
+            policy = OwnedSenderDualPolicy(frame, self.meeting_id, timeout=5, on_failure=self._policy_failed)
             self.startup_phase = 'sink_construct'
             sink = BrowserTXSink(frame, meeting_id=self.meeting_id, peer_index=peer,
                 sender_index=sender, dual_channel_policy=policy.authorize,

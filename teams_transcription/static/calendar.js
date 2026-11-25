@@ -307,7 +307,8 @@
     const response = detail.response;
     const labels = {idle: '待命', starting: '啟動中', connecting: '連線中', listening: '聆聽中', responding: '回覆中',
       sleeping: '待命', thinking: '思考中', answering: '回覆中', greeting: '問候中',
-      speaking: '回覆中', running: '執行中', ready: '就緒', stopped: '已停止', failed: '失敗', disabled: '未啟用'};
+      speaking: '回覆中', running: '執行中', ready: '就緒', stopped: '已停止',
+      unavailable: '無法啟動', stop_unknown: '停止待確認', failed: '失敗', disabled: '未啟用'};
     const screenCtx = response?.screen_context;
     const screenModeLabels = {off: '停用', on_demand: 'Phase 1 按需', watch_and_cache: 'Phase 2 預解析'};
     const screenInfo = screenCtx && screenCtx.mode && screenCtx.mode !== 'off'

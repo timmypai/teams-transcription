@@ -59,6 +59,7 @@ class ScreenAdminUiTests(unittest.TestCase):
         from starlette.testclient import TestClient
         from teams_transcription.admin_web import create_admin_app, initialize_admin_credentials
         from teams_transcription.assistant_store import AssistantStore
+        from teams_transcription.storage import Session
         from teams_transcription.daemon import AssistantDaemon
 
         with tempfile.TemporaryDirectory() as root:
@@ -169,6 +170,7 @@ class ScreenAdminUiTests(unittest.TestCase):
         from starlette.testclient import TestClient
         from teams_transcription.admin_web import create_admin_app, initialize_admin_credentials
         from teams_transcription.assistant_store import AssistantStore
+        from teams_transcription.storage import Session
 
         with tempfile.TemporaryDirectory() as root:
             settings = AssistantSettings(
@@ -190,6 +192,11 @@ class ScreenAdminUiTests(unittest.TestCase):
             })
             claimed = store.claim_run(occ['id'], 'owner-1', lease_seconds=60)
             session_id = claimed['session_id']
+            sess = Session(root, session_id, lease=claimed).create({
+                'provider': 'codex',
+                'source': 'teams',
+                'prior_context': store.get_run(session_id)['prior_context'],
+            })
             fenced = MeetingStore(root, lease=claimed)
             fenced.append_final(session_id, {
                 'event_id': 'live:1', 'revision': 0, 'text': '這頁是第一季與第二季對比。',
@@ -199,6 +206,18 @@ class ScreenAdminUiTests(unittest.TestCase):
             obs2 = _sample_obs(2, title='第二季預測簡報', summary_text='第二季預測為 20,000 USD。', seed=b's2')
             fenced.record_screen_observation(session_id, obs1)
             fenced.record_screen_observation(session_id, obs2)
+            sess.update(response_status={
+                'state': 'unavailable',
+                'error_code': 'response_input_policy_failed',
+                'startup_phase': 'ready',
+                'output_enabled': False,
+                'output_muted': True,
+                'startup_error': {'phase': 'native_output_attach', 'exception_type': 'Error'},
+                'capture_policy_failure': {'reason': 'evaluation_timeout', 'exception_type': 'TimeoutError', 'elapsed_ms': 67651},
+                'runtime_failure': None,
+                'sender_selection': {'schema_version': 1, 'eligible_count': 1},
+                'screen_context': {'mode': 'watch_and_cache', 'started': True, 'share_active': False},
+            })
             fenced.finalize(session_id, 'completed')
 
             # 1) meeting_view API projection contains screen_observations
@@ -219,10 +238,28 @@ class ScreenAdminUiTests(unittest.TestCase):
 
                 def status(self):
                     return {
-                        'started': True, 'active_session_id': None, 'capture_interlock': False,
-                        'background_task_count': 0, 'last_poll_at': None, 'last_error': None,
+                        'started': True, 'active_session_id': session_id, 'capture_interlock': False,
+                        'background_task_count': 1, 'last_poll_at': None, 'last_error': None,
                         'google': {'authorized': False, 'error_code': None},
                         'calendar_errors': [], 'provider': {'provider_status': 'unchecked'},
+                        'response': {
+                            'state': 'unavailable',
+                            'error_code': 'response_input_policy_failed',
+                            'startup_phase': 'ready',
+                            'output_enabled': False,
+                            'output_muted': True,
+                            'startup_error': {'phase': 'native_output_attach', 'exception_type': 'Error'},
+                            'capture_policy_failure': {'reason': 'evaluation_timeout', 'exception_type': 'TimeoutError', 'elapsed_ms': 67651},
+                            'runtime_failure': None,
+                            'sender_selection': {'schema_version': 1, 'eligible_count': 1},
+                            'progress': None,
+                            'screen_context': {
+                                'mode': 'watch_and_cache',
+                                'started': True,
+                                'share_active': False,
+                                'probe': {'frames_checked': 1, 'videos_total': 1, 'match_reason': 'camera_excluded'},
+                            },
+                        },
                     }
 
                 async def start(self):
@@ -244,6 +281,15 @@ class ScreenAdminUiTests(unittest.TestCase):
                 self.assertIn('第二季預測簡報', hist_html)
                 self.assertIn('右下角註腳模糊', hist_html)
                 self.assertIn(f'id="source-{screen_source_id(obs1["observation_id"])}"', hist_html)
+                self.assertIn('capture_policy_failure', hist_html)
+                self.assertIn('evaluation_timeout', hist_html)
+                self.assertIn('sender_selection', hist_html)
+
+                diag_html = client.get('/diagnostics').text
+                self.assertIn('capture_policy_failure', diag_html)
+                self.assertIn('evaluation_timeout', diag_html)
+                self.assertIn('screen_context', diag_html)
+                self.assertIn('camera_excluded', diag_html)
 
                 api_data = client.get(f'/api/meetings/{occ["id"]}').json()
                 self.assertEqual(len(api_data['screen_observations']), 2)
@@ -287,7 +333,7 @@ class ScreenCalendarBrowserUiTests(unittest.IsolatedAsyncioTestCase):
                         '"start_at":"2026-11-24T13:00:00+08:00","start_date":"2026-11-24","start_time":"13:00",'
                         '"end_at":"2026-11-24T14:00:00+08:00","end_date":"2026-11-24","end_time":"14:00"},'
                         '"session_id":"sess1","run_state":"completed","runs":[],"auto_join":{"label":""},'
-                        '"response":{"state":"stopped","output_enabled":false,"output_muted":true,"error_code":null,'
+                        '"response":{"state":"unavailable","output_enabled":false,"output_muted":true,"error_code":"response_input_policy_failed",'
                         '"screen_context":{"mode":"watch_and_cache","observations_saved":2,"share_active":false}},'
                         '"previous":null,"tasks":[],"series_meetings":[],"series_state":null,"task_workspace":null,'
                         '"postmeeting":[],"latest_recorded_meeting":null,"transcript":[],"transcript_paragraphs":[],'
@@ -324,6 +370,9 @@ class ScreenCalendarBrowserUiTests(unittest.IsolatedAsyncioTestCase):
             self.assertIn('成本試算表', panel_text)
             self.assertIn('120,000 USD', panel_text)
             self.assertIn('最底行備註模糊', panel_text)
+            status_text = await page.locator('#response-status').inner_text()
+            self.assertIn('助理：無法啟動', status_text)
+            self.assertNotIn('狀態待確認', status_text)
             self.assertEqual(errors, [])
             await ctx.close()
 
