@@ -63,11 +63,12 @@ use_live = phase == "rollback" and live_dir.is_dir()
 
 compose_src = (live_dir / "compose.yml") if (use_live and (live_dir / "compose.yml").is_file()) else (ROOT / "deploy" / "compose.yml")
 config_src = (live_dir / "config.env") if (use_live and (live_dir / "config.env").is_file()) else (ROOT / ".devflow" / "config.env")
-seccomp_src = (
-    (live_dir / "docker" / "chromium-seccomp.json")
-    if (use_live and (live_dir / "docker" / "chromium-seccomp.json").is_file())
-    else (ROOT / "docker" / "chromium-seccomp.json")
-)
+if use_live and (live_dir / "chromium-seccomp.json").is_file():
+    seccomp_src = live_dir / "chromium-seccomp.json"
+elif use_live and (live_dir / "docker" / "chromium-seccomp.json").is_file():
+    seccomp_src = live_dir / "docker" / "chromium-seccomp.json"
+else:
+    seccomp_src = ROOT / "docker" / "chromium-seccomp.json"
 
 releases_dir = state_root / "releases"
 releases_dir.mkdir(mode=0o700, exist_ok=True)

@@ -8,6 +8,10 @@ cd "$(dirname "$0")/.."
 : "${DEVFLOW_IMAGE:?DEVFLOW_IMAGE required}"
 : "${DEVFLOW_SOURCE_SHA:?DEVFLOW_SOURCE_SHA required}"
 
+# Before building/replacing anything on first cutover, materialize any verified
+# legacy release into standard `$LIVE` so rollback uses exact prior files.
+python3 .devflow/import_prior_release.py
+
 base_image=$(sed -n 's/^ARG PYTHON_BASE=//p' Dockerfile | head -n 1)
 if [[ -z "$base_image" ]]; then
   echo "::error::deploy-build: ARG PYTHON_BASE not found in Dockerfile" >&2
