@@ -229,9 +229,6 @@ CAPTURE_SHARE_VIDEO_JS = r"""(stageDomSelectors = []) => {
     '[aria-label*="分享畫面" i]', '[aria-label*="共用畫面" i]',
     '[aria-label*="共享" i]', '[aria-label*="簡報" i]'
   ];
-  const stageSelectors = [
-    '[data-tid*="stage" i]', '[data-tid*="content" i]', '[role="main"]'
-  ];
   const cameraExclude = [
     '[data-tid*="participant-video" i]', '[data-tid*="video-tile" i]',
     '[data-tid*="camera" i]', '[data-tid*="self-video" i]',
@@ -307,8 +304,6 @@ CAPTURE_SHARE_VIDEO_JS = r"""(stageDomSelectors = []) => {
     max_rect_height: 0,
     match_reason: 'no_video',
   };
-  const vw = Math.max(1, window.innerWidth || document.documentElement?.clientWidth || 1280);
-  const vh = Math.max(1, window.innerHeight || document.documentElement?.clientHeight || 720);
   const candidates = [];
   let sawBelowSize = false;
   for (const video of collectVideos()) {
@@ -347,26 +342,17 @@ CAPTURE_SHARE_VIDEO_JS = r"""(stageDomSelectors = []) => {
       } catch (_) { return ''; }
     })();
     const trackShare = /screen|share|detail|text|desktop|window|monitor/.test(trackLabel);
-    const inStage = !inCameraExclude && closestAcrossShadow(video, stageSelectors);
-    const stageVideo = inStage && video.videoWidth >= 640 && video.videoHeight >= 360
-      && rect.width >= 400 && rect.height >= 225;
-    const dominantVideo = !inCameraExclude && video.videoWidth >= 960 && video.videoHeight >= 540
-      && rect.width >= 480 && rect.height >= 270
-      && (rect.width * rect.height) >= (vw * vh * 0.20);
-    if (!explicitShare && !labelShare && !trackShare && !stageVideo && !dominantVideo) {
+    if (!explicitShare && !labelShare && !trackShare) {
       probe.videos_unmatched++;
       continue;
     }
     const reason = explicitShare ? 'explicit_share'
       : labelShare ? 'label_share'
-      : trackShare ? 'track_share'
-      : stageVideo ? 'stage_video'
-      : 'stage_dominant_video';
+      : 'track_share';
     candidates.push({
       video,
       reason,
-      priority: (explicitShare ? 16 : 0) + (labelShare ? 8 : 0) + (trackShare ? 4 : 0)
-        + (stageVideo ? 2 : 0) + (dominantVideo ? 1 : 0),
+      priority: (explicitShare ? 4 : 0) + (labelShare ? 2 : 0) + (trackShare ? 1 : 0),
       area: video.videoWidth * video.videoHeight,
     });
   }
@@ -467,11 +453,9 @@ _STAGE_SELECTORS = (
 )
 
 _REASON_PRIORITY = {
-    'explicit_share': 10,
-    'label_share': 9,
-    'track_share': 8,
-    'stage_video': 7,
-    'stage_dominant_video': 6,
+    'explicit_share': 8,
+    'label_share': 7,
+    'track_share': 6,
     'stage_dom_candidate': 5,
     'blank_video': 4,
     'camera_excluded': 3,

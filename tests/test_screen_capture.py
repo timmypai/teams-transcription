@@ -187,21 +187,20 @@ class ScreenCaptureBrowserTests(unittest.IsolatedAsyncioTestCase):
             self.assertGreater(len(f3.image_bytes), 500)
             await page3.close()
 
-            # 4) Teams Web v2 stage <video> with generic data-tid="calling-stage" (no "screen" keyword)
+            # 4) Generic calling-stage <video> WITHOUT explicit share evidence must NOT be captured
             page4 = await ctx.new_page()
             await page4.set_content("""
             <html><body>
               <div data-tid="calling-stage">
-                <canvas id="stageCanvas" width="1280" height="720"></canvas>
-                <video id="stageVideo" autoplay muted playsinline style="width:960px;height:540px"></video>
+                <canvas id="stageCanvas" width="640" height="360"></canvas>
+                <video id="stageVideo" autoplay muted playsinline style="width:400px;height:225px"></video>
               </div>
               <script>
                 (() => {
                   const c = document.getElementById('stageCanvas'), g = c.getContext('2d');
                   const paint = () => {
-                    g.fillStyle = '#0f172a'; g.fillRect(0, 0, 1280, 720);
-                    g.fillStyle = '#38bdf8'; g.fillRect(80, 80, 1120, 180);
-                    g.fillStyle = '#f8fafc'; g.fillRect(80, 300, 720, 240);
+                    g.fillStyle = '#0f172a'; g.fillRect(0, 0, 640, 360);
+                    g.fillStyle = '#38bdf8'; g.fillRect(40, 40, 560, 120);
                   };
                   paint();
                   const v = document.getElementById('stageVideo');
@@ -213,12 +212,47 @@ class ScreenCaptureBrowserTests(unittest.IsolatedAsyncioTestCase):
             </body></html>""")
             await page4.wait_for_function("document.getElementById('stageVideo').readyState >= 2")
             cap4 = ScreenShareCapturer(_FakeMeeting(page4))
-            f4 = await cap4.capture()
-            self.assertIsNotNone(f4)
-            self.assertEqual(f4.capture_method, 'webrtc_video_frame')
-            self.assertEqual((f4.width, f4.height), (1280, 720))
-            self.assertEqual(cap4.probe_status()['match_reason'], 'stage_video')
+            self.assertIsNone(await cap4.capture())
+            probe4 = cap4.probe_status()
+            self.assertEqual(probe4['videos_ready'], 1)
+            self.assertEqual(probe4['videos_unmatched'], 1)
+            self.assertEqual(probe4['match_reason'], 'unmatched_video')
             await page4.close()
+
+            # 4b) Same calling-stage structure WITH explicit share binding IS captured
+            page4b = await ctx.new_page()
+            await page4b.set_content("""
+            <html><body>
+              <div data-tid="calling-stage">
+                <div data-stream-type="ScreenSharing">
+                  <canvas id="stageShareCanvas" width="1280" height="720" style="display:none"></canvas>
+                  <video id="stageShareVideo" autoplay muted playsinline style="width:960px;height:540px"></video>
+                </div>
+              </div>
+              <script>
+                (() => {
+                  const c = document.getElementById('stageShareCanvas'), g = c.getContext('2d');
+                  const paint = () => {
+                    g.fillStyle = '#0f172a'; g.fillRect(0, 0, 1280, 720);
+                    g.fillStyle = '#38bdf8'; g.fillRect(80, 80, 1120, 180);
+                    g.fillStyle = '#f8fafc'; g.fillRect(80, 300, 720, 240);
+                  };
+                  paint();
+                  const v = document.getElementById('stageShareVideo');
+                  v.srcObject = c.captureStream(10);
+                  setInterval(paint, 50);
+                  v.play().catch(() => {});
+                })();
+              </script>
+            </body></html>""")
+            await page4b.wait_for_function("document.getElementById('stageShareVideo').readyState >= 2")
+            cap4b = ScreenShareCapturer(_FakeMeeting(page4b))
+            f4b = await cap4b.capture()
+            self.assertIsNotNone(f4b)
+            self.assertEqual(f4b.capture_method, 'webrtc_video_frame')
+            self.assertEqual((f4b.width, f4b.height), (1280, 720))
+            self.assertEqual(cap4b.probe_status()['match_reason'], 'explicit_share')
+            await page4b.close()
 
             # 5) Open Shadow DOM <video> inside a Teams share container
             page5 = await ctx.new_page()
@@ -256,7 +290,7 @@ class ScreenCaptureBrowserTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(cap5.probe_status()['match_reason'], 'explicit_share')
             await page5.close()
 
-            # 6) Dominant high-res unlabelled <video> (plain container, not in cameraExclude)
+            # 6) Large unlabelled 1280x720 <video> in a plain div (e.g. spotlight webcam) must NOT be captured
             page6 = await ctx.new_page()
             await page6.set_content("""
             <html><body style="margin:0">
@@ -281,10 +315,13 @@ class ScreenCaptureBrowserTests(unittest.IsolatedAsyncioTestCase):
             </body></html>""")
             await page6.wait_for_function("document.getElementById('domVideo').readyState >= 2")
             cap6 = ScreenShareCapturer(_FakeMeeting(page6))
-            f6 = await cap6.capture()
-            self.assertIsNotNone(f6)
-            self.assertEqual(f6.capture_method, 'webrtc_video_frame')
-            self.assertEqual(cap6.probe_status()['match_reason'], 'stage_dominant_video')
+            self.assertIsNone(await cap6.capture())
+            probe6 = cap6.probe_status()
+            self.assertEqual(probe6['videos_ready'], 1)
+            self.assertEqual(probe6['videos_unmatched'], 1)
+            self.assertEqual(probe6['max_video_width'], 1280)
+            self.assertEqual(probe6['max_video_height'], 720)
+            self.assertEqual(probe6['match_reason'], 'unmatched_video')
             await page6.close()
 
             await ctx.close()

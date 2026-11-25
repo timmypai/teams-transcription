@@ -587,7 +587,7 @@ SCREEN_CONTEXT_MODES = {'off', 'on_demand', 'watch_and_cache'}
 SCREEN_CAPTURE_METHOD_LABELS = {'webrtc_video_frame', 'teams_stage_dom', 'none'}
 SCREEN_CAPTURE_MATCH_REASONS = {
     'explicit_share', 'label_share', 'track_share',
-    'stage_video', 'stage_dominant_video', 'stage_dom_candidate',
+    'stage_dom_candidate',
     'blank_video', 'no_video', 'below_size', 'camera_excluded',
     'unmatched_video', 'evaluate_error', 'page_unavailable',
 }
