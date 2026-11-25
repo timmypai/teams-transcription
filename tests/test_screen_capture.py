@@ -513,6 +513,19 @@ class ScreenCaptureBrowserTests(unittest.IsolatedAsyncioTestCase):
                     'src="https://apc-powerpoint.officeapps.live.com/p/PowerPointFrame.aspx?incontainer=1"></iframe>'
                     '</div></div></body></html>',
                 ),
+                (
+                    'slotted_chat_ppt_iframe',
+                    '<html><body>'
+                    '<div id="slotHost">'
+                    '<iframe style="width:800px;height:450px;border:0" '
+                    'src="https://apc-powerpoint.officeapps.live.com/p/PowerPointFrame.aspx?slotted=1"></iframe>'
+                    '</div>'
+                    '<script>'
+                    'const host = document.getElementById("slotHost");'
+                    'const sr = host.attachShadow({mode:"open"});'
+                    'sr.innerHTML = \'<div role="feed" aria-label="Chat"><slot></slot></div>\';'
+                    '</script></body></html>',
+                ),
             ]
             for label, html_body in chat_bypass_cases:
                 with self.subTest(chat_bypass=label):
@@ -577,6 +590,42 @@ class ScreenCaptureBrowserTests(unittest.IsolatedAsyncioTestCase):
                     self.assertIsNone(await cap_cb.capture())
                     self.assertEqual(screenshot_calls, [])
                     await cb_page.close()
+
+            # 9b) Light-DOM non-iframe stage container projected into a shadow role="log" slot MUST be rejected
+            slot_stage_page = await ctx.new_page()
+            await slot_stage_page.set_content("""
+            <html><body>
+              <div id="stageSlotHost">
+                <div data-tid="screen-share-stage" style="box-sizing:border-box;width:800px;height:450px;background:#ffffff;padding:24px;">
+                  <h1>Slotted inside shadow chat must be rejected</h1>
+                </div>
+              </div>
+              <script>
+                const host = document.getElementById('stageSlotHost');
+                const sr = host.attachShadow({mode: 'open'});
+                sr.innerHTML = '<div role="log" aria-label="Chat"><slot></slot></div>';
+              </script>
+            </body></html>""")
+            slot_stage_shots = []
+            orig_ss_loc = slot_stage_page.locator
+            def _track_slot_stage_loc(*args, **kwargs):
+                loc = orig_ss_loc(*args, **kwargs)
+                orig_nth = loc.nth
+                def _nth(idx):
+                    sub = orig_nth(idx)
+                    orig_ss = sub.screenshot
+                    async def _ss(*a, **kw):
+                        slot_stage_shots.append((args, idx))
+                        return await orig_ss(*a, **kw)
+                    sub.screenshot = _ss
+                    return sub
+                loc.nth = _nth
+                return loc
+            slot_stage_page.locator = _track_slot_stage_loc
+            cap_slot_stage = ScreenShareCapturer(_FakeMeeting(slot_stage_page))
+            self.assertIsNone(await cap_slot_stage.capture())
+            self.assertEqual(slot_stage_shots, [])
+            await slot_stage_page.close()
 
             await ctx.close()
 

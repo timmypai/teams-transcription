@@ -239,27 +239,42 @@ CAPTURE_SHARE_VIDEO_JS = r"""(stageDomSelectors = []) => {
   const matchesAny = (el, selectors) => selectors.some(sel => {
     try { return Boolean(el && typeof el.matches === 'function' && el.matches(sel)); } catch (_) { return false; }
   });
-  const closestAcrossShadow = (el, selectors) => {
-    let cur = el, depth = 0;
-    while (cur && depth < 32) {
+  const closestAcrossShadow = (el, selectors, failClosed = false) => {
+    const stack = [[el, 0]];
+    const seen = new Set();
+    let visited = 0;
+    while (stack.length) {
+      const [cur, depth] = stack.pop();
+      if (!cur || seen.has(cur)) continue;
+      if (depth >= 128 || visited >= 256) return failClosed;
+      seen.add(cur);
+      visited++;
       if (matchesAny(cur, selectors)) return true;
+      try {
+        if (cur.assignedSlot) stack.push([cur.assignedSlot, depth + 1]);
+      } catch (_) {
+        return failClosed;
+      }
       if (cur.parentElement) {
-        cur = cur.parentElement;
+        stack.push([cur.parentElement, depth + 1]);
       } else {
         const root = typeof cur.getRootNode === 'function' ? cur.getRootNode() : null;
-        cur = root && root.host ? root.host : null;
+        if (root && root.host) stack.push([root.host, depth + 1]);
       }
-      depth++;
     }
     return false;
   };
   const hasDescendantAcrossShadow = (el, selectors) => {
     if (!el) return false;
     const stack = [[el, 0]];
+    const seen = new Set();
     let visited = 0;
     while (stack.length && visited < 4000) {
       const [root, depth] = stack.pop();
-      if (!root || depth > 12) return true;  // fail closed on excessive depth
+      if (!root || seen.has(root)) continue;
+      if (depth > 12) return true;  // fail closed on excessive depth
+      seen.add(root);
+      if (matchesAny(root, selectors)) return true;
       for (const sel of selectors) {
         try { if (root.querySelector && root.querySelector(sel)) return true; } catch (_) { return true; }
       }
@@ -271,8 +286,17 @@ CAPTURE_SHARE_VIDEO_JS = r"""(stageDomSelectors = []) => {
       for (let i = 0; i < nodes.length; i++) {
         visited++;
         if (visited >= 4000) return true;  // fail closed on huge DOM
-        const sr = nodes[i].shadowRoot;
-        if (sr) stack.push([sr, depth + 1]);
+        const node = nodes[i];
+        if (node.shadowRoot) stack.push([node.shadowRoot, depth + 1]);
+        if (node.tagName === 'SLOT' && typeof node.assignedElements === 'function') {
+          try {
+            for (const assigned of node.assignedElements({flatten: true})) {
+              stack.push([assigned, depth + 1]);
+            }
+          } catch (_) {
+            return true;
+          }
+        }
       }
     }
     return false;
@@ -298,7 +322,7 @@ CAPTURE_SHARE_VIDEO_JS = r"""(stageDomSelectors = []) => {
       iframesTotal += root.querySelectorAll('iframe').length;
       for (const c of root.querySelectorAll('canvas')) {
         try {
-          if (closestAcrossShadow(c, ['[role="log"]', '[role="feed"]'])) continue;
+          if (closestAcrossShadow(c, ['[role="log"]', '[role="feed"]'], true)) continue;
           const cr = c.getBoundingClientRect();
           if (cr.width >= 320 && cr.height >= 180) canvasesLarge++;
         } catch (_) {}
@@ -322,7 +346,7 @@ CAPTURE_SHARE_VIDEO_JS = r"""(stageDomSelectors = []) => {
         for (let j = 0; j < list.length; j++) {
           const el = list[j];
           if (!el || el.tagName === 'IFRAME') continue;
-          if (closestAcrossShadow(el, chatSelectors)) continue;
+          if (closestAcrossShadow(el, chatSelectors, true)) continue;
           if (hasDescendantAcrossShadow(el, chatSelectors)) continue;
           const style = window.getComputedStyle(el);
           if (!style || style.display === 'none' || style.visibility === 'hidden') continue;
@@ -365,8 +389,12 @@ CAPTURE_SHARE_VIDEO_JS = r"""(stageDomSelectors = []) => {
       sawBelowSize = true;
       continue;
     }
-    const explicitShare = closestAcrossShadow(video, shareSelectors);
-    const inCameraExclude = closestAcrossShadow(video, cameraExclude);
+    if (closestAcrossShadow(video, chatSelectors, true)) {
+      probe.videos_excluded_camera++;
+      continue;
+    }
+    const explicitShare = closestAcrossShadow(video, shareSelectors, false);
+    const inCameraExclude = closestAcrossShadow(video, cameraExclude, true);
     if (inCameraExclude && !explicitShare) {
       probe.videos_excluded_camera++;
       continue;
@@ -528,21 +556,28 @@ _REASON_PRIORITY = {
 
 
 _ELEMENT_NOT_IN_CHAT_JS = r"""el => {
-  let cur = el, depth = 0;
-  while (cur) {
-    if (depth >= 32) return false;
+  if (!el) return false;
+  const stack = [[el, 0]];
+  const seen = new Set();
+  let visited = 0;
+  while (stack.length) {
+    const [cur, depth] = stack.pop();
+    if (!cur || seen.has(cur)) continue;
+    if (depth >= 128 || visited >= 256) return false;  // fail closed
+    seen.add(cur);
+    visited++;
     try {
       if (typeof cur.matches === 'function' && cur.matches('[role="log"],[role="feed"]')) return false;
+      if (cur.assignedSlot) stack.push([cur.assignedSlot, depth + 1]);
     } catch (_) {
       return false;
     }
     if (cur.parentElement) {
-      cur = cur.parentElement;
+      stack.push([cur.parentElement, depth + 1]);
     } else {
       const root = typeof cur.getRootNode === 'function' ? cur.getRootNode() : null;
-      cur = root && root.host ? root.host : null;
+      if (root && root.host) stack.push([root.host, depth + 1]);
     }
-    depth++;
   }
   return true;
 }"""
@@ -553,23 +588,41 @@ _STAGE_CONTAINER_CHECK_JS = r"""el => {
     try { return typeof node?.matches === 'function' && node.matches('[role="log"],[role="feed"]'); }
     catch (_) { return true; }
   };
-  let cur = el, ancDepth = 0;
-  while (cur) {
-    if (ancDepth >= 32 || isChat(cur)) return {allowed: false, iframeCount: 0};
-    if (cur.parentElement) cur = cur.parentElement;
-    else {
-      const root = typeof cur.getRootNode === 'function' ? cur.getRootNode() : null;
-      cur = root && root.host ? root.host : null;
+  const ancStack = [[el, 0]];
+  const ancSeen = new Set();
+  let ancVisited = 0;
+  while (ancStack.length) {
+    const [cur, depth] = ancStack.pop();
+    if (!cur || ancSeen.has(cur)) continue;
+    if (depth >= 128 || ancVisited >= 256 || isChat(cur)) return {allowed: false, iframeCount: 0};
+    ancSeen.add(cur);
+    ancVisited++;
+    try {
+      if (cur.assignedSlot) ancStack.push([cur.assignedSlot, depth + 1]);
+    } catch (_) {
+      return {allowed: false, iframeCount: 0};
     }
-    ancDepth++;
+    if (cur.parentElement) {
+      ancStack.push([cur.parentElement, depth + 1]);
+    } else {
+      const root = typeof cur.getRootNode === 'function' ? cur.getRootNode() : null;
+      if (root && root.host) ancStack.push([root.host, depth + 1]);
+    }
   }
   let shadowIframe = false;
   let chatDescendant = false;
   const stack = [[el, 0, false]];
+  const descSeen = new Set();
   let visited = 0;
   while (stack.length && !shadowIframe && !chatDescendant) {
     const [root, depth, inShadow] = stack.pop();
-    if (!root || depth > 12) return {allowed: false, iframeCount: 0};
+    if (!root || descSeen.has(root)) continue;
+    if (depth > 12) return {allowed: false, iframeCount: 0};
+    descSeen.add(root);
+    if (isChat(root)) {
+      chatDescendant = true;
+      break;
+    }
     try {
       if (root.querySelector && root.querySelector('[role="log"],[role="feed"]')) {
         chatDescendant = true;
@@ -587,8 +640,17 @@ _STAGE_CONTAINER_CHECK_JS = r"""el => {
     for (let i = 0; i < nodes.length; i++) {
       visited++;
       if (visited >= 4000) return {allowed: false, iframeCount: 0};
-      const sr = nodes[i].shadowRoot;
-      if (sr) stack.push([sr, depth + 1, true]);
+      const node = nodes[i];
+      if (node.shadowRoot) stack.push([node.shadowRoot, depth + 1, true]);
+      if (node.tagName === 'SLOT' && typeof node.assignedElements === 'function') {
+        try {
+          for (const assigned of node.assignedElements({flatten: true})) {
+            stack.push([assigned, depth + 1, inShadow]);
+          }
+        } catch (_) {
+          return {allowed: false, iframeCount: 0};
+        }
+      }
     }
   }
   return {
@@ -649,35 +711,47 @@ class ScreenShareCapturer:
     def _now_iso(self):
         return datetime.now(timezone.utc).isoformat()
 
-    async def _frame_chain_not_in_chat(self, frame, main_frame):
-        """Walk parent_frame/frame_element chain up to main_frame; fail closed on any chat ancestor or error."""
+    async def _verified_frame_element(self, frame, main_frame):
+        """Walk parent_frame/frame_element chain up to main_frame using composed+physical chat checks.
+
+        Returns the immediate frame_element handle for `frame` if every hop is verified non-chat,
+        or None (fail closed) on any chat ancestor, missing parent, cycle, depth limit, or error.
+        """
         cur = frame
+        first_el = None
         seen = set()
         depth = 0
         while cur is not None and cur is not main_frame:
             if id(cur) in seen or depth >= 16:
-                return False
+                return None
             seen.add(id(cur))
             depth += 1
             if callable(getattr(cur, 'is_detached', None)) and cur.is_detached():
-                return False
+                return None
             try:
                 frame_el = await asyncio.wait_for(cur.frame_element(), timeout=self._evaluate_timeout)
                 if frame_el is None:
-                    return False
+                    return None
                 allowed = await asyncio.wait_for(
                     frame_el.evaluate(_ELEMENT_NOT_IN_CHAT_JS),
                     timeout=self._evaluate_timeout,
                 )
                 if allowed is not True:
-                    return False
+                    return None
             except Exception:
-                return False
+                return None
+            if first_el is None:
+                first_el = frame_el
             parent = getattr(cur, 'parent_frame', None)
             if parent is None:
-                return False
+                return None
             cur = parent
-        return cur is main_frame
+        return first_el if cur is main_frame else None
+
+    async def _frame_chain_not_in_chat(self, frame, main_frame):
+        if frame is main_frame:
+            return True
+        return (await self._verified_frame_element(frame, main_frame)) is not None
 
     @staticmethod
     def _merge_probe(agg, item):
@@ -771,10 +845,10 @@ class ScreenShareCapturer:
         for frame in powerpoint_frames:
             if callable(getattr(frame, 'is_detached', None)) and frame.is_detached():
                 continue
-            if not await self._frame_chain_not_in_chat(frame, main_frame):
+            frame_el = await self._verified_frame_element(frame, main_frame)
+            if frame_el is None:
                 continue
             try:
-                frame_el = await asyncio.wait_for(frame.frame_element(), timeout=self._evaluate_timeout)
                 box = await frame_el.bounding_box()
                 if not box or box.get('width', 0) < 160 or box.get('height', 0) < 90:
                     continue
