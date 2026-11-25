@@ -96,6 +96,9 @@ class ScreenAdminUiTests(unittest.TestCase):
                     from teams_transcription.calendar_client import CalendarError
                     raise CalendarError('google_oauth_client_required')
 
+                async def set_output(self, session_id, enabled):
+                    raise RuntimeError('native_response_unavailable')
+
                 async def start(self):
                     pass
 
@@ -262,6 +265,9 @@ class ScreenAdminUiTests(unittest.TestCase):
                         },
                     }
 
+                async def set_output(self, session_id, enabled):
+                    raise RuntimeError('native_response_unavailable')
+
                 async def start(self):
                     pass
 
@@ -290,6 +296,17 @@ class ScreenAdminUiTests(unittest.TestCase):
                 self.assertIn('evaluation_timeout', diag_html)
                 self.assertIn('screen_context', diag_html)
                 self.assertIn('camera_excluded', diag_html)
+
+                # Clicking output toggle when B channel is unavailable returns clean 422 instead of 500
+                authed_csrf = diag_html.split('name="csrf" value="', 1)[1].split('"', 1)[0]
+                out_resp = client.post(
+                    '/actions/output',
+                    data={'csrf': authed_csrf, 'id': session_id, 'enabled': 'true'},
+                    headers={'origin': 'http://127.0.0.1:18442', 'accept': 'application/json'},
+                    follow_redirects=False,
+                )
+                self.assertEqual(out_resp.status_code, 422)
+                self.assertEqual(out_resp.json(), {'error': 'native_response_unavailable'})
 
                 api_data = client.get(f'/api/meetings/{occ["id"]}').json()
                 self.assertEqual(len(api_data['screen_observations']), 2)

@@ -19,6 +19,31 @@ class _FakeMeeting:
 
 
 class ScreenCaptureUnitTests(unittest.TestCase):
+    def test_powerpoint_live_url_allowlist_is_strict_and_rejects_spoofing(self):
+        from teams_transcription.screen_capture import _is_powerpoint_live_url
+        for valid in (
+            'https://powerpoint.officeapps.live.com/p/PowerPointFrame.aspx?WOPISrc=abc',
+            'https://apc-powerpoint.officeapps.live.com/p/PowerPointFrame.aspx',
+            'https://euc-ppt.officeapps-df.live.com/p/frame',
+            'https://contoso.sharepoint.com/sites/eng/_layouts/15/WopiFrame.aspx?file=deck.pptx',
+            'https://contoso.sharepoint.com/_layouts/15/PowerPointFrame.aspx',
+            'https://www.office.com/launch/powerpoint',
+        ):
+            with self.subTest(valid=valid):
+                self.assertTrue(_is_powerpoint_live_url(valid))
+        for invalid in (
+            '',
+            'about:blank',
+            'http://powerpoint.officeapps.live.com/p/PowerPointFrame.aspx',
+            'https://evil.example/powerpoint/PowerPointFrame.aspx',
+            'https://evil.example/?src=https://powerpoint.officeapps.live.com/',
+            'https://powerpoint.officeapps.live.com.evil.example/p/PowerPointFrame.aspx',
+            'https://word-view.officeapps.live.com/wv/wordviewerframe.aspx',
+            'https://contoso.sharepoint.com/sites/eng/chat?q=powerpoint',
+        ):
+            with self.subTest(invalid=invalid):
+                self.assertFalse(_is_powerpoint_live_url(invalid))
+
     def test_dhash_distinguishes_slides_and_tolerates_tiny_noise(self):
         # Gradient left-to-right (all bits 1) vs right-to-left (all bits 0)
         slide_a = [x * 20 for _ in range(8) for x in range(9)]
@@ -323,6 +348,59 @@ class ScreenCaptureBrowserTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(probe6['max_video_height'], 720)
             self.assertEqual(probe6['match_reason'], 'unmatched_video')
             await page6.close()
+
+            # 7) PowerPoint Live embedded iframe (explicit title/aria-label, ZERO <video>) IS captured,
+            #    while an iframe inside role="log" chat sidebar is ignored
+            page7 = await ctx.new_page()
+            await page7.set_content("""
+            <html><body>
+              <div role="log" aria-label="Chat">
+                <iframe title="PowerPoint chat preview" style="width:400px;height:250px;border:0"
+                  srcdoc="<html><body style='background:#ef4444'>Chat embed must not capture</body></html>"></iframe>
+              </div>
+              <iframe id="pptFrame" title="PowerPoint Live presentation" style="width:800px;height:450px;border:0"
+                srcdoc="<html><body style='margin:0;background:#ffffff;padding:24px;font-family:sans-serif'><h1 style='color:#0f172a'>Q4 Roadmap</h1><div style='width:500px;height:200px;background:#1d4ed8;color:#fff;padding:16px'>Milestone 1 -> Milestone 2</div></body></html>"></iframe>
+            </body></html>""")
+            cap7 = ScreenShareCapturer(_FakeMeeting(page7))
+            f7 = await cap7.capture()
+            self.assertIsNotNone(f7)
+            self.assertEqual(f7.capture_method, 'teams_stage_dom')
+            self.assertGreater(len(f7.image_bytes), 500)
+            probe7 = cap7.probe_status()
+            self.assertGreaterEqual(probe7['iframes_total'], 2)
+            self.assertEqual(probe7['match_reason'], 'stage_dom_candidate')
+            await page7.close()
+
+            # 8) PowerPoint Live child frame routed at https://apc-powerpoint.officeapps.live.com
+            #    with NO data-tid/title on the iframe element -> matched via strict frame.url allowlist
+            page8 = await ctx.new_page()
+            async def ppt_route(route):
+                url = route.request.url
+                if url == 'https://teams.microsoft.com/mock-meeting':
+                    await route.fulfill(status=200, content_type='text/html', body=(
+                        '<html><body style="margin:0">'
+                        '<iframe style="width:800px;height:450px;border:0" '
+                        'src="https://apc-powerpoint.officeapps.live.com/p/PowerPointFrame.aspx"></iframe>'
+                        '</body></html>'))
+                elif url.startswith('https://apc-powerpoint.officeapps.live.com/'):
+                    await route.fulfill(status=200, content_type='text/html', body=(
+                        '<html><body style="margin:0;background:#f8fafc;padding:24px">'
+                        '<h1 style="color:#0f172a">PowerPoint Live Slide 3</h1>'
+                        '<div style="width:600px;height:220px;background:#0f766e"></div>'
+                        '</body></html>'))
+                else:
+                    await route.abort()
+            await page8.route('**/*', ppt_route)
+            await page8.goto('https://teams.microsoft.com/mock-meeting', wait_until='load')
+            cap8 = ScreenShareCapturer(_FakeMeeting(page8))
+            f8 = await cap8.capture()
+            self.assertIsNotNone(f8)
+            self.assertEqual(f8.capture_method, 'teams_stage_dom')
+            self.assertGreater(len(f8.image_bytes), 500)
+            probe8 = cap8.probe_status()
+            self.assertEqual(probe8['powerpoint_frames_seen'], 1)
+            self.assertEqual(probe8['match_reason'], 'powerpoint_live_frame')
+            await page8.close()
 
             await ctx.close()
 
