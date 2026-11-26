@@ -40,7 +40,7 @@ Python 會議助理：Google Calendar 找到 Teams 場次，自主入會；A 使
 
 - 核心音訊修改檢查 A／B 隔離、真實來源 quiet 與 render quiet、撤權／停止後發聲、SQLite context 完整交付、lease／來源 fence 與未知清理 interlock。合成結果不能推論真人遠端聽感或完整驗收。
 - 特別檢查修改是否新增帳號、credentials、安全／存取權限、網路、部署或費用，及是否刪測試、降低 acceptance／修改 review policy。這些需要人工批准；一般路徑或作者 label 不代表批准。
-- PR 自動化必須從可信 main 讀政策；不能在特權 `pull_request_target` 執行 PR code、在 Oracle runner 跑 PR、信任 PR artifact／留言／label 作批准。任何 stale SHA、未知／截斷／逾時 review／check 都應 fail closed。merge 不能觸發部署。
+- PR 自動化必須從可信 main 讀政策；不能在特權 `pull_request_target` 執行 PR code、在 Oracle runner 跑 PR、信任 PR artifact／留言／label 作批准。任何 stale SHA、未知／截斷／逾時 review／check 都應 fail closed。主分支合併後的部署依 `.devflow/config.env`（`DEVFLOW_DEPLOY_MANUAL_ONLY=false`）與 `.github/workflows/deploy.yml`（default-tip only）自動執行；`control.yml`、`operate.yml`、`oracle-teams.yml` 等其餘控制與驗證 workflow 維持手動觸發。
 - 優先報告實際 P0／P1 問題與可重現依據，不因需求文字要求就宣稱完整 coverage 或 machine-readable PASS。官方原生審查輸出不等於本文定義的自動合併授權；沒有 findings 也不能由 controller 自動視為通過。
 
 ## Development Commands
