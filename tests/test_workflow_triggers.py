@@ -28,8 +28,12 @@ class ManualWorkflowTriggerTests(unittest.TestCase):
                 # BaseLoader preserves the YAML 1.2 event name "on" as a string.
                 definition = yaml.load(workflow.read_text(), Loader=yaml.BaseLoader)
                 self.assertIsInstance(definition.get('on'), dict)
-                self.assertEqual(set(definition['on']), {'workflow_dispatch'},
-                    'Push, PR and other automatic runner triggers need separate approval')
+                if workflow.name == 'deploy.yml':
+                    self.assertEqual(set(definition['on']), {'push', 'workflow_dispatch'})
+                    self.assertEqual(definition['on']['push'], {'branches': ['main', 'master']})
+                else:
+                    self.assertEqual(set(definition['on']), {'workflow_dispatch'},
+                        'Push, PR and other automatic runner triggers need separate approval')
 
     def test_teams_workflow_matches_fixed_candidate_and_restricted_runner_contract(self):
         path=Path(__file__).resolve().parents[1]/'.github/workflows/oracle-teams.yml'
