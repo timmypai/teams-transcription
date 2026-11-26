@@ -93,7 +93,8 @@ class TargetDeployTests(unittest.TestCase):
 
     def test_manual_workflows_are_readonly_main_latest_and_separate_from_ci(self):
         deploy_wf=yaml.load((ROOT/'.github/workflows/deploy.yml').read_text(),Loader=yaml.BaseLoader)
-        self.assertEqual(set(deploy_wf['on']),{'workflow_dispatch'})
+        self.assertEqual(set(deploy_wf['on']),{'push','workflow_dispatch'})
+        self.assertEqual(deploy_wf['on']['push'],{'branches':['main','master']})
         self.assertEqual(deploy_wf['concurrency']['group'],'deploy-${{ github.repository }}')
         djob=deploy_wf['jobs']['deploy']
         self.assertEqual(djob['runs-on'],['self-hosted','devflow'])

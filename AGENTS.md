@@ -3,7 +3,7 @@
 ## Repo-local Skills & Standard Delivery
 
 - `.agents/skills/` 保留官方 `mattpocock/skills` 27 技能參考（`policy.allow_implicit_invocation: false`，見 [.agents/skills/UPSTREAM.json](.agents/skills/UPSTREAM.json) 與 [docs/agents/SKILLS-INVENTORY.md](docs/agents/SKILLS-INVENTORY.md)）。只在實際需要時按階段選用：`grill-with-docs`、`to-spec`、`to-tickets`、`tdd`、`implement`、`diagnosing-bugs`、`code-review`、`pr`；嚴禁在無授權下執行外部寫入／安裝腳本／自動關票（參考 [docs/agents/issue-tracker.md](docs/agents/issue-tracker.md)，Draft PR 與驗收票分離規則不變）。
-- **審查與標準交付（2026-11-25 更新）：** 本 repo（`timmypai/teams-transcription`）採用 **Hermes 獨立 reviewer + GitHub Actions** 與 **devflow 公版部署流程**：`.github/workflows/deploy.yml`（`workflow_dispatch`-only）、`.devflow/deploy.sh`、`.devflow/capture.sh`、`.devflow/redact.py` 必須與 devflow 公版保持一致；映像離線建置放在 `.devflow/deploy-build.sh`，組態參數放在 `.devflow/config.env` 與 `deploy/compose.yml`。merge 不自動部署，部署與操作僅走手動 default-tip workflow。
+- **審查與標準交付（2026-11-26 更新）：** 本 repo（`timmypai/teams-transcription`）採用 **Hermes 獨立 reviewer + GitHub Actions** 與 **devflow 公版部署流程**：`.github/workflows/deploy.yml` 依 devflow 公版啟用自動部署（`push` 至 `main`/`master` 自動觸發 default-tip 部署並保留 `workflow_dispatch`，`.devflow/config.env` 設 `DEVFLOW_DEPLOY_MANUAL_ONLY=false`）；`.devflow/deploy.sh`、`.devflow/capture.sh`、`.devflow/redact.py` 與公版一致，映像離線建置放在 `.devflow/deploy-build.sh`，組態參數放在 `.devflow/config.env` 與 `deploy/compose.yml`。`control.yml`、`operate.yml`、`oracle-teams.yml` 等其餘控制與驗證 workflow 維持手動 default-tip `workflow_dispatch`-only。
 - 本人 OAuth onboarding（Related #7）：`auth-preflight` 僅查離線 metadata；`auth-login` 限本人 TTY 且 daemon 已停；`auth-check` 才做 readonly account/read。管理／Google／Teams 登入皆不能替代 ChatGPT OAuth（見 [docs/DEPLOYMENT-PREREQUISITES.md](docs/DEPLOYMENT-PREREQUISITES.md)）。
 
 ## Project Overview
