@@ -454,7 +454,8 @@
     occurrence_not_rejoinable: '此會議目前狀態無法重新加入。', meeting_running_cannot_delete: '進行中的會議不能直接刪除，請先讓助理離開。',
     delete_confirmation_required: '請先確認刪除，再送出操作。',
     summary_source_unavailable: '此場次尚無可摘要的逐字來源。', summary_already_running: '此場次摘要正在產生中，請稍候。',
-    postmeeting_active_cannot_delete: '會後整理仍在執行或受阻，暫時無法刪除。'};
+    postmeeting_active_cannot_delete: '會後整理仍在執行或受阻，暫時無法刪除。',
+    native_response_unavailable: '語音回覆通道目前不可用，請查看進階診斷記錄。'};
   async function requestJSON(url, options = {}) {
     const response = await fetch(url, {credentials: 'same-origin', cache: 'no-store', ...options,
       headers: {Accept: 'application/json', ...options.headers}});

@@ -183,14 +183,20 @@ def response_runtime_failure_receipt(value):
 def response_policy_failure_receipt(value):
     if not isinstance(value, dict):
         return None
+    from .b_dual_policy import OWNED_IDENTITY_DETAILS
     reasons = {'policy_missing','meeting_scope','policy_faulted','document_scope',
         'binding_scope','authorization_scope','owned_decoder','owned_identity','foreign_sender',
         'evaluation_timeout','evaluation_error','invalid_result','invalid_binding'}
     reason, elapsed = value.get('reason'), value.get('elapsed_ms')
     kind = value.get('exception_type')
-    return {'reason': reason if isinstance(reason,str) and reason in reasons else 'unknown',
+    safe_reason = reason if isinstance(reason,str) and reason in reasons else 'unknown'
+    receipt = {'reason': safe_reason,
         'exception_type': kind if isinstance(kind,str) and kind in {'none','TimeoutError','Exception'} else 'Exception',
         'elapsed_ms': min(elapsed,86400000) if type(elapsed) is int and elapsed>=0 else None}
+    if safe_reason == 'owned_identity' and 'detail' in value:
+        detail = value.get('detail')
+        receipt['detail'] = detail if isinstance(detail, str) and detail in OWNED_IDENTITY_DETAILS else 'unknown'
+    return receipt
 
 
 def response_capture_delivery_receipt(value):
@@ -587,7 +593,7 @@ SCREEN_CONTEXT_MODES = {'off', 'on_demand', 'watch_and_cache'}
 SCREEN_CAPTURE_METHOD_LABELS = {'webrtc_video_frame', 'teams_stage_dom', 'none'}
 SCREEN_CAPTURE_MATCH_REASONS = {
     'explicit_share', 'label_share', 'track_share',
-    'stage_dom_candidate',
+    'powerpoint_live_frame', 'stage_dom_candidate',
     'blank_video', 'no_video', 'below_size', 'camera_excluded',
     'unmatched_video', 'evaluate_error', 'page_unavailable',
 }
@@ -630,6 +636,9 @@ def screen_context_diagnostic(value):
             'videos_ready': count(probe.get('videos_ready'), 1024),
             'videos_excluded_camera': count(probe.get('videos_excluded_camera'), 1024),
             'videos_unmatched': count(probe.get('videos_unmatched'), 1024),
+            'iframes_total': count(probe.get('iframes_total'), 256),
+            'canvases_large': count(probe.get('canvases_large'), 256),
+            'powerpoint_frames_seen': count(probe.get('powerpoint_frames_seen'), 64),
             'max_video_width': count(probe.get('max_video_width'), 16384),
             'max_video_height': count(probe.get('max_video_height'), 16384),
             'max_rect_width': count(probe.get('max_rect_width'), 16384),

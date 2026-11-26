@@ -437,6 +437,84 @@ class PolicyDiagnosticTests(unittest.TestCase):
         self.assertIsNone(counts['callback_error_packets'])
         self.assertNotIn('PRIVATE',json.dumps([failure,counts]))
 
+    def test_owned_identity_detail_is_strictly_allowlisted_and_other_reasons_reject_extra_keys(self):
+        from teams_transcription.diagnostics import response_policy_failure_receipt
+        good = response_policy_failure_receipt({
+            'reason': 'owned_identity', 'exception_type': 'none', 'elapsed_ms': 73293,
+            'detail': 'revoked_guard_sender_track_changed',
+        })
+        self.assertEqual(good, {
+            'reason': 'owned_identity', 'exception_type': 'none', 'elapsed_ms': 73293,
+            'detail': 'revoked_guard_sender_track_changed',
+        })
+        hostile = response_policy_failure_receipt({
+            'reason': 'owned_identity', 'exception_type': 'none', 'elapsed_ms': 10,
+            'detail': 'PRIVATE https://secret.invalid',
+        })
+        self.assertEqual(hostile['detail'], 'unknown')
+        self.assertNotIn('PRIVATE', json.dumps(hostile))
+        non_owned = response_policy_failure_receipt({
+            'reason': 'foreign_sender', 'exception_type': 'none', 'elapsed_ms': 10,
+            'detail': 'sender_track_changed',
+        })
+        self.assertNotIn('detail', non_owned)
+
+    def test_dual_check_js_reports_exact_owned_identity_detail_for_revoked_and_track_change(self):
+        script = 'const guard=(' + DUAL_CHECK_JS + r''');
+          global.document={};global.location={href:'synthetic'};
+          const ownedTrack={id:'owned-1',kind:'audio',readyState:'live',enabled:false};
+          const replacedTrack={id:'teams-2',kind:'audio',readyState:'live',enabled:false};
+          const sender={track:ownedTrack};
+          const pc={connectionState:'connected',getSenders:()=>[sender],getTransceivers:()=>[]};
+          const capture={peers:[pc]};
+          const binding={owner:'o1',meetingId:'m1',peerIndex:0,senderIndex:0,capture,document,
+            pc,sender,transceiver:null,original:replacedTrack,href:'synthetic',
+            documentId:'d1',peerId:'p1',senderId:'s1'};
+          const owned={owner:'o1',binding,pc,sender,track:ownedTrack,inputTrack:{},receiver:{track:{}},
+            relay:{connectionState:'connected',getReceivers:()=>[]},control:{readyState:'open'},
+            decoder:{valid:()=>true},installed:true,disposed:true,muted:true,stopping:false,
+            revokeReason:'source_disconnected',revoke(r){this.revokeReason ||= r;this.disposed=true;}};
+          global.window={__bMeetingId:'m1',__meeting:capture,__bTX:owned,
+            __bTXBindings:new Map([['o1',binding]]),
+            __bTXOwnedStates:new Map([['o1',owned]])};
+          const r1=guard({policyId:'p1',meetingId:'m1',authorize:false,initialized:false,receipt:true});
+          // Now simulate active owned state whose sender.track was replaced before guard fired
+          const owned2={...owned,disposed:false,revokeReason:null};
+          owned2.receiver={track:owned2.inputTrack};
+          owned2.relay={connectionState:'connected',getReceivers:()=>[owned2.receiver]};
+          owned2.decoder={receiver:owned2.receiver,inputTrack:owned2.inputTrack,track:ownedTrack,valid:()=>true};
+          sender.track=replacedTrack;
+          window.__bTX=owned2;window.__bTXOwnedStates.set('o1',owned2);
+          const pMap=window.__bDualPolicies;
+          pMap.set('p2',{document,capture,href:'synthetic',meetingId:'m1',binding,trackId:'owned-1',faulted:false,failureDetail:null});
+          const r2=guard({policyId:'p2',meetingId:'m1',authorize:false,initialized:true,receipt:true});
+          process.stdout.write(JSON.stringify({r1,r2}));
+        '''
+        value = json.loads(subprocess.check_output(['node', '-e', script], text=True, timeout=3))
+        self.assertEqual(value['r2'], {'accepted': False, 'reason': 'owned_identity', 'detail': 'sender_track_changed'})
+        # In r1, binding was not yet authorized so policy.binding was null; test pre-authorized revoked state too:
+        script2 = 'const guard=(' + DUAL_CHECK_JS + r''');
+          global.document={};global.location={href:'synthetic'};
+          const ownedTrack={id:'owned-1',kind:'audio',readyState:'live',enabled:false};
+          const sender={track:ownedTrack};
+          const pc={connectionState:'connected',getSenders:()=>[sender],getTransceivers:()=>[]};
+          const capture={peers:[pc]};
+          const binding={owner:'o1',meetingId:'m1',peerIndex:0,senderIndex:0,capture,document,
+            pc,sender,transceiver:null,original:ownedTrack,href:'synthetic',
+            documentId:'d1',peerId:'p1',senderId:'s1'};
+          const owned={owner:'o1',binding,pc,sender,track:ownedTrack,installed:true,disposed:true,
+            muted:true,stopping:false,revokeReason:'source_disconnected',
+            revoke(r){this.revokeReason ||= r;this.disposed=true;}};
+          global.window={__bMeetingId:'m1',__meeting:capture,__bTX:owned,
+            __bTXBindings:new Map([['o1',binding]]),
+            __bTXOwnedStates:new Map([['o1',owned]]),
+            __bDualPolicies:new Map([['p3',{document,capture,href:'synthetic',meetingId:'m1',binding,trackId:'owned-1',faulted:false,failureDetail:null}]])};
+          const r3=guard({policyId:'p3',meetingId:'m1',authorize:false,initialized:true,receipt:true});
+          process.stdout.write(JSON.stringify(r3));
+        '''
+        r3 = json.loads(subprocess.check_output(['node', '-e', script2], text=True, timeout=3))
+        self.assertEqual(r3, {'accepted': False, 'reason': 'owned_identity', 'detail': 'revoked_source_disconnected'})
+
 
 if __name__ == '__main__':
     unittest.main()

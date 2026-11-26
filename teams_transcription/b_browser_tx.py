@@ -161,13 +161,13 @@ TARGET_ANSWER_JS = r"""async ({owner,sdp}) => {""" + _HELPERS + _ICE + NO_PLC_RE
   const relay=binding.capture.createNativeOutputPeer();
   const state={owner,binding,pc:binding.pc,sender:binding.sender,original:binding.original,relay,
     track:null,inputTrack:null,receiver:null,decoderReady:null,control:null,muted:true,
-    disposed:false,installed:false,replacing:false,stopping:false,delivery:null};
+    disposed:false,installed:false,replacing:false,stopping:false,delivery:null,revokeReason:null};
   state.mute=reason=>{
     if(!state.muted)
       state.delivery={status:'truncated',truncated:true,drained:false,reason};
     state.muted=true; if(state.track) state.track.enabled=false;
   };
-  state.revoke=reason=>{state.mute(reason); state.disposed=true; clearInterval(state.guard);
+  state.revoke=reason=>{state.revokeReason ||= reason; state.mute(reason); state.disposed=true; clearInterval(state.guard);
     state.decoder?.close(); state.control?.close(); relay.close(); if(state.track) state.track.stop();};
   state.onHide=()=>state.revoke('document_closed');
   window.__bTXOwnedStates ||= new Map(); window.__bTXOwnedStates.set(owner,state); window.__bTX=state;
@@ -187,9 +187,11 @@ TARGET_ANSWER_JS = r"""async ({owner,sdp}) => {""" + _HELPERS + _ICE + NO_PLC_RE
       state.revoke('relay_disconnected');
   });
   state.guard=setInterval(()=>{
-    if(!current() || window.__bTX!==state || (!state.replacing &&
-        state.sender.track!==(state.installed?state.track:state.original)) ||
-        (state.decoder && !state.decoder.valid())) state.revoke('invalidated');
+    if(!current()) state.revoke('guard_binding_lost');
+    else if(window.__bTX!==state) state.revoke('guard_owner_replaced');
+    else if(!state.replacing && state.sender.track!==(state.installed?state.track:state.original))
+      state.revoke('guard_sender_track_changed');
+    else if(state.decoder && !state.decoder.valid()) state.revoke('guard_decoder_invalid');
   },25);
   let setupStep='remote_description';
   try {

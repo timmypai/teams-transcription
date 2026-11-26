@@ -15,6 +15,7 @@ from pathlib import Path
 import re
 import shutil
 import tempfile
+from urllib.parse import urlparse
 
 
 DEFAULT_MAX_FRAMES = 16
@@ -234,26 +235,77 @@ CAPTURE_SHARE_VIDEO_JS = r"""(stageDomSelectors = []) => {
     '[data-tid*="camera" i]', '[data-tid*="self-video" i]',
     '[role="log"]', '[role="feed"]'
   ];
+  const chatSelectors = ['[role="log"]', '[role="feed"]'];
   const matchesAny = (el, selectors) => selectors.some(sel => {
     try { return Boolean(el && typeof el.matches === 'function' && el.matches(sel)); } catch (_) { return false; }
   });
-  const closestAcrossShadow = (el, selectors) => {
-    let cur = el, depth = 0;
-    while (cur && depth < 24) {
+  const closestAcrossShadow = (el, selectors, failClosed = false) => {
+    const stack = [[el, 0]];
+    const seen = new Set();
+    let visited = 0;
+    while (stack.length) {
+      const [cur, depth] = stack.pop();
+      if (!cur || seen.has(cur)) continue;
+      if (depth >= 128 || visited >= 256) return failClosed;
+      seen.add(cur);
+      visited++;
       if (matchesAny(cur, selectors)) return true;
+      try {
+        if (cur.assignedSlot) stack.push([cur.assignedSlot, depth + 1]);
+      } catch (_) {
+        return failClosed;
+      }
       if (cur.parentElement) {
-        cur = cur.parentElement;
+        stack.push([cur.parentElement, depth + 1]);
       } else {
         const root = typeof cur.getRootNode === 'function' ? cur.getRootNode() : null;
-        cur = root && root.host ? root.host : null;
+        if (root && root.host) stack.push([root.host, depth + 1]);
       }
-      depth++;
     }
     return false;
   };
-  const collectVideos = () => {
+  const hasDescendantAcrossShadow = (el, selectors) => {
+    if (!el) return false;
+    const stack = [[el, 0]];
+    const seen = new Set();
+    let visited = 0;
+    while (stack.length && visited < 4000) {
+      const [root, depth] = stack.pop();
+      if (!root || seen.has(root)) continue;
+      if (depth > 12) return true;  // fail closed on excessive depth
+      seen.add(root);
+      if (matchesAny(root, selectors)) return true;
+      for (const sel of selectors) {
+        try { if (root.querySelector && root.querySelector(sel)) return true; } catch (_) { return true; }
+      }
+      if (root.shadowRoot) {
+        if (matchesAny(root.shadowRoot.host, selectors)) return true;
+        stack.push([root.shadowRoot, depth + 1]);
+      }
+      const nodes = root.querySelectorAll ? root.querySelectorAll('*') : [];
+      for (let i = 0; i < nodes.length; i++) {
+        visited++;
+        if (visited >= 4000) return true;  // fail closed on huge DOM
+        const node = nodes[i];
+        if (node.shadowRoot) stack.push([node.shadowRoot, depth + 1]);
+        if (node.tagName === 'SLOT' && typeof node.assignedElements === 'function') {
+          try {
+            for (const assigned of node.assignedElements({flatten: true})) {
+              stack.push([assigned, depth + 1]);
+            }
+          } catch (_) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  };
+  const collectDomMedia = () => {
     const videos = [];
     const seenVideos = new Set();
+    let iframesTotal = 0;
+    let canvasesLarge = 0;
     const stack = [[document, 0]];
     let rootsVisited = 0;
     let nodesVisited = 0;
@@ -267,6 +319,14 @@ CAPTURE_SHARE_VIDEO_JS = r"""(stageDomSelectors = []) => {
           videos.push(v);
         }
       }
+      iframesTotal += root.querySelectorAll('iframe').length;
+      for (const c of root.querySelectorAll('canvas')) {
+        try {
+          if (closestAcrossShadow(c, ['[role="log"]', '[role="feed"]'], true)) continue;
+          const cr = c.getBoundingClientRect();
+          if (cr.width >= 320 && cr.height >= 180) canvasesLarge++;
+        } catch (_) {}
+      }
       if (depth < 12) {
         const all = root.querySelectorAll('*');
         for (let i = 0; i < all.length && nodesVisited < 8000; i++) {
@@ -276,28 +336,36 @@ CAPTURE_SHARE_VIDEO_JS = r"""(stageDomSelectors = []) => {
         }
       }
     }
-    return videos;
+    return {videos, iframesTotal, canvasesLarge};
   };
   const findStageDomCandidate = () => {
-    if (!Array.isArray(stageDomSelectors)) return -1;
+    if (!Array.isArray(stageDomSelectors)) return {selectorIndex: -1, matchIndex: 0};
     for (let i = 0; i < stageDomSelectors.length; i++) {
       try {
-        const el = document.querySelector(stageDomSelectors[i]);
-        if (!el) continue;
-        const style = window.getComputedStyle(el);
-        if (!style || style.display === 'none' || style.visibility === 'hidden') continue;
-        const rect = el.getBoundingClientRect();
-        if (rect.width >= 160 && rect.height >= 90) return i;
+        const list = document.querySelectorAll(stageDomSelectors[i]);
+        for (let j = 0; j < list.length; j++) {
+          const el = list[j];
+          if (!el || el.tagName === 'IFRAME') continue;
+          if (closestAcrossShadow(el, chatSelectors, true)) continue;
+          if (hasDescendantAcrossShadow(el, chatSelectors)) continue;
+          const style = window.getComputedStyle(el);
+          if (!style || style.display === 'none' || style.visibility === 'hidden') continue;
+          const rect = el.getBoundingClientRect();
+          if (rect.width >= 160 && rect.height >= 90) return {selectorIndex: i, matchIndex: j};
+        }
       } catch (_) {}
     }
-    return -1;
+    return {selectorIndex: -1, matchIndex: 0};
   };
 
+  const domMedia = collectDomMedia();
   const probe = {
     videos_total: 0,
     videos_ready: 0,
     videos_excluded_camera: 0,
     videos_unmatched: 0,
+    iframes_total: domMedia.iframesTotal,
+    canvases_large: domMedia.canvasesLarge,
     max_video_width: 0,
     max_video_height: 0,
     max_rect_width: 0,
@@ -306,7 +374,7 @@ CAPTURE_SHARE_VIDEO_JS = r"""(stageDomSelectors = []) => {
   };
   const candidates = [];
   let sawBelowSize = false;
-  for (const video of collectVideos()) {
+  for (const video of domMedia.videos) {
     probe.videos_total++;
     if (video.readyState < 2 || !video.videoWidth || !video.videoHeight) continue;
     probe.videos_ready++;
@@ -321,8 +389,12 @@ CAPTURE_SHARE_VIDEO_JS = r"""(stageDomSelectors = []) => {
       sawBelowSize = true;
       continue;
     }
-    const explicitShare = closestAcrossShadow(video, shareSelectors);
-    const inCameraExclude = closestAcrossShadow(video, cameraExclude);
+    if (closestAcrossShadow(video, chatSelectors, true)) {
+      probe.videos_excluded_camera++;
+      continue;
+    }
+    const explicitShare = closestAcrossShadow(video, shareSelectors, false);
+    const inCameraExclude = closestAcrossShadow(video, cameraExclude, true);
     if (inCameraExclude && !explicitShare) {
       probe.videos_excluded_camera++;
       continue;
@@ -357,13 +429,19 @@ CAPTURE_SHARE_VIDEO_JS = r"""(stageDomSelectors = []) => {
     });
   }
   if (!candidates.length) {
-    const stageIdx = findStageDomCandidate();
-    probe.match_reason = stageIdx >= 0 ? 'stage_dom_candidate'
+    const stageHit = findStageDomCandidate();
+    probe.match_reason = stageHit.selectorIndex >= 0 ? 'stage_dom_candidate'
       : probe.videos_excluded_camera > 0 ? 'camera_excluded'
       : probe.videos_unmatched > 0 ? 'unmatched_video'
       : sawBelowSize ? 'below_size'
       : 'no_video';
-    return {matched: false, blank: false, stage_selector_index: stageIdx, probe};
+    return {
+      matched: false,
+      blank: false,
+      stage_selector_index: stageHit.selectorIndex,
+      stage_match_index: stageHit.matchIndex,
+      probe,
+    };
   }
   candidates.sort((a, b) => (b.priority - a.priority) || (b.area - a.area));
   const best = candidates[0];
@@ -388,9 +466,15 @@ CAPTURE_SHARE_VIDEO_JS = r"""(stageDomSelectors = []) => {
     if (y > maxL) maxL = y;
   }
   if (maxL - minL < 3 && maxL < 8) {
-    const stageIdx = findStageDomCandidate();
-    probe.match_reason = stageIdx >= 0 ? 'stage_dom_candidate' : 'blank_video';
-    return {matched: false, blank: true, stage_selector_index: stageIdx, probe};
+    const stageHit = findStageDomCandidate();
+    probe.match_reason = stageHit.selectorIndex >= 0 ? 'stage_dom_candidate' : 'blank_video';
+    return {
+      matched: false,
+      blank: true,
+      stage_selector_index: stageHit.selectorIndex,
+      stage_match_index: stageHit.matchIndex,
+      probe,
+    };
   }
 
   const full = document.createElement('canvas');
@@ -440,22 +524,26 @@ _STAGE_SELECTORS = (
     '[data-tid*="screenshare" i]',
     '[data-tid*="screen_share" i]',
     '[data-tid*="powerpoint" i]',
+    '[data-tid*="ppt" i]',
     '[data-tid*="whiteboard" i]',
     '[data-tid*="share-stage" i]',
     '[data-tid*="content-sharing" i]',
     '[data-tid*="shared-content" i]',
     '[data-tid*="calling-screen-sharing" i]',
     '[data-tid*="presentation" i]',
+    '[data-tid*="live-share" i]',
     '[data-stream-type*="screen" i]',
     '[data-stream-type*="sharing" i]',
     '[data-cid*="screen-share" i]',
     '[data-cid*="sharing" i]',
+    '[data-cid*="powerpoint" i]',
 )
 
 _REASON_PRIORITY = {
-    'explicit_share': 8,
-    'label_share': 7,
-    'track_share': 6,
+    'explicit_share': 9,
+    'label_share': 8,
+    'track_share': 7,
+    'powerpoint_live_frame': 6,
     'stage_dom_candidate': 5,
     'blank_video': 4,
     'camera_excluded': 3,
@@ -465,6 +553,141 @@ _REASON_PRIORITY = {
     'evaluate_error': 0,
     'page_unavailable': 0,
 }
+
+
+_ELEMENT_NOT_IN_CHAT_JS = r"""el => {
+  if (!el) return false;
+  const stack = [[el, 0]];
+  const seen = new Set();
+  let visited = 0;
+  while (stack.length) {
+    const [cur, depth] = stack.pop();
+    if (!cur || seen.has(cur)) continue;
+    if (depth >= 128 || visited >= 256) return false;  // fail closed
+    seen.add(cur);
+    visited++;
+    try {
+      if (typeof cur.matches === 'function' && cur.matches('[role="log"],[role="feed"]')) return false;
+      if (cur.assignedSlot) stack.push([cur.assignedSlot, depth + 1]);
+    } catch (_) {
+      return false;
+    }
+    if (cur.parentElement) {
+      stack.push([cur.parentElement, depth + 1]);
+    } else {
+      const root = typeof cur.getRootNode === 'function' ? cur.getRootNode() : null;
+      if (root && root.host) stack.push([root.host, depth + 1]);
+    }
+  }
+  return true;
+}"""
+
+_STAGE_CONTAINER_CHECK_JS = r"""el => {
+  if (!el || el.tagName === 'IFRAME') return {allowed: false, iframeCount: 0};
+  const isChat = node => {
+    try { return typeof node?.matches === 'function' && node.matches('[role="log"],[role="feed"]'); }
+    catch (_) { return true; }
+  };
+  const ancStack = [[el, 0]];
+  const ancSeen = new Set();
+  let ancVisited = 0;
+  while (ancStack.length) {
+    const [cur, depth] = ancStack.pop();
+    if (!cur || ancSeen.has(cur)) continue;
+    if (depth >= 128 || ancVisited >= 256 || isChat(cur)) return {allowed: false, iframeCount: 0};
+    ancSeen.add(cur);
+    ancVisited++;
+    try {
+      if (cur.assignedSlot) ancStack.push([cur.assignedSlot, depth + 1]);
+    } catch (_) {
+      return {allowed: false, iframeCount: 0};
+    }
+    if (cur.parentElement) {
+      ancStack.push([cur.parentElement, depth + 1]);
+    } else {
+      const root = typeof cur.getRootNode === 'function' ? cur.getRootNode() : null;
+      if (root && root.host) ancStack.push([root.host, depth + 1]);
+    }
+  }
+  let shadowIframe = false;
+  let chatDescendant = false;
+  const stack = [[el, 0, false]];
+  const descSeen = new Set();
+  let visited = 0;
+  while (stack.length && !shadowIframe && !chatDescendant) {
+    const [root, depth, inShadow] = stack.pop();
+    if (!root || descSeen.has(root)) continue;
+    if (depth > 12) return {allowed: false, iframeCount: 0};
+    descSeen.add(root);
+    if (isChat(root)) {
+      chatDescendant = true;
+      break;
+    }
+    try {
+      if (root.querySelector && root.querySelector('[role="log"],[role="feed"]')) {
+        chatDescendant = true;
+        break;
+      }
+      if (inShadow && root.querySelector && root.querySelector('iframe')) {
+        shadowIframe = true;
+        break;
+      }
+    } catch (_) {
+      return {allowed: false, iframeCount: 0};
+    }
+    if (root.shadowRoot) stack.push([root.shadowRoot, depth + 1, true]);
+    const nodes = root.querySelectorAll ? root.querySelectorAll('*') : [];
+    for (let i = 0; i < nodes.length; i++) {
+      visited++;
+      if (visited >= 4000) return {allowed: false, iframeCount: 0};
+      const node = nodes[i];
+      if (node.shadowRoot) stack.push([node.shadowRoot, depth + 1, true]);
+      if (node.tagName === 'SLOT' && typeof node.assignedElements === 'function') {
+        try {
+          for (const assigned of node.assignedElements({flatten: true})) {
+            stack.push([assigned, depth + 1, inShadow]);
+          }
+        } catch (_) {
+          return {allowed: false, iframeCount: 0};
+        }
+      }
+    }
+  }
+  return {
+    allowed: !shadowIframe && !chatDescendant,
+    iframeCount: el.querySelectorAll ? el.querySelectorAll('iframe').length : 0,
+  };
+}"""
+
+
+def _is_powerpoint_live_url(url):
+    """Strict allowlist for Microsoft PowerPoint Live / Office Online iframe URLs."""
+    if not isinstance(url, str) or not url:
+        return False
+    try:
+        parsed = urlparse(url)
+    except Exception:
+        return False
+    if parsed.scheme.lower() != 'https':
+        return False
+    host = (parsed.hostname or '').lower().rstrip('.')
+    if not host:
+        return False
+    first_label = host.split('.', 1)[0]
+    if host in {'powerpoint.officeapps.live.com', 'powerpoint.office.com'} or host.endswith('.powerpoint.office.com'):
+        return True
+    if host.endswith('.officeapps.live.com') or host.endswith('.officeapps-df.live.com'):
+        if 'powerpoint' in first_label or 'ppt' in first_label:
+            return True
+        path = (parsed.path or '').lower()
+        return any(tok in path for tok in ('powerpoint', '/ppt', 'pptview'))
+    if (host.endswith('.sharepoint.com')
+            or host.endswith('.sharepoint-df.com')
+            or host == 'www.office.com'
+            or host.endswith('.office.com')):
+        path = (parsed.path or '').lower()
+        return any(tok in path for tok in ('powerpoint', 'wopiframe', '/ppt', 'pptview'))
+    return False
 
 
 class ScreenShareCapturer:
@@ -488,11 +711,56 @@ class ScreenShareCapturer:
     def _now_iso(self):
         return datetime.now(timezone.utc).isoformat()
 
+    async def _verified_frame_element(self, frame, main_frame):
+        """Walk parent_frame/frame_element chain up to main_frame using composed+physical chat checks.
+
+        Returns the immediate frame_element handle for `frame` if every hop is verified non-chat,
+        or None (fail closed) on any chat ancestor, missing parent, cycle, depth limit, or error.
+        """
+        cur = frame
+        first_el = None
+        seen = set()
+        depth = 0
+        while cur is not None and cur is not main_frame:
+            if id(cur) in seen or depth >= 16:
+                return None
+            seen.add(id(cur))
+            depth += 1
+            if callable(getattr(cur, 'is_detached', None)) and cur.is_detached():
+                return None
+            try:
+                frame_el = await asyncio.wait_for(cur.frame_element(), timeout=self._evaluate_timeout)
+                if frame_el is None:
+                    return None
+                allowed = await asyncio.wait_for(
+                    frame_el.evaluate(_ELEMENT_NOT_IN_CHAT_JS),
+                    timeout=self._evaluate_timeout,
+                )
+                if allowed is not True:
+                    return None
+            except Exception:
+                return None
+            if first_el is None:
+                first_el = frame_el
+            parent = getattr(cur, 'parent_frame', None)
+            if parent is None:
+                return None
+            cur = parent
+        return first_el if cur is main_frame else None
+
+    async def _frame_chain_not_in_chat(self, frame, main_frame):
+        if frame is main_frame:
+            return True
+        return (await self._verified_frame_element(frame, main_frame)) is not None
+
     @staticmethod
     def _merge_probe(agg, item):
         if not isinstance(item, dict):
             return
-        for key in ('videos_total', 'videos_ready', 'videos_excluded_camera', 'videos_unmatched'):
+        for key in (
+            'videos_total', 'videos_ready', 'videos_excluded_camera', 'videos_unmatched',
+            'iframes_total', 'canvases_large',
+        ):
             val = item.get(key)
             if type(val) is int and val >= 0:
                 agg[key] += val
@@ -510,19 +778,23 @@ class ScreenShareCapturer:
             self._last_probe = {
                 'frames_checked': 0, 'videos_total': 0, 'videos_ready': 0,
                 'videos_excluded_camera': 0, 'videos_unmatched': 0,
+                'iframes_total': 0, 'canvases_large': 0, 'powerpoint_frames_seen': 0,
                 'max_video_width': 0, 'max_video_height': 0,
                 'max_rect_width': 0, 'max_rect_height': 0,
                 'match_reason': 'page_unavailable',
             }
             return None
+        main_frame = getattr(page, 'main_frame', page)
         frames = list(getattr(page, 'frames', None) or [page])
         agg = {
             'frames_checked': 0, 'videos_total': 0, 'videos_ready': 0,
             'videos_excluded_camera': 0, 'videos_unmatched': 0,
+            'iframes_total': 0, 'canvases_large': 0, 'powerpoint_frames_seen': 0,
             'max_video_width': 0, 'max_video_height': 0,
             'max_rect_width': 0, 'max_rect_height': 0,
             'match_reason': 'no_video',
         }
+        powerpoint_frames = []
         stage_candidates = []
         stage_selectors = list(_STAGE_SELECTORS)
         # 1) Single-pass lightweight JS evaluation per frame: WebRTC <video> + stage DOM candidate probe
@@ -530,6 +802,9 @@ class ScreenShareCapturer:
             if callable(getattr(frame, 'is_detached', None)) and frame.is_detached():
                 continue
             agg['frames_checked'] += 1
+            if frame is not main_frame and _is_powerpoint_live_url(getattr(frame, 'url', '')):
+                agg['powerpoint_frames_seen'] += 1
+                powerpoint_frames.append(frame)
             try:
                 result = await asyncio.wait_for(
                     frame.evaluate(CAPTURE_SHARE_VIDEO_JS, stage_selectors),
@@ -545,6 +820,8 @@ class ScreenShareCapturer:
                 continue
             self._merge_probe(agg, result.get('probe'))
             if result.get('matched') is True and result.get('blank') is not True:
+                if frame is not main_frame and not await self._frame_chain_not_in_chat(frame, main_frame):
+                    continue
                 raw = base64.b64decode(result['data'], validate=True)
                 if 0 < len(raw) <= MAX_FRAME_BYTES:
                     dhash = compute_dhash(result['luma'])
@@ -560,15 +837,83 @@ class ScreenShareCapturer:
                         captured_at=self._now_iso(),
                     )
             stage_idx = result.get('stage_selector_index')
-            if type(stage_idx) is int and 0 <= stage_idx < len(_STAGE_SELECTORS):
-                stage_candidates.append((frame, _STAGE_SELECTORS[stage_idx]))
+            match_idx = result.get('stage_match_index', 0)
+            if type(stage_idx) is int and 0 <= stage_idx < len(_STAGE_SELECTORS) and type(match_idx) is int and match_idx >= 0:
+                stage_candidates.append((frame, _STAGE_SELECTORS[stage_idx], match_idx))
 
-        # 2) Fallback path: ONLY screenshot a stage DOM element already confirmed visible by JS
-        for frame, selector in stage_candidates:
+        # 2) Verified PowerPoint Live / Office Online child iframe screenshot
+        for frame in powerpoint_frames:
             if callable(getattr(frame, 'is_detached', None)) and frame.is_detached():
                 continue
+            frame_el = await self._verified_frame_element(frame, main_frame)
+            if frame_el is None:
+                continue
             try:
-                locator = frame.locator(selector).first
+                box = await frame_el.bounding_box()
+                if not box or box.get('width', 0) < 160 or box.get('height', 0) < 90:
+                    continue
+                raw = await frame_el.screenshot(type='jpeg', quality=85, timeout=3000)
+            except Exception:
+                continue
+            if not raw or len(raw) > MAX_FRAME_BYTES:
+                continue
+            encoded = base64.b64encode(raw).decode('ascii')
+            try:
+                meta = await asyncio.wait_for(
+                    page.evaluate(COMPUTE_IMAGE_LUMA_JS, {'mime': 'image/jpeg', 'data': encoded}),
+                    timeout=self._evaluate_timeout,
+                )
+                dhash = compute_dhash(meta['luma'])
+            except Exception:
+                continue
+            agg['match_reason'] = 'powerpoint_live_frame'
+            self._last_probe = agg
+            return CapturedFrame(
+                image_bytes=raw,
+                mime='image/jpeg',
+                width=int(meta['width']),
+                height=int(meta['height']),
+                dhash=dhash,
+                frame_sha256=hashlib.sha256(raw).hexdigest(),
+                capture_method='teams_stage_dom',
+                captured_at=self._now_iso(),
+            )
+
+        # 3) Fallback path: ONLY screenshot a non-iframe stage DOM element already confirmed visible by JS.
+        #    Rejects chat ancestors/descendants across shadow DOM & frame chains; any embedded iframe
+        #    must pass both the strict PowerPoint Live URL gate and full frame-chain chat exclusion.
+        for frame, selector, match_idx in stage_candidates:
+            if callable(getattr(frame, 'is_detached', None)) and frame.is_detached():
+                continue
+            if frame is not main_frame and not await self._frame_chain_not_in_chat(frame, main_frame):
+                continue
+            try:
+                locator = frame.locator(selector).nth(match_idx)
+                check = await asyncio.wait_for(
+                    locator.evaluate(_STAGE_CONTAINER_CHECK_JS),
+                    timeout=self._evaluate_timeout,
+                )
+                if not isinstance(check, dict) or check.get('allowed') is not True:
+                    continue
+                iframe_count = check.get('iframeCount')
+                if type(iframe_count) is not int or iframe_count < 0:
+                    continue
+                if iframe_count > 0:
+                    nested_ok = True
+                    nested_iframes = locator.locator('iframe')
+                    for idx in range(iframe_count):
+                        handle = await asyncio.wait_for(
+                            nested_iframes.nth(idx).element_handle(timeout=1000),
+                            timeout=self._evaluate_timeout,
+                        )
+                        child = await handle.content_frame() if handle is not None else None
+                        if (child is None
+                                or not _is_powerpoint_live_url(getattr(child, 'url', ''))
+                                or not await self._frame_chain_not_in_chat(child, main_frame)):
+                            nested_ok = False
+                            break
+                    if not nested_ok:
+                        continue
                 raw = await locator.screenshot(type='jpeg', quality=85, timeout=3000)
             except Exception:
                 continue

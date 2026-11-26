@@ -995,7 +995,12 @@ def create_admin_app(daemon, settings, *, local_teams_control=False):
         elif name=='output':
             if values.get('enabled') not in {'true','false'}:
                 raise AdminError('invalid_output_policy')
-            await daemon.set_output(target,values['enabled']=='true')
+            try:
+                await daemon.set_output(target,values['enabled']=='true')
+            except RuntimeError as exc:
+                if str(exc) == 'native_response_unavailable':
+                    raise AdminError('native_response_unavailable') from None
+                raise
         elif name=='retry-summary':
             result = await daemon.retry_summary(target)
             destination = '/history/'+quote(target or '',safe='')
@@ -1246,6 +1251,7 @@ def create_admin_app(daemon, settings, *, local_teams_control=False):
             'summary_already_running':'此場次摘要正在產生中，請稍候。',
             'postmeeting_active_cannot_delete':'會後整理仍在執行或受阻，暫時無法刪除。',
             'invalid_screen_policy':'分享畫面模式設定無效，請重新選擇。',
+            'native_response_unavailable':'語音回覆通道目前不可用，請查看進階診斷記錄。',
             'record_not_found':'找不到這筆會議或資料。'}
         response = page('操作未完成','<p class="error">'+h(messages.get(code,'操作未完成，請確認目前狀態後再試。'))+
             '</p><details><summary>技術詳情</summary><code>'+h(code)+'</code></details><a href="/">返回行事曆</a>',request.state.admin_session)
