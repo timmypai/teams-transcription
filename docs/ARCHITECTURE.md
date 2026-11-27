@@ -39,10 +39,10 @@ flowchart TD
 
 1. **程式檢查直接阻擋（[.devflow/check.sh](../.devflow/check.sh) + [.devflow/check.py](../.devflow/check.py) + `.devflow/rules/*.toml` + `devflow preflight`）：**
    - 架構隔離：`a-b-isolation`、`b-no-a-write-or-ui`、`core-no-ui-cli`。
-   - 安全硬邊界：`no-unsafe-browser-sandbox`（禁止 `--no-sandbox`、`CAP_SYS_CHROOT`、`privileged: true`）。
+   - 安全硬邊界：`no-unsafe-browser-sandbox`（禁止 `--no-sandbox`、`CAP_SYS_CHROOT`／`SYS_CHROOT`、`privileged: true`）。
    - 測試與品質紀律：`no-skip-test`、`no-sleep-fix`、`no-suppress`（舊碼以 `.devflow/rules/baseline.json` 記錄，只擋新增）。
-   - 變更護欄：`pr-diff-budget`（單 PR 最多 35 個檔案、2000 新增行，排除 lock/baseline/docs/evidence）。
-   - 教訓與契約：`lessons/L-*.toml` schema 驗證、`git diff --check`、`compileall`、`tools/check_repo_skills.py`、目標單元測試與 `diagnostics_proof.py`。
+   - 變更護欄：`pr-diff-budget`（單 PR 最多 35 個檔案、2000 新增行，排除 lock/baseline/check.py/docs/evidence），並在 `pull_request` 事件由 `.devflow/check.sh` 自動執行 `check.py --pr`。
+   - 教訓與契約：`lessons/L-*.toml` schema 驗證、`git diff --check`、`compileall`、`tools/check_repo_skills.py`、目標單元測試、`diagnostics_proof.py` 與 `check_pr_proof.py`。
 2. **文件規則與獨立審查把關（[AGENTS.md](../AGENTS.md) + `paulpai0412` Review）：**
    - 交易內 lease fence（`MeetingStore._locked`）、await 後重查停止與撤權狀態、B 真實來源 quiet vs render quiet 區分。
    - 真實會議／OAuth／部署／權限變更需明確人工或執行步驟驗證，不以合成測試外推真人聽感。
