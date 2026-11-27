@@ -6,4 +6,4 @@ category = "verification"
 
 [enforcement]
 kind = "test"
-ref = "tests/test_oracle_smoke_evidence.py::test_loopback_login_is_not_verified_safe_entrypoint"
+ref = "tests/test_oracle_smoke_evidence.py::test_missing_entrypoint_proof_is_not_verified_access"

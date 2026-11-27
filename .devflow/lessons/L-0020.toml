@@ -2,7 +2,7 @@ id = "L-0020"
 title = "Journal private browser ownership before creating a helper"
 event = "t_46ded1b5"
 root_cause = "A shell exit and a consumed preview did not describe Docker helper cleanup. Persist ownership before launch; keep the slot fenced until the same helper is verified absent. Exercise real residue and a fresh controller, not a failure status returned after successful removal."
-category = "security"
+category = "architecture"
 
 [enforcement]
 kind = "test"

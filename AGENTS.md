@@ -14,6 +14,8 @@ Python 會議助理：Google Calendar 找到 Teams 場次，自主入會；A 使
 
 ## Architecture & Data Flow
 
+模組分層圖與「程式先擋（`.devflow/rules/*.toml`）vs 規則與審查（`AGENTS.md`）」邊界總覽見 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)。
+
 - **入口與控制：** `cli.py` 的 `serve` 啟動單一 `AssistantDaemon` 和 `admin_web.py`；HTTP request／瀏覽器分頁不持有背景工作。管理頁使用私有 scrypt 密碼、伺服器端 session、同源 Origin 與 CSRF 檢查。
 - **排程與識別：** `calendar_client.py` 處理 Google readonly OAuth、分頁與時間；`assistant_store.py` 保存 Calendar、series、occurrence、run。重複場次以 recurring event + original start 識別；Teams URL 只是 locator，不能拿來合併系列。入會前重讀取消／改期與授權。
 - **A：** `browser.py` 接收會議音軌，`native_media.py` 以原生 WebAudio／本機 WebRTC relay 混入隔離 Live peer，再經 `live.py`／`rpc.py` → `incremental.py`／`meeting_store.py` SQLite。會議 A 不走 Python PCM push／送音 queue／自訂時鐘估速；PCM 回呼只供 B 及明確要求的 WAV。provider final、application segment、legacy provisional 分別保留 provenance，不依文字去重或猜測說話者。
