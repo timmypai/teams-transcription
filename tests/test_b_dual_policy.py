@@ -227,3 +227,25 @@ class OwnedSenderDualPolicyTests(unittest.IsolatedAsyncioTestCase):
         finally:
             await self.page.evaluate('allowRestoreReply()')
             await stopping
+
+    async def test_guard_replacement_receipt_uses_event_time_not_later_sender_state(self):
+        await self.enable()
+        await self.source.tone()
+        await self.page.evaluate("""async()=>{
+          window.replacement=fixture.track.clone();replacement.enabled=true;
+          await fixture.sender.replaceTrack(replacement);
+        }""")
+        await self.page.wait_for_function('__bTX.revokeReason==="guard_sender_track_changed"')
+        # The policy will mute foreign tracks. The diagnostic must retain the
+        # value observed by the guard before that muting, not inspect it later.
+        self.assertFalse(await self.policy.check())
+        receipt=self.policy.failure_snapshot()
+        self.assertEqual(receipt['reason'],'owned_identity')
+        self.assertEqual(receipt['detail'],'revoked_guard_sender_track_changed')
+        self.assertEqual(receipt['replacement_track'],'other_audio')
+        self.assertIs(receipt['replacement_enabled'],True)
+        self.assertEqual(receipt['replacement_ready_state'],'live')
+        self.assertFalse(await self.page.evaluate('replacement.enabled'))
+        await self.sink.stop()
+        self.assertTrue(await self.page.evaluate('fixture.sender.track===replacement'))
+        self.assertEqual(self.policy.failure_snapshot(),receipt)

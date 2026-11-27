@@ -75,13 +75,31 @@ SOURCE_OFFER_JS = r"""async ({owner}) => {""" + _ICE + r"""
   const control=relay.createDataChannel('native-output-'+owner);
   const state={owner,document,href:location.href,live,pc,track,inputTrack,decoder,
     receiver:receivers[0],relay,control,disposed:false};
-  state.valid=()=>window.__bNativeTXSource===state && !state.disposed && state.document===document &&
-    location.href===state.href && window.__live===live && live.pc===pc &&
-    pc.getReceivers().includes(state.receiver) && state.receiver.track===inputTrack &&
-    inputTrack.readyState==='live' && inputTrack.enabled && live.noPlc===decoder &&
-    decoder.track===track && track.readyState==='live' && track.enabled &&
-    !['closed','failed','disconnected'].includes(pc.connectionState) && decoder.valid();
-  state.close=()=>{if(state.disposed) return; state.disposed=true; clearInterval(state.guard);
+  state.sourceFailureGroup=null;
+  const observed=(value,group)=>{
+    if(!value && !state.disposed && state.sourceFailureGroup===null) state.sourceFailureGroup=group;
+    return value;
+  };
+  state.valid=()=>observed(window.__bNativeTXSource===state,'source_ownership') && !state.disposed &&
+    observed(state.document===document,'source_document') && observed(location.href===state.href,'source_document') &&
+    observed(window.__live===live,'source_ownership') && observed(live.pc===pc,'source_peer') &&
+    observed(pc.getReceivers().includes(state.receiver),'receiver_track') && observed(state.receiver.track===inputTrack,'receiver_track') &&
+    observed(inputTrack.readyState==='live','receiver_track') && observed(inputTrack.enabled,'receiver_track') &&
+    observed(live.noPlc===decoder,'decoder') && observed(decoder.track===track,'decoder') &&
+    observed(track.readyState==='live','decoder') && observed(track.enabled,'decoder') &&
+    observed(!['closed','failed','disconnected'].includes(pc.connectionState),'source_peer') && observed(decoder.valid(),'decoder');
+  state.transportValid=value=>observed(value,'source_relay_control');
+  state.close=event=>{if(state.disposed) return;
+    // Event callbacks observe their own fixed category before disposal. A plain
+    // cleanup close never probes state or fabricates a source failure.
+    try {
+      if(state.sourceFailureGroup===null) {
+        if(event?.type==='pagehide') state.sourceFailureGroup='source_document';
+        else if(event?.type==='ended') state.sourceFailureGroup=event.target===inputTrack?'receiver_track':'decoder';
+        else if(event?.type==='close') state.sourceFailureGroup='source_relay_control';
+      }
+    }catch{}
+    state.disposed=true; clearInterval(state.guard);
     removeEventListener('pagehide',state.close); track.removeEventListener('ended',state.close);
     inputTrack.removeEventListener('ended',state.close);
     try{if(control.readyState==='open') control.send('revoke');}catch(_){}
@@ -92,7 +110,10 @@ SOURCE_OFFER_JS = r"""async ({owner}) => {""" + _ICE + r"""
   state.guard=setInterval(()=>{if(!state.valid()) state.close();},25);
   control.addEventListener('close',state.close);
   relay.addEventListener('connectionstatechange',()=>{
-    if(['failed','closed','disconnected'].includes(relay.connectionState)) state.close();
+    if(['failed','closed','disconnected'].includes(relay.connectionState)) {
+      if(!state.disposed) state.transportValid(false);
+      state.close();
+    }
   });
   try {
     if(!state.valid()) throw new Error('Native output source invalidated');
@@ -114,8 +135,8 @@ SOURCE_ANSWER_JS = r"""async ({owner,sdp}) => {
 
 SOURCE_CHECK_JS = r"""({owner}) => {
   const state=window.__bNativeTXSource;
-  if(!state || state.owner!==owner || !state.valid() || state.relay.connectionState!=='connected' ||
-      state.control.readyState!=='open') {
+  if(!state || state.owner!==owner || !state.valid() || !state.transportValid(state.relay.connectionState==='connected') ||
+      !state.transportValid(state.control.readyState==='open')) {
     if(state?.owner===owner) state.close();
     throw new Error('Native output source disconnected or invalidated');
   }
@@ -124,32 +145,56 @@ SOURCE_CHECK_JS = r"""({owner}) => {
 
 SOURCE_STOP_JS = r"""async ({owner}) => {
   const state=window.__bNativeTXSource;
+  let group=null;
   if(state?.owner===owner) {
+    try {const value=state.sourceFailureGroup;
+      if(['source_ownership','source_document','source_peer','receiver_track','decoder','source_relay_control'].includes(value)) group=value;
+    }catch{}
     state.close();await state.decoder?.closing;
     if(window.__bNativeTXSource===state) delete window.__bNativeTXSource;
   }
+  return {source_failure_group:group};
 }"""
 
 _HELPERS = r"""
   const binding=window.__bTXBindings?.get(owner);
-  const identity=()=>!!binding && binding.document===document &&
-    window.__bMeetingId===binding.meetingId && location.href===binding.href &&
-    window.__meeting===binding.capture && binding.capture.peers[binding.peerIndex]===binding.pc &&
-    binding.pc.connectionState!=='closed' && binding.pc.getSenders().includes(binding.sender) &&
-    (binding.original!==null || (binding.pc.getTransceivers().includes(binding.transceiver) &&
-      binding.transceiver.sender===binding.sender));
+  let failedCondition=null;
+  // Observe the existing short circuit, once. Never re-run decoder.valid().
+  const condition=(value,name)=>{if(!value && failedCondition===null) failedCondition=name;return value;};
+  const identity=()=>condition(!!binding,'binding_present') && condition(binding.document===document,'document_match') &&
+    condition(window.__bMeetingId===binding.meetingId,'meeting_match') && condition(location.href===binding.href,'location_match') &&
+    condition(window.__meeting===binding.capture,'capture_match') && condition(binding.capture.peers[binding.peerIndex]===binding.pc,'peer_match') &&
+    condition(binding.pc.connectionState!=='closed','peer_open') && condition(binding.pc.getSenders().includes(binding.sender),'sender_member') &&
+    (binding.original!==null || (condition(binding.pc.getTransceivers().includes(binding.transceiver),'transceiver_member') &&
+      condition(binding.transceiver.sender===binding.sender,'transceiver_sender_match')));
   const current=()=>identity() && (binding.original!==null ||
-    (binding.transceiver.stopped===false && binding.transceiver.receiver?.track?.kind==='audio' &&
-      ['sendonly','sendrecv'].includes(binding.transceiver.currentDirection)));
-  const valid=state=>!!state && current() && state.binding===binding && window.__bTX===state &&
-    state.owner===owner && !state.disposed && state.track?.readyState==='live' &&
-    state.receiver?.track===state.inputTrack && state.inputTrack.readyState==='live' &&
-    state.relay.getReceivers().includes(state.receiver) &&
-    state.decoder?.receiver===state.receiver && state.decoder.track===state.track && state.decoder.valid() &&
-    (state.installed?state.sender.track===state.track:state.sender.track===state.original);
-  const connected=state=>valid(state) && state.relay.connectionState==='connected' && state.control?.readyState==='open';
-  const requireReady=state=>{if(!connected(state)) {if(state?.owner===owner) state.revoke('invalidated');
-    throw new Error('Native TX disconnected or ownership/meeting binding mismatch');}};
+    (condition(binding.transceiver.stopped===false,'transceiver_active') && condition(binding.transceiver.receiver?.track?.kind==='audio','transceiver_audio') &&
+      condition(['sendonly','sendrecv'].includes(binding.transceiver.currentDirection),'transceiver_sending')));
+  const valid=state=>condition(!!state,'state_present') && current() && condition(state.binding===binding,'binding_match') && condition(window.__bTX===state,'state_current') &&
+    condition(state.owner===owner,'owner_match') && condition(!state.disposed,'not_disposed') && condition(state.track?.readyState==='live','output_live') &&
+    condition(state.receiver?.track===state.inputTrack,'receiver_track_match') && condition(state.inputTrack.readyState==='live','input_live') &&
+    condition(state.relay.getReceivers().includes(state.receiver),'receiver_member') &&
+    condition(state.decoder?.receiver===state.receiver,'decoder_receiver_match') && condition(state.decoder.track===state.track,'decoder_track_match') && condition(state.decoder.valid(),'decoder_valid') &&
+    condition((state.installed?state.sender.track===state.track:state.sender.track===state.original),'sender_track_match');
+  const connected=state=>valid(state) && condition(state.relay.connectionState==='connected','relay_connected') && condition(state.control?.readyState==='open','control_open');
+  const requireReady=(state,checkpoint=null)=>{
+    failedCondition=null;
+    if(!connected(state)) {
+      // Capture before revoke changes track, decoder and transport state.
+      let suffix='';
+      if(checkpoint) {
+        let reason=null;
+        try {reason=state?.revokeReason;}catch{}
+        const known=['source_disconnected','source_invalidated','relay_disconnected','decoder_failed',
+          'receiver_ended','document_closed','foreign_control','attach_failed','relay_not_ready',
+          'stats_unavailable','explicit_stop','dual_policy_rejected','meeting_changed',
+          'guard_binding_lost','guard_owner_replaced','guard_sender_track_changed','guard_decoder_invalid','invalidated'];
+        suffix='/tx_ready/'+checkpoint+'/'+failedCondition+'/'+(known.includes(reason)?reason:'none');
+      }
+      if(state?.owner===owner) state.revoke('invalidated');
+      throw new Error('Native TX disconnected or ownership/meeting binding mismatch'+suffix);
+    }
+  };
 """
 
 TARGET_ANSWER_JS = r"""async ({owner,sdp}) => {""" + _HELPERS + _ICE + NO_PLC_RECEIVER_JS + r"""
@@ -189,8 +234,22 @@ TARGET_ANSWER_JS = r"""async ({owner,sdp}) => {""" + _HELPERS + _ICE + NO_PLC_RE
   state.guard=setInterval(()=>{
     if(!current()) state.revoke('guard_binding_lost');
     else if(window.__bTX!==state) state.revoke('guard_owner_replaced');
-    else if(!state.replacing && state.sender.track!==(state.installed?state.track:state.original))
+    else if(!state.replacing && state.sender.track!==(state.installed?state.track:state.original)) {
+      // Event-time scalar snapshot, before revoke/foreign muting changes it.
+      // Owned input clones are private to their closure: never infer from IDs.
+      if(!state.replacementFailure) {
+        const snapshot={replacement_track:null,replacement_enabled:null,replacement_ready_state:null};
+        try {
+          const track=state.sender.track;
+          snapshot.replacement_track=track===null?null:track===state.original?'original':track.kind==='audio'?'other_audio':'other';
+          const enabled=track?.enabled, ready=track?.readyState;
+          snapshot.replacement_enabled=typeof enabled==='boolean'?enabled:null;
+          snapshot.replacement_ready_state=['live','ended'].includes(ready)?ready:null;
+        }catch{}
+        state.replacementFailure=snapshot;
+      }
       state.revoke('guard_sender_track_changed');
+    }
     else if(state.decoder && !state.decoder.valid()) state.revoke('guard_decoder_invalid');
   },25);
   let setupStep='remote_description';
@@ -278,7 +337,7 @@ READY_TX_JS = r"""async ({owner}) => {""" + _HELPERS + r"""
 
 START_TX_JS = r"""async ({owner}) => {""" + _HELPERS + r"""
   const state=window.__bTXOwnedStates?.get(owner);
-  requireReady(state);
+  requireReady(state,'before_replace_track');
   if(!state.muted || state.track.enabled) throw new Error('Native TX is not muted');
   state.delivery=null;
   if(!state.installed) {
@@ -286,11 +345,11 @@ START_TX_JS = r"""async ({owner}) => {""" + _HELPERS + r"""
     state.replacing=true;
     state.ready=(async()=>{
       await state.sender.replaceTrack(state.track); state.replacing=false; state.installed=true;
-      requireReady(state);
+      requireReady(state,'after_replace_track');
     })();
     await state.ready;
   }
-  requireReady(state);
+  requireReady(state,'final_verify');
   return {muted:!state.track.enabled,track_id:state.track.id};
 }"""
 
@@ -616,7 +675,18 @@ class BrowserTXSink:
                 return await self.frame.evaluate(STOP_TX_JS, {'owner':self.owner})
             finally:
                 if self._live_page is not None and not self._live_page.is_closed():
-                    await self._live_page.evaluate(SOURCE_STOP_JS, {'owner':self.owner})
+                    source_receipt=await self._live_page.evaluate(SOURCE_STOP_JS, {'owner':self.owner})
+                    # Reuse the existing cleanup IPC; only an already-latched,
+                    # same-owner source category can supplement the first error.
+                    if (isinstance(source_receipt,dict) and self.startup_error is not None
+                            and self.startup_error.get('output_error_code')=='target_not_ready'
+                            and self.startup_error.get('first_revoke_reason') in {
+                                'source_invalidated','source_disconnected','relay_disconnected'}
+                            and self.startup_error.get('source_failure_group') is None):
+                        from .diagnostics import RESPONSE_SOURCE_GROUPS
+                        group=source_receipt.get('source_failure_group')
+                        if isinstance(group,str) and group in RESPONSE_SOURCE_GROUPS:
+                            self.startup_error['source_failure_group']=group
 
         task = asyncio.create_task(cleanup())
         try:

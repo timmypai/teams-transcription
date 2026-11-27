@@ -35,8 +35,25 @@ OWNED_IDENTITY_DETAILS = frozenset({
 })
 
 
+REPLACEMENT_FIELDS = {'replacement_track','replacement_enabled','replacement_ready_state'}
+REPLACEMENT_TRACKS = {'original','owned_audio_input','other_audio','other'}
+
+
+def replacement_receipt(value):
+    """Scalars only; missing/unobserved or invalid diagnostic values stay null."""
+    value=value if isinstance(value,dict) else {}
+    def label(field,allowed):
+        item=value.get(field)
+        return item if isinstance(item,str) and item in allowed else None
+    return {'replacement_track':label('replacement_track',REPLACEMENT_TRACKS),
+        'replacement_enabled':value.get('replacement_enabled') if type(value.get('replacement_enabled')) is bool else None,
+        'replacement_ready_state':label('replacement_ready_state',{'live','ended'})}
+
+
 DUAL_CHECK_JS = r"""({policyId,meetingId,expected,authorize,initialized,receipt=false}) => {
-  const result=(accepted,reason,detail)=>receipt?(detail?{accepted,reason,detail}:{accepted,reason}):accepted;
+  const result=(accepted,reason,detail,replacement)=>receipt?(detail?
+    {accepted,reason,detail,...(reason==='owned_identity' && detail==='revoked_guard_sender_track_changed'?replacement:{})}:
+    {accepted,reason}):accepted;
   const muteOwned=state=>{if(state) state.revoke('dual_policy_rejected');};
   window.__bDualPolicies ||= new Map();
   let policy=window.__bDualPolicies.get(policyId);
@@ -50,12 +67,25 @@ DUAL_CHECK_JS = r"""({policyId,meetingId,expected,authorize,initialized,receipt=
   const existing=policy.binding && window.__bTXOwnedStates?.get(policy.binding.owner);
   const fail=(reason,muteForeign=false,detail=null)=>{
     policy.failureReason ||= reason;
-    if(policy.failureReason==='owned_identity' && detail && !policy.failureDetail) policy.failureDetail=detail;
+    if(policy.failureReason==='owned_identity' && detail && !policy.failureDetail) {
+      policy.failureDetail=detail;
+      if(detail==='revoked_guard_sender_track_changed') {
+        const snapshot={replacement_track:null,replacement_enabled:null,replacement_ready_state:null};
+        try {
+          const value=existing?.replacementFailure;
+          const track=value?.replacement_track, enabled=value?.replacement_enabled, ready=value?.replacement_ready_state;
+          snapshot.replacement_track=['original','owned_audio_input','other_audio','other'].includes(track)?track:null;
+          snapshot.replacement_enabled=typeof enabled==='boolean'?enabled:null;
+          snapshot.replacement_ready_state=['live','ended'].includes(ready)?ready:null;
+        }catch{}
+        policy.replacementFailure=snapshot;
+      }
+    }
     policy.faulted=true; muteOwned(existing);
     if(muteForeign) for(const pc of policy.capture.peers) for(const sender of pc.getSenders()) {
       if(sender.track && ['audio','video'].includes(sender.track.kind)) sender.track.enabled=false;
     }
-    return result(false,policy.failureReason,policy.failureReason==='owned_identity'?policy.failureDetail:null);
+    return result(false,policy.failureReason,policy.failureReason==='owned_identity'?policy.failureDetail:null,policy.replacementFailure);
   };
   if(policy.faulted) return fail('policy_faulted');
   // A reused frame/document cannot carry its old TX exception into a new meeting.
@@ -175,7 +205,7 @@ class OwnedSenderDualPolicy:
     def failure_snapshot(self):
         return dict(self._failure) if self._failure is not None else None
 
-    def _fail(self, reason, exception_type='none', *, detail=None):
+    def _fail(self, reason, exception_type='none', *, detail=None, replacement=None):
         self.faulted = True
         if self._failure is not None:
             return
@@ -183,6 +213,8 @@ class OwnedSenderDualPolicy:
             elapsed_ms=min(86400000, max(0, int((self._clock()-self._origin)*1000))))
         if reason == 'owned_identity' and isinstance(detail, str) and detail in self._OWNED_IDENTITY_DETAILS:
             snapshot['detail'] = detail
+            if detail=='revoked_guard_sender_track_changed' and replacement is not None:
+                snapshot.update(replacement_receipt(replacement))
         self._failure = snapshot
         if self._on_failure is not None:
             try:
@@ -209,7 +241,13 @@ class OwnedSenderDualPolicy:
                 return False
             keys = set(result) if isinstance(result, dict) else set()
             valid_keys = keys == {'accepted', 'reason'} or (
-                keys == {'accepted', 'reason', 'detail'}
+                (keys == {'accepted', 'reason', 'detail'} or (
+                    keys == {'accepted','reason','detail'} | REPLACEMENT_FIELDS
+                    and result.get('detail') == 'revoked_guard_sender_track_changed'
+                    and all(result[key] is None or (type(result[key]) is bool if key=='replacement_enabled'
+                        else isinstance(result[key],str) and result[key] in (
+                            REPLACEMENT_TRACKS if key=='replacement_track' else {'live','ended'}))
+                        for key in REPLACEMENT_FIELDS)))
                 and result.get('accepted') is False
                 and result.get('reason') == 'owned_identity'
                 and isinstance(result.get('detail'), str)
@@ -223,7 +261,8 @@ class OwnedSenderDualPolicy:
                 return False
             self._initialized |= result['accepted'] and not self.faulted
             if not result['accepted']:
-                self._fail(result['reason'], detail=result.get('detail'))
+                self._fail(result['reason'], detail=result.get('detail'),
+                    replacement=result if REPLACEMENT_FIELDS <= keys else None)
             return result['accepted'] and not self.faulted
 
     async def authorize(self,binding):

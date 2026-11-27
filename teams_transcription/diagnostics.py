@@ -83,6 +83,20 @@ RESPONSE_DECODER_STAGES = {'receiver_api','browser_api','encoded_streams','audio
 RESPONSE_DECODER_REASONS = {'receiver_unsupported','api_unsupported','audio_context_invalid',
     'graph_mutated','source_ended','unknown'}
 
+RESPONSE_TX_CHECKPOINTS = {'before_replace_track','after_replace_track','final_verify'}
+RESPONSE_TX_CONDITIONS = {'binding_present','document_match','meeting_match','location_match',
+    'capture_match','peer_match','peer_open','sender_member','transceiver_member',
+    'transceiver_sender_match','transceiver_active','transceiver_audio','transceiver_sending',
+    'state_present','binding_match','state_current','owner_match','not_disposed','output_live',
+    'receiver_track_match','input_live','receiver_member','decoder_receiver_match',
+    'decoder_track_match','decoder_valid','sender_track_match','relay_connected','control_open'}
+RESPONSE_TX_REVOKES = {'source_disconnected','source_invalidated','relay_disconnected',
+    'decoder_failed','receiver_ended','document_closed','foreign_control','attach_failed',
+    'relay_not_ready','stats_unavailable','explicit_stop','dual_policy_rejected','meeting_changed',
+    'guard_binding_lost','guard_owner_replaced','guard_sender_track_changed','guard_decoder_invalid','invalidated'}
+RESPONSE_SOURCE_GROUPS = {'source_ownership','source_document','source_peer','receiver_track',
+    'decoder','source_relay_control'}
+
 RESPONSE_RUNTIME_PHASES = {'audio_callback', 'datachannel', 'document', 'rx_push',
     'notification', 'rpc', 'speech_start', 'speech_completion', 'continuation', 'unknown'}
 RESPONSE_RUNTIME_CODES = {'response_failed', 'response_output_backpressure',
@@ -111,6 +125,14 @@ def response_start_failure(exc, phase, *, output_step=None):
                     break
             code = RESPONSE_OUTPUT_MESSAGES.get(first)
             if code is not None:value['output_error_code'] = code
+            prefix='Native TX disconnected or ownership/meeting binding mismatch/tx_ready/'
+            if output_step=='sender_install' and first.startswith(prefix):
+                parts=first[len(prefix):].split('/')
+                if (len(parts)==3 and parts[0] in RESPONSE_TX_CHECKPOINTS
+                        and parts[1] in RESPONSE_TX_CONDITIONS and parts[2] in RESPONSE_TX_REVOKES | {'none'}):
+                    value.update(output_error_code='target_not_ready',checkpoint=parts[0],
+                        first_failed_condition=parts[1],first_revoke_reason=None if parts[2]=='none' else parts[2],
+                        source_failure_group=None)
             match = re.fullmatch(r'native_tx_setup/([a-z_]{1,32})/([A-Za-z]{1,32})'
                 r'(?:/decoder/([a-z_]{1,32})/([A-Za-z]{1,32})/([a-z_]{1,32}))?', first)
             if match and match[1] in RESPONSE_TARGET_STAGES and match[2] in RESPONSE_TARGET_TYPES:
@@ -133,6 +155,16 @@ def response_start_receipt(value):
     if result['phase'] == 'native_output_attach' and 'output_error_code' in value:
         code = value['output_error_code']
         result['output_error_code'] = code if isinstance(code, str) and code in RESPONSE_OUTPUT_CODES else 'unknown'
+    if (result['phase']=='native_output_attach' and result.get('output_step')=='sender_install'
+            and result.get('output_error_code')=='target_not_ready'):
+        for field,allowed in (('checkpoint',RESPONSE_TX_CHECKPOINTS),
+                ('first_failed_condition',RESPONSE_TX_CONDITIONS),('first_revoke_reason',RESPONSE_TX_REVOKES),
+                ('source_failure_group',RESPONSE_SOURCE_GROUPS)):
+            if field in value:
+                item=value[field]
+                result[field]=item if isinstance(item,str) and item in allowed else None
+        if result.get('first_revoke_reason') not in {'source_invalidated','source_disconnected','relay_disconnected'}:
+            if 'source_failure_group' in result:result['source_failure_group']=None
     if result['phase'] == 'native_output_attach' and value.get('output_step') == 'target_answer':
         if 'target_document_policy' in value:
             from .b_document_policy import sanitize_document_policy_snapshot
@@ -196,6 +228,9 @@ def response_policy_failure_receipt(value):
     if safe_reason == 'owned_identity' and 'detail' in value:
         detail = value.get('detail')
         receipt['detail'] = detail if isinstance(detail, str) and detail in OWNED_IDENTITY_DETAILS else 'unknown'
+        if receipt['detail']=='revoked_guard_sender_track_changed':
+            from .b_dual_policy import REPLACEMENT_FIELDS, replacement_receipt
+            if REPLACEMENT_FIELDS.intersection(value):receipt.update(replacement_receipt(value))
     return receipt
 
 
