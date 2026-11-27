@@ -1,0 +1,28 @@
+id = "b-no-a-write-or-ui"
+kind = "import_boundary"
+message = "B 語音回覆模組不得 import A 轉錄寫入鏈或 UI／CLI／daemon 進入點，避免改寫 A 或反向耦合控制層。"
+include = [
+  "teams_transcription/b_*.py",
+  "teams_transcription/response_runtime.py",
+]
+forbidden_modules = [
+  "teams_transcription.live",
+  "teams_transcription.incremental",
+  "teams_transcription.provisional",
+  "teams_transcription.native_media",
+  "teams_transcription.admin_web",
+  "teams_transcription.admin_ui",
+  "teams_transcription.cli",
+  "teams_transcription.daemon",
+  "teams_transcription.worker",
+]
+
+[[fixture]]
+expect = "fail"
+path = "teams_transcription/b_native.py"
+text = "from teams_transcription import live\n"
+
+[[fixture]]
+expect = "pass"
+path = "teams_transcription/b_native.py"
+text = "from . import b_context, b_live, diagnostics\n"

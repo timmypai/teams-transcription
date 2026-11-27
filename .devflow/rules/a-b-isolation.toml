@@ -1,0 +1,31 @@
+id = "a-b-isolation"
+kind = "import_boundary"
+message = "A 轉錄鏈不得 import B 語音回覆模組（response_runtime / b_*），保持 A/B 隔離。"
+include = [
+  "teams_transcription/native_media.py",
+  "teams_transcription/live.py",
+  "teams_transcription/incremental.py",
+  "teams_transcription/provisional.py",
+  "teams_transcription/glossary_context.py",
+  "teams_transcription/browser.py",
+]
+forbidden_modules = [
+  "teams_transcription.response_runtime",
+  "teams_transcription.b_native",
+  "teams_transcription.b_native_output",
+  "teams_transcription.b_live",
+  "teams_transcription.b_browser_tx",
+  "teams_transcription.b_question",
+  "teams_transcription.b_context",
+  "teams_transcription.b_response",
+]
+
+[[fixture]]
+expect = "fail"
+path = "teams_transcription/live.py"
+text = "from . import b_native\n"
+
+[[fixture]]
+expect = "pass"
+path = "teams_transcription/browser.py"
+text = "from . import b_document_policy, diagnostics, native_media\n"

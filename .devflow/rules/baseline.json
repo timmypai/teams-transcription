@@ -1,0 +1,1555 @@
+{
+ "version": 1,
+ "entries": [
+  {
+   "rule": "no-skip-test",
+   "path": "tests/test_b_browser_identity.py",
+   "text": "@unittest.skipUnless(shutil.which('chromium'), 'Chromium fixture unavailable')"
+  },
+  {
+   "rule": "no-skip-test",
+   "path": "tests/test_b_browser_tx.py",
+   "text": "@unittest.skipUnless(shutil.which('chromium'), 'Chromium fixture unavailable')"
+  },
+  {
+   "rule": "no-skip-test",
+   "path": "tests/test_b_dual_policy.py",
+   "text": "@unittest.skipUnless(shutil.which('chromium'),'Chromium fixture unavailable')"
+  },
+  {
+   "rule": "no-skip-test",
+   "path": "tests/test_b_live.py",
+   "text": "@unittest.skipUnless(shutil.which(\"chromium\"), \"Chromium fixture unavailable\")"
+  },
+  {
+   "rule": "no-skip-test",
+   "path": "tests/test_b_live.py",
+   "text": "@unittest.skipUnless(shutil.which(\"codex\"), \"Installed Codex schema unavailable\")"
+  },
+  {
+   "rule": "no-skip-test",
+   "path": "tests/test_b_no_plc_pacing.py",
+   "text": "@unittest.skipUnless(shutil.which('node'), 'Node is unavailable')"
+  },
+  {
+   "rule": "no-skip-test",
+   "path": "tests/test_b_output_leases.py",
+   "text": "@unittest.skipUnless(shutil.which('chromium'), 'Chromium fixture unavailable')"
+  },
+  {
+   "rule": "no-skip-test",
+   "path": "tests/test_bridge_integration.py",
+   "text": "@unittest.skipUnless(TURN, 'Local coturn fixture is not installed')"
+  },
+  {
+   "rule": "no-skip-test",
+   "path": "tests/test_history_output_consumers.py",
+   "text": "@unittest.skipUnless(shutil.which('node'),'Node fixture unavailable')"
+  },
+  {
+   "rule": "no-skip-test",
+   "path": "tests/test_native_output_attach_diagnostics.py",
+   "text": "@unittest.skipUnless(shutil.which('node'),'Node fixture unavailable')"
+  },
+  {
+   "rule": "no-skip-test",
+   "path": "tests/test_prejoin_preview_navigation.py",
+   "text": "@unittest.skipUnless(shutil.which('chromium'), 'Chromium fixture unavailable')"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": ".devflow/hosted_verify.py",
+   "text": "time.sleep(.5)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": ".devflow/image_regression.py",
+   "text": "time.sleep(20)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": ".devflow/operate_export_proof.py",
+   "text": "time.sleep(.5)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": ".devflow/rtc_diagnostic.py",
+   "text": "while(b.connectionState!=='connected' && performance.now()<deadline) await new Promise(r=>setTimeout(r,50));"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": ".validation/prejoin_probe.py",
+   "text": "await asyncio.sleep(.25)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "deploy/qa_isolated_candidate/qa_probe.py",
+   "text": "await asyncio.sleep(.02)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "deploy/qa_isolated_candidate/qa_probe.py",
+   "text": "await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "deploy/qa_isolated_candidate/qa_probe.py",
+   "text": "await asyncio.sleep(len(chunk) / 48000)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "deploy/qa_isolated_candidate/qa_probe.py",
+   "text": "await asyncio.sleep(min(.001, max(0, deadline - loop.time())))"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "deploy/qa_semantic_candidate/qa_probe.py",
+   "text": "await asyncio.sleep(.02)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "deploy/qa_semantic_candidate/qa_probe.py",
+   "text": "await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "deploy/qa_semantic_candidate/qa_probe.py",
+   "text": "await asyncio.sleep(len(chunk) / 48000)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "deploy/qa_semantic_candidate/qa_probe.py",
+   "text": "await asyncio.sleep(min(.001, max(0, deadline - loop.time())))"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "deploy/target_runtime.py",
+   "text": "await asyncio.sleep(.05)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "teams_transcription/b_audio.py",
+   "text": "await asyncio.sleep(seconds)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "teams_transcription/b_browser_tx.py",
+   "text": "await new Promise(resolve=>setTimeout(resolve,10));"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "teams_transcription/b_live.py",
+   "text": "await asyncio.sleep(.05)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "teams_transcription/b_native.py",
+   "text": "await asyncio.sleep(.05)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "teams_transcription/b_native.py",
+   "text": "await asyncio.sleep(.05)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "teams_transcription/b_native.py",
+   "text": "await asyncio.sleep(self.question_timeout)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "teams_transcription/b_render_history.py",
+   "text": "await Promise.race([new Promise(resolve=>setTimeout(resolve,5)),abort]);check();"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "teams_transcription/browser.py",
+   "text": "await asyncio.sleep(.5)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "teams_transcription/browser.py",
+   "text": "await asyncio.sleep(min(.05, max(0, deadline-time.monotonic())))"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "teams_transcription/browser.py",
+   "text": "await asyncio.sleep(min(.05,remaining))"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "teams_transcription/browser.py",
+   "text": "await asyncio.sleep(queued - 1)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "teams_transcription/browser.py",
+   "text": "}), new Promise(resolve => setTimeout(resolve, iceServers.length ? 20000 : 3000))"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "teams_transcription/live.py",
+   "text": "await asyncio.sleep(.5)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "teams_transcription/live.py",
+   "text": "await asyncio.sleep(.5)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "teams_transcription/live.py",
+   "text": "await asyncio.sleep(max(0, deadline - time.monotonic()))"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "teams_transcription/media.py",
+   "text": "}),new Promise(r => setTimeout(r,5000))]);"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "teams_transcription/owned_processes.py",
+   "text": "await asyncio.sleep(min(.01, max(0, deadline - asyncio.get_running_loop().time())))"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "teams_transcription/qa_audio_probe.py",
+   "text": "if not self.stop_requested:await asyncio.sleep(.25)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "teams_transcription/qa_audio_tap.py",
+   "text": "const until=performance.now()+100;while(!renderDone&&performance.now()<until)await new Promise(r=>setTimeout(r,5));"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "teams_transcription/qa_probe.py",
+   "text": "await asyncio.sleep(.02)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "teams_transcription/qa_probe.py",
+   "text": "await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "teams_transcription/qa_probe.py",
+   "text": "await asyncio.sleep(len(chunk) / 48000)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "teams_transcription/qa_probe.py",
+   "text": "await asyncio.sleep(min(.001, max(0, deadline - loop.time())))"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "teams_transcription/rx_contract.py",
+   "text": "await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "teams_transcription/rx_contract.py",
+   "text": "await asyncio.sleep(min(.001, max(0, self.cleanup_deadline - asyncio_clock())))"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "teams_transcription/rx_contract.py",
+   "text": "await self.call(asyncio.sleep(.02))"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "teams_transcription/screen_watcher.py",
+   "text": "await asyncio.sleep(self.poll_seconds)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "teams_transcription/worker.py",
+   "text": "await asyncio.sleep(max(0, due - time.monotonic()))"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "teams_transcription/worker.py",
+   "text": "await perform(asyncio.sleep(pause), capture=True)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/fixtures/verify_response_media_profile.js",
+   "text": "await new Promise(resolve=>setTimeout(resolve,5));"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_admin_browser.py",
+   "text": "await asyncio.sleep(.01)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_assistant_daemon.py",
+   "text": "await asyncio.sleep(.01)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_assistant_daemon.py",
+   "text": "await asyncio.sleep(.02)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_assistant_daemon.py",
+   "text": "await asyncio.sleep(.05)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_assistant_daemon.py",
+   "text": "await asyncio.sleep(1.2)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_audio.py",
+   "text": "await asyncio.sleep(.01)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_audio.py",
+   "text": "await asyncio.sleep(.04)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_audio.py",
+   "text": "await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_audio.py",
+   "text": "await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_audio.py",
+   "text": "await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_audio.py",
+   "text": "await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_audio.py",
+   "text": "await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_browser_tx.py",
+   "text": "await asyncio.sleep(.05)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_browser_tx.py",
+   "text": "await asyncio.sleep(.05)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_browser_tx.py",
+   "text": "await asyncio.sleep(.05)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_browser_tx.py",
+   "text": "await asyncio.sleep(.1)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_browser_tx.py",
+   "text": "await asyncio.sleep(.25)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_browser_tx.py",
+   "text": "await asyncio.sleep(.35)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_browser_tx.py",
+   "text": "await asyncio.sleep(.4)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_browser_tx.py",
+   "text": "await asyncio.sleep(1.1)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_browser_tx.py",
+   "text": "await asyncio.sleep(delay)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_browser_tx.py",
+   "text": "await asyncio.sleep(duration + .35)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_close.py",
+   "text": "await asyncio.sleep(.005)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_close.py",
+   "text": "await asyncio.sleep(.005)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_document_policy.py",
+   "text": "await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_document_policy.py",
+   "text": "await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_document_policy.py",
+   "text": "await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_document_policy.py",
+   "text": "gate.set();await old.finished.wait();await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_dual_policy.py",
+   "text": "await asyncio.sleep(.2)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_dual_policy.py",
+   "text": "before=len(self.packets); await asyncio.sleep(.2)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_dual_policy.py",
+   "text": "before=len(self.packets); await asyncio.sleep(.2)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_live.py",
+   "text": "await asyncio.sleep(.005)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_live.py",
+   "text": "await asyncio.sleep(.01)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_live.py",
+   "text": "await asyncio.sleep(.01)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_live.py",
+   "text": "await asyncio.sleep(.01)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_live.py",
+   "text": "await asyncio.sleep(.02)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_live.py",
+   "text": "await asyncio.sleep(.15)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_live.py",
+   "text": "await asyncio.sleep(.15)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_live.py",
+   "text": "await asyncio.sleep(.15)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_live.py",
+   "text": "await asyncio.sleep(.2)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_live.py",
+   "text": "await asyncio.sleep(.2)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_live.py",
+   "text": "await asyncio.sleep(.2)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_live.py",
+   "text": "await asyncio.sleep(.2)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_live.py",
+   "text": "await asyncio.sleep(.3)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_live.py",
+   "text": "await asyncio.sleep(.3)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_live.py",
+   "text": "await asyncio.sleep(.3)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_live.py",
+   "text": "await asyncio.sleep(.7)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_live.py",
+   "text": "await asyncio.sleep(2)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_native.py",
+   "text": "await asyncio.sleep(.005)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_native.py",
+   "text": "await asyncio.sleep(.1)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_native.py",
+   "text": "await asyncio.sleep(.1)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_native.py",
+   "text": "await asyncio.sleep(.1)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_native.py",
+   "text": "await asyncio.sleep(.1)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_native.py",
+   "text": "await asyncio.sleep(.1)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_native.py",
+   "text": "await asyncio.sleep(.1)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_native.py",
+   "text": "await asyncio.sleep(.1)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_native.py",
+   "text": "await asyncio.sleep(.1)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_native.py",
+   "text": "await asyncio.sleep(.1)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_native.py",
+   "text": "await asyncio.sleep(.1)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_native.py",
+   "text": "await asyncio.sleep(.1)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_native.py",
+   "text": "await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_native_output.py",
+   "text": "await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_no_plc.py",
+   "text": "await asyncio.sleep(.25)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_no_plc.py",
+   "text": "await asyncio.sleep(.25)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_no_plc.py",
+   "text": "await asyncio.sleep(.3)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_no_plc.py",
+   "text": "await asyncio.sleep(.3)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_no_plc.py",
+   "text": "await asyncio.sleep(.3)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_no_plc.py",
+   "text": "const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_output_leases.py",
+   "text": "await asyncio.sleep(.05)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_output_leases.py",
+   "text": "await asyncio.sleep(.05)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_output_leases.py",
+   "text": "await asyncio.sleep(.2)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_output_leases.py",
+   "text": "await asyncio.sleep(.2)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_output_leases.py",
+   "text": "await asyncio.sleep(.2)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_b_output_leases.py",
+   "text": "await asyncio.sleep(.25)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_browser.py",
+   "text": "await asyncio.sleep(.05)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_browser.py",
+   "text": "await asyncio.sleep(.2)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_browser.py",
+   "text": "await asyncio.sleep(.6)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_browser.py",
+   "text": "await asyncio.sleep(60)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_calendar_client.py",
+   "text": "await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_capture_cleanup_review.py",
+   "text": "await asyncio.sleep(.01)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_capture_cleanup_review.py",
+   "text": "await asyncio.sleep(.01)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_capture_cleanup_review.py",
+   "text": "await asyncio.sleep(.02)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_codex_device_rpc.py",
+   "text": "await asyncio.sleep(.001)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_computer_audio_frame_lifecycle.py",
+   "text": "else:await asyncio.sleep(.05)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_computer_audio_wait.py",
+   "text": "await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_final_event_diagnostics.py",
+   "text": "provider.receiver = asyncio.create_task(asyncio.sleep(0))"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_frameless_transcript.py",
+   "text": "await asyncio.sleep(.001)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_frameless_transcript.py",
+   "text": "await asyncio.sleep(.005)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_live_failures.py",
+   "text": "await asyncio.sleep(.001)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_live_failures.py",
+   "text": "await asyncio.sleep(.01)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_muted_probe_greeting.py",
+   "text": "await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_muted_probe_greeting.py",
+   "text": "await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_muted_probe_greeting.py",
+   "text": "await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_muted_probe_greeting.py",
+   "text": "await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_muted_probe_greeting.py",
+   "text": "await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_muted_probe_greeting.py",
+   "text": "await self.begin(); await self.delta(GREETING); await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_muted_probe_greeting.py",
+   "text": "await self.delta(row['text']); await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_native_incremental_context.py",
+   "text": "await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_native_incremental_context.py",
+   "text": "await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_native_incremental_context.py",
+   "text": "await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_native_incremental_context.py",
+   "text": "await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_native_meeting_media.py",
+   "text": "await asyncio.sleep(.01)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_native_meeting_media.py",
+   "text": "await asyncio.sleep(.12)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_native_meeting_media.py",
+   "text": "await asyncio.sleep(.25)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_native_meeting_media.py",
+   "text": "await asyncio.sleep(.6)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_native_meeting_media.py",
+   "text": "await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_native_meeting_media.py",
+   "text": "await asyncio.sleep(4.5)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_native_meeting_media.py",
+   "text": "self.peer = LivePeer(self.runtime.browser, lambda event: asyncio.sleep(0))"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_native_meeting_media.py",
+   "text": "self.peer = LivePeer(self.runtime.browser, lambda event: asyncio.sleep(0))"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_pcm_activity_floor.py",
+   "text": "await asyncio.sleep(.04)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_postmeeting_ui.py",
+   "text": "await asyncio.sleep(.01)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_prejoin_native_radio.py",
+   "text": "await asyncio.sleep(.025)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_prejoin_preview_navigation.py",
+   "text": "elif kind=='deadline':await asyncio.sleep(.025)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_provider_probe.py",
+   "text": "await asyncio.sleep(.001)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_provider_probe.py",
+   "text": "await asyncio.sleep(.001)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_provider_probe.py",
+   "text": "await asyncio.sleep(.01)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_provider_probe.py",
+   "text": "await asyncio.sleep(.01)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_provider_probe.py",
+   "text": "await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_provider_probe.py",
+   "text": "await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_provider_probe.py",
+   "text": "await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_provider_probe.py",
+   "text": "await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_provider_probe.py",
+   "text": "await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_provider_probe.py",
+   "text": "await asyncio.sleep(0)  # Deliver cancellation to the cleanup coroutine."
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_provider_probe.py",
+   "text": "await asyncio.sleep(delay)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_provisional_transcript.py",
+   "text": "await asyncio.sleep(.01)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_provisional_transcript.py",
+   "text": "await asyncio.sleep(.01)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_provisional_transcript.py",
+   "text": "await asyncio.sleep(.01)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_provisional_transcript.py",
+   "text": "await asyncio.sleep(.01)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_provisional_transcript.py",
+   "text": "await asyncio.sleep(.01)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_provisional_transcript.py",
+   "text": "await asyncio.sleep(.01)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_provisional_transcript.py",
+   "text": "await asyncio.sleep(.01)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_qa_audio_observer.py",
+   "text": "await asyncio.sleep(.45 if slow else .01)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_qa_probe.py",
+   "text": "await asyncio.sleep(.02)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_qa_probe.py",
+   "text": "await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_qa_probe.py",
+   "text": "await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_qa_question_stage.py",
+   "text": "await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_question_activity.py",
+   "text": "await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_question_input_diagnostics.py",
+   "text": "await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_response_capture_fanout.py",
+   "text": "await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_response_capture_fanout.py",
+   "text": "await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_response_policy_failure.py",
+   "text": "await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_response_policy_failure.py",
+   "text": "await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_response_policy_failure.py",
+   "text": "await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_response_policy_failure.py",
+   "text": "await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_response_policy_failure.py",
+   "text": "await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_response_progress.py",
+   "text": "await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_response_progress.py",
+   "text": "await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_response_runtime.py",
+   "text": "await asyncio.sleep(.01)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_response_runtime.py",
+   "text": "await asyncio.sleep(.01)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_response_runtime.py",
+   "text": "await asyncio.sleep(.01)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_response_runtime.py",
+   "text": "await asyncio.sleep(.01)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_response_runtime.py",
+   "text": "await asyncio.sleep(.01)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_response_start_diagnostics.py",
+   "text": "await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_rx_audio_stats.py",
+   "text": "await asyncio.sleep(.003)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_rx_contract.py",
+   "text": "await asyncio.sleep(.003)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_rx_contract.py",
+   "text": "await asyncio.sleep(.003)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_rx_contract.py",
+   "text": "await asyncio.sleep(.003)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_rx_contract.py",
+   "text": "await asyncio.sleep(.003)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_rx_contract.py",
+   "text": "await asyncio.sleep(.003)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_rx_contract.py",
+   "text": "await asyncio.sleep(.003)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_rx_contract.py",
+   "text": "await asyncio.sleep(.003)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_rx_contract.py",
+   "text": "await asyncio.sleep(.003)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_rx_contract.py",
+   "text": "await asyncio.sleep(.003)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_rx_contract.py",
+   "text": "await asyncio.sleep(.003)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_rx_contract.py",
+   "text": "await asyncio.sleep(.003)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_rx_contract.py",
+   "text": "await asyncio.sleep(.003)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_rx_contract.py",
+   "text": "await asyncio.sleep(.004)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_rx_contract.py",
+   "text": "await asyncio.sleep(.005)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_rx_contract.py",
+   "text": "await asyncio.sleep(.02)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_rx_contract.py",
+   "text": "await asyncio.sleep(.04)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_rx_contract.py",
+   "text": "await asyncio.sleep(.04)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_rx_contract.py",
+   "text": "await asyncio.sleep(.11)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_rx_contract.py",
+   "text": "await asyncio.sleep(.18)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_rx_contract.py",
+   "text": "await asyncio.sleep(.55)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_rx_contract.py",
+   "text": "await asyncio.sleep(.7)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_rx_contract.py",
+   "text": "await asyncio.sleep(.7)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_rx_contract.py",
+   "text": "await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_rx_contract.py",
+   "text": "await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_rx_contract.py",
+   "text": "await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_rx_contract.py",
+   "text": "await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_rx_contract.py",
+   "text": "await asyncio.sleep(1)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_rx_contract.py",
+   "text": "await asyncio.sleep(owner.admission_delay)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_rx_contract.py",
+   "text": "await asyncio.sleep(owner.admitted_delay)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_rx_contract.py",
+   "text": "await asyncio.sleep(owner.final_stats_delay)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_rx_contract.py",
+   "text": "await asyncio.sleep(owner.live_delay)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_rx_contract.py",
+   "text": "await asyncio.sleep(owner.start_delay)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_rx_contract.py",
+   "text": "await asyncio.sleep(owner.stats_delay)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_rx_contract.py",
+   "text": "time.sleep(setup_stall)  # Controlled synchronous setup stall."
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_rx_contract.py",
+   "text": "while not fixture.captures: await asyncio.sleep(.003)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_rx_contract.py",
+   "text": "while not fixture.stats_calls: await asyncio.sleep(.003)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_rx_ready_ttl.py",
+   "text": "await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_screen_b_integration.py",
+   "text": "await asyncio.sleep(0.01)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_screen_b_integration.py",
+   "text": "await asyncio.sleep(0.05)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_screen_b_integration.py",
+   "text": "await asyncio.sleep(self.delay)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_screen_b_integration.py",
+   "text": "await asyncio.sleep(self.delay)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_screen_vision.py",
+   "text": "await asyncio.sleep(0.05)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_screen_watcher.py",
+   "text": "await asyncio.sleep(0.01)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_screen_watcher.py",
+   "text": "await asyncio.sleep(0.05)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_screen_watcher.py",
+   "text": "await asyncio.sleep(0.08)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_screen_watcher.py",
+   "text": "await asyncio.sleep(self.delay)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_screen_watcher.py",
+   "text": "await asyncio.sleep(self.delay)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_speech_completion_snapshot.py",
+   "text": "await asyncio.sleep(.005)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_speech_completion_snapshot.py",
+   "text": "await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_speech_completion_snapshot.py",
+   "text": "await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_staging_docker_diagnostics.py",
+   "text": "'p=subprocess.Popen([sys.executable,\"-c\",\"import time;time.sleep(20)\"]);'"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_staging_docker_diagnostics.py",
+   "text": "f'Path({str(pidfile)!r}).write_text(str(p.pid));time.sleep(20)')"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_staging_docker_diagnostics.py",
+   "text": "script = \"import sys,time;sys.stdout.buffer.write(b'X'*200000);sys.stdout.flush();time.sleep(20)\""
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_staging_docker_diagnostics.py",
+   "text": "time.sleep(.01)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_staging_docker_diagnostics.py",
+   "text": "unrelated = real_popen([sys.executable, '-c', 'import time;time.sleep(20)'])"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_summary.py",
+   "text": "await asyncio.sleep(.005)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_summary.py",
+   "text": "await asyncio.sleep(.005)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_summary.py",
+   "text": "await asyncio.sleep(.01)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_summary.py",
+   "text": "await asyncio.sleep(.04)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_target_browser_readiness.py",
+   "text": "await asyncio.sleep(.01)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_target_browser_readiness.py",
+   "text": "await asyncio.sleep(.01)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_target_browser_readiness.py",
+   "text": "await asyncio.sleep(.01)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_target_control_cli.py",
+   "text": "while not session.stopped():await asyncio.sleep(.01)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_target_control_cli.py",
+   "text": "while not session.stopped():await asyncio.sleep(.01)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_target_control_path.py",
+   "text": "await asyncio.sleep(.6)  # a full original monitor interval"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_target_control_path.py",
+   "text": "while not session.stopped():await asyncio.sleep(.01)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_target_control_path.py",
+   "text": "while not session.stopped():await asyncio.sleep(.01)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_target_diagnostics.py",
+   "text": "' os.write(1,payload);os.write(2,payload);time.sleep(30)\\n'"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_target_owner_browser.py",
+   "text": "await asyncio.sleep(.01)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_target_single_calendar.py",
+   "text": "await asyncio.sleep(.01)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_target_single_calendar.py",
+   "text": "await asyncio.sleep(.01)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_teams_immediate_chain.py",
+   "text": "while not session.stopped():await asyncio.sleep(.01)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_teams_local_control.py",
+   "text": "time.sleep(10.2)  # exactly the confirmed commit-before-handoff counterexample"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_turn_lifecycle_evidence.py",
+   "text": "await asyncio.sleep(.06)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_turn_lifecycle_evidence.py",
+   "text": "await asyncio.sleep(.06)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_turn_lifecycle_evidence.py",
+   "text": "await asyncio.sleep(.08)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_turn_lifecycle_evidence.py",
+   "text": "await asyncio.sleep(.08)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_ux_features.py",
+   "text": "await asyncio.sleep(0.02)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_ux_features.py",
+   "text": "await asyncio.sleep(0.02)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_ux_features.py",
+   "text": "await asyncio.sleep(0.08)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_web_authorization.py",
+   "text": "await asyncio.sleep(.01)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_web_authorization.py",
+   "text": "await asyncio.sleep(.01)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_web_authorization.py",
+   "text": "await asyncio.sleep(.01)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_web_authorization.py",
+   "text": "await asyncio.sleep(0)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_web_authorization_browser.py",
+   "text": "await asyncio.sleep(.01)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_web_authorization_browser.py",
+   "text": "await asyncio.sleep(.01)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_web_authorization_browser.py",
+   "text": "await asyncio.sleep(.01)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_web_authorization_browser.py",
+   "text": "await asyncio.sleep(.01)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_web_authorization_browser.py",
+   "text": "await asyncio.sleep(.01)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tests/test_web_authorization_browser.py",
+   "text": "await asyncio.sleep(.01)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tools/compose_smoke.py",
+   "text": "time.sleep(.2)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tools/compose_smoke.py",
+   "text": "time.sleep(.2)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tools/decoder_audio_check.js",
+   "text": "await new Promise(r=>setTimeout(r,220));stallEnd=ctx.currentTime;}"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tools/decoder_audio_check.js",
+   "text": "await new Promise(r=>setTimeout(r,400));"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tools/decoder_audio_check.js",
+   "text": "const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tools/decoder_continuity_check.py",
+   "text": "'              try{await new Promise(r=>setTimeout(r,5));requireOpen();}\\n'"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tools/decoder_continuity_check.py",
+   "text": "+ (\"            if(input.packets===8)await new Promise(r=>setTimeout(r,120));\\n\""
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tools/decoder_continuity_check.py",
+   "text": "+ ('            await new Promise(r=>setTimeout(r,30));requireOpen();\\n'"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tools/decoder_history_check.py",
+   "text": "const sleep=ms=>new Promise(r=>setTimeout(r,ms)),rows=[],cleanup={};"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tools/postmeeting_ui_audit.py",
+   "text": "await asyncio.sleep(.01)"
+  },
+  {
+   "rule": "no-sleep-fix",
+   "path": "tools/stress_rx_behavior.py",
+   "text": "time.sleep(.03)"
+  }
+ ]
+}

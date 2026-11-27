@@ -1,0 +1,27 @@
+id = "pr-diff-budget"
+kind = "diff_policy"
+message = "單張 PR 變更範圍過大（上限 35 個檔案、2000 新增行）：請拆分為獨立小卡，避免一次混合多項實驗或難以審查。"
+max_files = 35
+max_added_lines = 2000
+exclude = [
+  "**/package-lock.json",
+  ".devflow/rules/baseline.json",
+  ".devflow/baseline.json",
+  ".devflow/check.py",
+  ".devflow/evidence*/**",
+  "docs/**",
+]
+
+[[fixture]]
+expect = "fail"
+changed_files = ["teams_transcription/daemon.py"]
+added_lines = 2500
+
+[[fixture]]
+expect = "pass"
+changed_files = [
+  "teams_transcription/daemon.py",
+  ".devflow/rules/baseline.json",
+  "docs/ARCHITECTURE.md",
+]
+added_lines = 120

@@ -1,0 +1,37 @@
+id = "no-unsafe-browser-sandbox"
+kind = "regex"
+message = "嚴禁在程式碼、容器或腳本停用瀏覽器 sandbox（`--no-sandbox`）、開啟 `CAP_SYS_CHROOT` 或 `privileged: true`；請維持最小權限與 seccomp 邊界。"
+include = [
+  "teams_transcription/**/*.py",
+  "Dockerfile",
+  "docker-compose.yml",
+  "docker/**/*",
+  "deploy/**/*",
+  ".devflow/**/*.sh",
+]
+exclude = [
+  "tests/**",
+  "docs/**",
+  "**/test_*.py",
+  ".devflow/rules/**",
+]
+patterns = [
+  '(?m)^(?!\s*(?:#|"comment"\s*:)).*--no-sandbox',
+  '(?m)^(?!\s*(?:#|"comment"\s*:)).*\bCAP_SYS_CHROOT\b',
+  '(?m)^(?!\s*(?:#|"comment"\s*:)).*\bprivileged\s*:\s*true\b',
+]
+
+[[fixture]]
+expect = "fail"
+path = "teams_transcription/browser.py"
+text = 'args = ["--no-sandbox"]'
+
+[[fixture]]
+expect = "pass"
+path = "teams_transcription/browser.py"
+text = 'args = ["--headless=new"]'
+
+[[fixture]]
+expect = "pass"
+path = "docker/chromium-seccomp.json"
+text = '"comment": "Container capabilities (CAP_SYS_CHROOT) remain dropped."'

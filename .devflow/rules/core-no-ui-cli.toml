@@ -1,0 +1,33 @@
+id = "core-no-ui-cli"
+kind = "import_boundary"
+message = "核心儲存、摘要與 RPC 模組不得反向依賴 UI、CLI、daemon 或 worker 編排層。"
+include = [
+  "teams_transcription/meeting_store.py",
+  "teams_transcription/assistant_store.py",
+  "teams_transcription/storage.py",
+  "teams_transcription/postmeeting_store.py",
+  "teams_transcription/summary.py",
+  "teams_transcription/rpc.py",
+  "teams_transcription/source_contract.py",
+  "teams_transcription/security.py",
+  "teams_transcription/incremental.py",
+  "teams_transcription/glossary_context.py",
+  "teams_transcription/history_context.py",
+]
+forbidden_modules = [
+  "teams_transcription.admin_web",
+  "teams_transcription.admin_ui",
+  "teams_transcription.cli",
+  "teams_transcription.daemon",
+  "teams_transcription.worker",
+]
+
+[[fixture]]
+expect = "fail"
+path = "teams_transcription/meeting_store.py"
+text = "from . import admin_web\n"
+
+[[fixture]]
+expect = "pass"
+path = "teams_transcription/meeting_store.py"
+text = "from . import assistant_store, incremental, source_contract\n"
