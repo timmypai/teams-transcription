@@ -227,6 +227,7 @@ class ReceiptBoundaryTests(unittest.IsolatedAsyncioTestCase):
                 self.assertEqual(snapshot['detail'],'revoked_guard_sender_track_changed')
                 safe=response_policy_failure_receipt(snapshot)
                 for key in ('replacement_track','replacement_enabled','replacement_ready_state'):
+                    self.assertIn(key,safe)
                     self.assertEqual(safe[key],wire[key])
                 snapshot['replacement_track']='private-content'
                 self.assertNotEqual(policy.failure_snapshot()['replacement_track'],'private-content')
