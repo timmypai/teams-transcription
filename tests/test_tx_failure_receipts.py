@@ -83,9 +83,20 @@ const run=(name,args)=>vm.runInContext('('+scripts[name]+')',sandbox)(args);
   let error=null;
   try{await run('START_TX_JS',{owner:'owner'});}catch(e){error=e.message;}
   const pre={muted:state.muted,enabled:output.enabled,replacements};
+  let audio;
+  if(mode==='healthy_audio') {
+    // Synthetic sample gate only, not a WebRTC/remote audibility claim.
+    const samples=[0,.25,-.25,.5,-.5,0];
+    const render=()=>samples.map(value=>sender.track?.enabled?value:0);
+    const initial=render();
+    await run('MUTE_TX_JS',{owner:'owner',muted:false});
+    const active=render();
+    await run('MUTE_TX_JS',{owner:'owner',muted:true});
+    audio={initial,active,muted:render()};
+  }
   await run('STOP_TX_JS',{owner:'owner'});
   process.stdout.write(JSON.stringify({error,pre,ended:output.readyState==='ended',
-    restored:sender.track===original,remaining:!!sandbox.__bTX}));
+    restored:sender.track===original,remaining:!!sandbox.__bTX,...(audio?{audio}:{})}));
 })().catch(e=>{console.error(e);process.exitCode=1;});
 """
 
@@ -95,7 +106,7 @@ def replay(mode):
     if executable is None:
         raise RuntimeError('Node is required for the diagnostic acceptance fixture')
     result=subprocess.run([executable,'-e',NODE],input=json.dumps({'mode':mode,
-        'scripts':{**{key:getattr(tx,key) for key in ('BIND_TX_JS','START_TX_JS','STOP_TX_JS')},
+        'scripts':{**{key:getattr(tx,key) for key in ('BIND_TX_JS','START_TX_JS','STOP_TX_JS','MUTE_TX_JS')},
             'TARGET_ANSWER_JS':tx.TARGET_ANSWER_JS.replace(NO_PLC_RECEIVER_JS,''),
             'DUAL_CHECK_JS':DUAL_CHECK_JS}}),
         text=True,capture_output=True,timeout=10)
@@ -105,6 +116,14 @@ def replay(mode):
 
 
 class TXFailureReceiptTests(unittest.TestCase):
+    def test_healthy_synthetic_samples_follow_existing_mute_gate(self):
+        actual=replay('healthy_audio')
+        self.assertEqual(actual['audio'],{'initial':[0]*6,
+            'active':[0,.25,-.25,.5,-.5,0],'muted':[0]*6})
+        self.assertIsNone(actual['error'])
+        self.assertTrue(actual['ended'])
+        self.assertTrue(actual['restored'])
+
     def test_three_install_checkpoints_keep_mute_restore_and_first_error(self):
         for checkpoint in ('before_replace_track','after_replace_track','final_verify'):
             with self.subTest(checkpoint=checkpoint):
@@ -214,6 +233,47 @@ class SourceFailureGroupTests(unittest.TestCase):
 
 
 class ReceiptBoundaryTests(unittest.IsolatedAsyncioTestCase):
+    async def test_missing_source_diagnostics_and_cleanup_failure_keep_existing_safety(self):
+        for source_result,broken in ((None,False),({},False),(None,True)):
+            with self.subTest(source_result=source_result,broken=broken):
+                class Page:
+                    def __init__(self):self.context=object()
+                    def is_closed(self):return False
+                    async def evaluate(self,script,args=None):
+                        if script==tx.BIND_TX_JS:return {'owner':args['owner'],'meeting_id':'one'}
+                        if script==tx.START_TX_JS:
+                            raise RuntimeError('Error: Native TX disconnected or ownership/meeting binding mismatch'
+                                '/tx_ready/before_replace_track/not_disposed/source_invalidated')
+                        if script==tx.STOP_TX_JS:return {'cleaned':True}
+                        if script==tx.SOURCE_STOP_JS:
+                            if broken:raise RuntimeError('synthetic cleanup failure')
+                            return source_result
+                        return 'synthetic' if script in (tx.SOURCE_OFFER_JS,tx.TARGET_ANSWER_JS) else {}
+                sink=tx.BrowserTXSink(Page(),meeting_id='one')
+                await sink.bind();await sink.attach_live(Page())
+                with self.assertRaises(RuntimeError):await sink.start()
+                self.assertFalse(sink.started)
+                self.assertEqual(sink.cleanup_status,'unknown' if broken else 'cleaned')
+                self.assertIsNone(sink.startup_error.get('source_failure_group'))
+                self.assertNotEqual(sink.last_delivery.get('drained'),True)
+                if broken:
+                    self.assertEqual(sink.last_delivery['reason'],'cleanup_unknown')
+                    with self.assertRaisesRegex(RuntimeError,'cleanup pending'):await sink.start()
+
+    async def test_permission_loss_mutes_before_rejecting(self):
+        calls=[]
+        class Frame:
+            async def evaluate(self,script,args):calls.append((script,args));return {}
+        sink=tx.BrowserTXSink(Frame(),meeting_id='one')
+        sink.policy=lambda binding:False
+        sink.binding={'owner':sink.owner,'meeting_id':'one'}
+        sink.started=True
+        sink._live_page=Frame()
+        with self.assertRaisesRegex(RuntimeError,'authorization required'):await sink.set_muted(False)
+        self.assertTrue(calls)
+        self.assertEqual(calls[-1],(tx.MUTE_TX_JS,{'owner':sink.owner,'muted':True}))
+        self.assertFalse(any(args.get('muted') is False for script,args in calls))
+
     async def test_policy_receipt_crosses_python_and_persistence_allowlists(self):
         for name in ('null','original','enabled','ended','other'):
             with self.subTest(name=name):
@@ -306,3 +366,62 @@ class ReceiptBoundaryTests(unittest.IsolatedAsyncioTestCase):
             safe=response_start_failure(error,'native_output_attach',output_step='sender_install')
             self.assertNotIn('checkpoint',safe)
             self.assertNotIn('private',json.dumps(safe))
+
+
+def acceptance_behavior():
+    """Exact legacy results, asserted identically against both installed products."""
+    rows={}
+    for mode in ('healthy','healthy_audio','before_replace_track','after_replace_track','final_verify',
+            'replacement_null','replacement_original','replacement_audio','replacement_enabled',
+            'replacement_ended','replacement_other'):
+        value=replay(mode)
+        if mode.startswith('replacement_'):
+            value['receipt']={key:item for key,item in value['receipt'].items()
+                if not key.startswith('replacement_')}
+            expected={'receipt':{'accepted':False,'reason':'owned_identity',
+                'detail':'revoked_guard_sender_track_changed'},'ended':True,'foreignPreserved':True}
+        else:
+            if value['error']:
+                value['error']=value['error'].split('/tx_ready/',1)[0]
+            expected={'error':None if mode.startswith('healthy') else
+                'Native TX disconnected or ownership/meeting binding mismatch',
+                'pre':{'muted':True,'enabled':False,'replacements':0 if mode=='before_replace_track' else 1},
+                'ended':True,'restored':True,'remaining':False}
+            if mode=='healthy_audio':
+                expected['audio']={'initial':[0]*6,'active':[0,.25,-.25,.5,-.5,0],'muted':[0]*6}
+        assert value==expected, 'tx_legacy_behavior_changed'
+        rows[mode]=value
+    return rows
+
+
+def acceptance_main(phase):
+    """Called by verify.sh, streamed as a fixture with no application overlay."""
+    if phase=='given':
+        actual=replay('healthy_audio')
+        assert actual['error'] is None and actual['pre']=={'muted':True,'enabled':False,'replacements':1}
+        assert actual['ended'] and actual['restored'] and not actual['remaining']
+        assert actual['audio']=={'initial':[0]*6,'active':[0,.25,-.25,.5,-.5,0],'muted':[0]*6}
+        print(json.dumps({'bound':True,'initially_muted':True,'cleanup':True,'synthetic_audio':True}))
+    else:
+        import sys
+        result=unittest.TestResult()
+        unittest.defaultTestLoader.loadTestsFromModule(sys.modules[__name__]).run(result)
+        diagnostic_tests={'test_three_install_checkpoints_keep_mute_restore_and_first_error',
+            'test_first_false_condition_is_not_a_cleanup_snapshot_or_recheck',
+            'test_guard_replacement_is_captured_before_revoke_and_latched',
+            'test_source_records_only_observed_first_failure_before_cleanup',
+            'test_policy_receipt_crosses_python_and_persistence_allowlists',
+            'test_start_preserves_target_error_and_only_uses_owned_latched_source_group',
+            'test_startup_diagnostics_drop_unapproved_values_and_wrong_scope'}
+        unexpected=sum(not any('.'+name in test.id() for name in diagnostic_tests)
+            for test,_ in result.failures)
+        # No arbitrary error text, synthetic identifiers, or source data in evidence.
+        print(json.dumps({'tests':result.testsRun,'failures':len(result.failures),
+            'errors':len(result.errors),'skipped':len(result.skipped),
+            'unexpected_failures':unexpected,
+            'behavior':acceptance_behavior(),'real_media':False,'real_meeting':False}))
+
+
+if __name__=='__main__':
+    import sys
+    acceptance_main(sys.argv[1])
