@@ -129,7 +129,7 @@ class Harness:
         def when():
             report = execute('when')
             self.write(self.evidence/'tx-receipts.json',json.dumps(report,indent=2))
-            assert report['tests'] == 12 and report['errors'] == report['skipped'] == 0
+            assert report['tests'] == 13 and report['errors'] == report['skipped'] == 0
             assert report['unexpected_failures'] == 0
             assert len(report['behavior']) == 11
             state['report'] = report

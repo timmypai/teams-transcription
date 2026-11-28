@@ -305,6 +305,8 @@ class ReceiptBoundaryTests(unittest.IsolatedAsyncioTestCase):
                 self.assertFalse(await policy.check())
                 self.assertEqual(policy.failure_snapshot()['reason'],'invalid_result')
                 self.assertNotIn('replacement_track',policy.failure_snapshot())
+
+    def test_policy_diagnostics_drop_unapproved_values_and_wrong_scope(self):
         unsafe={'reason':'owned_identity','detail':'revoked_guard_sender_track_changed',
             'replacement_track':['private'],'replacement_enabled':'true','replacement_ready_state':{},
             'sdp':'private','label':'private'}
@@ -411,6 +413,7 @@ def acceptance_main(phase):
             'test_guard_replacement_is_captured_before_revoke_and_latched',
             'test_source_records_only_observed_first_failure_before_cleanup',
             'test_policy_receipt_crosses_python_and_persistence_allowlists',
+            'test_policy_diagnostics_drop_unapproved_values_and_wrong_scope',
             'test_start_preserves_target_error_and_only_uses_owned_latched_source_group',
             'test_startup_diagnostics_drop_unapproved_values_and_wrong_scope'}
         unexpected=sum(not any('.'+name in test.id() for name in diagnostic_tests)

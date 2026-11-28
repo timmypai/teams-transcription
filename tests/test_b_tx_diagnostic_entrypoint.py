@@ -38,7 +38,7 @@ os.execv(sys.executable, [sys.executable, *args[5:]])
             self.assertEqual(execute('given'),
                 dict(bound=True, initially_muted=True, cleanup=True, synthetic_audio=True))
             report = execute('when')
-            self.assertEqual(report['tests'], 12)
+            self.assertEqual(report['tests'], 13)
             self.assertEqual(report['errors'], 0)
             self.assertEqual(report['skipped'], 0)
             self.assertEqual(report['unexpected_failures'], 0)
