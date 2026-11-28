@@ -6,4 +6,4 @@ category = "verification"
 
 [enforcement]
 kind = "test"
-ref = "tests/test_b_tx_diagnostic_entrypoint.py::DiagnosticEntrypointTests.test_fixture_uses_installed_product_despite_container_workdir_and_pythonpath"
+ref = "tests/test_b_tx_diagnostic_entrypoint.py::test_fixture_uses_installed_product_despite_container_workdir_and_pythonpath"
