@@ -233,7 +233,13 @@ class OwnedSenderDualPolicyTests(unittest.IsolatedAsyncioTestCase):
         await self.source.tone()
         await self.page.evaluate("""async()=>{
           window.replacement=fixture.track.clone();replacement.enabled=true;
-          await fixture.sender.replaceTrack(replacement);
+          const replacing=fixture.sender.replaceTrack(replacement);
+          // The capture hook synchronously mutes every replacement. Re-enable
+          // after that hook, before yielding to the guard, to exercise a later
+          // policy mute without weakening the event-time true assertion.
+          replacement.enabled=true;
+          if(!replacement.enabled) throw new Error('fixture replacement not enabled');
+          await replacing;
         }""")
         await self.page.wait_for_function('__bTX.revokeReason==="guard_sender_track_changed"')
         # The policy will mute foreign tracks. The diagnostic must retain the
