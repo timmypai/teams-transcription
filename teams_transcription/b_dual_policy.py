@@ -51,10 +51,16 @@ def replacement_receipt(value):
 
 
 DUAL_CHECK_JS = r"""({policyId,meetingId,expected,authorize,initialized,receipt=false}) => {
-  const result=(accepted,reason,detail,replacement)=>receipt?(detail?
+  let diagnostic=null;
+  const result=(accepted,reason,detail,replacement)=>{
+    const value=receipt?(detail?
     {accepted,reason,detail,...(reason==='owned_identity' && detail==='revoked_guard_sender_track_changed'?replacement:{})}:
     {accepted,reason}):accepted;
-  const muteOwned=state=>{if(state) state.revoke('dual_policy_rejected');};
+    if(receipt && !accepted && diagnostic) value.tx_first_failure=diagnostic;
+    return value;
+  };
+  const site=authorize?'dual_authorize':'dual_check';
+  const muteOwned=state=>{flushCondition();if(state) state.revoke('dual_policy_rejected',site);};
   window.__bDualPolicies ||= new Map();
   let policy=window.__bDualPolicies.get(policyId);
   if(!policy) {
@@ -65,6 +71,16 @@ DUAL_CHECK_JS = r"""({policyId,meetingId,expected,authorize,initialized,receipt=
     window.__bDualPolicies.set(policyId,policy);
   }
   const existing=policy.binding && window.__bTXOwnedStates?.get(policy.binding.owner);
+  let diagnosticState=existing, diagnosticEligible=!existing?.disposed, firstCondition=null;
+  // A false ownedIntact can be a legal muted transition. Commit only when the
+  // existing branch actually rejects, not during an accepted capability check.
+  const condition=(value,name)=>{
+    if(value===false && diagnosticEligible && firstCondition===null) firstCondition=name;
+    return value;
+  };
+  const flushCondition=()=>{
+    if(firstCondition!==null) try {diagnosticState?.txDiagnostic?.failure(site,firstCondition);}catch{}
+  };
   const fail=(reason,muteForeign=false,detail=null)=>{
     policy.failureReason ||= reason;
     if(policy.failureReason==='owned_identity' && detail && !policy.failureDetail) {
@@ -85,17 +101,25 @@ DUAL_CHECK_JS = r"""({policyId,meetingId,expected,authorize,initialized,receipt=
     if(muteForeign) for(const pc of policy.capture.peers) for(const sender of pc.getSenders()) {
       if(sender.track && ['audio','video'].includes(sender.track.kind)) sender.track.enabled=false;
     }
+    // Reuse the existing rejected check response, after all required muting.
+    try {
+      if(!policy.txFirstFailure) {
+        diagnosticState?.txDiagnostic?.reject();
+        policy.txFirstFailure=diagnosticState?.txDiagnostic?.snapshot();
+      }
+      diagnostic=policy.txFirstFailure;
+    }catch{}
     return result(false,policy.failureReason,policy.failureReason==='owned_identity'?policy.failureDetail:null,policy.replacementFailure);
   };
   if(policy.faulted) return fail('policy_faulted');
   // A reused frame/document cannot carry its old TX exception into a new meeting.
-  if(policy.document!==document || policy.href!==location.href ||
-     window.__bMeetingId!==meetingId || window.__meeting!==policy.capture) return fail('document_scope');
-  const current=b=>b && b.document===document && b.href===location.href &&
-    b.meetingId===meetingId && b.capture===policy.capture &&
-    policy.capture.peers[b.peerIndex]===b.pc && b.pc.connectionState!=='closed' &&
-    b.pc.getSenders().includes(b.sender) && (b.original!==null ||
-      (b.pc.getTransceivers().includes(b.transceiver) && b.transceiver.sender===b.sender));
+  if(!condition(policy.document===document,'document_match') || !condition(policy.href===location.href,'location_match') ||
+     !condition(window.__bMeetingId===meetingId,'meeting_match') || !condition(window.__meeting===policy.capture,'capture_match')) return fail('document_scope');
+  const current=b=>b && condition(b.document===document,'document_match') && condition(b.href===location.href,'location_match') &&
+    condition(b.meetingId===meetingId,'meeting_match') && condition(b.capture===policy.capture,'capture_match') &&
+    condition(policy.capture.peers[b.peerIndex]===b.pc,'peer_match') && condition(b.pc.connectionState!=='closed','peer_open') &&
+    condition(b.pc.getSenders().includes(b.sender),'sender_member') && (b.original!==null ||
+      (condition(b.pc.getTransceivers().includes(b.transceiver),'transceiver_member') && condition(b.transceiver.sender===b.sender,'transceiver_sender_match')));
   if(policy.binding && !current(policy.binding)) return fail('binding_scope');
   let binding=policy.binding, trackId=policy.trackId;
   if(authorize) {
@@ -107,18 +131,19 @@ DUAL_CHECK_JS = r"""({policyId,meetingId,expected,authorize,initialized,receipt=
     trackId=expected.track_id;
   }
   const owned=binding && window.__bTXOwnedStates?.get(binding.owner);
-  const ownedIntact=owned && owned.installed && !owned.disposed && owned.binding===binding &&
-    window.__bTX===owned && owned.pc===binding.pc && owned.sender===binding.sender &&
-    owned.sender.track===owned.track && owned.track.kind==='audio' &&
-    owned.track.readyState==='live' &&
-    owned.relay.connectionState==='connected' && owned.control?.readyState==='open' &&
-    owned.relay.getReceivers().includes(owned.receiver) &&
-    owned.receiver?.track===owned.inputTrack &&
-    owned.decoder?.receiver===owned.receiver && owned.decoder.inputTrack===owned.inputTrack &&
-    owned.decoder.track===owned.track && owned.decoder.valid() &&
-    (binding.original!==null || (binding.transceiver.stopped===false &&
-      binding.transceiver.receiver?.track?.kind==='audio' &&
-      ['sendonly','sendrecv'].includes(binding.transceiver.currentDirection)));
+  diagnosticState=owned; diagnosticEligible=!owned?.disposed;
+  const ownedIntact=owned && condition(owned.installed,'installed') && condition(!owned.disposed,'not_disposed') && condition(owned.binding===binding,'binding_match') &&
+    condition(window.__bTX===owned,'state_current') && condition(owned.pc===binding.pc,'peer_match') && condition(owned.sender===binding.sender,'sender_match') &&
+    condition(owned.sender.track===owned.track,'sender_track_match') && condition(owned.track.kind==='audio','output_audio') &&
+    condition(owned.track.readyState==='live','output_live') &&
+    condition(owned.relay.connectionState==='connected','relay_connected') && condition(owned.control?.readyState==='open','control_open') &&
+    condition(owned.relay.getReceivers().includes(owned.receiver),'receiver_member') &&
+    condition(owned.receiver?.track===owned.inputTrack,'receiver_track_match') &&
+    condition(owned.decoder?.receiver===owned.receiver,'decoder_receiver_match') && condition(owned.decoder.inputTrack===owned.inputTrack,'decoder_input_match') &&
+    condition(owned.decoder.track===owned.track,'decoder_track_match') && condition(owned.decoder.valid(),'decoder_valid') &&
+    (binding.original!==null || (condition(binding.transceiver.stopped===false,'transceiver_active') &&
+      condition(binding.transceiver.receiver?.track?.kind==='audio','transceiver_audio') &&
+      condition(['sendonly','sendrecv'].includes(binding.transceiver.currentDirection),'transceiver_sending')));
   const ownedValid=ownedIntact && owned.track.id===trackId;
   // stop() revokes output immediately but may await replaceTrack(original).
   // Both sides of that restore must keep RX alive while every sender is muted.
@@ -131,6 +156,7 @@ DUAL_CHECK_JS = r"""({policyId,meetingId,expected,authorize,initialized,receipt=
   // Identity loss faults even a muted replacement, before the periodic guard.
   // A new, muted relay may await authorization after a normal restore.
   if(owned && !normalStopping && (owned.disposed || (owned.installed && !ownedIntact))) {
+    flushCondition(); // Commit before the existing detail predicates can revoke synchronously.
     const knownRevokes=new Set([
       'source_disconnected','source_invalidated','relay_disconnected','decoder_failed',
       'receiver_ended','document_closed','foreign_control','attach_failed',
@@ -203,9 +229,12 @@ class OwnedSenderDualPolicy:
         self._lock = asyncio.Lock()
 
     def failure_snapshot(self):
-        return dict(self._failure) if self._failure is not None else None
+        if self._failure is None:return None
+        result=dict(self._failure)
+        if 'tx_first_failure' in result:result['tx_first_failure']=dict(result['tx_first_failure'])
+        return result
 
-    def _fail(self, reason, exception_type='none', *, detail=None, replacement=None):
+    def _fail(self, reason, exception_type='none', *, detail=None, replacement=None, tx_failure=None):
         self.faulted = True
         if self._failure is not None:
             return
@@ -215,6 +244,9 @@ class OwnedSenderDualPolicy:
             snapshot['detail'] = detail
             if detail=='revoked_guard_sender_track_changed' and replacement is not None:
                 snapshot.update(replacement_receipt(replacement))
+        from .diagnostics import tx_first_failure_receipt
+        diagnostic=tx_first_failure_receipt(tx_failure)
+        if diagnostic is not None:snapshot['tx_first_failure']=diagnostic
         self._failure = snapshot
         if self._on_failure is not None:
             try:
@@ -239,6 +271,10 @@ class OwnedSenderDualPolicy:
             except Exception:
                 self._fail('evaluation_error', 'Exception')
                 return False
+            # An optional diagnostic cannot alter the legacy capability decision.
+            tx_failure=result.get('tx_first_failure') if isinstance(result,dict) else None
+            if isinstance(result,dict) and 'tx_first_failure' in result:
+                result={key:value for key,value in result.items() if key!='tx_first_failure'}
             keys = set(result) if isinstance(result, dict) else set()
             valid_keys = keys == {'accepted', 'reason'} or (
                 (keys == {'accepted', 'reason', 'detail'} or (
@@ -262,7 +298,7 @@ class OwnedSenderDualPolicy:
             self._initialized |= result['accepted'] and not self.faulted
             if not result['accepted']:
                 self._fail(result['reason'], detail=result.get('detail'),
-                    replacement=result if REPLACEMENT_FIELDS <= keys else None)
+                    replacement=result if REPLACEMENT_FIELDS <= keys else None,tx_failure=tx_failure)
             return result['accepted'] and not self.faulted
 
     async def authorize(self,binding):

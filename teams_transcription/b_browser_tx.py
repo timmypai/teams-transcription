@@ -158,9 +158,13 @@ SOURCE_STOP_JS = r"""async ({owner}) => {
 
 _HELPERS = r"""
   const binding=window.__bTXBindings?.get(owner);
-  let failedCondition=null;
+  let failedCondition=null, diagnosticState=null, diagnosticSite='unknown', diagnosticEligible=false;
   // Observe the existing short circuit, once. Never re-run decoder.valid().
-  const condition=(value,name)=>{if(!value && failedCondition===null) failedCondition=name;return value;};
+  const condition=(value,name)=>{
+    if(!value && failedCondition===null) failedCondition=name;
+    if(value===false && diagnosticEligible) try {diagnosticState?.txDiagnostic?.failure(diagnosticSite,name);}catch{}
+    return value;
+  };
   const identity=()=>condition(!!binding,'binding_present') && condition(binding.document===document,'document_match') &&
     condition(window.__bMeetingId===binding.meetingId,'meeting_match') && condition(location.href===binding.href,'location_match') &&
     condition(window.__meeting===binding.capture,'capture_match') && condition(binding.capture.peers[binding.peerIndex]===binding.pc,'peer_match') &&
@@ -177,8 +181,8 @@ _HELPERS = r"""
     condition(state.decoder?.receiver===state.receiver,'decoder_receiver_match') && condition(state.decoder.track===state.track,'decoder_track_match') && condition(state.decoder.valid(),'decoder_valid') &&
     condition((state.installed?state.sender.track===state.track:state.sender.track===state.original),'sender_track_match');
   const connected=state=>valid(state) && condition(state.relay.connectionState==='connected','relay_connected') && condition(state.control?.readyState==='open','control_open');
-  const requireReady=(state,checkpoint=null)=>{
-    failedCondition=null;
+  const requireReady=(state,checkpoint=null,site='unknown')=>{
+    failedCondition=null; diagnosticState=state; diagnosticSite=site; diagnosticEligible=!state?.disposed;
     if(!connected(state)) {
       // Capture before revoke changes track, decoder and transport state.
       let suffix='';
@@ -191,7 +195,7 @@ _HELPERS = r"""
           'guard_binding_lost','guard_owner_replaced','guard_sender_track_changed','guard_decoder_invalid','invalidated'];
         suffix='/tx_ready/'+checkpoint+'/'+failedCondition+'/'+(known.includes(reason)?reason:'none');
       }
-      if(state?.owner===owner) state.revoke('invalidated');
+      if(state?.owner===owner) state.revoke('invalidated',site);
       throw new Error('Native TX disconnected or ownership/meeting binding mismatch'+suffix);
     }
   };
@@ -207,12 +211,33 @@ TARGET_ANSWER_JS = r"""async ({owner,sdp}) => {""" + _HELPERS + _ICE + NO_PLC_RE
   const state={owner,binding,pc:binding.pc,sender:binding.sender,original:binding.original,relay,
     track:null,inputTrack:null,receiver:null,decoderReady:null,control:null,muted:true,
     disposed:false,installed:false,replacing:false,stopping:false,delivery:null,revokeReason:null};
+  // Three first observations only. No clock, identifiers, media, or share probe.
+  // Sequence belongs to this owned target lifetime, never another page/context.
+  try {
+    let sequence=0, failure=null, revoke=null, policy=null;
+    const next=()=>sequence<2147483647?++sequence:null;
+    state.txDiagnostic={
+      failure(site,condition){if(!failure) failure={site,condition,sequence:next()};},
+      revoke(site,reason){if(!revoke) revoke={site,reason,sequence:next()};},
+      reject(){if(policy===null) policy=next();},
+      snapshot(){return failure || revoke?{version:1,
+        site:failure?.site || revoke.site,first_failed_condition:failure?.condition || 'unknown',
+        first_revoke_site:revoke?.site || 'unknown',first_revoke_reason:revoke?.reason || 'unknown',
+        failure_sequence:failure?.sequence ?? null,revoke_sequence:revoke?.sequence ?? null,
+        policy_sequence:policy,sequence_domain:'target_tx_lifetime',share:'unknown',share_sequence:null}:null;}
+    };
+  }catch{} // Diagnostics cannot prevent mute, revoke, or cleanup.
   state.mute=reason=>{
     if(!state.muted)
       state.delivery={status:'truncated',truncated:true,drained:false,reason};
     state.muted=true; if(state.track) state.track.enabled=false;
   };
-  state.revoke=reason=>{state.revokeReason ||= reason; state.mute(reason); state.disposed=true; clearInterval(state.guard);
+  state.revoke=(reason,site='event')=>{const firstRevoke=!state.revokeReason;
+    state.revokeReason ||= reason; state.mute(reason); state.disposed=true;
+    // If diagnostics missed the actual first revoke, a later call cannot
+    // reconstruct its site or sequence from the already-latched reason.
+    if(firstRevoke) try {state.txDiagnostic?.revoke(site,state.revokeReason);}catch{}
+    clearInterval(state.guard);
     state.decoder?.close(); state.control?.close(); relay.close(); if(state.track) state.track.stop();};
   state.onHide=()=>state.revoke('document_closed');
   window.__bTXOwnedStates ||= new Map(); window.__bTXOwnedStates.set(owner,state); window.__bTX=state;
@@ -232,9 +257,10 @@ TARGET_ANSWER_JS = r"""async ({owner,sdp}) => {""" + _HELPERS + _ICE + NO_PLC_RE
       state.revoke('relay_disconnected');
   });
   state.guard=setInterval(()=>{
-    if(!current()) state.revoke('guard_binding_lost');
-    else if(window.__bTX!==state) state.revoke('guard_owner_replaced');
-    else if(!state.replacing && state.sender.track!==(state.installed?state.track:state.original)) {
+    failedCondition=null; diagnosticState=state; diagnosticSite='guard'; diagnosticEligible=!state.disposed;
+    if(!current()) state.revoke('guard_binding_lost','guard');
+    else if(!condition(window.__bTX===state,'state_current')) state.revoke('guard_owner_replaced','guard');
+    else if(!state.replacing && !condition(state.sender.track===(state.installed?state.track:state.original),'sender_track_match')) {
       // Event-time scalar snapshot, before revoke/foreign muting changes it.
       // Owned input clones are private to their closure: never infer from IDs.
       if(!state.replacementFailure) {
@@ -248,9 +274,9 @@ TARGET_ANSWER_JS = r"""async ({owner,sdp}) => {""" + _HELPERS + _ICE + NO_PLC_RE
         }catch{}
         state.replacementFailure=snapshot;
       }
-      state.revoke('guard_sender_track_changed');
+      state.revoke('guard_sender_track_changed','guard');
     }
-    else if(state.decoder && !state.decoder.valid()) state.revoke('guard_decoder_invalid');
+    else if(state.decoder && !condition(state.decoder.valid(),'decoder_valid')) state.revoke('guard_decoder_invalid','guard');
   },25);
   let setupStep='remote_description';
   try {
@@ -301,7 +327,7 @@ TARGET_ANSWER_JS = r"""async ({owner,sdp}) => {""" + _HELPERS + _ICE + NO_PLC_RE
         }
       }catch{}
     }
-    state.revoke('attach_failed');
+    state.revoke('attach_failed','unknown');
     throw new Error('native_tx_setup/'+setupStep+'/'+kind+decoderSuffix);
   }
 }"""
@@ -327,7 +353,7 @@ READY_TX_JS = r"""async ({owner}) => {""" + _HELPERS + r"""
   const state=window.__bTXOwnedStates?.get(owner), deadline=performance.now()+5000;
   while(!connected(state)) {
     if(!valid(state) || performance.now()>=deadline) {
-      if(state?.owner===owner) state.revoke('relay_not_ready');
+      if(state?.owner===owner) state.revoke('relay_not_ready','unknown');
       throw new Error('Native TX relay not ready');
     }
     await new Promise(resolve=>setTimeout(resolve,10));
@@ -356,7 +382,7 @@ START_TX_JS = r"""async ({owner}) => {""" + _HELPERS + r"""
 MUTE_TX_JS = r"""({owner,muted}) => {""" + _HELPERS + r"""
   const state=window.__bTXOwnedStates?.get(owner);
   if(muted) {if(state?.owner===owner) state.mute('muted');return;}
-  requireReady(state);
+  requireReady(state,null,'unmute');
   if(!state.installed) throw new Error('Native TX sender not installed');
   state.delivery=null; state.muted=false; state.track.enabled=true;
   const clock=Math.ceil(state.decoder.ctx.currentTime*48000);
@@ -366,18 +392,18 @@ MUTE_TX_JS = r"""({owner,muted}) => {""" + _HELPERS + r"""
 
 PAUSE_TX_JS = r"""({owner}) => {""" + _HELPERS + r"""
   const state=window.__bTXOwnedStates?.get(owner);
-  requireReady(state); state.mute('explicit_pause');
+  requireReady(state,null,'pause'); state.mute('explicit_pause');
   return state.delivery || {status:'stopped',truncated:false,reason:null,drained:false};
 }"""
 
 OBSERVE_TX_JS = r"""async ({owner}) => {""" + _HELPERS + r"""
-  const state=window.__bTXOwnedStates?.get(owner); requireReady(state);
-  const sample=state.decoder.stats(); requireReady(state);
+  const state=window.__bTXOwnedStates?.get(owner); requireReady(state,null,'observe_before_stats');
+  const sample=state.decoder.stats(); requireReady(state,null,'observe_after_stats');
   if(sample.render?.kind==='native-history-v1') {
     const {frames,energy,duration,packets}=sample.input;
     if(![frames,energy,duration,packets].every(n=>Number.isFinite(n)&&n>=0)||
         !Number.isSafeInteger(frames)||!Number.isSafeInteger(packets)) {
-      state.revoke('stats_unavailable');throw new Error('No-PLC input statistics unavailable');
+      state.revoke('stats_unavailable','observe_after_stats');throw new Error('No-PLC input statistics unavailable');
     }
     const r=sample.render;
     return {frames,energy,duration,packets,connected:true,counter_domain:'target_decoded_input_v2',
@@ -388,11 +414,11 @@ OBSERVE_TX_JS = r"""async ({owner}) => {""" + _HELPERS + r"""
         quiet_seconds:r.quiet_seconds,graph_checkpoint_observed:r.graph_checkpoint_observed}};
   }
   if(sample.render?.kind!==undefined) {
-    state.revoke('stats_unavailable');throw new Error('No-PLC render statistics unavailable');
+    state.revoke('stats_unavailable','observe_after_stats');throw new Error('No-PLC render statistics unavailable');
   }
   const {frames,energy,duration}=sample.render, packets=sample.input.packets;
   if(![frames,energy,duration,packets].every(n=>Number.isFinite(n) && n>=0)) {
-    state.revoke('stats_unavailable');throw new Error('No-PLC render statistics unavailable');
+    state.revoke('stats_unavailable','observe_after_stats');throw new Error('No-PLC render statistics unavailable');
   }
   return {frames,energy,duration,packets,connected:true};
 }"""
@@ -409,7 +435,7 @@ STOP_TX_JS = r"""async ({owner}) => {""" + _HELPERS + r"""
       (state.original===null || state.original.readyState==='live');
     state.stopping=!state.disposed && senderLive() &&
       (state.sender.track===state.track || (!state.installed && state.sender.track===state.original));
-    state.revoke('explicit_stop'); removeEventListener('pagehide',state.onHide);
+    state.revoke('explicit_stop','unknown'); removeEventListener('pagehide',state.onHide);
     try {
       try {await state.ready;} catch(_) {}
       // Stopped transceivers retain their sender/track identity but cannot be

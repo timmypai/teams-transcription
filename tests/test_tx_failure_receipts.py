@@ -53,6 +53,65 @@ const run=(name,args)=>vm.runInContext('('+scripts[name]+')',sandbox)(args);
   await run('TARGET_ANSWER_JS',{owner:'owner',sdp:'synthetic'});
   state=sandbox.__bTX;checks=0;
   relay.ondatachannel({channel:{label:'native-output-owner',readyState:'open',close(){this.readyState='closed';}}});
+  if(mode.startsWith('runtime_')) {
+    const stimulus=mode.slice('runtime_'.length),policyId='policy';
+    const args={policyId,meetingId:'one',authorize:false,initialized:true,receipt:true};
+    const expected={owner:'owner',meeting_id:'one',track_id:output.id};
+    decoder.stats=()=>({input:{packets:2},render:{frames:960,energy:1,duration:.02}});
+    if(stimulus==='transition') {
+      sandbox.__bDualPolicies=new Map([[policyId,{document,capture,href:location.href,
+        meetingId:'one',binding,trackId:output.id,faulted:false,failureDetail:null}]]);
+      const waiting=await run('DUAL_CHECK_JS',args);
+      if(!waiting.accepted)throw Error('normal_transition_rejected');
+    }
+    await run('START_TX_JS',{owner:'owner'});
+    const authorized=await run('DUAL_CHECK_JS',{...args,authorize:true,initialized:false,expected});
+    if(!authorized.accepted || !state.muted || output.enabled)throw Error('given_not_initially_muted');
+    await run('MUTE_TX_JS',{owner:'owner',muted:false});
+    const samples=[0,.25,-.25,.5,-.5,0];
+    const render=()=>samples.map(x=>sender.track?.enabled?x:0);
+    const before=render(),events=['synthetic_share_unknown'];
+    let error=false,refused=false;
+    if(stimulus==='diagnostic_throw')state.txDiagnostic=new Proxy({}, {get(){throw Error('diagnostic_only');}});
+    if(stimulus==='diagnostic_missing')delete state.txDiagnostic;
+    if(stimulus==='diagnostic_recovery') {
+      const diagnostic=state.txDiagnostic;
+      delete state.txDiagnostic;state.control.onmessage();state.txDiagnostic=diagnostic;
+    }
+    if(stimulus==='event')state.control.onmessage();
+    else if(stimulus==='guard') {decoder.valid=()=>false;guard();}
+    else if(stimulus==='dual_first')sender.track=track();
+    else if(stimulus==='dual_detail') {
+      decoder.inputTrack=track();
+      decoder.valid=()=>{state.revoke('decoder_failed');return false;};
+    }
+    else if(stimulus==='scope')location.href='https://synthetic.invalid/changed';
+    else if(stimulus==='short_circuit') {
+      sandbox.__bTX={};decoder.valid=()=>{throw Error('predicate_rechecked');};
+    } else if(stimulus==='decoder_sync') {
+      decoder.valid=()=>{state.revoke('decoder_failed');return false;};
+    } else if(stimulus==='after') {
+      decoder.stats=()=>{state.control.readyState='closed';return {};};
+    } else if(stimulus!=='healthy')state.control.readyState='closed';
+    const operation=stimulus==='pause'?'PAUSE_TX_JS':stimulus==='unmute'?'MUTE_TX_JS':'OBSERVE_TX_JS';
+    if(stimulus==='unmute')await run('MUTE_TX_JS',{owner:'owner',muted:true});
+    if(!['event','guard','dual_first','dual_detail','authorize'].includes(stimulus)) {
+      try{await run(operation,{owner:'owner',muted:false});}catch{error=true;}
+    }
+    events.push('synthetic_operation');
+    const receipt=await run('DUAL_CHECK_JS',stimulus==='authorize'?{...args,authorize:true,expected}:args);
+    const after=render();
+    // Fault latches: no later check/unmute may restore a rejected capability.
+    if(stimulus!=='healthy') {
+      try{await run('MUTE_TX_JS',{owner:'owner',muted:false});}catch{refused=true;}
+    }
+    const later=await run('DUAL_CHECK_JS',args);
+    events.push('synthetic_cleanup');
+    const cleanup=await run('STOP_TX_JS',{owner:'owner'});
+    process.stdout.write(JSON.stringify({authorized:authorized.accepted,before,after,error,refused,
+      receipt,later,cleanup,ended:output.readyState==='ended',restored:sender.track===original,
+      remaining:!!sandbox.__bTXOwnedStates.size,replacements,events}));return;
+  }
   if(mode.startsWith('replacement_')) {
     await run('START_TX_JS',{owner:'owner'});
     const policyId='policy';
@@ -106,7 +165,7 @@ def replay(mode):
     if executable is None:
         raise RuntimeError('Node is required for the diagnostic acceptance fixture')
     result=subprocess.run([executable,'-e',NODE],input=json.dumps({'mode':mode,
-        'scripts':{**{key:getattr(tx,key) for key in ('BIND_TX_JS','START_TX_JS','STOP_TX_JS','MUTE_TX_JS')},
+        'scripts':{**{key:getattr(tx,key) for key in ('BIND_TX_JS','START_TX_JS','STOP_TX_JS','MUTE_TX_JS','OBSERVE_TX_JS','PAUSE_TX_JS')},
             'TARGET_ANSWER_JS':tx.TARGET_ANSWER_JS.replace(NO_PLC_RECEIVER_JS,''),
             'DUAL_CHECK_JS':DUAL_CHECK_JS}}),
         text=True,capture_output=True,timeout=10)
@@ -370,6 +429,141 @@ class ReceiptBoundaryTests(unittest.IsolatedAsyncioTestCase):
             self.assertNotIn('private',json.dumps(safe))
 
 
+class TXRuntimeFailureTests(unittest.IsolatedAsyncioTestCase):
+    async def project(self, wire):
+        class Frame:
+            async def evaluate(self,*args):return wire
+        policy=OwnedSenderDualPolicy(Frame(),'one',clock=lambda:0)
+        accepted=await policy.check()
+        return accepted,response_policy_failure_receipt(policy.failure_snapshot())
+
+    async def test_runtime_first_failure_and_order_reach_persistence(self):
+        expected={'before':('observe_before_stats','control_open','invalidated'),
+            'after':('observe_after_stats','control_open','invalidated'),
+            'pause':('pause','control_open','invalidated'),
+            'unmute':('unmute','control_open','invalidated'),
+            'guard':('guard','decoder_valid','guard_decoder_invalid'),
+            'dual_first':('dual_check','sender_track_match','dual_policy_rejected'),
+            'authorize':('dual_authorize','control_open','dual_policy_rejected'),
+            'scope':('observe_before_stats','location_match','invalidated'),
+            'short_circuit':('observe_before_stats','state_current','invalidated'),
+            'decoder_sync':('observe_before_stats','decoder_valid','decoder_failed'),
+            'transition':('observe_before_stats','control_open','invalidated'),
+            'dual_detail':('dual_check','decoder_input_match','decoder_failed')}
+        for mode,(site,condition,reason) in expected.items():
+            with self.subTest(mode=mode):
+                actual=replay('runtime_'+mode)
+                self.assertTrue(actual['authorized'])
+                self.assertFalse(actual['receipt']['accepted'])
+                accepted,safe=await self.project(actual['receipt'])
+                self.assertFalse(accepted)
+                diagnostic=safe.get('tx_first_failure')
+                self.assertIsNotNone(diagnostic)
+                self.assertEqual(diagnostic['site'],site)
+                self.assertEqual(diagnostic['first_failed_condition'],condition)
+                self.assertEqual(diagnostic['first_revoke_reason'],reason)
+                self.assertEqual(diagnostic['sequence_domain'],'target_tx_lifetime')
+                self.assertEqual(diagnostic['share'],'unknown')
+                self.assertIsNone(diagnostic['share_sequence'])
+                self.assertGreater(diagnostic['policy_sequence'],diagnostic['revoke_sequence'])
+                if mode=='decoder_sync':
+                    self.assertLess(diagnostic['revoke_sequence'],diagnostic['failure_sequence'])
+                    self.assertEqual(diagnostic['first_revoke_site'],'event')
+                else:
+                    self.assertLess(diagnostic['failure_sequence'],diagnostic['revoke_sequence'])
+                    self.assertEqual(diagnostic['first_revoke_site'],'event' if mode=='dual_detail' else site)
+                self.assertEqual(actual['receipt']['tx_first_failure'],actual['later']['tx_first_failure'])
+                self.assertEqual(safe,response_policy_failure_receipt(safe))
+                if mode in {'before','after','pause','unmute','short_circuit'}:
+                    self.assertEqual(actual['receipt']['detail'],'revoked_other')
+
+    async def test_event_and_diagnostic_loss_keep_unknowns_and_protection(self):
+        event=replay('runtime_event')
+        _,safe=await self.project(event['receipt'])
+        diagnostic=safe.get('tx_first_failure')
+        self.assertIsNotNone(diagnostic)
+        self.assertEqual(diagnostic['site'],'event')
+        self.assertEqual(diagnostic['first_failed_condition'],'unknown')
+        self.assertIsNone(diagnostic['failure_sequence'])
+        self.assertEqual(diagnostic['first_revoke_reason'],'source_invalidated')
+        for mode in ('diagnostic_missing','diagnostic_throw','diagnostic_recovery'):
+            actual=replay('runtime_'+mode)
+            self.assertTrue(actual['error'])
+            self.assertTrue(actual['refused'])
+            self.assertTrue(actual['ended'])
+            self.assertEqual(actual['after'],[0]*6)
+            self.assertNotIn('tx_first_failure',actual['receipt'])
+
+    async def test_illegal_diagnostics_do_not_change_legacy_policy_decision(self):
+        wire=replay('runtime_before')['receipt']
+        accepted,safe=await self.project(wire)
+        self.assertFalse(accepted)
+        first=safe.get('tx_first_failure')
+        self.assertIsNotNone(first)
+        for value in (None,[],{'url':'private'}, {**first,'site':'private'},
+                {**first,'failure_sequence':True},{**first,'revoke_sequence':2**53},
+                {**first,'share':'ppt'},{**first,'share_sequence':1}):
+            with self.subTest(value=value):
+                _,projected=await self.project({**wire,'tx_first_failure':value})
+                self.assertEqual(projected['reason'],'owned_identity')
+                self.assertEqual(projected['detail'],'revoked_other')
+                self.assertNotIn('tx_first_failure',projected)
+        unknown={**first,'sequence_domain':'unknown','failure_sequence':None,
+            'revoke_sequence':None,'policy_sequence':None}
+        _,projected=await self.project({**wire,'tx_first_failure':unknown})
+        self.assertEqual(projected['tx_first_failure'],unknown)
+        class Frame:
+            async def evaluate(self,*args):return wire
+        policy=OwnedSenderDualPolicy(Frame(),'one',clock=lambda:0)
+        await policy.check()
+        snapshot=policy.failure_snapshot()
+        snapshot['tx_first_failure']['site']='private'
+        self.assertEqual(policy.failure_snapshot()['tx_first_failure']['site'],'observe_before_stats')
+
+
+def runtime_behavior():
+    rows={}
+    for mode in ('healthy','before','after','pause','unmute','guard','event','dual_first',
+            'authorize','scope','short_circuit','decoder_sync','diagnostic_missing','diagnostic_throw','transition','dual_detail','diagnostic_recovery'):
+        value=replay('runtime_'+mode)
+        for name in ('receipt','later'):
+            value[name].pop('tx_first_failure',None)
+        assert value['authorized'] and value['before']==[0,.25,-.25,.5,-.5,0]
+        assert value['after']==([0,.25,-.25,.5,-.5,0] if mode=='healthy' else [0]*6)
+        assert value['receipt']['accepted']==(mode=='healthy')
+        assert value['later']==value['receipt']
+        assert value['ended'] and not value['remaining']
+        assert value['restored']==(mode not in {'scope','dual_first'})
+        assert value['replacements']==(1 if mode in {'scope','dual_first'} else 2)
+        assert value['refused']==(mode!='healthy')
+        assert value['error']==(mode not in {'healthy','guard','event','dual_first','dual_detail','authorize'})
+        expected_reason={'healthy':'none','scope':'document_scope','authorize':'owned_decoder'}.get(mode,'owned_identity')
+        assert value['receipt']['reason']==expected_reason
+        expected_detail={'event':'revoked_source_invalidated','guard':'revoked_guard_decoder_invalid',
+            'dual_first':'sender_track_changed','decoder_sync':'revoked_decoder_failed','dual_detail':'decoder_invalid','diagnostic_recovery':'revoked_source_invalidated'}.get(mode,'revoked_other')
+        if expected_reason=='owned_identity':assert value['receipt']['detail']==expected_detail
+        cleanup_reason={'healthy':'explicit_stop','unmute':'muted','guard':'guard_decoder_invalid',
+            'event':'source_invalidated','dual_first':'dual_policy_rejected',
+            'authorize':'dual_policy_rejected','decoder_sync':'decoder_failed','dual_detail':'decoder_failed','diagnostic_recovery':'source_invalidated'}.get(mode,'invalidated')
+        assert value['cleanup']=={'cleaned':True,'status':'truncated','truncated':True,
+            'drained':False,'reason':cleanup_reason}
+        rows[mode]=value
+    return rows
+
+
+def runtime_acceptance(phase):
+    if phase=='runtime_given':
+        value=runtime_behavior()['healthy']
+        print(json.dumps({'authorized':value['authorized'],'samples':value['before'],'restored':value['restored']}))
+        return
+    result=unittest.TestResult()
+    unittest.defaultTestLoader.loadTestsFromTestCase(TXRuntimeFailureTests).run(result)
+    print(json.dumps({'tests':result.testsRun,'failures':len(result.failures),'errors':len(result.errors),
+        'skipped':len(result.skipped),
+        'unexpected_failures':sum('AssertionError: unexpectedly None' not in trace for _,trace in result.failures),
+        'behavior':runtime_behavior(),'real_meeting':False,'real_media':False}))
+
+
 def acceptance_behavior():
     """Exact legacy results, asserted identically against both installed products."""
     rows={}
@@ -379,7 +573,7 @@ def acceptance_behavior():
         value=replay(mode)
         if mode.startswith('replacement_'):
             value['receipt']={key:item for key,item in value['receipt'].items()
-                if not key.startswith('replacement_')}
+                if not key.startswith('replacement_') and key!='tx_first_failure'}
             expected={'receipt':{'accepted':False,'reason':'owned_identity',
                 'detail':'revoked_guard_sender_track_changed'},'ended':True,'foreignPreserved':True}
         else:
@@ -407,7 +601,8 @@ def acceptance_main(phase):
     else:
         import sys
         result=unittest.TestResult()
-        unittest.defaultTestLoader.loadTestsFromModule(sys.modules[__name__]).run(result)
+        unittest.TestSuite(unittest.defaultTestLoader.loadTestsFromTestCase(cls) for cls in
+            (TXFailureReceiptTests,SourceFailureGroupTests,ReceiptBoundaryTests)).run(result)
         diagnostic_tests={'test_three_install_checkpoints_keep_mute_restore_and_first_error',
             'test_first_false_condition_is_not_a_cleanup_snapshot_or_recheck',
             'test_guard_replacement_is_captured_before_revoke_and_latched',
@@ -427,4 +622,4 @@ def acceptance_main(phase):
 
 if __name__=='__main__':
     import sys
-    acceptance_main(sys.argv[1])
+    (runtime_acceptance if sys.argv[1].startswith('runtime_') else acceptance_main)(sys.argv[1])

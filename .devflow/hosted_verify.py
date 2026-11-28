@@ -27,6 +27,7 @@ from acceptance import parse_covers, pr_body
 from operate_export_proof import MEDIA_SCENARIO, run_media_scenario
 
 TX_SCENARIO = 't_2f678421/AC-1.S1'
+TX_RUNTIME_SCENARIO = 't_98496ab2/AC-1.S1'
 
 
 class BaseTXDiagnosticsMissing(Exception):
@@ -69,6 +70,7 @@ class Harness:
         self.baseline = os.environ.get('DEVFLOW_BASELINE') == '1'
         self.media_scenario = not self.baseline or MEDIA_SCENARIO in parse_covers(pr_body())[0]
         self.tx_scenario = not self.baseline or TX_SCENARIO in parse_covers(pr_body())[0]
+        self.tx_runtime_scenario = not self.baseline or TX_RUNTIME_SCENARIO in parse_covers(pr_body())[0]
         self.expected_base_red = set()
         self.problems = []
         self.receipt = None
@@ -141,6 +143,34 @@ class Harness:
             self.health()
 
         self.run_scenario(TX_SCENARIO,given,when,then,expected_base_red=(BaseTXDiagnosticsMissing,))
+
+    def tx_runtime_receipts(self):
+        state = {}
+
+        def execute(phase):
+            result = run(['bash',str(ROOT/'.devflow/verify.sh'),'--tx-receipts',self.app,phase])
+            return json.loads(result.stdout)
+
+        def given():
+            self.health()
+            assert execute('runtime_given') == dict(authorized=True,
+                samples=[0,.25,-.25,.5,-.5,0],restored=True)
+
+        def when():
+            report = execute('runtime_when')
+            self.write(self.evidence/'tx-runtime-receipts.json',json.dumps(report,indent=2))
+            assert report['tests'] == 3 and report['errors'] == report['skipped'] == 0
+            assert report['unexpected_failures'] == 0
+            assert len(report['behavior']) == 17
+            state['report'] = report
+            if self.baseline and report['failures']:
+                raise BaseTXDiagnosticsMissing('tx_runtime_first_failure_missing')
+
+        def then():
+            assert state['report']['failures'] == 0
+            self.health()
+
+        self.run_scenario(TX_RUNTIME_SCENARIO,given,when,then,expected_base_red=(BaseTXDiagnosticsMissing,))
 
     def run_scenario(self, sid, given, when, then, *, expected_base_red=()):
         failed = False
@@ -380,6 +410,8 @@ def main():
                 run_media_scenario(h.run_scenario, h.scratch/'calendar-media', evidence, baseline=h.baseline)
             if h.tx_scenario:
                 h.tx_receipts()
+            if h.tx_runtime_scenario:
+                h.tx_runtime_receipts()
         except Exception as exc:
             h.problems.append('hosted_verification_failed')
             import re
@@ -418,6 +450,15 @@ def finish(h, *, kind, gate=True):
             shutil.copyfile(ROOT/source,dest/Path(source).name)
     else:
         expected.discard(TX_SCENARIO)
+    if h.tx_runtime_scenario:
+        expected.add(TX_RUNTIME_SCENARIO)
+        dest = evidence/'sources/tx-runtime-receipts'
+        dest.mkdir(parents=True)
+        for source in ['.devflow/scenarios.json','.devflow/hosted_verify.py','.devflow/verify.sh',
+                       'tests/test_tx_failure_receipts.py']:
+            shutil.copyfile(ROOT/source,dest/Path(source).name)
+    else:
+        expected.discard(TX_RUNTIME_SCENARIO)
     present = {s['id'] for s in report['scenarios']}
     if present != expected:
         raise RuntimeError('scenario_set_incomplete')
