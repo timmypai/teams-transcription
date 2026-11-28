@@ -1,6 +1,6 @@
 id = "L-0021"
 title = "驗收成品須隔離來源遮蔽，並分開刺激時序與預期紅燈分類"
-event = "t_6d888e56; PR #24 的 hosted head/base 診斷驗收與獨立審查退件"
+event = "t_6d888e56; PR #24 的 hosted head/base 診斷驗收與獨立審查退件。直接重跑同一 DiagnosticEntrypointTests 外部入口回歸：18f46b2 的 verify.sh 出現 source overlay imported assertion failure，隔離入口後通過；既有 unittest runner 未輸出自動 lesson proof 所需 JUnit，實跑紅綠證據與此格式限制於 PR 說明交獨立審查。"
 root_cause = "容器 WORKDIR 與 PYTHONPATH 的原始碼會遮蔽已安裝套件，不能只憑映像啟動就宣稱驗到成品；診斷入口須使用 Python -I 並保留 installed site-packages 斷言，以含來源遮蔽的外部入口回歸驗證。合成 replacement.enabled 在 replaceTrack 前設 true 會被既有 capture hook 同步靜音，刺激必須在 hook 返回後、待觀測 guard 執行前建立，保留首筆 true、撤銷靜音與清理不覆寫收據的斷言。base 缺新增診斷欄位與既有非法輸入拒收須分成獨立測試方法，只有缺新欄位可列預期 RED，安全拒收仍必須通過；不得把混合方法整體列預期失敗而掩蓋既有行為退化。上述三項均已由既有 test_b_tx_diagnostic_entrypoint 與 test_tx_failure_receipts 回歸覆蓋，不需新增產品行為或放寬斷言。"
 category = "verification"
 
