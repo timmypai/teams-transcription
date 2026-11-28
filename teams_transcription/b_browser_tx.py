@@ -232,8 +232,11 @@ TARGET_ANSWER_JS = r"""async ({owner,sdp}) => {""" + _HELPERS + _ICE + NO_PLC_RE
       state.delivery={status:'truncated',truncated:true,drained:false,reason};
     state.muted=true; if(state.track) state.track.enabled=false;
   };
-  state.revoke=(reason,site='event')=>{state.revokeReason ||= reason; state.mute(reason); state.disposed=true;
-    try {state.txDiagnostic?.revoke(site,state.revokeReason);}catch{}
+  state.revoke=(reason,site='event')=>{const firstRevoke=!state.revokeReason;
+    state.revokeReason ||= reason; state.mute(reason); state.disposed=true;
+    // If diagnostics missed the actual first revoke, a later call cannot
+    // reconstruct its site or sequence from the already-latched reason.
+    if(firstRevoke) try {state.txDiagnostic?.revoke(site,state.revokeReason);}catch{}
     clearInterval(state.guard);
     state.decoder?.close(); state.control?.close(); relay.close(); if(state.track) state.track.stop();};
   state.onHide=()=>state.revoke('document_closed');

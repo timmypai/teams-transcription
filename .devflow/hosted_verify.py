@@ -161,7 +161,7 @@ class Harness:
             self.write(self.evidence/'tx-runtime-receipts.json',json.dumps(report,indent=2))
             assert report['tests'] == 3 and report['errors'] == report['skipped'] == 0
             assert report['unexpected_failures'] == 0
-            assert len(report['behavior']) == 16
+            assert len(report['behavior']) == 17
             state['report'] = report
             if self.baseline and report['failures']:
                 raise BaseTXDiagnosticsMissing('tx_runtime_first_failure_missing')

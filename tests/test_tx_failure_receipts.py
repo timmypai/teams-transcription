@@ -74,6 +74,10 @@ const run=(name,args)=>vm.runInContext('('+scripts[name]+')',sandbox)(args);
     let error=false,refused=false;
     if(stimulus==='diagnostic_throw')state.txDiagnostic=new Proxy({}, {get(){throw Error('diagnostic_only');}});
     if(stimulus==='diagnostic_missing')delete state.txDiagnostic;
+    if(stimulus==='diagnostic_recovery') {
+      const diagnostic=state.txDiagnostic;
+      delete state.txDiagnostic;state.control.onmessage();state.txDiagnostic=diagnostic;
+    }
     if(stimulus==='event')state.control.onmessage();
     else if(stimulus==='guard') {decoder.valid=()=>false;guard();}
     else if(stimulus==='dual_first')sender.track=track();
@@ -482,7 +486,7 @@ class TXRuntimeFailureTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(diagnostic['first_failed_condition'],'unknown')
         self.assertIsNone(diagnostic['failure_sequence'])
         self.assertEqual(diagnostic['first_revoke_reason'],'source_invalidated')
-        for mode in ('diagnostic_missing','diagnostic_throw'):
+        for mode in ('diagnostic_missing','diagnostic_throw','diagnostic_recovery'):
             actual=replay('runtime_'+mode)
             self.assertTrue(actual['error'])
             self.assertTrue(actual['refused'])
@@ -520,7 +524,7 @@ class TXRuntimeFailureTests(unittest.IsolatedAsyncioTestCase):
 def runtime_behavior():
     rows={}
     for mode in ('healthy','before','after','pause','unmute','guard','event','dual_first',
-            'authorize','scope','short_circuit','decoder_sync','diagnostic_missing','diagnostic_throw','transition','dual_detail'):
+            'authorize','scope','short_circuit','decoder_sync','diagnostic_missing','diagnostic_throw','transition','dual_detail','diagnostic_recovery'):
         value=replay('runtime_'+mode)
         for name in ('receipt','later'):
             value[name].pop('tx_first_failure',None)
@@ -536,11 +540,11 @@ def runtime_behavior():
         expected_reason={'healthy':'none','scope':'document_scope','authorize':'owned_decoder'}.get(mode,'owned_identity')
         assert value['receipt']['reason']==expected_reason
         expected_detail={'event':'revoked_source_invalidated','guard':'revoked_guard_decoder_invalid',
-            'dual_first':'sender_track_changed','decoder_sync':'revoked_decoder_failed','dual_detail':'decoder_invalid'}.get(mode,'revoked_other')
+            'dual_first':'sender_track_changed','decoder_sync':'revoked_decoder_failed','dual_detail':'decoder_invalid','diagnostic_recovery':'revoked_source_invalidated'}.get(mode,'revoked_other')
         if expected_reason=='owned_identity':assert value['receipt']['detail']==expected_detail
         cleanup_reason={'healthy':'explicit_stop','unmute':'muted','guard':'guard_decoder_invalid',
             'event':'source_invalidated','dual_first':'dual_policy_rejected',
-            'authorize':'dual_policy_rejected','decoder_sync':'decoder_failed','dual_detail':'decoder_failed'}.get(mode,'invalidated')
+            'authorize':'dual_policy_rejected','decoder_sync':'decoder_failed','dual_detail':'decoder_failed','diagnostic_recovery':'source_invalidated'}.get(mode,'invalidated')
         assert value['cleanup']=={'cleaned':True,'status':'truncated','truncated':True,
             'drained':False,'reason':cleanup_reason}
         rows[mode]=value
