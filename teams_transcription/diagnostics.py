@@ -212,6 +212,36 @@ def response_runtime_failure_receipt(value):
                 if type(elapsed) is int and elapsed >= 0 else None}
 
 
+TX_FAILURE_SITES = {'observe_before_stats','observe_after_stats','unmute','pause',
+    'guard','event','dual_check','dual_authorize','unknown'}
+TX_FAILURE_CONDITIONS = RESPONSE_TX_CONDITIONS | {'installed','sender_match','output_audio',
+    'decoder_input_match','unknown'}
+TX_FAILURE_FIELDS = {'version','site','first_failed_condition','first_revoke_site',
+    'first_revoke_reason','failure_sequence','revoke_sequence','policy_sequence',
+    'sequence_domain','share','share_sequence'}
+
+
+def tx_first_failure_receipt(value):
+    """Optional all-or-drop whitelist. Unknown is not false or a share timestamp.
+
+    Only three first observations, in one owned target lifetime. No cross-page
+    time comparison; missing/invalid diagnostics never affect capability checks.
+    """
+    if not isinstance(value,dict) or set(value)!=TX_FAILURE_FIELDS:return None
+    if type(value['version']) is not int or value['version']!=1:return None
+    for key,allowed in (('site',TX_FAILURE_SITES),('first_revoke_site',TX_FAILURE_SITES),
+            ('first_failed_condition',TX_FAILURE_CONDITIONS),
+            ('first_revoke_reason',RESPONSE_TX_REVOKES | {'unknown'})):
+        if not isinstance(value[key],str) or value[key] not in allowed:return None
+    if value['sequence_domain'] not in ('target_tx_lifetime','unknown'):return None
+    if value['share']!='unknown' or value['share_sequence'] is not None:return None
+    for key in ('failure_sequence','revoke_sequence','policy_sequence'):
+        item=value[key]
+        if item is not None and (type(item) is not int or not 1<=item<=2147483647):return None
+        if value['sequence_domain']=='unknown' and item is not None:return None
+    return dict(value)
+
+
 def response_policy_failure_receipt(value):
     if not isinstance(value, dict):
         return None
@@ -231,6 +261,8 @@ def response_policy_failure_receipt(value):
         if receipt['detail']=='revoked_guard_sender_track_changed':
             from .b_dual_policy import REPLACEMENT_FIELDS, replacement_receipt
             if REPLACEMENT_FIELDS.intersection(value):receipt.update(replacement_receipt(value))
+    diagnostic=tx_first_failure_receipt(value.get('tx_first_failure'))
+    if diagnostic is not None:receipt['tx_first_failure']=diagnostic
     return receipt
 
 
