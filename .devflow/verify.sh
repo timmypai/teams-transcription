@@ -2,6 +2,20 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
+if [[ "${1:-}" == "--tx-receipts" ]]; then
+  # Stream tests only. The module under test must be the image-installed wheel,
+  # never a source checkout or an application overlay. Isolated Python ignores
+  # the image's source-containing WORKDIR and inherited PYTHONPATH.
+  docker --host=unix:///var/run/docker.sock exec -i "${2:?container required}" \
+    python -I -B -c 'import pathlib,sys
+from teams_transcription import b_browser_tx
+assert "site-packages" in pathlib.Path(b_browser_tx.__file__).parts
+sys.argv=["tx-receipts",sys.argv[1]]
+exec(compile(sys.stdin.read(),"<tx-receipt-fixture>","exec"))' "${3:?phase required}" \
+    < tests/test_tx_failure_receipts.py
+  exit 0
+fi
+
 if [[ "${DEVFLOW_SMOKE:-0}" == "1" ]]; then
   # Read-only post-deploy smoke verification called by standard `.devflow/deploy.sh`.
   base_url="${DEVFLOW_BASE_URL:?DEVFLOW_BASE_URL required}"
