@@ -1,6 +1,6 @@
 id = "L-0022"
 title = "首撤銷診斷漏觀測後，不可以後續事件倒填首次位置與順序"
-event = "t_0b3c4df6；PR #25 獨立審查與 t_055c474a 判讀指出，診斷缺失後恢復時，後續撤銷會誤補成首次事件。"
+event = "t_0b3c4df6；PR #25 獨立審查與 t_055c474a 判讀指出，診斷缺失後恢復時，後續撤銷會誤補成首次事件。同一既有回歸已實跑修正前 c5c68dd 的 production b_browser_tx 原始碼為 assertion RED、現版為 GREEN；既有 stdlib unittest runner 未提供自動證明器所需 JUnit，原始紅綠輸出交 reviewer 判讀。"
 root_cause = "保護狀態已鎖存真正首撤銷原因，但診斷可能當時缺失或拋錯。若後續撤銷只因診斷尚未記錄就補寫，會把後續呼叫位置及序號錯認為首撤銷。必須在更新既有撤銷鎖存前判定是否真正首事件，僅在該首事件的既有觀察點盡力記錄；漏觀測的首次位置與順序維持未知或不輸出診斷，不以後續事件重建。診斷缺失、拋錯或恢復均不得延後靜音、改變拒絕再次開音與清理行為。既有回歸以相同 production JS 刺激驗證 diagnostic_missing、diagnostic_throw、diagnostic_recovery，斷言不產生誤歸因診斷且輸出靜音、拒絕與結束保護不變。"
 category = "code-pattern"
 
