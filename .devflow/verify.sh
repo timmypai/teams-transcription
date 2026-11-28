@@ -4,9 +4,10 @@ cd "$(dirname "$0")/.."
 
 if [[ "${1:-}" == "--tx-receipts" ]]; then
   # Stream tests only. The module under test must be the image-installed wheel,
-  # never a source checkout or an application overlay.
+  # never a source checkout or an application overlay. Isolated Python ignores
+  # the image's source-containing WORKDIR and inherited PYTHONPATH.
   docker --host=unix:///var/run/docker.sock exec -i "${2:?container required}" \
-    python -B -c 'import pathlib,sys
+    python -I -B -c 'import pathlib,sys
 from teams_transcription import b_browser_tx
 assert "site-packages" in pathlib.Path(b_browser_tx.__file__).parts
 sys.argv=["tx-receipts",sys.argv[1]]
